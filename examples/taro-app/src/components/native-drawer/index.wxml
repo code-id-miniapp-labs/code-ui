@@ -1,0 +1,28 @@
+<view class="code-drawer-root" data-scope="drawer" data-part="root" data-state="{{api.state}}" data-placement="{{api.placement}}" catchtouchmove="noop" wx:if="{{api.state !== 'closed'}}">
+  <!-- Backdrop Overlay -->
+  <view class="code-drawer-backdrop {{api.open ? 'code-drawer-backdrop--open' : 'code-drawer-backdrop--closed'}}" data-scope="drawer" data-part="backdrop" data-state="{{api.open ? 'open' : 'closed'}}" bindtap="handleBackdropTap" />
+  <!-- Drawer Sheet Content -->
+  <view class="code-drawer-content code-drawer-content--{{api.placement}} {{api.open ? 'code-drawer-content--open' : 'code-drawer-content--closing'}} {{api.dragging ? 'code-drawer-content--dragging' : ''}}" data-scope="drawer" data-part="content" data-state="{{api.state}}" data-placement="{{api.placement}}" data-dragging="{{api.dragging ? 'true' : 'false'}}" style="{{api.contentProps.style}}">
+    <!-- Grabber Handle for gesture swiping -->
+    <view class="code-drawer-grabber" data-scope="drawer" data-part="grabber" wx:if="{{api.placement === 'bottom' || api.placement === 'top'}}" bindtouchstart="handleTouchStart" catchtouchmove="handleTouchMove" bindtouchend="handleTouchEnd" bindtouchcancel="handleTouchEnd">
+      <view class="code-drawer-grabber-bar" />
+    </view>
+    <!-- Header Section -->
+    <view class="code-drawer-header">
+      <view class="code-drawer-header-content">
+        <slot name="header" />
+      </view>
+      <view class="code-drawer-close" data-scope="drawer" data-part="close-trigger" bindtap="handleCloseTap">
+        <text class="code-drawer-close-icon">✕</text>
+      </view>
+    </view>
+    <!-- Body Section (Default Slot) -->
+    <view class="code-drawer-body">
+      <slot />
+    </view>
+    <!-- Footer Section -->
+    <view class="code-drawer-footer">
+      <slot name="footer" />
+    </view>
+  </view>
+</view>

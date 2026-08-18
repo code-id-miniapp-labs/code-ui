@@ -1,0 +1,17 @@
+packages:
+  - "packages/*"
+  - "packages/machines/*"
+  - "packages/frameworks/*"
+  - "examples/*"
+
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  '@tarojs/binding': false
+  '@tarojs/cli': true
+  core-js: false
+  core-js-pure: false
+  esbuild: false
+
+onlyBuiltDependencies:
+  - esbuild

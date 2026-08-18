@@ -1,0 +1,21 @@
+{
+  "name": "code-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A framework-agnostic UI library for MiniApp environments powered by FSM + alien-signals",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "typecheck": "pnpm -r run typecheck",
+    "clean": "pnpm -r run clean",
+    "lint": "oxlint packages",
+    "lint:fix": "oxlint --fix packages",
+    "format": "oxfmt packages",
+    "format:check": "oxfmt --check packages"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "typescript": "^5.5.4"
+  }
+}

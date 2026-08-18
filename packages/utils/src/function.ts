@@ -1,0 +1,133 @@
+import { isFunction } from "./guard";
+
+export type MaybeFunction<T> = T | (() => T);
+
+export type Nullable<T> = T | null | undefined;
+
+export const runIfFn = <T>(
+  v: T | undefined,
+  ...a: T extends (...args: any[]) => any ? Parameters<T> : never[]
+): T extends (...args: any[]) => any
+  ? NonNullable<ReturnType<T>>
+  : NonNullable<T> => {
+  const res =
+    typeof v === "function" ? (v as (...args: unknown[]) => unknown)(...a) : v;
+  return (res ?? undefined) as any;
+};
+
+export const cast = <T>(v: unknown): T => v as T;
+
+export const identity = (v: VoidFunction) => v();
+
+export const noop = () => {};
+
+export const callAll =
+  <T extends (...args: any[]) => void>(...fns: (T | null | undefined)[]) =>
+  (...a: Parameters<T>) => {
+    fns.forEach(function (fn) {
+      fn?.(...a);
+    });
+  };
+
+export const uuid = /*#__PURE__*/ (() => {
+  let id = 0;
+  return () => {
+    id++;
+    return id.toString(36);
+  };
+})();
+
+export function match<V extends string | number = string, R = unknown>(
+  key: V,
+  record: Record<V, R | ((...args: unknown[]) => R)>,
+  ...args: unknown[]
+): R {
+  if (key in record) {
+    const fn = record[key];
+    return isFunction(fn)
+      ? (fn as (...args: unknown[]) => R)(...args)
+      : (fn as R);
+  }
+
+  const error = new Error(
+    `No matching key: ${JSON.stringify(key)} in ${JSON.stringify(Object.keys(record))}`,
+  );
+  Error.captureStackTrace?.(error, match);
+
+  throw error;
+}
+
+export const tryCatch = <R>(fn: () => R, fallback: () => R) => {
+  try {
+    return fn();
+  } catch (error) {
+    if (error instanceof Error) {
+      Error.captureStackTrace?.(error, tryCatch);
+    }
+    return fallback?.();
+  }
+};
+
+export function throttle<T extends (...args: any[]) => void>(
+  fn: T,
+  wait = 0,
+): T {
+  let lastCall = 0;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return ((...args: Parameters<T>) => {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastCall;
+
+    if (timeSinceLastCall >= wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      fn(...args);
+      lastCall = now;
+    } else if (!timeout) {
+      timeout = setTimeout(() => {
+        fn(...args);
+        lastCall = Date.now();
+        timeout = null;
+      }, wait - timeSinceLastCall);
+    }
+  }) as T;
+}
+
+export function debounce<T extends (...args: any[]) => void>(
+  fn: T,
+  wait = 0,
+): T {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  return ((...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    timeout = setTimeout(() => {
+      fn(...args);
+    }, wait);
+  }) as T;
+}
+
+const toChar = (code: number) =>
+  String.fromCharCode(code + (code > 25 ? 39 : 97));
+
+function toName(code: number) {
+  let name = "";
+  let x: number;
+  for (x = Math.abs(code); x > 52; x = (x / 52) | 0)
+    name = toChar(x % 52) + name;
+  return toChar(x % 52) + name;
+}
+
+function toPhash(h: number, x: string) {
+  let i = x.length;
+  while (i) h = (h * 33) ^ x.charCodeAt(--i);
+  return h;
+}
+
+export const hash = (value: string) => toName(toPhash(5381, value) >>> 0);

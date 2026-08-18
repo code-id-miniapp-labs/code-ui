@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc"
+  ],
+  "categories": {
+    // Built-in categories: correctness, suspicious, pedantic, perf, style
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    // TypeScript extras
+    "typescript/consistent-type-imports": "error",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-non-null-assertion": "warn",
+    "no-underscore-dangle": "off",
+
+    // Style
+    "no-var": "error",
+    "prefer-const": "error",
+    "eqeqeq": "error",
+    "no-console": "off"
+  },
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/*.d.ts",
+    "packages/components/src/index.ts"
+  ]
+}
