@@ -1,8 +1,9 @@
 import type { DrawerApi, DrawerService } from "./drawer.types";
 import { parts } from "./drawer.anatomy";
+import * as dom from "./drawer.dom";
 
 export function connectDrawer(service: DrawerService): DrawerApi {
-  const { state, send, context, computed } = service;
+  const { state, send, context, computed, scope } = service;
 
   const open = state.hasTag("open");
   const currentState = state.get();
@@ -12,7 +13,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
   const keyboardHeight = context.get("keyboardHeight");
 
   const getContentTransform = () => {
-    // Determine base offset from dragging and keyboard
     const activeOffset = dragging ? dragOffset : 0;
 
     if (activeOffset === 0 && keyboardHeight === 0) return "";
@@ -53,18 +53,21 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     },
 
     rootProps: {
+      id: dom.getRootId(scope),
       ...parts.root.attrs,
       "data-state": currentState,
       "data-placement": placement,
     },
 
     backdropProps: {
+      id: dom.getBackdropId(scope),
       ...parts.backdrop.attrs,
       "data-state": open ? "open" : "closed",
       "aria-hidden": !open,
     },
 
     contentProps: {
+      id: dom.getContentId(scope),
       ...parts.content.attrs,
       "data-state": currentState,
       "data-placement": placement,
@@ -76,12 +79,14 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     },
 
     grabberProps: {
+      id: dom.getGrabberId(scope),
       ...parts.grabber.attrs,
       "data-state": currentState,
       "data-placement": placement,
     },
 
     closeTriggerProps: {
+      id: dom.getCloseTriggerId(scope),
       ...parts.closeTrigger.attrs,
       "aria-label": "Close",
     },

@@ -1,7 +1,7 @@
 /// <reference types="miniprogram-api-typings" />
 
 import { MiniappMachine } from "./machine";
-import { connectToPage } from "./connect";
+import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
 import type { Machine, MachineSchema } from "@code-ui/core";
 
@@ -101,6 +101,8 @@ export function createMachineBehavior<
       attached(this: any) {
         const initialProps: Record<string, any> = {
           component: this,
+          id: this.id || this.data?.id,
+          ids: this.data?.ids,
         };
 
         if (this.data) {
@@ -118,7 +120,12 @@ export function createMachineBehavior<
         machine.start();
 
         if (connect) {
-          this.__codeUiDispose = connectToPage(machine, this, connect, key);
+          this.__codeUiDispose = connectToComponent(
+            machine,
+            this,
+            connect,
+            key,
+          );
         }
       },
 

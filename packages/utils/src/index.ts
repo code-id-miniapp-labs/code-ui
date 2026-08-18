@@ -8,6 +8,9 @@ export {
   queryScrollOffset,
   queryViewportScrollOffset,
   queryFields,
+  queryComputedStyle,
+  queryAnimationDuration,
+  parseTimeValue,
   isMiniApp,
 } from "./dom";
 

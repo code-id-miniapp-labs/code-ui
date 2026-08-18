@@ -11,6 +11,7 @@ const drawerBehavior = createMachineBehavior({
     "closeOnBackdropClick",
     "dismissible",
     "threshold",
+    "duration",
   ],
   exportApi: true,
 });
@@ -59,6 +60,10 @@ Component({
     threshold: {
       type: Number,
       value: 80,
+    },
+    duration: {
+      type: Number,
+      value: undefined,
     },
   },
 

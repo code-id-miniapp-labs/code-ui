@@ -34,6 +34,13 @@ export interface DOMQueryHelpers {
     selector: string,
     fields: WechatMiniprogram.Fields,
   ) => Promise<MiniAppNodeFields | null>;
+  /** Query computed CSS styles for a selector */
+  computedStyle: (
+    selector: string,
+    properties: string[],
+  ) => Promise<Record<string, string> | null>;
+  /** Query animation/transition duration in milliseconds for a selector */
+  animationDuration: (selector: string) => Promise<number>;
 }
 
 /**
@@ -67,6 +74,10 @@ export function createDOM(component?: MiniAppComponent): DOMQueryHelpers {
     viewportScrollOffset: () => queryViewportScrollOffset(component),
     fields: (selector: string, fields: WechatMiniprogram.Fields) =>
       queryFields(selector, fields, component),
+    computedStyle: (selector: string, properties: string[]) =>
+      queryComputedStyle(selector, properties, component),
+    animationDuration: (selector: string) =>
+      queryAnimationDuration(selector, component),
   };
 }
 
@@ -254,4 +265,128 @@ export function isMiniApp(): boolean {
   return (
     typeof wx !== "undefined" && typeof wx.createSelectorQuery === "function"
   );
+}
+
+/**
+ * Parses CSS time string (e.g. "0.3s", "300ms", "0.5s, 0.2s") into milliseconds.
+ */
+export function parseTimeValue(value?: string): number {
+  if (!value || value === "0s" || value === "auto" || value === "none")
+    return 0;
+
+  // Handle comma-separated lists (e.g. "transition-duration: 0.3s, 0.5s")
+  const parts = value.split(",").map((s) => s.trim());
+  const maxMs = parts.reduce((max, part) => {
+    let ms = 0;
+    if (part.endsWith("ms")) {
+      ms = parseFloat(part);
+    } else if (part.endsWith("s")) {
+      ms = parseFloat(part) * 1000;
+    } else {
+      ms = parseFloat(part) || 0;
+    }
+    return Math.max(max, isNaN(ms) ? 0 : ms);
+  }, 0);
+
+  return maxMs;
+}
+
+/**
+ * Query computed CSS styles for a selector using WeChat's fields API.
+ * Supports curried form `queryComputedStyle(this)('#btn', ['color'])` and direct form.
+ *
+ * @example
+ * const styles = await queryComputedStyle('#my-dialog', ['animationDuration', 'opacity'], this);
+ * console.log(styles?.animationDuration);
+ */
+export function queryComputedStyle(
+  component: MiniAppComponent,
+): (
+  selector: string,
+  properties: string[],
+) => Promise<Record<string, string> | null>;
+export function queryComputedStyle(
+  selector: string,
+  properties: string[],
+  component?: MiniAppComponent,
+): Promise<Record<string, string> | null>;
+export function queryComputedStyle(
+  selectorOrComponent: string | MiniAppComponent,
+  propertiesOrComponent?: string[] | MiniAppComponent,
+  component?: MiniAppComponent,
+):
+  | ((
+      selector: string,
+      properties: string[],
+    ) => Promise<Record<string, string> | null>)
+  | Promise<Record<string, string> | null> {
+  if (typeof selectorOrComponent !== "string") {
+    const comp = selectorOrComponent as MiniAppComponent;
+    return (selector: string, properties: string[]) =>
+      queryComputedStyle(selector, properties, comp);
+  }
+
+  const properties = propertiesOrComponent as string[];
+  return new Promise((resolve) => {
+    createQuery(component)
+      .select(selectorOrComponent)
+      .fields({ computedStyle: properties } as any)
+      .exec((res) => {
+        const item = Array.isArray(res) ? res[0] : res;
+        resolve((item as Record<string, string> | null) ?? null);
+      });
+  });
+}
+
+/**
+ * Query total animation/transition duration (duration + delay) in milliseconds for a selector.
+ * Compatible with both pure SCSS/WXSS and Tailwind classes (e.g. `duration-300`).
+ *
+ * @example
+ * const duration = await queryAnimationDuration('.code-drawer-content', this);
+ * console.log(duration); // 300
+ */
+export function queryAnimationDuration(
+  component: MiniAppComponent,
+): (selector: string) => Promise<number>;
+export function queryAnimationDuration(
+  selector: string,
+  component?: MiniAppComponent,
+): Promise<number>;
+export function queryAnimationDuration(
+  selectorOrComponent: string | MiniAppComponent,
+  component?: MiniAppComponent,
+): ((selector: string) => Promise<number>) | Promise<number> {
+  if (typeof selectorOrComponent !== "string") {
+    const comp = selectorOrComponent as MiniAppComponent;
+    return (selector: string) => queryAnimationDuration(selector, comp);
+  }
+
+  return new Promise((resolve) => {
+    queryComputedStyle(
+      selectorOrComponent,
+      [
+        "animationDuration",
+        "transitionDuration",
+        "animationDelay",
+        "transitionDelay",
+      ],
+      component,
+    ).then((styles) => {
+      if (!styles) {
+        resolve(0);
+        return;
+      }
+
+      const animDuration = parseTimeValue(styles.animationDuration);
+      const animDelay = parseTimeValue(styles.animationDelay);
+      const transDuration = parseTimeValue(styles.transitionDuration);
+      const transDelay = parseTimeValue(styles.transitionDelay);
+
+      const totalAnim = animDuration + animDelay;
+      const totalTrans = transDuration + transDelay;
+
+      resolve(Math.max(totalAnim, totalTrans));
+    });
+  });
 }

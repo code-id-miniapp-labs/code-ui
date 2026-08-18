@@ -1,6 +1,7 @@
 import { createMachine } from "@code-ui/core";
 import type { DrawerMachine, DrawerSchema } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
+import * as dom from "./drawer.dom";
 
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
@@ -196,12 +197,38 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     },
 
     effects: {
-      waitForCloseAnimation: ({ send }) => {
-        const timer = setTimeout(() => {
-          send({ type: "ANIMATION_END" });
-        }, 300);
+      waitForCloseAnimation: ({ send, scope, prop }) => {
+        let timer: any;
+        let cancelled = false;
 
-        return () => clearTimeout(timer);
+        const explicitDuration = prop("duration");
+        if (typeof explicitDuration === "number" && explicitDuration > 0) {
+          timer = setTimeout(() => {
+            send({ type: "ANIMATION_END" });
+          }, explicitDuration);
+          return () => clearTimeout(timer);
+        }
+
+        scope.dom
+          .animationDuration(dom.getContentSelector(scope))
+          .then((duration) => {
+            if (cancelled) return;
+            const delay = duration > 0 ? duration : 300;
+            timer = setTimeout(() => {
+              send({ type: "ANIMATION_END" });
+            }, delay);
+          })
+          .catch(() => {
+            if (cancelled) return;
+            timer = setTimeout(() => {
+              send({ type: "ANIMATION_END" });
+            }, explicitDuration);
+          });
+
+        return () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+        };
       },
     },
   },

@@ -31,6 +31,8 @@ export interface DrawerProps {
   dismissible?: boolean;
   /** Drag distance threshold in px to trigger close */
   threshold?: number;
+  /** Explicit transition duration in ms (auto-computed from CSS if omitted) */
+  duration?: number;
 }
 
 export type DrawerEvent =
