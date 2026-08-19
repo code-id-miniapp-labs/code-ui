@@ -1,6 +1,7 @@
-import type { ButtonApi, ButtonService } from "./button.types";
-import { parts } from "./button.anatomy";
+import type { ButtonAnatomyPart, ButtonApi, ButtonService } from "./button.types";
+import { anatomy, parts } from "./button.anatomy";
 import * as dom from "./button.dom";
+import { getComponentConfig, mergeUI } from "@code-ui/core";
 
 export function connectButton(service: ButtonService): ButtonApi {
   const { state, send, context, computed, scope } = service;
@@ -10,6 +11,18 @@ export function connectButton(service: ButtonService): ButtonApi {
   const disabled = computed("isDisabled");
   const variant = context.get("variant");
   const size = context.get("size");
+  const instanceUI = context.get("ui");
+
+  const globalConfig = getComponentConfig<ButtonAnatomyPart>("button");
+
+  const resolvedUI = mergeUI({
+    anatomy,
+    globalConfig,
+    variant,
+    size,
+    instanceUI,
+  });
+
 
   return {
     state: currentState,
@@ -17,6 +30,7 @@ export function connectButton(service: ButtonService): ButtonApi {
     disabled,
     variant,
     size,
+    ui: resolvedUI,
 
     setLoading(nextLoading: boolean) {
       send({ type: "SET_LOADING", loading: nextLoading });
@@ -42,23 +56,28 @@ export function connectButton(service: ButtonService): ButtonApi {
       role: "button",
       "aria-busy": loading ? "true" : undefined,
       "aria-disabled": disabled ? "true" : undefined,
+      className: resolvedUI.root,
     },
 
     spinnerProps: {
       id: dom.getSpinnerId(scope),
       ...parts.spinner.attrs,
       "aria-hidden": "true",
+      className: resolvedUI.spinner,
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
       ...parts.label.attrs,
+      className: resolvedUI.label,
     },
 
     iconProps: {
       id: dom.getIconId(scope),
       ...parts.icon.attrs,
       "aria-hidden": "true",
+      className: resolvedUI.icon,
     },
   };
 }
+

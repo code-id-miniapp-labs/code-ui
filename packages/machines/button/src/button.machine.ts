@@ -29,7 +29,13 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       value: prop("size"),
       defaultValue: "md",
     })),
+    ui: bindable<any>(() => ({
+      value: prop("ui") ?? {},
+      defaultValue: {},
+    })),
+
   }),
+
 
   computed: {
     isLoading: ({ context }) => context.get("loading"),

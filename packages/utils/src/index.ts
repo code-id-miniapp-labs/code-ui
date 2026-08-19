@@ -70,4 +70,8 @@ export { toArray } from "./array";
 export { defu, createDefu, defuReplace, defuFn } from "./defu";
 export type { Defu, DefuCustomMerger } from "./defu";
 
+export { cx } from "./cx";
+export type { ClassValue } from "./cx";
+
 export type { MaybeFunction, Nullable } from "./function";
+

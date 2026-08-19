@@ -1,9 +1,16 @@
+import type { AnatomyPartName, ComponentUI, ResolvedUI } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
+import type { anatomy } from "./button.anatomy";
 
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 export type ButtonState = "idle" | "loading" | "success" | "error";
+
+export type ButtonAnatomyPart = AnatomyPartName<typeof anatomy>;
+export type ButtonUI = ComponentUI<typeof anatomy>;
+export type ButtonResolvedUI = ResolvedUI<typeof anatomy>;
+
 
 export interface ButtonProps {
   /** The unique id of the component */
@@ -12,6 +19,8 @@ export interface ButtonProps {
   ids?: Record<string, string>;
   /** The MiniApp component instance */
   component?: MiniAppComponent;
+  /** Custom UI slot classes for button anatomy parts */
+  ui?: ButtonUI;
   /** Whether the button is disabled */
   disabled?: boolean;
   /** Whether the button is in a loading state */
@@ -41,7 +50,9 @@ export interface ButtonContext {
   disabled: boolean;
   variant: ButtonVariant;
   size: ButtonSize;
+  ui: ButtonUI;
 }
+
 
 export interface ButtonComputed {
   isLoading: boolean;
@@ -76,8 +87,11 @@ export interface ButtonApi {
   variant: ButtonVariant;
   /** Size */
   size: ButtonSize;
+  /** Resolved UI class names for each button anatomy part */
+  ui: Record<ButtonAnatomyPart, string>;
   /** Set loading state manually */
   setLoading(loading: boolean): void;
+
   /** Set disabled state manually */
   setDisabled(disabled: boolean): void;
   /** Dispatch tap event */

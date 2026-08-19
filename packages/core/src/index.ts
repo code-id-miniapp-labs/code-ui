@@ -54,3 +54,21 @@ export {
   matchesState,
   resolveStateValue,
 } from "./state";
+
+// Configuration & UI Styling Engine (alien-signals powered)
+export {
+  globalConfigSignal,
+  setConfig,
+  getConfig,
+  getComponentConfig,
+  resetConfig,
+  mergeUI,
+} from "./config";
+export type {
+  CodeUIConfig,
+  ComponentConfig,
+  ComponentVariantsConfig,
+  SlotRecord,
+  MergeUIOptions,
+} from "./config";
+

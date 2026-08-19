@@ -315,3 +315,77 @@
   font-weight: 600;
   border: none;
 }
+
+/* --- High-Customization Styling Engine Demo Classes --- */
+.custom-neon-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  border-radius: 9999rpx !important;
+  box-shadow: 0 0 20rpx rgba(16, 185, 129, 0.5) !important;
+  padding: 0 44rpx !important;
+}
+
+.custom-neon-label {
+  font-weight: 800 !important;
+  letter-spacing: 1.5rpx !important;
+  text-transform: uppercase !important;
+}
+
+.custom-sunset-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: #ffffff !important;
+  border-radius: 20rpx !important;
+  box-shadow: 0 0 24rpx rgba(244, 63, 94, 0.5) !important;
+}
+
+.custom-sunset-label {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+
+.custom-glass-drawer-backdrop {
+  backdrop-filter: blur(12rpx) !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+}
+
+.custom-glass-drawer-content {
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%) !important;
+  border-top: 2rpx solid rgba(129, 140, 248, 0.3) !important;
+  border-radius: 36rpx 36rpx 0 0 !important;
+}
+
+.custom-glass-drawer-header {
+  border-bottom: 1rpx solid rgba(129, 140, 248, 0.15) !important;
+}
+
+.theme-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.theme-pill {
+  background: #0f172a;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-radius: 14rpx;
+  padding: 16rpx 8rpx;
+  text-align: center;
+}
+
+.theme-pill--active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #818cf8;
+}
+
+.theme-pill-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.theme-pill--active .theme-pill-text {
+  color: #818cf8;
+}
+

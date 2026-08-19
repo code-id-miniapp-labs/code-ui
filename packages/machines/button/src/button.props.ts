@@ -7,4 +7,6 @@ export const defaultButtonProps: ButtonProps = {
   size: "md",
   loadingAuto: false,
   autoResetDuration: 1500,
+  ui: {},
 };
+

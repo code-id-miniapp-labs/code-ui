@@ -34,6 +34,11 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     keyboardHeight: bindable<number>(() => ({
       defaultValue: 0,
     })),
+    ui: bindable<any>(() => ({
+      value: prop("ui") ?? {},
+      defaultValue: {},
+    })),
+
   }),
 
   computed: {

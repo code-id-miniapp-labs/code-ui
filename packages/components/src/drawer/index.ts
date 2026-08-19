@@ -5,6 +5,7 @@ const drawerBehavior = createMachineBehavior({
   connect: connectDrawer,
   key: "drawer",
   syncProps: [
+    "ui",
     "open",
     "placement",
     "closeOnBackdropClick",
@@ -21,6 +22,7 @@ Component({
   options: {
     multipleSlots: true,
     addGlobalClass: true,
+    styleIsolation: "apply-shared",
   },
 
   lifetimes: {
@@ -44,10 +46,15 @@ Component({
   },
 
   properties: {
+    ui: {
+      type: Object,
+      value: {},
+    },
     open: {
       type: Boolean,
       value: false,
     },
+
     placement: {
       type: String,
       value: "bottom",

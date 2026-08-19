@@ -12,6 +12,7 @@ export interface CuiCommonElementProps {
 }
 
 export interface CuiButtonElementProps extends CuiCommonElementProps {
+  ui?: ButtonProps["ui"];
   loading?: boolean;
   disabled?: boolean;
   variant?: ButtonProps["variant"];
@@ -27,6 +28,7 @@ export interface CuiButtonElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiDrawerElementProps extends CuiCommonElementProps {
+  ui?: DrawerProps["ui"];
   open?: boolean;
   placement?: DrawerProps["placement"];
   closeOnBackdropClick?: boolean;
@@ -36,6 +38,7 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   onClose?: (event?: any) => void;
   onOpenChange?: (event?: any) => void;
 }
+
 
 declare global {
   namespace JSX {

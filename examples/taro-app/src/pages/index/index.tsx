@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { View, Text, Switch } from '@tarojs/components'
+import { setConfig } from '@code-ui/components'
 import './index.scss'
 
 type Placement = 'bottom' | 'top' | 'left' | 'right'
+type ThemeName = 'indigo' | 'emerald' | 'sunset'
 
 export default function Index() {
   const [openHeadless, setOpenHeadless] = useState(false)
   const [openPrebuilt, setOpenPrebuilt] = useState(false)
+  const [openCustomDrawer, setOpenCustomDrawer] = useState(false)
+  const [activeTheme, setActiveTheme] = useState<ThemeName>('indigo')
   const [placement, setPlacement] = useState<Placement>('bottom')
   const [closeOnBackdrop, setCloseOnBackdrop] = useState(true)
   const [dismissible, setDismissible] = useState(true)
@@ -21,6 +25,58 @@ export default function Index() {
       setAsyncLoading(false)
     }, 2000)
   }
+
+  const handleThemeChange = (theme: ThemeName) => {
+    setActiveTheme(theme)
+    if (theme === 'emerald') {
+      setConfig({
+        components: {
+          button: {
+            variants: {
+              variant: {
+                primary: {
+                  root: 'custom-neon-btn',
+                  label: 'custom-neon-label',
+                },
+              },
+            },
+          },
+        },
+      })
+    } else if (theme === 'sunset') {
+      setConfig({
+        components: {
+          button: {
+            variants: {
+              variant: {
+                primary: {
+                  root: 'custom-sunset-btn',
+                  label: 'custom-sunset-label',
+                },
+              },
+            },
+          },
+        },
+      })
+
+    } else {
+      setConfig({
+        components: {
+          button: {
+            variants: {
+              variant: {
+                primary: {
+                  root: '',
+                  label: '',
+                },
+              },
+            },
+          },
+        },
+      })
+    }
+  }
+
 
   return (
     <View className='page-container'>
@@ -91,6 +147,60 @@ export default function Index() {
           </cui-button>
         </View>
       </View>
+
+      {/* MODEL 4: High-Customization Styling Engine (setConfig + ui Prop) */}
+      <View className='config-card'>
+        <Text className='card-title'>Model 4: Styling Engine (setConfig + ui Prop)</Text>
+        <Text className='model-desc'>
+          Fine-grained control over anatomy slots via <Text style={{ color: '#818cf8' }}>ui</Text> prop + reactive global theming with <Text style={{ color: '#818cf8' }}>setConfig()</Text>.
+        </Text>
+        
+        {/* Instance UI prop override */}
+        <View style={{ marginTop: '16rpx', marginBottom: '20rpx' }}>
+          <Text className='switch-label' style={{ marginBottom: '12rpx', display: 'block', fontSize: '24rpx', color: '#94a3b8' }}>
+            1. Instance Slot Override via ui Prop:
+          </Text>
+          <View className='button-group'>
+            <cui-button
+              ui={{
+                root: 'custom-neon-btn',
+                label: 'custom-neon-label',
+              }}
+              onClick={() => setOpenCustomDrawer(true)}
+            >
+              Neon Glow UI Button & Drawer
+            </cui-button>
+          </View>
+        </View>
+
+        {/* Global setConfig dynamic theme switcher */}
+        <View style={{ borderTop: '1rpx solid rgba(255, 255, 255, 0.08)', paddingTop: '16rpx' }}>
+          <Text className='switch-label' style={{ display: 'block', fontSize: '24rpx', color: '#94a3b8' }}>
+            2. Reactive Runtime setConfig (alien-signals):
+          </Text>
+          <View className='theme-pill-grid'>
+            <View
+              className={`theme-pill ${activeTheme === 'indigo' ? 'theme-pill--active' : ''}`}
+              onClick={() => handleThemeChange('indigo')}
+            >
+              <Text className='theme-pill-text'>Indigo (Default)</Text>
+            </View>
+            <View
+              className={`theme-pill ${activeTheme === 'emerald' ? 'theme-pill--active' : ''}`}
+              onClick={() => handleThemeChange('emerald')}
+            >
+              <Text className='theme-pill-text'>Emerald Mint</Text>
+            </View>
+            <View
+              className={`theme-pill ${activeTheme === 'sunset' ? 'theme-pill--active' : ''}`}
+              onClick={() => handleThemeChange('sunset')}
+            >
+              <Text className='theme-pill-text'>Sunset Rose</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
 
       {/* Configuration Controls */}
       <View className='config-card'>
@@ -214,6 +324,46 @@ export default function Index() {
           </cui-button>
         </View>
       </cui-drawer>
+
+      {/* Customized Drawer (Model 4 with ui Prop) */}
+      <cui-drawer
+        open={openCustomDrawer}
+        placement='bottom'
+        closeOnBackdropClick={true}
+        dismissible={true}
+        threshold={120}
+        ui={{
+          backdrop: 'custom-glass-drawer-backdrop',
+          content: 'custom-glass-drawer-content',
+          header: 'custom-glass-drawer-header',
+        }}
+        onClose={() => setOpenCustomDrawer(false)}
+      >
+        <View slot='header'>
+          <Text className='drawer-title' style={{ color: '#a5b4fc' }}>
+            Model 4: Custom UI Drawer
+          </Text>
+        </View>
+
+        <View className='drawer-content-inner'>
+          <Text className='drawer-p' style={{ color: '#cbd5e1' }}>
+            This drawer is styled using the <Text style={{ color: '#38bdf8', fontWeight: 'bold' }}>ui prop</Text> with custom glassmorphism backdrop, indigo gradient sheet, and accent border.
+          </Text>
+        </View>
+
+        <View slot='footer' className='drawer-footer-row'>
+          <cui-button
+            ui={{
+              root: 'custom-neon-btn',
+              label: 'custom-neon-label',
+            }}
+            onClick={() => setOpenCustomDrawer(false)}
+          >
+            Done
+          </cui-button>
+        </View>
+      </cui-drawer>
     </View>
   )
 }
+

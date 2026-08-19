@@ -1,8 +1,15 @@
+import type { AnatomyPartName, ComponentUI, ResolvedUI } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
+import type { anatomy } from "./drawer.anatomy";
 
 export type Placement = "top" | "bottom" | "left" | "right";
 export type DrawerState = "open" | "closed" | "closing" | "swiping";
+
+export type DrawerAnatomyPart = AnatomyPartName<typeof anatomy>;
+export type DrawerUI = ComponentUI<typeof anatomy>;
+export type DrawerResolvedUI = ResolvedUI<typeof anatomy>;
+
 
 export interface OpenChangeDetails {
   open: boolean;
@@ -15,6 +22,8 @@ export interface DrawerProps {
   ids?: Record<string, string>;
   /** The MiniApp component instance */
   component?: MiniAppComponent;
+  /** Custom UI slot classes for drawer anatomy parts */
+  ui?: DrawerUI;
   /** Placement direction of the drawer sheet */
   placement?: Placement;
   /** Whether the drawer is open (controlled) */
@@ -35,6 +44,7 @@ export interface DrawerProps {
   duration?: number;
 }
 
+
 export type DrawerEvent =
   | { type: "OPEN" }
   | { type: "CLOSE" }
@@ -52,6 +62,7 @@ export interface DrawerContext {
   dragOffset: number;
   startPoint: { x: number; y: number } | null;
   keyboardHeight: number;
+  ui: DrawerUI;
 }
 
 export interface DrawerComputed {
@@ -87,6 +98,8 @@ export interface DrawerApi {
   dragging: boolean;
   /** Current drag offset in px */
   dragOffset: number;
+  /** Resolved UI class names for each drawer anatomy part */
+  ui: Record<DrawerAnatomyPart, string>;
   /** Open or close the drawer */
   setOpen(open: boolean): void;
   /** Open the drawer */
@@ -104,4 +117,11 @@ export interface DrawerApi {
   grabberProps: Record<string, any>;
   /** WXML data & attributes for Close Trigger */
   closeTriggerProps: Record<string, any>;
+  /** WXML data & attributes for Header */
+  headerProps: Record<string, any>;
+  /** WXML data & attributes for Body */
+  bodyProps: Record<string, any>;
+  /** WXML data & attributes for Footer */
+  footerProps: Record<string, any>;
 }
+

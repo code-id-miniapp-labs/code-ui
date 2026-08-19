@@ -4,4 +4,9 @@ export type {
   AnatomyInstance,
   AnatomyPart,
   AnatomyPartName,
+  UIForParts,
+  ComponentUI,
+  ResolvedUI,
 } from "./create-anatomy";
+
+

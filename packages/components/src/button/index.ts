@@ -5,6 +5,7 @@ const buttonBehavior = createMachineBehavior({
   connect: connectButton,
   key: "button",
   syncProps: [
+    "ui",
     "loading",
     "disabled",
     "variant",
@@ -21,13 +22,19 @@ Component({
   options: {
     multipleSlots: true,
     addGlobalClass: true,
+    styleIsolation: "apply-shared",
   },
 
   properties: {
+    ui: {
+      type: Object,
+      value: {},
+    },
     loading: {
       type: Boolean,
       value: false,
     },
+
     disabled: {
       type: Boolean,
       value: false,

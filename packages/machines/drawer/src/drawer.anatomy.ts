@@ -10,6 +10,10 @@ export const anatomy = createAnatomy("drawer").parts(
   "description",
   "closeTrigger",
   "grabber",
+  "header",
+  "body",
+  "footer",
 );
+
 
 export const parts = anatomy.build();

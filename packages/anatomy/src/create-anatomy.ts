@@ -5,7 +5,17 @@ export interface AnatomyPart {
 
 export type AnatomyInstance<T extends string> = Omit<Anatomy<T>, "parts">;
 
-export type AnatomyPartName<T> = T extends AnatomyInstance<infer U> ? U : never;
+export type AnatomyPartName<T> = T extends AnatomyInstance<infer U>
+  ? U
+  : T extends Anatomy<infer U>
+    ? U
+    : never;
+
+export type UIForParts<Parts extends string> = Partial<Record<Parts, string>>;
+
+export type ComponentUI<T> = UIForParts<AnatomyPartName<T>>;
+
+export type ResolvedUI<T> = Record<AnatomyPartName<T>, string>;
 
 export interface Anatomy<T extends string> {
   parts: <U extends string>(...parts: U[]) => AnatomyInstance<U>;
@@ -14,7 +24,9 @@ export interface Anatomy<T extends string> {
   rename: (newName: string) => Anatomy<T>;
   keys: () => T[];
   omit: <U extends T>(...values: U[]) => AnatomyInstance<Exclude<T, U>>;
+  emptySlots: () => Record<T, string>;
 }
+
 
 const toKebabCase = (value: string) =>
   value
@@ -45,7 +57,13 @@ export const createAnatomy = <T extends string>(
     ),
   rename: (newName) => createAnatomy(newName, parts),
   keys: () => parts,
+  emptySlots: () =>
+    [...new Set(parts)].reduce<Record<string, string>>((prev, part) => {
+      prev[part] = "";
+      return prev;
+    }, {}) as Record<T, string>,
   build: () =>
+
     [...new Set(parts)].reduce<Record<string, AnatomyPart>>(
       (prev, part) =>
         Object.assign(prev, {

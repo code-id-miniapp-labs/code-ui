@@ -5,4 +5,6 @@ export const defaultDrawerProps: DrawerProps = {
   closeOnBackdropClick: true,
   dismissible: true,
   threshold: 80,
+  ui: {},
 };
+
