@@ -46,6 +46,8 @@
   "dependencies": {
     "@babel/runtime": "^7.24.4",
     "@code-ui/anatomy": "workspace:*",
+    "@code-ui/button": "workspace:*",
+    "@code-ui/components": "workspace:*",
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
     "@code-ui/miniapp": "workspace:*",

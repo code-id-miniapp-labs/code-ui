@@ -1,7 +1,9 @@
 export default definePageConfig({
-  navigationBarTitleText: '@code-ui Native Drawer',
+  navigationBarTitleText: "@code-ui Showcase",
   enablePageMeta: true,
   usingComponents: {
-    'native-drawer': '../../components/native-drawer/index'
-  }
-})
+    "native-drawer": "../../components/native-drawer/index",
+    "cui-drawer": "@code-ui/components/drawer/index",
+    "cui-button": "@code-ui/components/button/index",
+  },
+});

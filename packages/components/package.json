@@ -1,0 +1,60 @@
+{
+  "name": "@code-ui/components",
+  "version": "0.0.1",
+  "description": "Prebuilt native WeChat MiniProgram UI components for code-ui",
+  "files": [
+    "dist"
+  ],
+  "miniprogram": "dist",
+  "sideEffects": [
+    "*.wxss",
+    "*.css"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./button": {
+      "types": "./dist/button/index.d.ts",
+      "import": "./dist/button/index.js",
+      "require": "./dist/button/index.cjs"
+    },
+    "./drawer": {
+      "types": "./dist/drawer/index.d.ts",
+      "import": "./dist/drawer/index.js",
+      "require": "./dist/drawer/index.cjs"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup && node scripts/copy-assets.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@code-ui/anatomy": "workspace:*",
+    "@code-ui/button": "workspace:*",
+    "@code-ui/core": "workspace:*",
+    "@code-ui/drawer": "workspace:*",
+    "@code-ui/miniapp": "workspace:*",
+    "@code-ui/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "alien-signals": "^1.0.4",
+    "miniprogram-api-typings": "^5.2.3",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.4"
+  },
+  "peerDependencies": {
+    "alien-signals": ">=1.0.0"
+  }
+}

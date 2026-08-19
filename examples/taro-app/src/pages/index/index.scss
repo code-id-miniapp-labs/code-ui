@@ -86,9 +86,23 @@
   font-size: 28rpx;
   font-weight: 700;
   color: #cbd5e1;
-  margin-bottom: 20rpx;
+  margin-bottom: 8rpx;
   text-transform: uppercase;
   letter-spacing: 1rpx;
+}
+
+.model-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
 }
 
 .card-title--spaced {

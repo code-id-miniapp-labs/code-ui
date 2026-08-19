@@ -26,22 +26,20 @@ Component({
 
   lifetimes: {
     attached() {
-      this._keyboardHandler = (
-        res: WechatMiniprogram.OnKeyboardHeightChangeListenerResult,
-      ) => {
+      const handler: WechatMiniprogram.OnKeyboardHeightChangeCallback = (res) => {
         this.send({ type: "KEYBOARD_CHANGE", height: res.height });
       };
-      wx.onKeyboardHeightChange(this.keyboardHandler);
-    },
-    detached() {
-      if (this.keyboardHandler) {
-        wx.offKeyboardHeightChange(this.keyboardHandler);
+      (this as any)._keyboardHandler = handler;
+      if (typeof wx !== "undefined" && wx.onKeyboardHeightChange) {
+        wx.onKeyboardHeightChange(handler);
       }
     },
-  },
-
-  data: {
-    keyboardHandler: null,
+    detached() {
+      const handler = (this as any)._keyboardHandler;
+      if (handler && typeof wx !== "undefined" && wx.offKeyboardHeightChange) {
+        wx.offKeyboardHeightChange(handler);
+      }
+    },
   },
 
   properties: {

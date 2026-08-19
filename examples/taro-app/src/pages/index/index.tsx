@@ -1,46 +1,101 @@
 import { useState } from 'react'
-import {  View, Text, Button, Switch } from '@tarojs/components'
+import { View, Text, Switch } from '@tarojs/components'
 import './index.scss'
 
 type Placement = 'bottom' | 'top' | 'left' | 'right'
 
 export default function Index() {
-  const [open, setOpen] = useState(false)
+  const [openHeadless, setOpenHeadless] = useState(false)
+  const [openPrebuilt, setOpenPrebuilt] = useState(false)
   const [placement, setPlacement] = useState<Placement>('bottom')
   const [closeOnBackdrop, setCloseOnBackdrop] = useState(true)
   const [dismissible, setDismissible] = useState(true)
   const [threshold, setThreshold] = useState(80)
+  const [asyncLoading, setAsyncLoading] = useState(false)
 
   const placements: Placement[] = ['bottom', 'top', 'left', 'right']
+
+  const handleAsyncSubmit = () => {
+    setAsyncLoading(true)
+    setTimeout(() => {
+      setAsyncLoading(false)
+    }, 2000)
+  }
 
   return (
     <View className='page-container'>
       {/* Header / Hero */}
       <View className='hero-section'>
         <View className='hero-badge'>
-          <Text className='hero-badge-text'>@code-ui / miniapp</Text>
+          <Text className='hero-badge-text'>@code-ui Ecosystem</Text>
         </View>
-        <Text className='hero-title'>Native WeChat Drawer</Text>
+        <Text className='hero-title'>Native WeChat MiniApp</Text>
         <Text className='hero-subtitle'>
-          High-performance hybrid component powered by FSM + alien-signals
+          3 Installation Models: Headless FSM, Prebuilt Library, and shadcn-style CLI
         </Text>
       </View>
 
-      {/* Main Trigger */}
-      <View className='action-card'>
-        <Button
-          className='btn-open-drawer'
-          onClick={() => {
-            setOpen((prev) => !prev)
-          }}
-        >
-          <Text className='btn-text'>Open Native Drawer ({placement})</Text>
-        </Button>
+      {/* Model Showcase Cards */}
+
+      {/* MODEL 1: Headless Machine + Adapter */}
+      <View className='config-card'>
+        <Text className='card-title'>Model 1: Headless Machine (@code-ui/drawer)</Text>
+        <Text className='model-desc'>
+          Pure state machine + alien-signals adapter. You write 100% custom WXML / WXSS.
+        </Text>
+        <View className='action-card' style={{ marginTop: '16rpx', marginBottom: '0' }}>
+          <cui-button
+            variant='primary'
+            onClick={() => setOpenHeadless(true)}
+          >
+            Open Headless Drawer ({placement})
+          </cui-button>
+        </View>
+      </View>
+
+      {/* MODEL 2: Prebuilt Package (@code-ui/components) */}
+      <View className='config-card'>
+        <Text className='card-title'>Model 2: Prebuilt Package (@code-ui/components)</Text>
+        <Text className='model-desc'>
+          Zero-configuration components. Import directly from <Text style={{ color: '#818cf8' }}>@code-ui/components/drawer</Text>.
+        </Text>
+        <View className='button-group' style={{ marginTop: '16rpx' }}>
+          <cui-button
+            variant='secondary'
+            onClick={() => setOpenPrebuilt(true)}
+          >
+            Open Prebuilt Drawer
+          </cui-button>
+        </View>
+      </View>
+
+      {/* MODEL 3: shadcn-style CLI (src/components/ui/button) */}
+      <View className='config-card'>
+        <Text className='card-title'>Model 3: shadcn-style CLI (code-ui add button)</Text>
+        <Text className='model-desc'>
+          Source code copied directly to <Text style={{ color: '#818cf8' }}>src/components/ui/button</Text>. Fully editable locally.
+        </Text>
+        <View className='button-group' style={{ marginTop: '16rpx' }}>
+          <cui-button
+            variant='primary'
+            loadingAuto
+            onClick={handleAsyncSubmit}
+          >
+            {asyncLoading ? 'Resolving...' : 'Auto-Loading Button (2s)'}
+          </cui-button>
+          <cui-button variant='outline'>
+            Outline Variant
+          </cui-button>
+          <cui-button variant='danger'>
+            Danger Variant
+          </cui-button>
+        </View>
       </View>
 
       {/* Configuration Controls */}
       <View className='config-card'>
-        <Text className='card-title'>Placement</Text>
+        <Text className='card-title'>Drawer Settings</Text>
+        <Text className='switch-label' style={{ marginBottom: '12rpx', display: 'block' }}>Placement</Text>
         <View className='placement-grid'>
           {placements.map((p) => (
             <View
@@ -48,7 +103,7 @@ export default function Index() {
               className={`placement-pill ${placement === p ? 'placement-pill--active' : ''}`}
               onClick={() => {
                 setPlacement(p)
-                setOpen(true)
+                setOpenHeadless(true)
               }}
             >
               <Text className='placement-text'>{p}</Text>
@@ -56,8 +111,7 @@ export default function Index() {
           ))}
         </View>
 
-        <Text className='card-title card-title--spaced'>Behavior Settings</Text>
-        <View className='switch-row'>
+        <View className='switch-row' style={{ marginTop: '20rpx' }}>
           <Text className='switch-label'>Close on Backdrop Tap</Text>
           <Switch
             checked={closeOnBackdrop}
@@ -91,45 +145,22 @@ export default function Index() {
         </View>
       </View>
 
-      {/* Features Overview */}
-      <View className='info-card'>
-        <Text className='info-card-title'>⚡ Architecture Highlights</Text>
-        <View className='feature-item'>
-          <Text className='feature-dot'>•</Text>
-          <Text className='feature-desc'>
-            <Text className='feature-bold'>Native WXML / WXSS:</Text> Zero React reconciliation inside the drawer. Renders directly via WeChat MiniProgram runtime.
-          </Text>
-        </View>
-        <View className='feature-item'>
-          <Text className='feature-dot'>•</Text>
-          <Text className='feature-desc'>
-            <Text className='feature-bold'>alien-signals Engine:</Text> Fine-grained signal reactivity with automatic batched `setData`.
-          </Text>
-        </View>
-        <View className='feature-item'>
-          <Text className='feature-dot'>•</Text>
-          <Text className='feature-desc'>
-            <Text className='feature-bold'>60fps Gestures:</Text> Direct touch tracking with instant swipe-to-close transitions.
-          </Text>
-        </View>
-      </View>
-
-      {/* Native WeChat MiniProgram Drawer Component */}
+      {/* Headless Drawer (Model 1) */}
       <native-drawer
-        open={open}
+        open={openHeadless}
         placement={placement}
         closeOnBackdropClick={closeOnBackdrop}
         dismissible={dismissible}
         threshold={threshold}
-        onClose={() => setOpen(false)}
+        onClose={() => setOpenHeadless(false)}
       >
         <View slot='header'>
-          <Text className='drawer-title'>Native Drawer ({placement})</Text>
+          <Text className='drawer-title'>Model 1: Headless Drawer ({placement})</Text>
         </View>
 
         <View className='drawer-content-inner'>
           <Text className='drawer-p'>
-            This drawer is rendered by a native WeChat MiniProgram Custom Component (`createMachineBehavior` + `drawerMachine`).
+            This drawer is rendered via custom template WXML in your project connected to `@code-ui/drawer`.
           </Text>
 
           <View className='drawer-stat-grid'>
@@ -146,25 +177,43 @@ export default function Index() {
               <Text className='stat-val'>{threshold}px</Text>
             </View>
           </View>
-
-          {dismissible && (
-            <View className='swipe-hint'>
-              <Text className='swipe-hint-text'>
-                👇 Try swiping towards the screen edge to dismiss!
-              </Text>
-            </View>
-          )}
         </View>
 
         <View slot='footer' className='drawer-footer-row'>
-          <Button className='btn-cancel' onClick={() => setOpen(false)}>
+          <cui-button variant='secondary' onClick={() => setOpenHeadless(false)}>
             Close
-          </Button>
-          <Button className='btn-confirm' onClick={() => setOpen(false)}>
+          </cui-button>
+          <cui-button variant='primary' onClick={() => setOpenHeadless(false)}>
             Got it
-          </Button>
+          </cui-button>
         </View>
       </native-drawer>
+
+      {/* Prebuilt Drawer (Model 2) */}
+      <cui-drawer
+        open={openPrebuilt}
+        placement='bottom'
+        closeOnBackdropClick={true}
+        dismissible={true}
+        threshold={120}
+        onClose={() => setOpenPrebuilt(false)}
+      >
+        <View slot='header'>
+          <Text className='drawer-title'>Model 2: Prebuilt Drawer</Text>
+        </View>
+
+        <View className='drawer-content-inner'>
+          <Text className='drawer-p'>
+            This drawer comes ready-to-use straight out of `@code-ui/components/drawer`. No local template files needed!
+          </Text>
+        </View>
+
+        <View slot='footer' className='drawer-footer-row'>
+          <cui-button variant='primary' onClick={() => setOpenPrebuilt(false)}>
+            Close Prebuilt
+          </cui-button>
+        </View>
+      </cui-drawer>
     </View>
   )
 }

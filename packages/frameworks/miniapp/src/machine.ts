@@ -243,7 +243,6 @@ export class MiniappMachine<T extends MachineSchema> {
           }
         }
 
-        // Run state entry actions
         entering.forEach((item) => this.action(item.state?.entry));
       },
     }));

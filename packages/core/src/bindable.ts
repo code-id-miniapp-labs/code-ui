@@ -1,10 +1,7 @@
-/// <reference types="miniprogram-api-typings" />
-
 import { signal } from "alien-signals";
 import { isFunction } from "@code-ui/utils";
 import type { Bindable, BindableFn, BindableParams } from "./types";
 
-// alien-signals signal shape: signal<T>(init) → { (): T; (value: T): void }
 type SignalFn<T> = { (): T; (value: T): void };
 
 export const bindable: BindableFn = Object.assign(
@@ -16,9 +13,6 @@ export const bindable: BindableFn = Object.assign(
       console.log(`[bindable > ${props().debug}] initial`, initial);
     }
 
-    // ⚡ alien-signals signal — callable function, not .get()/.set()
-    //   read:  _signal()
-    //   write: _signal(nextValue)
     const _signal = signal<T>(initial as T) as SignalFn<T>;
 
     const controlled = () => props().value !== undefined;
@@ -26,8 +20,6 @@ export const bindable: BindableFn = Object.assign(
     return {
       initial,
 
-      // ⚡ Wrap signal in a { get() } object so _contextRefs can call ref.get()
-      // uniformly in the MiniappMachine effect that tracks context signals
       ref: { get: () => _signal() },
 
       get(): T {
@@ -74,4 +66,4 @@ export const bindable: BindableFn = Object.assign(
       };
     },
   },
-) as BindableFn;
+);
