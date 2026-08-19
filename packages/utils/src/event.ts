@@ -46,8 +46,6 @@ export type EventTrigger = <
 ) => void;
 
 /**
- * Creates a bound event trigger function for a component instance.
- *
  * @example
  * attached() {
  *   const emit = createEventTrigger(this);
@@ -61,21 +59,6 @@ export function createEventTrigger(component: MiniAppComponent): EventTrigger {
   };
 }
 
-/**
- * Curried / overloaded helper for component `triggerEvent`.
- *
- * 1. Curried form (pass only component) — returns a bound trigger function:
- * ```ts
- * const trigger = triggerEvent(this);
- * trigger('change', { value: 42 });
- * trigger('close');
- * ```
- *
- * 2. Direct form (pass all arguments):
- * ```ts
- * triggerEvent(this, 'change', { value: 42 });
- * ```
- */
 export function triggerEvent(component: MiniAppComponent): EventTrigger;
 export function triggerEvent<
   Detail extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -100,10 +83,6 @@ export function triggerEvent<
   component.triggerEvent(name, detail, options);
 }
 
-// ---------------------------------------------------------------------------
-// Lightweight internal EventBus
-// ---------------------------------------------------------------------------
-
 export type EventHandler<T = unknown> = (payload: T) => void;
 
 /**
@@ -114,21 +93,21 @@ export type EventHandler<T = unknown> = (payload: T) => void;
  * bus.emit('change', 42);
  * off(); // removes listener
  */
-export interface EventBus<Events extends Record<string, unknown>> {
+export interface EventBus<Events extends Record<string, any> = Record<string, any>> {
   /** Subscribe to an event. Returns an unsubscribe function. */
-  on<K extends keyof Events>(
+  on<K extends keyof Events & string>(
     event: K,
     handler: EventHandler<Events[K]>,
   ): () => void;
 
   /** Publish an event to all subscribers. */
-  emit<K extends keyof Events>(
+  emit<K extends keyof Events & string>(
     event: K,
-    ...args: Events[K] extends void ? [] : [payload: Events[K]]
+    ...args: Events[K] extends void | undefined ? [] : [payload: Events[K]]
   ): void;
 
   /** Remove all subscribers for a specific event, or all events. */
-  off<K extends keyof Events>(event?: K): void;
+  off<K extends keyof Events & string>(event?: K): void;
 }
 
 /**
@@ -137,7 +116,7 @@ export interface EventBus<Events extends Record<string, unknown>> {
  * const bus = createEventBus<DialogEvents>();
  */
 export function createEventBus<
-  Events extends Record<string, unknown>,
+  Events extends Record<string, any> = Record<string, any>,
 >(): EventBus<Events> {
   type Handlers = Map<string, Set<EventHandler<unknown>>>;
   const registry: Handlers = new Map();
@@ -151,7 +130,7 @@ export function createEventBus<
   }
 
   return {
-    on<K extends keyof Events>(
+    on<K extends keyof Events & string>(
       event: K,
       handler: EventHandler<Events[K]>,
     ): () => void {
@@ -160,17 +139,18 @@ export function createEventBus<
       return () => handlers.delete(handler as EventHandler<unknown>);
     },
 
-    emit<K extends keyof Events>(
+    emit<K extends keyof Events & string>(
       event: K,
-      ...[payload]: Events[K] extends void ? [] : [payload: Events[K]]
+      ...args: Events[K] extends void | undefined ? [] : [payload: Events[K]]
     ): void {
       const handlers = registry.get(event as string);
       if (handlers) {
+        const payload = args[0];
         handlers.forEach((h) => h(payload as unknown));
       }
     },
 
-    off<K extends keyof Events>(event?: K): void {
+    off<K extends keyof Events & string>(event?: K): void {
       if (event !== undefined) {
         registry.delete(event as string);
       } else {
@@ -179,3 +159,4 @@ export function createEventBus<
     },
   };
 }
+

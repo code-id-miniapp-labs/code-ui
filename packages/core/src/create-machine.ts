@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// create-machine.ts — machine definition factories
-// ─────────────────────────────────────────────────────────────────────────────
-
 import type {
   GuardFn,
   Machine,
@@ -40,10 +36,6 @@ export function createGuards<T extends MachineSchema>() {
   };
 }
 
-// ─── createMachine ────────────────────────────────────────────────────────────
-// Validates the state tree at definition time, returns config as-is or extends base.
-// All runtime logic lives in MiniappMachine.
-
 export function createMachine<
   T extends MachineSchema = any,
   Base extends MachineSchema = any,
@@ -54,9 +46,6 @@ export function createMachine<
   ensureStateIndex(config as Machine<T>);
   return config as Machine<T>;
 }
-
-// ─── setup ────────────────────────────────────────────────────────────────────
-// Convenience builder with typed helpers.
 
 export function setup<T extends MachineSchema>() {
   return {

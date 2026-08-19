@@ -84,9 +84,6 @@ export function createDOM(component?: MiniAppComponent): DOMQueryHelpers {
 export const createDOMQuery = createDOM;
 
 /**
- * Query single element bounding client rect.
- * Supports curried form `queryRect(this)('#btn')` and direct form `queryRect('#btn', this)`.
- *
  * @example
  * const rect = await queryRect('#my-button', this);
  * // or curried:
@@ -121,9 +118,7 @@ export function queryRect(
 }
 
 /**
- * Query all matching elements bounding client rects.
- * Supports curried form `queryAllRects(this)('.item')` and direct form `queryAllRects('.item', this)`.
- *
+
  * @example
  * const rects = await queryAllRects('.item', this);
  * // or curried:
@@ -158,9 +153,6 @@ export function queryAllRects(
 }
 
 /**
- * Query scroll offset returned by scrollOffset queries.
- * Supports curried form `queryScrollOffset(this)('.scroll-view')` and direct form `queryScrollOffset('.scroll-view', this)`.
- *
  * @example
  * const offset = await queryScrollOffset('.scroll-view', this);
  * // or curried:
@@ -214,9 +206,6 @@ export function queryViewportScrollOffset(
 }
 
 /**
- * Query custom fields for a selector.
- * Supports curried form `queryFields(this)('#btn', { dataset: true })` and direct form `queryFields('#btn', { dataset: true }, this)`.
- *
  * @example
  * const info = await queryFields('#btn', { dataset: true, id: true }, this);
  * // or curried:
@@ -292,9 +281,6 @@ export function parseTimeValue(value?: string): number {
 }
 
 /**
- * Query computed CSS styles for a selector using WeChat's fields API.
- * Supports curried form `queryComputedStyle(this)('#btn', ['color'])` and direct form.
- *
  * @example
  * const styles = await queryComputedStyle('#my-dialog', ['animationDuration', 'opacity'], this);
  * console.log(styles?.animationDuration);
@@ -339,9 +325,6 @@ export function queryComputedStyle(
 }
 
 /**
- * Query total animation/transition duration (duration + delay) in milliseconds for a selector.
- * Compatible with both pure SCSS/WXSS and Tailwind classes (e.g. `duration-300`).
- *
  * @example
  * const duration = await queryAnimationDuration('.code-drawer-content', this);
  * console.log(duration); // 300

@@ -1,14 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// types.ts — core type contracts for code-ui FSM
-// ─────────────────────────────────────────────────────────────────────────────
-
 import type { DOMQueryHelpers, MiniAppComponent } from "@code-ui/utils";
 
 type Dict = Record<string, any>;
-
-// ─── Scope ───────────────────────────────────────────────────────────────────
-// Miniapp scope: exposes id/ids for element identification, the component
-// instance for scoped queries, and the full DOMQueryHelpers from dom.ts.
 
 export interface Scope {
   id?: string | undefined;
@@ -19,19 +11,13 @@ export interface Scope {
   dom: DOMQueryHelpers;
 }
 
-// ─── Prop ────────────────────────────────────────────────────────────────────
-
 export interface PropFn<T extends Dict> {
   <K extends keyof T["props"]>(key: K): T["props"][K];
 }
 
-// ─── Computed ─────────────────────────────────────────────────────────────────
-
 export interface ComputedFn<T extends Dict> {
   <K extends keyof T["computed"]>(key: K): T["computed"][K];
 }
-
-// ─── Bindable ─────────────────────────────────────────────────────────────────
 
 export interface BindableParams<T> {
   defaultValue?: T | undefined;
@@ -79,8 +65,6 @@ export interface BindableFn {
   ref: <T>(defaultValue: T) => BindableRef<T>;
 }
 
-// ─── Event ────────────────────────────────────────────────────────────────────
-
 type EventType<T = any> = T & {
   [key: string]: any;
 };
@@ -115,8 +99,6 @@ export interface Params<T extends Dict> {
 }
 
 export type GuardFn<T extends Dict> = (params: Params<T>) => boolean;
-
-// ─── Transitions ──────────────────────────────────────────────────────────────
 
 export type TopLevelState<S extends string> = S extends `${infer Top}.${string}`
   ? Top
@@ -181,8 +163,6 @@ export type ChooseFn<T extends Dict> = (
     | undefined,
 ) => Transition<T> | undefined;
 
-// ─── Machine State Definition ─────────────────────────────────────────────────
-
 export type ActionsOrFn<T extends Dict> =
   | T["action"][]
   | ((params: Params<T>) => T["action"][] | undefined);
@@ -240,8 +220,6 @@ export interface DeepPartialMachineState<
       }
     | undefined;
 }
-
-// ─── Machine Definition ───────────────────────────────────────────────────────
 
 interface ComputedParams<T extends Dict> {
   context: BindableContext<T>;
@@ -326,8 +304,6 @@ export interface Machine<T extends Dict> {
     | undefined;
 }
 
-// ─── Machine Extension Definition ─────────────────────────────────────────────
-
 export interface MachineExtension<
   T extends Dict = any,
   Base extends Dict = any,
@@ -394,8 +370,6 @@ export type MachineOverride<T extends Dict = any> = Omit<
 export type MachineConfig<T extends Dict = any, Base extends Dict = any> =
   | Machine<T>
   | MachineExtension<T, Base>;
-
-// ─── MachineSchema ────────────────────────────────────────────────────────────
 
 interface MachineBaseProps {
   id?: string | undefined;
@@ -464,10 +438,10 @@ export type ExtendSchema<
     | (Overrides["effect"] extends string ? Overrides["effect"] : never);
   event:
     | (Base["event"] extends { type: string } ? Base["event"] : never)
-    | (Overrides["event"] extends { type: string } ? Overrides["event"] : never);
+    | (Overrides["event"] extends { type: string }
+        ? Overrides["event"]
+        : never);
 };
-
-// ─── Service (runtime public API) ─────────────────────────────────────────────
 
 type State<T extends MachineSchema> = Bindable<T["state"]> & {
   hasTag: (tag: T["tag"]) => boolean;
@@ -488,8 +462,6 @@ export type Service<T extends MachineSchema> = {
     previous: () => EventType<T["event"]>;
   };
 };
-
-// ─── Machine Status ────────────────────────────────────────────────────────────
 
 export enum MachineStatus {
   NotStarted = "Not Started",

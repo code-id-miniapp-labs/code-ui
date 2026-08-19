@@ -1,10 +1,3 @@
-/**
- * @code-ui/core
- *
- * Core FSM type definitions, state transitions, and bindable atom store.
- */
-
-// Types
 export type {
   ActionsOrFn,
   Bindable,

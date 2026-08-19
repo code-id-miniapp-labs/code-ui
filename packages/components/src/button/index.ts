@@ -4,7 +4,14 @@ const buttonBehavior = createMachineBehavior({
   machine: buttonMachine,
   connect: connectButton,
   key: "button",
-  syncProps: ["loading", "disabled", "variant", "size", "loadingAuto", "autoResetDuration"],
+  syncProps: [
+    "loading",
+    "disabled",
+    "variant",
+    "size",
+    "loadingAuto",
+    "autoResetDuration",
+  ],
   exportApi: true,
 });
 

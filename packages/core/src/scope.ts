@@ -10,8 +10,6 @@ interface ScopeProps {
 }
 
 /**
- * Creates a miniapp Scope with DOM query helpers bound to an optional component.
- *
  * @example
  * // In a Page — no component needed
  * const scope = createScope({ id: "my-modal" })
@@ -27,8 +25,6 @@ export function createScope(props: ScopeProps = {}): Scope {
     id: props.id,
     ids: props.ids,
     component: props.component,
-    // ⚡ Binds all query helpers (rect, allRects, fields, etc.) to the component
-    // so SelectorQuery resolves correctly within custom components
     dom: createDOM(props.component),
   };
 }
