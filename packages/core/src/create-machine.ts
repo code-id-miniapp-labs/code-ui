@@ -2,8 +2,18 @@
 // create-machine.ts — machine definition factories
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { GuardFn, Machine, MachineSchema, Params, Transition } from "./types";
+import type {
+  GuardFn,
+  Machine,
+  MachineConfig,
+  MachineExtension,
+  MachineOverride,
+  MachineSchema,
+  Params,
+  Transition,
+} from "./types";
 import { ensureStateIndex } from "./state";
+import { extendMachine } from "./extend-machine";
 
 // ─── Guard combinators ────────────────────────────────────────────────────────
 
@@ -31,14 +41,18 @@ export function createGuards<T extends MachineSchema>() {
 }
 
 // ─── createMachine ────────────────────────────────────────────────────────────
-// Validates the state tree at definition time, returns config as-is.
+// Validates the state tree at definition time, returns config as-is or extends base.
 // All runtime logic lives in MiniappMachine.
 
-export function createMachine<T extends MachineSchema>(
-  config: Machine<T>,
-): Machine<T> {
-  ensureStateIndex(config);
-  return config;
+export function createMachine<
+  T extends MachineSchema = any,
+  Base extends MachineSchema = any,
+>(config: MachineConfig<T, Base>): Machine<T> {
+  if (config && "extend" in config && config.extend) {
+    return extendMachine<T, Base>(config.extend, config);
+  }
+  ensureStateIndex(config as Machine<T>);
+  return config as Machine<T>;
 }
 
 // ─── setup ────────────────────────────────────────────────────────────────────
@@ -48,7 +62,17 @@ export function setup<T extends MachineSchema>() {
   return {
     guards: createGuards<T>(),
 
-    createMachine: (config: Machine<T>) => createMachine(config),
+    createMachine: <Base extends MachineSchema = any>(
+      config: MachineConfig<T, Base>,
+    ) => createMachine(config),
+
+    extendMachine: <Base extends MachineSchema = any>(
+      base: Machine<Base> | Array<Machine<Base>>,
+      config:
+        | MachineOverride<T>
+        | MachineExtension<T, Base>
+        | Partial<Machine<T>>,
+    ) => extendMachine(base, config),
 
     /** Inline transition chooser — selects first matching transition */
     choose: (transitions: Transition<T> | Transition<T>[]) => {

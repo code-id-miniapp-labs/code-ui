@@ -22,7 +22,6 @@ export type {
   MiniAppComponent,
 } from "./dom";
 
-// Events — MiniApp (triggerEvent + internal EventBus)
 export { triggerEvent, createEventTrigger, createEventBus } from "./event";
 export type {
   MiniAppBaseEvent,
@@ -34,10 +33,8 @@ export type {
   EventBus,
 } from "./event";
 
-// Equal
 export { isEqual } from "./equal";
 
-// Guard
 export {
   isDev,
   isArray,
@@ -52,7 +49,6 @@ export {
   isPlainObject,
 } from "./guard";
 
-// Function utilities
 export {
   runIfFn,
   cast,
@@ -67,8 +63,11 @@ export {
   hash,
 } from "./function";
 
-// Warning
-
 export { ensure, ensureProps, invariant, warn } from "./warning";
+
+export { toArray } from "./array";
+
+export { defu, createDefu, defuReplace, defuFn } from "./defu";
+export type { Defu, DefuCustomMerger } from "./defu";
 
 export type { MaybeFunction, Nullable } from "./function";

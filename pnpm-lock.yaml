@@ -199,6 +199,9 @@ importers:
         specifier: workspace:*
         version: link:../utils
     devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.2.0
       miniprogram-api-typings:
         specifier: ^5.2.3
         version: 5.2.3

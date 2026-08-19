@@ -31,13 +31,17 @@ Component({
       ) => {
         this.send({ type: "KEYBOARD_CHANGE", height: res.height });
       };
-      wx.onKeyboardHeightChange(this._keyboardHandler);
+      wx.onKeyboardHeightChange(this.keyboardHandler);
     },
     detached() {
-      if (this._keyboardHandler) {
-        wx.offKeyboardHeightChange(this._keyboardHandler);
+      if (this.keyboardHandler) {
+        wx.offKeyboardHeightChange(this.keyboardHandler);
       }
     },
+  },
+
+  data: {
+    keyboardHandler: null,
   },
 
   properties: {

@@ -36,7 +36,9 @@ export interface UseMachineReturn<
   /** Send an event to the machine */
   send: (event: T["event"]) => void;
   /** Update user props dynamically (e.g., when component properties observer triggers) */
-  updateProps: (newProps: Partial<T["props"]> | (() => Partial<T["props"]>)) => void;
+  updateProps: (
+    newProps: Partial<T["props"]> | (() => Partial<T["props"]>),
+  ) => void;
   /** Get the latest computed API / snapshot on demand */
   getSnapshot: () => Data | undefined;
   /** Stop the machine and dispose all effect/setData subscriptions */

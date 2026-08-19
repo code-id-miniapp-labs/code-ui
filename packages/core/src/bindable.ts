@@ -68,7 +68,9 @@ export const bindable: BindableFn = Object.assign(
       let value = defaultValue;
       return {
         get: () => value,
-        set: (next: T) => { value = next; },
+        set: (next: T) => {
+          value = next;
+        },
       };
     },
   },

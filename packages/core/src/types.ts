@@ -118,10 +118,10 @@ export type GuardFn<T extends Dict> = (params: Params<T>) => boolean;
 
 // ─── Transitions ──────────────────────────────────────────────────────────────
 
-type TopLevelState<S extends string> = S extends `${infer Top}.${string}`
+export type TopLevelState<S extends string> = S extends `${infer Top}.${string}`
   ? Top
   : S;
-type ChildStateKey<
+export type ChildStateKey<
   S extends string,
   Parent extends string,
 > = S extends `${Parent}.${infer Rest}`
@@ -214,6 +214,33 @@ export interface MachineState<T extends Dict, Parent extends string = string> {
     | undefined;
 }
 
+export interface DeepPartialMachineState<
+  T extends Dict,
+  Parent extends string = string,
+> {
+  id?: string | undefined;
+  tags?: T["tag"][] | undefined;
+  entry?: ActionsOrFn<T> | undefined;
+  exit?: ActionsOrFn<T> | undefined;
+  effects?: EffectsOrFn<T> | undefined;
+  initial?: ChildStateKey<T["state"], Parent> | undefined;
+  states?:
+    | {
+        [K in ChildStateKey<T["state"], Parent>]?: DeepPartialMachineState<
+          T,
+          `${Parent}.${K}`
+        >;
+      }
+    | undefined;
+  on?:
+    | {
+        [E in T["event"]["type"]]?:
+          | Transition<T, Parent>
+          | Array<Transition<T, Parent>>;
+      }
+    | undefined;
+}
+
 // ─── Machine Definition ───────────────────────────────────────────────────────
 
 interface ComputedParams<T extends Dict> {
@@ -248,6 +275,7 @@ interface RefsParams<T extends Dict> {
 
 export interface Machine<T extends Dict> {
   debug?: boolean | undefined;
+  extend?: Machine<any> | Array<Machine<any>> | undefined;
   props?: ((params: PropsParams<T>) => T["props"]) | undefined;
   context?:
     | ((params: ContextParams<T>) => {
@@ -298,6 +326,75 @@ export interface Machine<T extends Dict> {
     | undefined;
 }
 
+// ─── Machine Extension Definition ─────────────────────────────────────────────
+
+export interface MachineExtension<
+  T extends Dict = any,
+  Base extends Dict = any,
+> {
+  extend: Machine<Base> | Array<Machine<Base>>;
+  debug?: boolean | undefined;
+  props?: ((params: PropsParams<T>) => Partial<T["props"]>) | undefined;
+  context?:
+    | ((params: ContextParams<T>) => Partial<{
+        [K in keyof T["context"]]: Bindable<T["context"][K]>;
+      }>)
+    | undefined;
+  computed?:
+    | Partial<{
+        [K in keyof T["computed"]]: (
+          params: ComputedParams<T>,
+        ) => T["computed"][K];
+      }>
+    | undefined;
+  initialState?: ((params: { prop: PropFn<T> }) => T["state"]) | undefined;
+  entry?: ActionsOrFn<T> | undefined;
+  exit?: ActionsOrFn<T> | undefined;
+  effects?: EffectsOrFn<T> | undefined;
+  refs?: ((params: RefsParams<T>) => Partial<T["refs"]>) | undefined;
+  watch?: ((params: Params<T>) => void) | undefined;
+  on?:
+    | {
+        [E in T["event"]["type"]]?:
+          | Transition<T, undefined>
+          | Array<Transition<T, undefined>>;
+      }
+    | undefined;
+  states?:
+    | {
+        [K in TopLevelState<T["state"]>]?: DeepPartialMachineState<T, K>;
+      }
+    | undefined;
+  implementations?:
+    | {
+        guards?:
+          | {
+              [K in T["guard"]]?: (params: Params<T>) => boolean;
+            }
+          | undefined;
+        actions?:
+          | {
+              [K in T["action"]]?: (params: Params<T>) => void;
+            }
+          | undefined;
+        effects?:
+          | {
+              [K in T["effect"]]?: (params: Params<T>) => void | VoidFunction;
+            }
+          | undefined;
+      }
+    | undefined;
+}
+
+export type MachineOverride<T extends Dict = any> = Omit<
+  MachineExtension<T, any>,
+  "extend"
+>;
+
+export type MachineConfig<T extends Dict = any, Base extends Dict = any> =
+  | Machine<T>
+  | MachineExtension<T, Base>;
+
 // ─── MachineSchema ────────────────────────────────────────────────────────────
 
 interface MachineBaseProps {
@@ -318,6 +415,57 @@ export interface MachineSchema {
   effect?: string | undefined;
   event?: ({ type: string } & Dict) | undefined;
 }
+
+export type ExtendSchema<
+  Base extends MachineSchema,
+  Overrides extends {
+    props?: Record<string, any>;
+    context?: Record<string, any>;
+    refs?: Record<string, any>;
+    computed?: Record<string, any>;
+    state?: string;
+    tag?: string;
+    guard?: string;
+    action?: string;
+    effect?: string;
+    event?: { type: string } & Dict;
+  } = {},
+> = {
+  props: (Base["props"] extends Record<string, any> ? Base["props"] : {}) &
+    (Overrides["props"] extends Record<string, any> ? Overrides["props"] : {});
+  context: (Base["context"] extends Record<string, any>
+    ? Base["context"]
+    : {}) &
+    (Overrides["context"] extends Record<string, any>
+      ? Overrides["context"]
+      : {});
+  refs: (Base["refs"] extends Record<string, any> ? Base["refs"] : {}) &
+    (Overrides["refs"] extends Record<string, any> ? Overrides["refs"] : {});
+  computed: (Base["computed"] extends Record<string, any>
+    ? Base["computed"]
+    : {}) &
+    (Overrides["computed"] extends Record<string, any>
+      ? Overrides["computed"]
+      : {});
+  state:
+    | (Base["state"] extends string ? Base["state"] : never)
+    | (Overrides["state"] extends string ? Overrides["state"] : never);
+  tag:
+    | (Base["tag"] extends string ? Base["tag"] : never)
+    | (Overrides["tag"] extends string ? Overrides["tag"] : never);
+  guard:
+    | (Base["guard"] extends string ? Base["guard"] : never)
+    | (Overrides["guard"] extends string ? Overrides["guard"] : never);
+  action:
+    | (Base["action"] extends string ? Base["action"] : never)
+    | (Overrides["action"] extends string ? Overrides["action"] : never);
+  effect:
+    | (Base["effect"] extends string ? Base["effect"] : never)
+    | (Overrides["effect"] extends string ? Overrides["effect"] : never);
+  event:
+    | (Base["event"] extends { type: string } ? Base["event"] : never)
+    | (Overrides["event"] extends { type: string } ? Overrides["event"] : never);
+};
 
 // ─── Service (runtime public API) ─────────────────────────────────────────────
 

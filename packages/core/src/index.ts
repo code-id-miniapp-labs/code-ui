@@ -12,18 +12,25 @@ export type {
   BindableFn,
   BindableParams,
   BindableRefs,
+  ChildStateKey,
   ChooseFn,
   ComputedFn,
+  DeepPartialMachineState,
   EffectsOrFn,
   EventObject,
+  ExtendSchema,
   GuardFn,
   Machine,
+  MachineConfig,
+  MachineExtension,
+  MachineOverride,
   MachineSchema,
   MachineState,
   Params,
   PropFn,
   Scope,
   Service,
+  TopLevelState,
   Transition,
   TransitionMap,
   TransitionMatch,
@@ -34,6 +41,7 @@ export { MachineStatus, INIT_STATE } from "./types";
 
 // Machine factories
 export { createMachine, createGuards, setup } from "./create-machine";
+export { extendMachine } from "./extend-machine";
 
 // Bindable (alien-signals powered)
 export { bindable } from "./bindable";

@@ -17,8 +17,10 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "resolveJsonModule": true,
+    "types": ["miniprogram-api-typings"],
     "typeRoots": [
-      "node_modules/@types"
+      "node_modules/@types",
+      "node_modules"
     ],
     "paths": {
       // TS5090 leading './'
@@ -26,6 +28,7 @@
     },
     "skipLibCheck": true
   },
+
   "include": ["./src", "./types", "./config"],
   "compileOnSave": false
 }

@@ -10,6 +10,8 @@
   bottom: 0;
   z-index: 1000;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 /* --- Backdrop --- */
@@ -25,6 +27,8 @@
   opacity: 0;
   transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .code-drawer-backdrop--open {
@@ -47,6 +51,8 @@
   z-index: 1001;
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
 }
 
 /* When actively dragging, disable CSS transition for instant 60fps tracking */
@@ -145,6 +151,7 @@
   align-items: center;
   padding: 16rpx 0 8rpx 0;
   touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .code-drawer-grabber-bar {
@@ -160,6 +167,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 24rpx 36rpx 16rpx 36rpx;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .code-drawer-header-content {
@@ -189,15 +198,23 @@
 /* --- Body --- */
 .code-drawer-body {
   flex: 1;
+  min-height: 0;
+  max-height: 60vh;
   padding: 20rpx 36rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
   font-size: 28rpx;
   color: #cbd5e1;
   line-height: 1.6;
+  box-sizing: border-box;
 }
 
 /* --- Footer --- */
 .code-drawer-footer {
   padding: 20rpx 36rpx 28rpx 36rpx;
+  touch-action: none;
+  overscroll-behavior: contain;
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View, Text, Button, Switch } from '@tarojs/components'
+import {  View, Text, Button, Switch } from '@tarojs/components'
 import './index.scss'
 
 type Placement = 'bottom' | 'top' | 'left' | 'right'

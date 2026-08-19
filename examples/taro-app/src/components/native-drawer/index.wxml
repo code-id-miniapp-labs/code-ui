@@ -1,6 +1,6 @@
-<view id="{{drawer.rootProps.id}}" class="code-drawer-root" data-scope="drawer" data-part="root" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" catchtouchmove="noop" wx:if="{{drawer.state !== 'closed'}}">
+<view id="{{drawer.rootProps.id}}" class="code-drawer-root" data-scope="drawer" data-part="root" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" wx:if="{{drawer.state !== 'closed'}}">
   <!-- Backdrop Overlay -->
-  <view id="{{drawer.backdropProps.id}}" class="code-drawer-backdrop {{drawer.open ? 'code-drawer-backdrop--open' : 'code-drawer-backdrop--closed'}}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{drawer.backdropProps['aria-hidden']}}" bindtap="handleBackdropTap" />
+  <view id="{{drawer.backdropProps.id}}" class="code-drawer-backdrop {{drawer.open ? 'code-drawer-backdrop--open' : 'code-drawer-backdrop--closed'}}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{drawer.backdropProps['aria-hidden']}}" bindtap="handleBackdropTap" catchtouchmove="noop" />
   <!-- Drawer Sheet Content -->
   <view id="{{drawer.contentProps.id}}" class="code-drawer-content code-drawer-content--{{drawer.placement}} {{drawer.open ? 'code-drawer-content--open' : 'code-drawer-content--closing'}} {{drawer.dragging ? 'code-drawer-content--dragging' : ''}}" data-scope="drawer" data-part="content" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" data-dragging="{{drawer.dragging ? 'true' : 'false'}}" role="{{drawer.contentProps.role}}" aria-modal="{{drawer.contentProps['aria-modal']}}" aria-hidden="{{drawer.contentProps['aria-hidden']}}" style="{{drawer.contentProps.style}}">
     <!-- Grabber Handle for gesture swiping -->
@@ -8,7 +8,7 @@
       <view class="code-drawer-grabber-bar" />
     </view>
     <!-- Header Section -->
-    <view class="code-drawer-header">
+    <view class="code-drawer-header" catchtouchmove="noop">
       <view class="code-drawer-header-content">
         <slot name="header" />
       </view>
@@ -17,11 +17,11 @@
       </view>
     </view>
     <!-- Body Section (Default Slot) -->
-    <view class="code-drawer-body">
+    <scroll-view scroll-y class="code-drawer-body" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}">
       <slot />
-    </view>
+    </scroll-view>
     <!-- Footer Section -->
-    <view class="code-drawer-footer">
+    <view class="code-drawer-footer" catchtouchmove="noop">
       <slot name="footer" />
     </view>
   </view>
