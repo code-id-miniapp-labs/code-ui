@@ -115,6 +115,7 @@ export function createMachineBehavior<
         }
 
         const machine = new MiniappMachine(machineDef, initialProps);
+
         this.__codeUiMachine = machine;
 
         machine.start();

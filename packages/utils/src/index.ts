@@ -61,6 +61,7 @@ export {
   throttle,
   debounce,
   hash,
+  isPromise,
 } from "./function";
 
 export { ensure, ensureProps, invariant, warn } from "./warning";
@@ -74,4 +75,3 @@ export { cx } from "./cx";
 export type { ClassValue } from "./cx";
 
 export type { MaybeFunction, Nullable } from "./function";
-

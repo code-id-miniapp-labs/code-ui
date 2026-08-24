@@ -1,4 +1,5 @@
 import { createMachine } from "@code-ui/core";
+import { isPromise } from "@code-ui/utils";
 import type { ButtonMachine, ButtonSchema } from "./button.types";
 import { defaultButtonProps } from "./button.props";
 
@@ -33,9 +34,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       value: prop("ui") ?? {},
       defaultValue: {},
     })),
-
   }),
-
 
   computed: {
     isLoading: ({ context }) => context.get("loading"),
@@ -161,8 +160,10 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       },
       executeAsyncHandler: ({ prop, event, send }) => {
         const rawEvent = "event" in event ? event.event : undefined;
+
         const result = prop("onTap")?.(rawEvent);
-        if (result && typeof (result as any).then === "function") {
+
+        if (isPromise(result)) {
           Promise.resolve(result)
             .then(() => {
               send({ type: "RESOLVE" });

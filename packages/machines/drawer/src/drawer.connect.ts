@@ -1,4 +1,8 @@
-import type { DrawerAnatomyPart, DrawerApi, DrawerService } from "./drawer.types";
+import type {
+  DrawerAnatomyPart,
+  DrawerApi,
+  DrawerService,
+} from "./drawer.types";
 import { anatomy, parts } from "./drawer.anatomy";
 import * as dom from "./drawer.dom";
 import { getComponentConfig, mergeUI } from "@code-ui/core";
@@ -24,7 +28,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     },
     instanceUI,
   });
-
 
   const getContentTransform = () => {
     const activeOffset = dragging ? dragOffset : 0;
@@ -127,4 +130,3 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     },
   };
 }
-

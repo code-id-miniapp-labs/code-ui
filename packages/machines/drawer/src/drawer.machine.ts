@@ -5,8 +5,8 @@ import * as dom from "./drawer.dom";
 
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
-    ...defaultDrawerProps,
     ...props,
+    ...defaultDrawerProps,
   }),
 
   initialState: ({ prop }) => {
@@ -38,7 +38,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       value: prop("ui") ?? {},
       defaultValue: {},
     })),
-
   }),
 
   computed: {

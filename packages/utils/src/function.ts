@@ -131,3 +131,11 @@ function toPhash(h: number, x: string) {
 }
 
 export const hash = (value: string) => toName(toPhash(5381, value) >>> 0);
+
+export function isPromise<T>(value: void | Promise<T> | undefined) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.then === "function"
+  );
+}

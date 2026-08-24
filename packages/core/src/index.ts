@@ -32,18 +32,14 @@ export type {
 } from "./types";
 export { MachineStatus, INIT_STATE } from "./types";
 
-// Machine factories
 export { createMachine, createGuards, setup } from "./create-machine";
 export { extendMachine } from "./extend-machine";
 
-// Bindable (alien-signals powered)
 export { bindable } from "./bindable";
 
-// Scope + Refs
 export { createScope } from "./scope";
 export { createRefs } from "./refs";
 
-// State utilities
 export {
   ensureStateIndex,
   findTransition,
@@ -55,7 +51,6 @@ export {
   resolveStateValue,
 } from "./state";
 
-// Configuration & UI Styling Engine (alien-signals powered)
 export {
   globalConfigSignal,
   setConfig,
@@ -71,4 +66,3 @@ export type {
   SlotRecord,
   MergeUIOptions,
 } from "./config";
-
