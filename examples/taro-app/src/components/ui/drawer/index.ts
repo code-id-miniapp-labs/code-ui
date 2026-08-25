@@ -80,12 +80,12 @@ Component({
 
     handleBackdropTap() {
       this.send({ type: "BACKDROP.TAP" });
-      this.triggerEvent("close");
+      this.triggerEvent("backdroptap");
     },
 
     handleCloseTap() {
       this.send({ type: "CLOSE_TRIGGER.TAP" });
-      this.triggerEvent("close");
+      this.triggerEvent("closetap");
     },
 
     handleTouchStart(e: any) {

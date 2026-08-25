@@ -1,5 +1,4 @@
 /// <reference types="@tarojs/taro" />
-/// <reference types="@code-ui/components" />
 
 declare module "*.png";
 declare module "*.gif";

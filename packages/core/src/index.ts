@@ -35,7 +35,7 @@ export { MachineStatus, INIT_STATE } from "./types";
 export { createMachine, createGuards, setup } from "./create-machine";
 export { extendMachine } from "./extend-machine";
 
-export { bindable } from "./bindable";
+
 
 export { createScope } from "./scope";
 export { createRefs } from "./refs";
@@ -52,11 +52,11 @@ export {
 } from "./state";
 
 export {
-  globalConfigSignal,
   setConfig,
   getConfig,
   getComponentConfig,
   resetConfig,
+  subscribeConfig,
   mergeUI,
 } from "./config";
 export type {

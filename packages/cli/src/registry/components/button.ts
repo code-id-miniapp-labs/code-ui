@@ -26,10 +26,25 @@ export const buttonComponent = {
   disabled="{{button.disabled || button.loading}}"
   open-type="{{openType}}"
   form-type="{{formType}}"
-  hover-class="{{button.disabled || button.loading ? 'none' : 'cui-btn--hover'}}"
-  bindtap="handleTap"
+  hover-class="{{hoverClass || (button.disabled || button.loading ? 'none' : 'cui-btn--hover')}}"
+  hover-start-time="{{hoverStartTime}}"
+  hover-stay-time="{{hoverStayTime}}"
+  hover-stop-propagation="{{hoverStopPropagation}}"
+  lang="{{lang}}"
+  session-from="{{sessionFrom}}"
+  send-message-title="{{sendMessageTitle}}"
+  send-message-path="{{sendMessagePath}}"
+  send-message-img="{{sendMessageImg}}"
+  show-message-card="{{showMessageCard}}"
+  app-parameter="{{appParameter}}"
+  catchtap="handleTap"
   bindgetphonenumber="handleGetPhoneNumber"
   bindchooseavatar="handleChooseAvatar"
+  bindcontact="handleContact"
+  binderror="handleError"
+  bindopensetting="handleOpenSetting"
+  bindlaunchapp="handleLaunchApp"
+  bindagreeprivacyauthorization="handleAgreePrivacyAuthorization"
 >
   <!-- Loading Spinner -->
   <view id="{{button.spinnerProps.id}}" class="cui-btn-spinner" data-scope="button" data-part="spinner" wx:if="{{button.loading}}">
@@ -182,75 +197,31 @@ export const buttonComponent = {
     },
     {
       name: "index.ts",
-      content: `import { createMachineBehavior } from "@code-ui/miniapp";
-import { buttonMachine, connectButton } from "@code-ui/button";
+      content: `import { createMachineBehavior, wxButtonBehavior, createProperties } from "@code-ui/miniapp";
+import { buttonMachine, connectButton, defaultButtonProps } from "@code-ui/button";
 
 const buttonBehavior = createMachineBehavior({
   machine: buttonMachine,
   connect: connectButton,
   key: "button",
-  syncProps: ["loading", "disabled", "variant", "size", "loadingAuto", "autoResetDuration"],
   exportApi: true,
 });
 
 Component({
-  behaviors: [buttonBehavior],
+  behaviors: [buttonBehavior, wxButtonBehavior],
 
   options: {
     multipleSlots: true,
     addGlobalClass: true,
   },
 
-  properties: {
-    loading: {
-      type: Boolean,
-      value: false,
-    },
-    disabled: {
-      type: Boolean,
-      value: false,
-    },
-    variant: {
-      type: String,
-      value: "primary",
-    },
-    size: {
-      type: String,
-      value: "md",
-    },
-    loadingAuto: {
-      type: Boolean,
-      value: false,
-    },
-    autoResetDuration: {
-      type: Number,
-      value: 1500,
-    },
-    openType: {
-      type: String,
-      value: "",
-    },
-    formType: {
-      type: String,
-      value: "",
-    },
-  },
+  properties: createProperties(defaultButtonProps),
 
   methods: {
     handleTap(e: any) {
       const buttonData = (this.data as any).button;
       if (buttonData?.disabled || buttonData?.loading) return;
       this.send({ type: "TAP", event: e });
-      this.triggerEvent("tap", e);
-      this.triggerEvent("click", e);
-    },
-
-    handleGetPhoneNumber(e: any) {
-      this.triggerEvent("getphonenumber", e.detail);
-    },
-
-    handleChooseAvatar(e: any) {
-      this.triggerEvent("chooseavatar", e.detail);
     },
   },
 });

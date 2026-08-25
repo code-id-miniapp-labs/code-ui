@@ -1,7 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// cx.ts — lightweight class name composition & conditional utility
-// ─────────────────────────────────────────────────────────────────────────────
-
+// oxlint-disable no-unused-expressions
 export type ClassValue =
   | string
   | number

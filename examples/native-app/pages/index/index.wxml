@@ -1,0 +1,116 @@
+<!-- pages/index/index.wxml -->
+<view class="page-container">
+  <!-- Hero Section -->
+  <view class="hero-section">
+    <view class="hero-badge">
+      <text class="hero-badge-text">Pure Native WXML</text>
+    </view>
+    <text class="hero-title">@code-ui Native Showcase</text>
+    <text class="hero-subtitle">
+      Zero framework layer. Pure native WeChat MiniProgram components powered by headless state machines.
+    </text>
+  </view>
+  <!-- Section 1: Button Showcase -->
+  <view class="config-card">
+    <text class="card-title">1. Native Button Component</text>
+    <text class="model-desc">
+      Built with state machine transition guards, auto-loading promises, and touch feedback.
+    </text>
+    <!-- Variants -->
+    <text class="section-label">Variants:</text>
+    <view class="button-row">
+      <cui-button variant="primary" bind:tap="handleButtonTap" data-variant="primary">
+        Primary
+      </cui-button>
+      <cui-button variant="secondary" bind:tap="handleButtonTap" data-variant="secondary">
+        Secondary
+      </cui-button>
+      <cui-button variant="outline" bind:tap="handleButtonTap" data-variant="outline">
+        Outline
+      </cui-button>
+      <cui-button variant="danger" bind:tap="handleButtonTap" data-variant="danger">
+        Danger
+      </cui-button>
+    </view>
+    <!-- Sizes -->
+    <text class="section-label" style="margin-top: 24rpx;">Sizes:</text>
+    <view class="button-row">
+      <cui-button size="sm" variant="primary">Small</cui-button>
+      <cui-button size="md" variant="primary">Medium</cui-button>
+      <cui-button size="lg" variant="primary">Large</cui-button>
+    </view>
+    <!-- Interactive Auto-Loading -->
+    <text class="section-label" style="margin-top: 24rpx;">Async Auto-Loading & Disabled:</text>
+    <view class="button-row">
+      <cui-button variant="primary" loading-auto="{{true}}" bind:tap="handleAsyncAction">
+        {{isLoadingBtn ? 'Resolving ...' : 'Auto-Loading (2s)'}}
+      </cui-button>
+      <cui-button variant="primary" disabled="{{true}}">Disabled</cui-button>
+    </view>
+  </view>
+  <!-- Section 2: Drawer Controls -->
+  <view class="config-card">
+    <text class="card-title">2. Native Drawer Component</text>
+    <text class="model-desc">
+      Headless FSM gesture engine with multi-direction swipe-to-dismiss support.
+    </text>
+    <!-- Placement Selector -->
+    <text class="section-label">Placement:</text>
+    <view class="placement-grid">
+      <view wx:for="{{placements}}" wx:key="*this" class="placement-pill {{placement === item ? 'placement-pill--active' : ''}}" bindtap="handleSelectPlacement" data-placement="{{item}}">
+        <text class="placement-text">{{item}}</text>
+      </view>
+    </view>
+    <!-- Threshold Selector -->
+    <text class="section-label" style="margin-top: 24rpx;">Swipe Threshold ({{threshold}}px):</text>
+    <view class="threshold-options">
+      <view wx:for="{{[40, 80, 120]}}" wx:key="*this" class="threshold-btn {{threshold === item ? 'threshold-btn--active' : ''}}" bindtap="handleSelectThreshold" data-threshold="{{item}}">
+        <text class="threshold-text">{{item}}px</text>
+      </view>
+    </view>
+    <!-- Toggle Switches -->
+    <view class="switch-row" style="margin-top: 24rpx;">
+      <text class="switch-label">Close on Backdrop Tap</text>
+      <switch checked="{{closeOnBackdrop}}" color="#6366f1" bindchange="handleToggleBackdrop" />
+    </view>
+    <view class="switch-row">
+      <text class="switch-label">Swipe to Dismiss</text>
+      <switch checked="{{dismissible}}" color="#6366f1" bindchange="handleToggleDismissible" />
+    </view>
+    <!-- Trigger Button -->
+    <view style="margin-top: 32rpx;">
+      <cui-button variant="primary" size="lg" bind:tap="handleOpenDrawer">
+        Open Drawer ({{placement}})
+      </cui-button>
+    </view>
+  </view>
+  <!-- Native Drawer Component Instance -->
+  <cui-drawer open="{{isDrawerOpen}}" placement="{{placement}}" threshold="{{threshold}}" close-on-backdrop-click="{{closeOnBackdrop}}" dismissible="{{dismissible}}" bind:close="handleDrawerClose">
+    <view slot="header">
+      <text class="drawer-title">Native Drawer ({{placement}})</text>
+    </view>
+    <view class="drawer-body-content">
+      <text class="drawer-desc">
+        This drawer is running inside a pure Native WeChat MiniProgram without Taro or React.
+      </text>
+      <view class="drawer-stats">
+        <view class="stat-item">
+          <text class="stat-label">Direction</text>
+          <text class="stat-val">{{placement}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">Dismissible</text>
+          <text class="stat-val">{{dismissible ? 'Yes' : 'No'}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">Threshold</text>
+          <text class="stat-val">{{threshold}}px</text>
+        </view>
+      </view>
+    </view>
+    <view slot="footer" class="drawer-footer-actions">
+      <cui-button variant="secondary" bind:tap="handleDrawerClose">Cancel</cui-button>
+      <cui-button variant="primary" bind:tap="handleDrawerClose">Confirm</cui-button>
+    </view>
+  </cui-drawer>
+</view>

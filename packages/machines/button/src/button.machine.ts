@@ -157,11 +157,13 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       executeTapHandler: ({ prop, event }) => {
         const rawEvent = "event" in event ? event.event : undefined;
         prop("onTap")?.(rawEvent);
+        prop("onClick")?.(rawEvent);
       },
       executeAsyncHandler: ({ prop, event, send }) => {
         const rawEvent = "event" in event ? event.event : undefined;
 
-        const result = prop("onTap")?.(rawEvent);
+        const result =
+          prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
 
         if (isPromise(result)) {
           Promise.resolve(result)

@@ -5,8 +5,8 @@ import * as dom from "./drawer.dom";
 
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
-    ...props,
     ...defaultDrawerProps,
+    ...props,
   }),
 
   initialState: ({ prop }) => {

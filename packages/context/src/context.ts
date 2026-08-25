@@ -82,6 +82,18 @@ export function provide<T>(
   getStore(key).set(component, value);
 }
 
+/**
+ *
+ * @example
+ * Component({
+ *   lifetimes: {
+ *     attached() {
+ *      const theme = inject(this, ThemeKey);
+ *      this.theme = theme
+ *  },
+ *   },
+ * });
+ */
 export function inject<T>(
   component: MiniAppComponent,
   key: InjectionKey<T>,

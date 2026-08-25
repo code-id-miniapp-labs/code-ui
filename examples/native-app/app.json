@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#090d16",
+    "navigationBarTitleText": "code-ui Native Showcase",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#090d16"
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

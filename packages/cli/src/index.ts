@@ -2,12 +2,13 @@ import { Command } from "commander";
 import { initCommand } from "./commands/init";
 import { addCommand } from "./commands/add";
 import { listCommand } from "./commands/list";
+import { syncCommand } from "./commands/sync";
 
 const program = new Command();
 
 program
   .name("code-ui")
-  .description("CLI tool to add native WeChat MiniProgram components to your project (shadcn-style)")
+  .description("CLI tool to add native WeChat MiniProgram components to your project")
   .version("0.0.1");
 
 program
@@ -20,7 +21,7 @@ program
 
 program
   .command("add")
-  .description("Add native MiniProgram components to your project")
+  .description("Add native MiniProgram components to your project (shadcn-style)")
   .argument("[components...]", "Names of the components to add")
   .option("-y, --yes", "Skip overwrite confirmations", false)
   .option("-o, --overwrite", "Overwrite existing component files", false)
@@ -30,6 +31,16 @@ program
       yes: opts.yes,
       overwrite: opts.overwrite,
       noDeps: !opts.deps,
+    });
+  });
+
+program
+  .command("sync")
+  .description("Sync prebuilt @code-ui/components into miniprogram_npm based on code-ui.json")
+  .argument("[components...]", "Specific components to sync (overrides code-ui.json)")
+  .action(async (components) => {
+    await syncCommand({
+      components: components.length > 0 ? components : undefined,
     });
   });
 

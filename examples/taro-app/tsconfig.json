@@ -18,8 +18,7 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "types": [
-      "miniprogram-api-typings",
-      "@code-ui/components"
+      "miniprogram-api-typings"
     ],
     "typeRoots": [
       "node_modules/@types",

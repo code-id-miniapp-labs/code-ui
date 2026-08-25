@@ -1,0 +1,21 @@
+{
+  "name": "native-app",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Pure Native WeChat MiniProgram example using @code-ui",
+  "scripts": {
+    "build": "tsc && code-ui sync",
+    "dev": "tsc --watch",
+    "sync": "code-ui sync",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@code-ui/cli": "workspace:*",
+    "@code-ui/components": "workspace:*",
+    "@code-ui/core": "workspace:*"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^5.2.3",
+    "typescript": "^5.5.4"
+  }
+}

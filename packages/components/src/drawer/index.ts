@@ -1,18 +1,14 @@
-import { createMachineBehavior, drawerMachine, connectDrawer } from "../index";
+import { createMachineBehavior, createProperties } from "../_shared/runtime";
+import {
+  drawerMachine,
+  connectDrawer,
+  defaultDrawerProps,
+} from "@code-ui/drawer";
 
 const drawerBehavior = createMachineBehavior({
   machine: drawerMachine,
   connect: connectDrawer,
   key: "drawer",
-  syncProps: [
-    "ui",
-    "open",
-    "placement",
-    "closeOnBackdropClick",
-    "dismissible",
-    "threshold",
-    "duration",
-  ],
   exportApi: true,
 });
 
@@ -45,49 +41,19 @@ Component({
     },
   },
 
-  properties: {
-    ui: {
-      type: Object,
-      value: {},
-    },
-    open: {
-      type: Boolean,
-      value: false,
-    },
-
-    placement: {
-      type: String,
-      value: "bottom",
-    },
-    closeOnBackdropClick: {
-      type: Boolean,
-      value: true,
-    },
-    dismissible: {
-      type: Boolean,
-      value: true,
-    },
-    threshold: {
-      type: Number,
-      value: 80,
-    },
-    duration: {
-      type: Number,
-      value: undefined,
-    },
-  },
+  properties: createProperties(defaultDrawerProps),
 
   methods: {
     noop() {},
 
     handleBackdropTap() {
       this.send({ type: "BACKDROP.TAP" });
-      this.triggerEvent("close");
+      this.triggerEvent("backdroptap");
     },
 
     handleCloseTap() {
       this.send({ type: "CLOSE_TRIGGER.TAP" });
-      this.triggerEvent("close");
+      this.triggerEvent("closetap");
     },
 
     handleTouchStart(e: WechatMiniprogram.TouchEvent) {

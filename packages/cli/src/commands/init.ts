@@ -57,7 +57,6 @@ export async function initCommand(options: { yes?: boolean; cwd?: string } = {})
   }
 
   const config = {
-    $schema: "https://code-ui.dev/schema.json",
     style,
     componentDir,
     typescript,

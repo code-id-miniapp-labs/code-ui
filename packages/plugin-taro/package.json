@@ -1,0 +1,41 @@
+{
+  "name": "@code-ui/plugin-taro",
+  "version": "0.0.1",
+  "description": "Taro plugin for @code-ui — auto-configures webpack compile rules, asset copy, and JSX types",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@tarojs/cli": "^4.2.1",
+    "@tarojs/service": "^4.2.1",
+    "@types/node": "^26.2.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.4"
+  },
+  "peerDependencies": {
+    "@tarojs/cli": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tarojs/cli": {
+      "optional": true
+    }
+  }
+}

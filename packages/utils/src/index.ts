@@ -1,4 +1,3 @@
-// DOM utilities
 export {
   createDOM,
   createDOMQuery,
@@ -73,5 +72,7 @@ export type { Defu, DefuCustomMerger } from "./defu";
 
 export { cx } from "./cx";
 export type { ClassValue } from "./cx";
+
+export { normalizeProps, DEFAULT_ALIAS_MAP } from "./normalize";
 
 export type { MaybeFunction, Nullable } from "./function";

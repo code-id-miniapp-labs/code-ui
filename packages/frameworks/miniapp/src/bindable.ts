@@ -1,6 +1,6 @@
 import { signal } from "alien-signals";
 import { isFunction } from "@code-ui/utils";
-import type { Bindable, BindableFn, BindableParams } from "./types";
+import type { Bindable, BindableFn, BindableParams } from "@code-ui/core";
 
 type SignalFn<T> = { (): T; (value: T): void };
 

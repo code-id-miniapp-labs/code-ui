@@ -1,23 +1,23 @@
-import { createMachineBehavior, buttonMachine, connectButton } from "../index";
+import {
+  createMachineBehavior,
+  wxButtonBehavior,
+  createProperties,
+} from "../_shared/runtime";
+import {
+  buttonMachine,
+  connectButton,
+  defaultButtonProps,
+} from "@code-ui/button";
 
 const buttonBehavior = createMachineBehavior({
   machine: buttonMachine,
   connect: connectButton,
   key: "button",
-  syncProps: [
-    "ui",
-    "loading",
-    "disabled",
-    "variant",
-    "size",
-    "loadingAuto",
-    "autoResetDuration",
-  ],
   exportApi: true,
 });
 
 Component({
-  behaviors: [buttonBehavior],
+  behaviors: [buttonBehavior, wxButtonBehavior],
 
   options: {
     multipleSlots: true,
@@ -25,61 +25,13 @@ Component({
     styleIsolation: "apply-shared",
   },
 
-  properties: {
-    ui: {
-      type: Object,
-      value: {},
-    },
-    loading: {
-      type: Boolean,
-      value: false,
-    },
-
-    disabled: {
-      type: Boolean,
-      value: false,
-    },
-    variant: {
-      type: String,
-      value: "primary",
-    },
-    size: {
-      type: String,
-      value: "md",
-    },
-    loadingAuto: {
-      type: Boolean,
-      value: false,
-    },
-    autoResetDuration: {
-      type: Number,
-      value: 1500,
-    },
-    openType: {
-      type: String,
-      value: "",
-    },
-    formType: {
-      type: String,
-      value: "",
-    },
-  },
+  properties: createProperties(defaultButtonProps),
 
   methods: {
     handleTap(e: WechatMiniprogram.TouchEvent) {
       const buttonData = (this.data as any).button;
       if (buttonData?.disabled || buttonData?.loading) return;
       this.send({ type: "TAP", event: e });
-      this.triggerEvent("tap", e);
-      this.triggerEvent("click", e);
-    },
-
-    handleGetPhoneNumber(e: any) {
-      this.triggerEvent("getphonenumber", e.detail);
-    },
-
-    handleChooseAvatar(e: any) {
-      this.triggerEvent("chooseavatar", e.detail);
     },
   },
 });

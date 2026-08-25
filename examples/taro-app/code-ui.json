@@ -1,5 +1,4 @@
 {
-  "$schema": "https://code-ui.dev/schema.json",
   "style": "wxss",
   "componentDir": "src/components/ui",
   "typescript": true,

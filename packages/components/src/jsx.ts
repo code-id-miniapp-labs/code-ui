@@ -40,11 +40,4 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
 }
 
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "cui-button": CuiButtonElementProps;
-      "cui-drawer": CuiDrawerElementProps;
-    }
-  }
-}
+

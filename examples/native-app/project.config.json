@@ -1,0 +1,41 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "code-ui-native-app",
+  "description": "Pure Native WeChat MiniProgram example using @code-ui",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": true,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": true,
+    "lazyCodeLoading": "requiredComponents",
+    "useCompilerPlugins": [
+      "typescript"
+    ],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "remoteDebugLogEnable": true,
+    "prefetch": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "TCSASappid": "touristId",
+  "scripts": {},
+  "condition": {}
+}

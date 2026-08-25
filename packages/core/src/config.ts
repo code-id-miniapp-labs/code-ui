@@ -1,4 +1,3 @@
-import { signal } from "alien-signals";
 import { cx, defu, createEventBus } from "@code-ui/utils";
 import type { EventBus } from "@code-ui/utils";
 
@@ -37,10 +36,6 @@ interface ConfigEvents {
   reset: void;
 }
 
-/**
- * Global reactive configuration signal.
- * Any update via `setConfig` will automatically notify active component observers.
- */
 const initialConfig: CodeUIConfig = {
   prefix: "cui",
   components: {},
@@ -63,18 +58,6 @@ const configBus: EventBus<ConfigEvents> =
   g.__CODE_UI_CONFIG_BUS__ ||
   (g.__CODE_UI_CONFIG_BUS__ = createEventBus<ConfigEvents>());
 
-export const globalConfigSignal = signal<CodeUIConfig>(
-  g.__CODE_UI_GLOBAL_CONFIG__,
-);
-
-configBus.on("change", (newConfig) => {
-  globalConfigSignal(newConfig);
-});
-
-configBus.on("reset", () => {
-  globalConfigSignal(initialConfig);
-});
-
 /**
  * Configure global Code-UI settings, themes, and component slot classes.
  * Can be called multiple times; subsequent calls merge recursively with existing config.
@@ -82,14 +65,13 @@ configBus.on("reset", () => {
 export function setConfig(
   config: CodeUIConfig | ((prev: CodeUIConfig) => CodeUIConfig),
 ): void {
-  const current = g.__CODE_UI_GLOBAL_CONFIG__ || globalConfigSignal();
+  const current = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
   const next = typeof config === "function" ? config(current) : config;
   const merged = defu(next, current) as CodeUIConfig;
 
   g.__CODE_UI_GLOBAL_CONFIG__ = merged;
-  globalConfigSignal(merged);
 
-  // Broadcast to all other bundle instances across module boundaries
+  // Broadcast to all subscribers (framework adapters) and other bundle instances
   configBus.emit("change", merged);
 }
 
@@ -97,17 +79,16 @@ export function setConfig(
  * Retrieve the current snapshot of the global configuration.
  */
 export function getConfig(): CodeUIConfig {
-  return g.__CODE_UI_GLOBAL_CONFIG__ || globalConfigSignal();
+  return g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
 }
 
 /**
  * Retrieve the configuration for a specific component.
- * Automatically tracks dependency in alien-signals reactive context.
  */
 export function getComponentConfig<TSlots extends string = string>(
   componentName: string,
 ): ComponentConfig<TSlots> {
-  const config = globalConfigSignal();
+  const config = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
   return (config.components?.[componentName] || {}) as ComponentConfig<TSlots>;
 }
 
@@ -116,8 +97,24 @@ export function getComponentConfig<TSlots extends string = string>(
  */
 export function resetConfig(): void {
   g.__CODE_UI_GLOBAL_CONFIG__ = initialConfig;
-  globalConfigSignal(initialConfig);
   configBus.emit("reset");
+}
+
+/**
+ * Subscribe to configuration changes.
+ * Framework adapters (e.g. @code-ui/miniapp) use this to bridge config
+ * updates into their own reactive system.
+ * Returns an unsubscribe function.
+ */
+export function subscribeConfig(
+  callback: (config: CodeUIConfig) => void,
+): () => void {
+  const offChange = configBus.on("change", callback);
+  const offReset = configBus.on("reset", () => callback(initialConfig));
+  return () => {
+    offChange();
+    offReset();
+  };
 }
 
 export interface MergeUIOptions<TSlots extends string> {

@@ -22,7 +22,8 @@ export interface CreateMachineBehaviorOptions<
    */
   key?: string;
   /**
-   * Component property names to automatically observe and forward to `machine.updateProps`
+   * Component property names to automatically observe and forward to `machine.updateProps`.
+   * If omitted, all properties from the machine's default props are automatically observed.
    */
   syncProps?: Array<keyof T["props"]>;
   /**
@@ -37,25 +38,56 @@ export interface CreateMachineBehaviorOptions<
 }
 
 /**
+ * Creates a WeChat MiniProgram component properties schema from default props
+ *
+ * @example
+ * ```ts
+ * properties: createProperties(defaultDrawerProps, {
+ *   customProp: { type: String, value: "" }
+ * })
+ * ```
+ */
+export function createProperties<T extends Record<string, any>>(
+  defaultProps: T,
+  extraProps?: WechatMiniprogram.Component.PropertyOption,
+): WechatMiniprogram.Component.PropertyOption {
+  const properties: Record<string, any> = {};
+  for (const [propKey, val] of Object.entries(defaultProps)) {
+    const type =
+      typeof val === "boolean"
+        ? Boolean
+        : typeof val === "number"
+        ? Number
+        : typeof val === "string"
+        ? String
+        : Array.isArray(val)
+        ? Array
+        : Object;
+    properties[propKey] = {
+      type,
+      value: val,
+    };
+  }
+  return { ...properties, ...extraProps };
+}
+
+/**
+ * Creates a reactive WeChat MiniProgram Behavior wired to a state machine
+ *
  * @example
  * ```ts
  * const dialogBehavior = createMachineBehavior({
  *   machine: dialogMachine,
  *   connect: connectDialog,
  *   key: "dialog",
- *   syncProps: ["open", "disabled"],
  *   exportApi: true,
  * });
  *
  * Component({
  *   behaviors: [dialogBehavior],
- *   properties: {
- *     open: Boolean,
- *     disabled: Boolean,
- *   },
+ *   properties: createProperties(defaultDialogProps),
  *   methods: {
  *     handleOpen() {
- *       // Send events via the auto-injected `this.send(...)`
  *       this.send({ type: "OPEN" });
  *     },
  *   },
@@ -70,10 +102,28 @@ export function createMachineBehavior<
     machine: machineDef,
     connect,
     key,
-    syncProps = [],
+    syncProps: explicitSyncProps,
     formField = false,
     exportApi = false,
   } = options;
+
+  let discoveredProps: string[] = [];
+  if (typeof machineDef?.props === "function") {
+    try {
+      const defaultProps = machineDef.props({
+        props: {} as any,
+        scope: {} as any,
+      });
+      if (defaultProps && typeof defaultProps === "object") {
+        discoveredProps = Object.keys(defaultProps);
+      }
+    } catch {}
+  }
+
+  const syncProps =
+    explicitSyncProps && explicitSyncProps.length > 0
+      ? explicitSyncProps
+      : (discoveredProps as Array<keyof T["props"]>);
 
   const behaviors: string[] = [];
   if (formField) behaviors.push("wx://form-field");
@@ -81,17 +131,12 @@ export function createMachineBehavior<
 
   const observers: Record<string, (...args: any[]) => void> = {};
 
-  if (syncProps.length > 0) {
-    const observerKey = syncProps.join(", ");
-    observers[observerKey] = function (this: any, ...values: any[]) {
+  syncProps.forEach((propKey) => {
+    observers[propKey as string] = function (this: any, val: any) {
       if (!this.__codeUiMachine) return;
-      const updated: Record<string, any> = {};
-      syncProps.forEach((propKey, index) => {
-        updated[propKey as string] = values[index];
-      });
-      this.__codeUiMachine.updateProps(updated);
+      this.__codeUiMachine.updateProps({ [propKey as string]: val });
     };
-  }
+  });
 
   return Behavior({
     behaviors,

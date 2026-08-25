@@ -74,10 +74,12 @@ Component({
 
     handleBackdropTap() {
       this.send({ type: "BACKDROP.TAP" });
+      this.triggerEvent("backdroptap");
     },
 
     handleCloseTap() {
       this.send({ type: "CLOSE_TRIGGER.TAP" });
+      this.triggerEvent("closetap");
     },
 
     handleTouchStart(e: WechatMiniprogram.TouchEvent) {

@@ -4,9 +4,15 @@ import {
   effectScope,
   signal,
 } from "alien-signals";
-import { isFunction, isString, callAll, runIfFn, warn } from "@code-ui/utils";
 import {
-  bindable,
+  isFunction,
+  isString,
+  callAll,
+  runIfFn,
+  warn,
+  normalizeProps,
+} from "@code-ui/utils";
+import {
   createRefs,
   createScope,
   findTransition,
@@ -17,6 +23,7 @@ import {
   matchesState,
   resolveStateValue,
 } from "@code-ui/core";
+import { bindable } from "./bindable";
 import type {
   ActionsOrFn,
   BindableContext,
@@ -110,9 +117,12 @@ export class MiniappMachine<T extends MachineSchema> {
     private machine: Machine<T>,
     userProps: Partial<T["props"]> | (() => Partial<T["props"]>) = {},
   ) {
-    this.userPropsSignal(userProps);
+    const evaluated = runIfFn(userProps);
+    const normalized =
+      typeof evaluated === "object" ? normalizeProps(evaluated) : evaluated;
+    this.userPropsSignal(normalized);
 
-    const { id, ids, component } = runIfFn(userProps) as any;
+    const { id, ids, component } = (normalized ?? {}) as any;
     this.scope = createScope({ id, ids, component });
 
     const prop: PropFn<T> = (key) => {
@@ -123,7 +133,6 @@ export class MiniappMachine<T extends MachineSchema> {
 
       let value = props[key];
 
-      // Auto-forward onXxx events to WeChat triggerEvent
       if (
         value === undefined &&
         typeof key === "string" &&
@@ -131,7 +140,6 @@ export class MiniappMachine<T extends MachineSchema> {
       ) {
         const _component = this.scope?.component;
         if (_component && typeof _component.triggerEvent === "function") {
-          // e.g. "onOpenChange" -> "openChange", "onClose" -> "close"
           const eventName = key.charAt(2).toLowerCase() + key.slice(3);
           value = (detail: any) => _component.triggerEvent(eventName, detail);
         }
@@ -251,9 +259,12 @@ export class MiniappMachine<T extends MachineSchema> {
 
   updateProps(newProps: Partial<T["props"]> | (() => Partial<T["props"]>)) {
     const prevSource = this.userPropsSignal();
+    const evaluated = runIfFn(newProps);
+    const normalized =
+      typeof evaluated === "object" ? normalizeProps(evaluated) : evaluated;
     this.userPropsSignal(() => ({
       ...runIfFn(prevSource),
-      ...runIfFn(newProps),
+      ...normalized,
     }));
     this.notify();
   }
@@ -381,18 +392,15 @@ export class MiniappMachine<T extends MachineSchema> {
       }
     });
 
-    // Enter initial state
     this.state.invoke(this.state.initial ?? this.state.get(), INIT_STATE);
   }
 
   stop() {
-    // Run exit effects
     this.effects.forEach((fn) => fn?.());
     this.effects.clear();
     this.transition = null;
     this.action(this.machine.exit);
 
-    // ⚡ Dispose ALL effects at once
     this._scope?.();
     this._scope = null;
     this._computedCache.clear();
