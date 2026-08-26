@@ -29,7 +29,6 @@ function copyDirRecursive(source, target) {
   }
 }
 
-// Ensure .d.ts files exist alongside .d.cts
 function duplicateDts(dir) {
   if (!fs.existsSync(dir)) return;
   const entries = fs.readdirSync(dir, { withFileTypes: true });

@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 export type Placement = "bottom" | "top" | "left" | "right";
 
 export interface IndexPageData {
@@ -10,6 +8,16 @@ export interface IndexPageData {
   dismissible: boolean;
   placements: Placement[];
   isLoadingBtn: boolean;
+  years: string[];
+  seasons: string[];
+  pickerValue: number[];
+  selectedYear: string;
+  selectedSeason: string;
+  pickerDate: string;
+  pickerTime: string;
+  countries: string[];
+  countryIndex: number;
+  selectedRegion: string[];
 }
 
 export interface IndexPageCustom {
@@ -27,7 +35,16 @@ export interface IndexPageCustom {
   ) => void;
   handleOpenDrawer: () => void;
   handleDrawerClose: () => void;
+  handlePickerChange: (e: WechatMiniprogram.CustomEvent<{ value: number[] }>) => void;
+  handleDateChange: (e: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
+  handleTimeChange: (e: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
+  handleCountryChange: (e: WechatMiniprogram.CustomEvent<{ value: number }>) => void;
+  handleRegionChange: (e: WechatMiniprogram.CustomEvent<{ value: string[] }>) => void;
 }
+
+const years = ["2022", "2023", "2024", "2025", "2026"];
+const seasons = ["Spring", "Summer", "Autumn", "Winter"];
+const countries = ["United States", "China", "Indonesia", "Japan", "Germany"];
 
 Page<IndexPageData, IndexPageCustom>({
   data: {
@@ -38,6 +55,16 @@ Page<IndexPageData, IndexPageCustom>({
     isLoadingBtn: false,
     dismissible: true,
     placements: ["bottom", "top", "left", "right"],
+    years,
+    seasons,
+    pickerValue: [2, 1],
+    selectedYear: years[2],
+    selectedSeason: seasons[1],
+    pickerDate: "2026-08-26",
+    pickerTime: "18:45",
+    countries,
+    countryIndex: 2,
+    selectedRegion: ["Guangdong", "Shenzhen", "Nanshan"],
   },
 
   handleButtonTap(e) {
@@ -95,5 +122,30 @@ Page<IndexPageData, IndexPageCustom>({
 
   handleDrawerClose() {
     this.setData({ isDrawerOpen: false });
+  },
+
+  handlePickerChange(e) {
+    const val = e.detail.value;
+    this.setData({
+      pickerValue: val,
+      selectedYear: this.data.years[val[0]] || this.data.years[0],
+      selectedSeason: this.data.seasons[val[1]] || this.data.seasons[0],
+    });
+  },
+
+  handleDateChange(e) {
+    this.setData({ pickerDate: e.detail.value });
+  },
+
+  handleTimeChange(e) {
+    this.setData({ pickerTime: e.detail.value });
+  },
+
+  handleCountryChange(e) {
+    this.setData({ countryIndex: Number(e.detail.value) });
+  },
+
+  handleRegionChange(e) {
+    this.setData({ selectedRegion: e.detail.value });
   },
 });

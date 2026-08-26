@@ -74,5 +74,6 @@ export { cx } from "./cx";
 export type { ClassValue } from "./cx";
 
 export { normalizeProps, DEFAULT_ALIAS_MAP } from "./normalize";
+export { diffSnapshot } from "./diff";
 
 export type { MaybeFunction, Nullable } from "./function";

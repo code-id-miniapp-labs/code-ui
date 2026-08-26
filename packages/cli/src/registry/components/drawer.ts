@@ -49,34 +49,29 @@ export const drawerComponent = {
     },
     {
       name: "index.wxss",
-      content: `/* ==========================================================================
-   Code-UI Drawer Component Styles (cui-drawer)
-   ========================================================================== */
-
-.cui-drawer-root {
+      content: `.cui-drawer-root {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
+  z-index: var(--cui-drawer-z-index, 1000);
   overflow: hidden;
   touch-action: none;
   overscroll-behavior: contain;
 }
 
-/* --- Backdrop --- */
 .cui-drawer-backdrop {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: var(--cui-drawer-backdrop-bg, rgba(15, 23, 42, 0.65));
+  backdrop-filter: blur(var(--cui-drawer-backdrop-blur, 8px));
+  -webkit-backdrop-filter: blur(var(--cui-drawer-backdrop-blur, 8px));
   opacity: 0;
-  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity var(--cui-drawer-transition-duration, 280ms) cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
   touch-action: none;
   overscroll-behavior: contain;
@@ -90,38 +85,35 @@ export const drawerComponent = {
   opacity: 0;
 }
 
-/* --- Content Sheet --- */
 .cui-drawer-content {
   position: absolute;
-  background: #1e293b;
-  color: #f8fafc;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  background: var(--cui-drawer-bg, #1e293b);
+  color: var(--cui-drawer-color, #f8fafc);
+  box-shadow: var(--cui-drawer-shadow, 0 25px 50px -12px rgba(0, 0, 0, 0.5));
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  z-index: 1001;
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: calc(var(--cui-drawer-z-index, 1000) + 1);
+  transition: transform var(--cui-drawer-transition-duration, 300ms) cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
 }
 
-/* When actively dragging, disable CSS transition for instant 60fps tracking */
 .cui-drawer-content--dragging {
   transition: none !important;
 }
 
-/* --- Bottom Placement --- */
 .cui-drawer-content--bottom {
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: 85vh;
-  border-top-left-radius: 24rpx;
-  border-top-right-radius: 24rpx;
+  max-height: var(--cui-drawer-max-height, 85vh);
+  border-top-left-radius: var(--cui-drawer-radius-top, var(--cui-radius-lg, 24rpx));
+  border-top-right-radius: var(--cui-drawer-radius-top, var(--cui-radius-lg, 24rpx));
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   transform: translate3d(0, 100%, 0);
-  border-top: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-top: 1rpx solid var(--cui-drawer-border, rgba(255, 255, 255, 0.1));
 }
 
 .cui-drawer-content--bottom.cui-drawer-content--open {
@@ -132,17 +124,16 @@ export const drawerComponent = {
   transform: translate3d(0, 100%, 0);
 }
 
-/* --- Top Placement --- */
 .cui-drawer-content--top {
   left: 0;
   right: 0;
   top: 0;
-  max-height: 85vh;
-  border-bottom-left-radius: 24rpx;
-  border-bottom-right-radius: 24rpx;
+  max-height: var(--cui-drawer-max-height, 85vh);
+  border-bottom-left-radius: var(--cui-drawer-radius-bottom, var(--cui-radius-lg, 24rpx));
+  border-bottom-right-radius: var(--cui-drawer-radius-bottom, var(--cui-radius-lg, 24rpx));
   padding-top: calc(24rpx + env(safe-area-inset-top));
   transform: translate3d(0, -100%, 0);
-  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1rpx solid var(--cui-drawer-border, rgba(255, 255, 255, 0.1));
 }
 
 .cui-drawer-content--top.cui-drawer-content--open {
@@ -153,15 +144,14 @@ export const drawerComponent = {
   transform: translate3d(0, -100%, 0);
 }
 
-/* --- Left Placement --- */
 .cui-drawer-content--left {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 78vw;
-  max-width: 600rpx;
+  width: var(--cui-drawer-side-width, 78vw);
+  max-width: var(--cui-drawer-side-max-width, 600rpx);
   transform: translate3d(-100%, 0, 0);
-  border-right: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-right: 1rpx solid var(--cui-drawer-border, rgba(255, 255, 255, 0.1));
   padding-top: calc(20rpx + env(safe-area-inset-top));
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
 }
@@ -174,15 +164,14 @@ export const drawerComponent = {
   transform: translate3d(-100%, 0, 0);
 }
 
-/* --- Right Placement --- */
 .cui-drawer-content--right {
   top: 0;
   bottom: 0;
   right: 0;
-  width: 78vw;
-  max-width: 600rpx;
+  width: var(--cui-drawer-side-width, 78vw);
+  max-width: var(--cui-drawer-side-max-width, 600rpx);
   transform: translate3d(100%, 0, 0);
-  border-left: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-left: 1rpx solid var(--cui-drawer-border, rgba(255, 255, 255, 0.1));
   padding-top: calc(20rpx + env(safe-area-inset-top));
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
 }
@@ -195,7 +184,6 @@ export const drawerComponent = {
   transform: translate3d(100%, 0, 0);
 }
 
-/* --- Grabber --- */
 .cui-drawer-grabber {
   display: flex;
   justify-content: center;
@@ -206,13 +194,12 @@ export const drawerComponent = {
 }
 
 .cui-drawer-grabber-bar {
-  width: 72rpx;
-  height: 8rpx;
+  width: var(--cui-drawer-grabber-w, 72rpx);
+  height: var(--cui-drawer-grabber-h, 8rpx);
   border-radius: 4rpx;
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: var(--cui-drawer-grabber-bg, rgba(255, 255, 255, 0.25));
 }
 
-/* --- Header --- */
 .cui-drawer-header {
   display: flex;
   align-items: center;
@@ -224,16 +211,16 @@ export const drawerComponent = {
 
 .cui-drawer-header-content {
   flex: 1;
-  font-size: 34rpx;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--cui-drawer-title-size, 34rpx);
+  font-weight: var(--cui-drawer-title-weight, 700);
+  color: var(--cui-drawer-title-color, #f1f5f9);
 }
 
 .cui-drawer-close {
-  width: 56rpx;
-  height: 56rpx;
+  width: var(--cui-drawer-close-size, 56rpx);
+  height: var(--cui-drawer-close-size, 56rpx);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--cui-drawer-close-bg, rgba(255, 255, 255, 0.08));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,29 +228,27 @@ export const drawerComponent = {
 }
 
 .cui-drawer-close-icon {
-  font-size: 26rpx;
-  color: #94a3b8;
+  font-size: var(--cui-drawer-close-icon-size, 26rpx);
+  color: var(--cui-drawer-close-icon-color, #94a3b8);
   line-height: 1;
 }
 
-/* --- Body --- */
 .cui-drawer-body {
   flex: 1;
   min-height: 0;
-  max-height: 60vh;
+  max-height: var(--cui-drawer-body-max-height, 60vh);
   padding: 20rpx 36rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
-  font-size: 28rpx;
-  color: #cbd5e1;
+  font-size: var(--cui-drawer-body-size, 28rpx);
+  color: var(--cui-drawer-body-color, #cbd5e1);
   line-height: 1.6;
   box-sizing: border-box;
 }
 
-/* --- Footer --- */
 .cui-drawer-footer {
   padding: 20rpx 36rpx 28rpx 36rpx;
   touch-action: none;

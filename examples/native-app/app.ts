@@ -10,6 +10,8 @@ export interface IAppOption {
 App<IAppOption>({
   globalData: {},
   onLaunch() {
-    console.log("[code-ui] Native TypeScript WeChat MiniProgram launched successfully!");
+    console.log(
+      "[code-ui] Native TypeScript WeChat MiniProgram launched successfully!",
+    );
   },
 });

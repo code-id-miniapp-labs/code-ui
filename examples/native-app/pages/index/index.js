@@ -1,6 +1,8 @@
 "use strict";
-/// <reference types="miniprogram-api-typings" />
 Object.defineProperty(exports, "__esModule", { value: true });
+const years = ["2022", "2023", "2024", "2025", "2026"];
+const seasons = ["Spring", "Summer", "Autumn", "Winter"];
+const countries = ["United States", "China", "Indonesia", "Japan", "Germany"];
 Page({
     data: {
         isDrawerOpen: false,
@@ -10,6 +12,16 @@ Page({
         isLoadingBtn: false,
         dismissible: true,
         placements: ["bottom", "top", "left", "right"],
+        years,
+        seasons,
+        pickerValue: [2, 1],
+        selectedYear: years[2],
+        selectedSeason: seasons[1],
+        pickerDate: "2026-08-26",
+        pickerTime: "18:45",
+        countries,
+        countryIndex: 2,
+        selectedRegion: ["Guangdong", "Shenzhen", "Nanshan"],
     },
     handleButtonTap(e) {
         const variant = e.currentTarget.dataset.variant || "button";
@@ -59,5 +71,25 @@ Page({
     },
     handleDrawerClose() {
         this.setData({ isDrawerOpen: false });
+    },
+    handlePickerChange(e) {
+        const val = e.detail.value;
+        this.setData({
+            pickerValue: val,
+            selectedYear: this.data.years[val[0]] || this.data.years[0],
+            selectedSeason: this.data.seasons[val[1]] || this.data.seasons[0],
+        });
+    },
+    handleDateChange(e) {
+        this.setData({ pickerDate: e.detail.value });
+    },
+    handleTimeChange(e) {
+        this.setData({ pickerTime: e.detail.value });
+    },
+    handleCountryChange(e) {
+        this.setData({ countryIndex: Number(e.detail.value) });
+    },
+    handleRegionChange(e) {
+        this.setData({ selectedRegion: e.detail.value });
     },
 });

@@ -65,11 +65,7 @@ export const buttonComponent = {
     },
     {
       name: "index.wxss",
-      content: `/* ==========================================================================
-   Code-UI Button Component Styles (cui-button)
-   ========================================================================== */
-
-.cui-btn {
+      content: `.cui-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -77,14 +73,14 @@ export const buttonComponent = {
   box-sizing: border-box;
   margin: 0;
   font-family: inherit;
-  font-weight: 600;
+  font-weight: var(--cui-btn-font-weight, 600);
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
   user-select: none;
-  border-radius: 16rpx;
+  border-radius: var(--cui-btn-radius, var(--cui-radius-md, 16rpx));
   border: 1rpx solid transparent;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--cui-transition-duration, 180ms) cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
@@ -92,73 +88,68 @@ export const buttonComponent = {
   display: none;
 }
 
-/* --- Sizes --- */
 .cui-btn--sm {
-  height: 64rpx;
-  padding: 0 24rpx;
-  font-size: 24rpx;
-  border-radius: 12rpx;
+  height: var(--cui-btn-h-sm, 64rpx);
+  padding: 0 var(--cui-btn-px-sm, 24rpx);
+  font-size: var(--cui-btn-font-sm, 24rpx);
+  border-radius: var(--cui-btn-radius-sm, var(--cui-radius-sm, 12rpx));
 }
 
 .cui-btn--md {
-  height: 84rpx;
-  padding: 0 36rpx;
-  font-size: 28rpx;
-  border-radius: 16rpx;
+  height: var(--cui-btn-h-md, 84rpx);
+  padding: 0 var(--cui-btn-px-md, 36rpx);
+  font-size: var(--cui-btn-font-md, 28rpx);
+  border-radius: var(--cui-btn-radius-md, var(--cui-radius-md, 16rpx));
 }
 
 .cui-btn--lg {
-  height: 100rpx;
-  padding: 0 48rpx;
-  font-size: 32rpx;
-  border-radius: 20rpx;
+  height: var(--cui-btn-h-lg, 100rpx);
+  padding: 0 var(--cui-btn-px-lg, 48rpx);
+  font-size: var(--cui-btn-font-lg, 32rpx);
+  border-radius: var(--cui-btn-radius-lg, var(--cui-radius-lg, 20rpx));
 }
 
-/* --- Variants --- */
 .cui-btn--primary {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: #ffffff;
-  box-shadow: 0 4rpx 14rpx 0 rgba(99, 102, 241, 0.39);
+  background: var(--cui-btn-primary-bg, var(--cui-primary-gradient, linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)));
+  color: var(--cui-btn-primary-color, #ffffff);
+  box-shadow: var(--cui-btn-primary-shadow, 0 4rpx 14rpx 0 rgba(99, 102, 241, 0.39));
 }
 
 .cui-btn--secondary {
-  background: #334155;
-  color: #f8fafc;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--cui-btn-secondary-bg, #334155);
+  color: var(--cui-btn-secondary-color, #f8fafc);
+  border-color: var(--cui-btn-secondary-border, rgba(255, 255, 255, 0.08));
 }
 
 .cui-btn--outline {
-  background: transparent;
-  color: #818cf8;
-  border-color: #6366f1;
+  background: var(--cui-btn-outline-bg, transparent);
+  color: var(--cui-btn-outline-color, #818cf8);
+  border-color: var(--cui-btn-outline-border, #6366f1);
 }
 
 .cui-btn--ghost {
-  background: transparent;
-  color: #94a3b8;
+  background: var(--cui-btn-ghost-bg, transparent);
+  color: var(--cui-btn-ghost-color, #94a3b8);
 }
 
 .cui-btn--danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: #ffffff;
-  box-shadow: 0 4rpx 14rpx 0 rgba(239, 68, 68, 0.39);
+  background: var(--cui-btn-danger-bg, var(--cui-danger-gradient, linear-gradient(135deg, #ef4444 0%, #dc2626 100%)));
+  color: var(--cui-btn-danger-color, #ffffff);
+  box-shadow: var(--cui-btn-danger-shadow, 0 4rpx 14rpx 0 rgba(239, 68, 68, 0.39));
 }
 
-/* --- Hover State --- */
 .cui-btn--hover {
-  opacity: 0.88;
-  transform: scale(0.98);
+  opacity: var(--cui-btn-hover-opacity, 0.88);
+  transform: var(--cui-btn-hover-transform, scale(0.98));
 }
 
-/* --- Disabled & Loading State --- */
 .cui-btn--disabled,
 .cui-btn--loading {
-  opacity: 0.55;
+  opacity: var(--cui-btn-disabled-opacity, 0.55);
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* --- Inner Elements --- */
 .cui-btn-label {
   display: inline-flex;
   align-items: center;
@@ -177,10 +168,10 @@ export const buttonComponent = {
 }
 
 .cui-btn-spinner-icon {
-  width: 28rpx;
-  height: 28rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  width: var(--cui-btn-spinner-size, 28rpx);
+  height: var(--cui-btn-spinner-size, 28rpx);
+  border: 3rpx solid var(--cui-btn-spinner-border, rgba(255, 255, 255, 0.3));
+  border-top-color: var(--cui-btn-spinner-head, #ffffff);
   border-radius: 50%;
   animation: cui-spin 0.65s linear infinite;
 }

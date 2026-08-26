@@ -84,6 +84,77 @@
       </cui-button>
     </view>
   </view>
+  <!-- Section 3: Native Picker View -->
+  <view class="config-card">
+    <text class="card-title">3. Native Picker View</text>
+    <text class="model-desc">Two-column wheel selector for Year and Season.</text>
+    <view class="pv-container">
+      <picker-view class="pv-picker" indicator-style="height: 68rpx;" value="{{pickerValue}}" bindchange="handlePickerChange">
+        <picker-view-column>
+          <view wx:for="{{years}}" wx:key="*this" class="pv-item">{{item}}</view>
+        </picker-view-column>
+        <picker-view-column>
+          <view wx:for="{{seasons}}" wx:key="*this" class="pv-item">{{item}}</view>
+        </picker-view-column>
+      </picker-view>
+    </view>
+    <view class="pv-result">
+      <text class="pv-result-label">Selected:</text>
+      <text class="pv-result-val">{{selectedYear}} · {{selectedSeason}}</text>
+    </view>
+  </view>
+
+  <!-- Section 4: Native Popup Pickers (picker modes) -->
+  <view class="config-card">
+    <text class="card-title">4. Native Popup Pickers (picker)</text>
+    <text class="model-desc">
+      WeChat built-in popup modal pickers (Selector, Date, Time, Region).
+    </text>
+
+    <!-- Mode 1: Selector -->
+    <picker mode="selector" range="{{countries}}" value="{{countryIndex}}" bindchange="handleCountryChange">
+      <view class="picker-cell">
+        <text class="picker-cell-label">Selector (Country):</text>
+        <view class="picker-cell-value">
+          <text>{{countries[countryIndex]}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- Mode 2: Date Picker -->
+    <picker mode="date" value="{{pickerDate}}" start="2020-01-01" end="2030-12-31" bindchange="handleDateChange">
+      <view class="picker-cell">
+        <text class="picker-cell-label">Date Picker:</text>
+        <view class="picker-cell-value">
+          <text>{{pickerDate}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- Mode 3: Time Picker -->
+    <picker mode="time" value="{{pickerTime}}" start="00:00" end="23:59" bindchange="handleTimeChange">
+      <view class="picker-cell">
+        <text class="picker-cell-label">Time Picker:</text>
+        <view class="picker-cell-value">
+          <text>{{pickerTime}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- Mode 4: Region Picker -->
+    <picker mode="region" value="{{selectedRegion}}" bindchange="handleRegionChange">
+      <view class="picker-cell" style="border-bottom: none;">
+        <text class="picker-cell-label">Region Picker:</text>
+        <view class="picker-cell-value">
+          <text>{{selectedRegion[0]}} {{selectedRegion[1]}} {{selectedRegion[2]}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+    </picker>
+  </view>
   <!-- Native Drawer Component Instance -->
   <cui-drawer open="{{isDrawerOpen}}" placement="{{placement}}" threshold="{{threshold}}" close-on-backdrop-click="{{closeOnBackdrop}}" dismissible="{{dismissible}}" bind:close="handleDrawerClose">
     <view slot="header">
