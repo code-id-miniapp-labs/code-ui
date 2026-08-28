@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 import { MiniappMachine } from "./machine";
 import { connectToPage } from "./connect";
 import type { ConnectFn, MiniAppInstance } from "./connect";

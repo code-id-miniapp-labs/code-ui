@@ -307,6 +307,8 @@ export default function Index() {
         dismissible={true}
         threshold={120}
         onClose={() => setOpenPrebuilt(false)}
+        onBackdropTap={console.log}
+        onCloseTriggerTap={console.log}
       >
         <View slot='header'>
           <Text className='drawer-title'>Model 2: Prebuilt Drawer</Text>

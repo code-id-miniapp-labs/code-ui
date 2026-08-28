@@ -36,8 +36,6 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   threshold?: number;
   duration?: number;
   onClose?: (event?: any) => void;
-  onOpenChange?: (event?: any) => void;
+  onBackdropTap?: (event?: WechatMiniprogram.CustomEvent) => void;
+  onCloseTriggerTap?: (event?: WechatMiniprogram.CustomEvent) => void;
 }
-
-
-

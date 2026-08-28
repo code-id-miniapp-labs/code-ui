@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 import { effect, effectScope, signal } from "alien-signals";
 import { subscribeConfig } from "@code-ui/core";
 import { diffSnapshot } from "@code-ui/utils";

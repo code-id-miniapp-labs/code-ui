@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 /**
  * Reusable WeChat MiniProgram behavior providing full native `<button>`
  * platform properties (openType, formType, hoverClass, customer service, privacy)

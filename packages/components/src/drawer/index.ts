@@ -46,14 +46,16 @@ Component({
   methods: {
     noop() {},
 
-    handleBackdropTap() {
+    handleBackdropTap(ev: any) {
       this.send({ type: "BACKDROP.TAP" });
-      this.triggerEvent("backdroptap");
+      console.log("backdroptap", ev);
+      this.triggerEvent("backdropTap");
     },
 
-    handleCloseTap() {
+    handleCloseTap(ev: any) {
       this.send({ type: "CLOSE_TRIGGER.TAP" });
-      this.triggerEvent("closetap");
+      this.triggerEvent("closeTriggerTap");
+      console.log("closeTriggerTap", ev);
     },
 
     handleTouchStart(e: WechatMiniprogram.TouchEvent) {

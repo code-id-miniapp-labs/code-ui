@@ -60,6 +60,12 @@ Page({
         const threshold = Number(e.currentTarget.dataset.threshold);
         this.setData({ threshold });
     },
+    handleBackdropTap(ev) {
+        console.log(ev);
+    },
+    handleCloseTriggerTap(ev) {
+        console.log(ev);
+    },
     handleToggleBackdrop(e) {
         this.setData({ closeOnBackdrop: e.detail.value });
     },

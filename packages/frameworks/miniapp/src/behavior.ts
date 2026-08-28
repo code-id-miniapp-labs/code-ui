@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 import { MiniappMachine } from "./machine";
 import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
@@ -57,12 +55,12 @@ export function createProperties<T extends Record<string, any>>(
       typeof val === "boolean"
         ? Boolean
         : typeof val === "number"
-        ? Number
-        : typeof val === "string"
-        ? String
-        : Array.isArray(val)
-        ? Array
-        : Object;
+          ? Number
+          : typeof val === "string"
+            ? String
+            : Array.isArray(val)
+              ? Array
+              : Object;
     properties[propKey] = {
       type,
       value: val,

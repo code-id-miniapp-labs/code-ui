@@ -10,8 +10,6 @@ export const DEFAULT_ALIAS_MAP: Record<string, string[]> = {
 
   onClose: ["onDismiss"],
   onDismiss: ["onClose"],
-  onOpenChange: ["onToggle"],
-  onToggle: ["onOpenChange"],
   onBackdropClick: ["onBackdropTap", "onOverlayClick"],
   onBackdropTap: ["onBackdropClick"],
   onOverlayClick: ["onBackdropClick", "onBackdropTap"],
@@ -33,10 +31,7 @@ export const DEFAULT_ALIAS_MAP: Record<string, string[]> = {
 
 export function normalizeProps<
   T extends Record<string, any> = Record<string, any>,
->(
-  props: Record<string, any>,
-  customAliases?: Record<string, string[]>,
-): T {
+>(props: Record<string, any>, customAliases?: Record<string, string[]>): T {
   if (!props || typeof props !== "object") return props as T;
 
   const aliasMap = customAliases

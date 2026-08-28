@@ -25,8 +25,10 @@ export interface IndexPageCustom {
     e: WechatMiniprogram.CustomEvent<{ variant?: string }>,
   ) => void;
   handleAsyncAction: () => Promise<void>;
+  handleCloseTriggerTap: (e: WechatMiniprogram.CustomEvent) => void;
   handleSelectPlacement: (e: WechatMiniprogram.CustomEvent) => void;
   handleSelectThreshold: (e: WechatMiniprogram.CustomEvent) => void;
+  handleBackdropTap: (e: WechatMiniprogram.CustomEvent) => void;
   handleToggleBackdrop: (
     e: WechatMiniprogram.CustomEvent<{ value: boolean }>,
   ) => void;
@@ -35,11 +37,21 @@ export interface IndexPageCustom {
   ) => void;
   handleOpenDrawer: () => void;
   handleDrawerClose: () => void;
-  handlePickerChange: (e: WechatMiniprogram.CustomEvent<{ value: number[] }>) => void;
-  handleDateChange: (e: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
-  handleTimeChange: (e: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
-  handleCountryChange: (e: WechatMiniprogram.CustomEvent<{ value: number }>) => void;
-  handleRegionChange: (e: WechatMiniprogram.CustomEvent<{ value: string[] }>) => void;
+  handlePickerChange: (
+    e: WechatMiniprogram.CustomEvent<{ value: number[] }>,
+  ) => void;
+  handleDateChange: (
+    e: WechatMiniprogram.CustomEvent<{ value: string }>,
+  ) => void;
+  handleTimeChange: (
+    e: WechatMiniprogram.CustomEvent<{ value: string }>,
+  ) => void;
+  handleCountryChange: (
+    e: WechatMiniprogram.CustomEvent<{ value: number }>,
+  ) => void;
+  handleRegionChange: (
+    e: WechatMiniprogram.CustomEvent<{ value: string[] }>,
+  ) => void;
 }
 
 const years = ["2022", "2023", "2024", "2025", "2026"];
@@ -106,6 +118,14 @@ Page<IndexPageData, IndexPageCustom>({
   handleSelectThreshold(e) {
     const threshold = Number(e.currentTarget.dataset.threshold);
     this.setData({ threshold });
+  },
+
+  handleBackdropTap(ev) {
+    console.log(ev);
+  },
+
+  handleCloseTriggerTap(ev) {
+    console.log(ev);
   },
 
   handleToggleBackdrop(e) {

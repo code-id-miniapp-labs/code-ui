@@ -19,7 +19,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       value: prop("open"),
       defaultValue: prop("defaultOpen") ?? false,
       onChange: (open) => {
-        prop("onOpenChange")?.({ open });
         if (!open) {
           prop("onClose")?.();
         }
