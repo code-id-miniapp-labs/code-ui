@@ -7,7 +7,6 @@ type Placement = 'bottom' | 'top' | 'left' | 'right'
 type ThemeName = 'indigo' | 'emerald' | 'sunset'
 
 export default function Index() {
-  const [openHeadless, setOpenHeadless] = useState(false)
   const [openPrebuilt, setOpenPrebuilt] = useState(false)
   const [openCustomDrawer, setOpenCustomDrawer] = useState(false)
   const [activeTheme, setActiveTheme] = useState<ThemeName>('indigo')
@@ -91,23 +90,58 @@ export default function Index() {
         </Text>
       </View>
 
-      {/* Model Showcase Cards */}
-
-      {/* MODEL 1: Headless Machine + Adapter */}
+        {/* Configuration Controls */}
       <View className='config-card'>
-        <Text className='card-title'>Model 1: Headless Machine (@code-ui/drawer)</Text>
-        <Text className='model-desc'>
-          Pure state machine + alien-signals adapter. You write 100% custom WXML / WXSS.
-        </Text>
-        <View className='action-card' style={{ marginTop: '16rpx', marginBottom: '0' }}>
-          <cui-button
-            variant='primary'
-            onClick={() => setOpenHeadless(true)}
-          >
-            Open Headless Drawer ({placement})
-          </cui-button>
+        <Text className='card-title'>Drawer Settings</Text>
+        <Text className='switch-label' style={{ marginBottom: '12rpx', display: 'block' }}>Placement</Text>
+        <View className='placement-grid'>
+          {placements.map((p) => (
+            <View
+              key={p}
+              className={`placement-pill ${placement === p ? 'placement-pill--active' : ''}`}
+              onClick={() => {
+                setPlacement(p)
+              }}
+            >
+              <Text className='placement-text'>{p}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View className='switch-row' style={{ marginTop: '20rpx' }}>
+          <Text className='switch-label'>Close on Backdrop Tap</Text>
+          <Switch
+            checked={closeOnBackdrop}
+            color='#6366f1'
+            onChange={(e) => setCloseOnBackdrop(e.detail.value)}
+          />
+        </View>
+
+        <View className='switch-row'>
+          <Text className='switch-label'>Swipe to Dismiss (Gesture)</Text>
+          <Switch
+            checked={dismissible}
+            color='#6366f1'
+            onChange={(e) => setDismissible(e.detail.value)}
+          />
+        </View>
+
+        <View className='threshold-row'>
+          <Text className='switch-label'>Swipe Threshold ({threshold}px)</Text>
+          <View className='threshold-options'>
+            {[40, 80, 120].map((val) => (
+              <View
+                key={val}
+                className={`threshold-btn ${threshold === val ? 'threshold-btn--active' : ''}`}
+                onClick={() => setThreshold(val)}
+              >
+                <Text className='threshold-text'>{val}px</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </View>
+
 
       {/* MODEL 2: Prebuilt Package (@code-ui/components) */}
       <View className='config-card'>
@@ -202,102 +236,8 @@ export default function Index() {
       </View>
 
 
-      {/* Configuration Controls */}
-      <View className='config-card'>
-        <Text className='card-title'>Drawer Settings</Text>
-        <Text className='switch-label' style={{ marginBottom: '12rpx', display: 'block' }}>Placement</Text>
-        <View className='placement-grid'>
-          {placements.map((p) => (
-            <View
-              key={p}
-              className={`placement-pill ${placement === p ? 'placement-pill--active' : ''}`}
-              onClick={() => {
-                setPlacement(p)
-                setOpenHeadless(true)
-              }}
-            >
-              <Text className='placement-text'>{p}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View className='switch-row' style={{ marginTop: '20rpx' }}>
-          <Text className='switch-label'>Close on Backdrop Tap</Text>
-          <Switch
-            checked={closeOnBackdrop}
-            color='#6366f1'
-            onChange={(e) => setCloseOnBackdrop(e.detail.value)}
-          />
-        </View>
-
-        <View className='switch-row'>
-          <Text className='switch-label'>Swipe to Dismiss (Gesture)</Text>
-          <Switch
-            checked={dismissible}
-            color='#6366f1'
-            onChange={(e) => setDismissible(e.detail.value)}
-          />
-        </View>
-
-        <View className='threshold-row'>
-          <Text className='switch-label'>Swipe Threshold ({threshold}px)</Text>
-          <View className='threshold-options'>
-            {[40, 80, 120].map((val) => (
-              <View
-                key={val}
-                className={`threshold-btn ${threshold === val ? 'threshold-btn--active' : ''}`}
-                onClick={() => setThreshold(val)}
-              >
-                <Text className='threshold-text'>{val}px</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-
-      {/* Headless Drawer (Model 1) */}
-      <native-drawer
-        open={openHeadless}
-        placement={placement}
-        closeOnBackdropClick={closeOnBackdrop}
-        dismissible={dismissible}
-        threshold={threshold}
-        onClose={() => setOpenHeadless(false)}
-      >
-        <View slot='header'>
-          <Text className='drawer-title'>Model 1: Headless Drawer ({placement})</Text>
-        </View>
-
-        <View className='drawer-content-inner'>
-          <Text className='drawer-p'>
-            This drawer is rendered via custom template WXML in your project connected to `@code-ui/drawer`.
-          </Text>
-
-          <View className='drawer-stat-grid'>
-            <View className='stat-box'>
-              <Text className='stat-label'>Placement</Text>
-              <Text className='stat-val'>{placement}</Text>
-            </View>
-            <View className='stat-box'>
-              <Text className='stat-label'>Dismissible</Text>
-              <Text className='stat-val'>{dismissible ? 'Yes' : 'No'}</Text>
-            </View>
-            <View className='stat-box'>
-              <Text className='stat-label'>Threshold</Text>
-              <Text className='stat-val'>{threshold}px</Text>
-            </View>
-          </View>
-        </View>
-
-        <View slot='footer' className='drawer-footer-row'>
-          <cui-button variant='secondary' onClick={() => setOpenHeadless(false)}>
-            Close
-          </cui-button>
-          <cui-button variant='primary' onClick={() => setOpenHeadless(false)}>
-            Got it
-          </cui-button>
-        </View>
-      </native-drawer>
+    
+     
 
       {/* Prebuilt Drawer (Model 2) */}
       <cui-drawer
@@ -331,8 +271,8 @@ export default function Index() {
       <cui-drawer
         open={openCustomDrawer}
         placement='bottom'
-        closeOnBackdropClick={true}
-        dismissible={true}
+        closeOnBackdropClick={closeOnBackdrop}
+        dismissible={dismissible}
         threshold={120}
         ui={{
           backdrop: 'custom-glass-drawer-backdrop',

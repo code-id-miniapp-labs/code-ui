@@ -1,0 +1,144 @@
+var dom = require('../_shared/wxs/dom.wxs');
+
+var startX = 0;
+var startY = 0;
+var lastOffset = 0;
+var isDragging = false;
+
+var _contentEl = null;
+var _backdropEl = null;
+
+function _computeOffset(currentX, currentY, placement) {
+  var delta = 0;
+
+  if (placement === 'bottom') delta = currentY - startY;
+  else if (placement === 'top')   delta = startY - currentY;
+  else if (placement === 'right') delta = currentX - startX;
+  else if (placement === 'left')  delta = startX - currentX;
+
+  return delta < 0 ? 0 : delta;
+}
+
+// Used during touchmove — transition disabled for frame-perfect tracking
+function _buildTransform(offset, placement) {
+  var base = 'transition: none; ';
+  if (offset === 0) return base;
+
+  if (placement === 'bottom') return base + 'transform: translate3d(0, ' + offset + 'px, 0);';
+  if (placement === 'top')    return base + 'transform: translate3d(0, -' + offset + 'px, 0);';
+  if (placement === 'right')  return base + 'transform: translate3d(' + offset + 'px, 0, 0);';
+  if (placement === 'left')   return base + 'transform: translate3d(-' + offset + 'px, 0, 0);';
+
+  return base;
+}
+
+// Used at touchend — just the current offset string, transition: none removed
+// so the subsequent RAF can trigger a CSS transition from this position
+function _buildCurrentTranslate(offset, placement) {
+  if (offset === 0) return '';
+
+  if (placement === 'bottom') return 'transform: translate3d(0, ' + offset + 'px, 0);';
+  if (placement === 'top')    return 'transform: translate3d(0, -' + offset + 'px, 0);';
+  if (placement === 'right')  return 'transform: translate3d(' + offset + 'px, 0, 0);';
+  if (placement === 'left')   return 'transform: translate3d(-' + offset + 'px, 0, 0);';
+
+  return '';
+}
+
+// Exit position — 100% uses the element's own dimension so it's always off-screen
+function _buildExitTranslate(placement) {
+  if (placement === 'bottom') return 'transform: translate3d(0, 100%, 0);';
+  if (placement === 'top')    return 'transform: translate3d(0, -100%, 0);';
+  if (placement === 'right')  return 'transform: translate3d(100%, 0, 0);';
+  if (placement === 'left')   return 'transform: translate3d(-100%, 0, 0);';
+
+  return '';
+}
+
+function _buildBackdropOpacity(offset, threshold) {
+  var t = threshold > 0 ? threshold : 80;
+  var ratio = 1 - offset / t;
+  var clamped = ratio < 0 ? 0 : ratio > 1 ? 1 : ratio;
+  var rounded = Math.round(clamped * 100) / 100;
+  return 'opacity: ' + rounded + ';';
+}
+
+function onTouchStart(event, ownerInstance) {
+  var touch   = dom.getTouch(event);
+  var dataset = dom.getDataset(event);
+  if (!touch) return;
+
+  startX = touch.clientX;
+  startY = touch.clientY;
+  lastOffset = 0;
+  isDragging = false;
+
+  // Cache refs once — avoids querying the tree on every touchmove frame
+  // IDs are passed via dataset so we don't depend on any class names
+  _contentEl  = dom.selectEl(ownerInstance, '#' + dataset.contentId);
+  _backdropEl = dom.selectEl(ownerInstance, '#' + dataset.backdropId);
+
+  // Disable CSS transitions immediately — no class names needed
+  if (_contentEl) _contentEl.setStyle('transition: none;');
+
+  ownerInstance.callMethod('handleTouchStart');
+}
+
+function onTouchMove(event) {
+  var touch   = dom.getTouch(event);
+  var dataset = dom.getDataset(event);
+  if (!touch) return;
+
+  var placement = dataset.placement || 'bottom';
+  var offset    = _computeOffset(touch.clientX, touch.clientY, placement);
+
+  if (offset > 0) isDragging = true;
+  lastOffset = offset;
+
+  if (_contentEl)  _contentEl.setStyle(_buildTransform(offset, placement));
+  if (_backdropEl) _backdropEl.setStyle(_buildBackdropOpacity(offset, dataset.threshold));
+}
+
+function onTouchEnd(event, ownerInstance) {
+  var touch   = dom.getChangedTouch(event);
+  var dataset = dom.getDataset(event);
+
+  var placement = dataset.placement || 'bottom';
+  var threshold = dataset.threshold || 80;
+  var duration  = dataset.duration  || 300;
+  var offset    = touch
+    ? _computeOffset(touch.clientX, touch.clientY, placement)
+    : lastOffset;
+
+  var passed = isDragging && offset >= threshold;
+
+  if (passed && _contentEl) {
+    var ce = _contentEl;
+    var be = _backdropEl;
+    var pl = placement;
+    var dur = duration;
+
+    ce.setStyle(_buildCurrentTranslate(offset, pl));
+
+    ce.requestAnimationFrame(function() {
+      ce.setStyle('transition: transform ' + dur + 'ms ease; ' + _buildExitTranslate(pl));
+      if (be) be.setStyle('transition: opacity ' + dur + 'ms ease; opacity: 0;');
+    });
+  } else {
+    if (_contentEl)  _contentEl.setStyle('');
+    if (_backdropEl) _backdropEl.setStyle('');
+  }
+
+  _contentEl  = null;
+  _backdropEl = null;
+  isDragging  = false;
+  lastOffset  = 0;
+
+  ownerInstance.callMethod('handleTouchEnd', { passed: passed });
+}
+
+module.exports = {
+  onTouchStart: onTouchStart,
+  onTouchMove:  onTouchMove,
+  onTouchEnd:   onTouchEnd,
+};

@@ -71,8 +71,6 @@ type EventType<T = any> = T & {
 
 export type EventObject = EventType<{ type: string }>;
 
-// ─── Params (passed to all implementations: actions, guards, effects, watch) ──
-
 type AnyFunction = () => string | number | boolean | null | undefined;
 type TrackFn = (deps: AnyFunction[], fn: VoidFunction) => void;
 

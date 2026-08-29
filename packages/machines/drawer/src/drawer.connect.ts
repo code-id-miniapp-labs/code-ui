@@ -13,9 +13,8 @@ export function connectDrawer(service: DrawerService): DrawerApi {
   const open = state.hasTag("open");
   const currentState = state.get();
   const placement = computed("placement");
-  const dragging = state.matches("swiping");
-  const dragOffset = context.get("dragOffset");
-  const keyboardHeight = context.get("keyboardHeight");
+  const threshold = service.prop("threshold") ?? 80;
+  const duration  = service.prop("duration")  ?? 300;
   const instanceUI = context.get("ui");
 
   const globalConfig = getComponentConfig<DrawerAnatomyPart>("drawer");
@@ -29,32 +28,12 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     instanceUI,
   });
 
-  const getContentTransform = () => {
-    const activeOffset = dragging ? dragOffset : 0;
-
-    if (activeOffset === 0 && keyboardHeight === 0) return "";
-
-    switch (placement) {
-      case "bottom":
-        // Move down by dragOffset, move up by keyboardHeight
-        return `transform: translate3d(0, calc(${activeOffset}px - ${keyboardHeight}px), 0);`;
-      case "top":
-        return `transform: translate3d(0, -${activeOffset}px, 0);`;
-      case "right":
-        return `transform: translate3d(${activeOffset}px, 0, 0);`;
-      case "left":
-        return `transform: translate3d(-${activeOffset}px, 0, 0);`;
-      default:
-        return "";
-    }
-  };
-
   return {
     open,
     state: currentState,
     placement,
-    dragging,
-    dragOffset,
+    threshold,
+    duration,
     ui: resolvedUI,
 
     setOpen(nextOpen: boolean) {
@@ -91,11 +70,9 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       ...parts.content.attrs,
       "data-state": currentState,
       "data-placement": placement,
-      "data-dragging": dragging ? "true" : "false",
       role: "dialog",
       "aria-modal": "true",
       "aria-hidden": !open,
-      style: getContentTransform(),
       className: resolvedUI.content,
     },
 

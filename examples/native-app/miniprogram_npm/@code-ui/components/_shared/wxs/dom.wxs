@@ -1,0 +1,77 @@
+/**
+ * dom.wxs
+ *
+ * Common DOM querying and event helpers for WXS event handlers.
+ * Reusable across any component that handles gestures or touch events.
+ *
+ * Usage:
+ *   <wxs src="../../_shared/wxs/dom.wxs" module="dom" />
+ */
+
+/**
+ * Safely get the primary touch from a touchstart/touchmove event.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {Touch | null}
+ */
+function getTouch(event) {
+  return event.touches && event.touches.length > 0 ? event.touches[0] : null;
+}
+
+/**
+ * Safely get the primary touch from a touchend/touchcancel event.
+ * touchend does not populate event.touches, so we use changedTouches.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {Touch | null}
+ */
+function getChangedTouch(event) {
+  return event.changedTouches && event.changedTouches.length > 0
+    ? event.changedTouches[0]
+    : null;
+}
+
+/**
+ * Get the dataset from the event's current target.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {object}
+ */
+function getDataset(event) {
+  return event.currentTarget && event.currentTarget.dataset
+    ? event.currentTarget.dataset
+    : {};
+}
+
+/**
+ * Select a single element within the component tree using a CSS-like selector.
+ * Wraps ownerInstance.selectComponent for a consistent call signature.
+ *
+ * @param {WxsComponentInstance} ownerInstance
+ * @param {string} selector  - e.g. '#my-id', '[data-part="content"]'
+ * @returns {WxsComponentInstance | null}
+ */
+function selectEl(ownerInstance, selector) {
+  if (!ownerInstance || !ownerInstance.selectComponent) return null;
+  return ownerInstance.selectComponent(selector) || null;
+}
+
+/**
+ * Select all matching elements within the component tree.
+ *
+ * @param {WxsComponentInstance} ownerInstance
+ * @param {string} selector
+ * @returns {WxsComponentInstance[]}
+ */
+function selectAllEl(ownerInstance, selector) {
+  if (!ownerInstance || !ownerInstance.selectAllComponents) return [];
+  return ownerInstance.selectAllComponents(selector) || [];
+}
+
+module.exports = {
+  getTouch: getTouch,
+  getChangedTouch: getChangedTouch,
+  getDataset: getDataset,
+  selectEl: selectEl,
+  selectAllEl: selectAllEl,
+};

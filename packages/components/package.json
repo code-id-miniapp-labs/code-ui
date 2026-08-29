@@ -35,7 +35,7 @@
   },
 
   "scripts": {
-    "build": "tsup && node scripts/copy-assets.mjs",
+    "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

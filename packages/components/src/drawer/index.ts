@@ -58,26 +58,12 @@ Component({
       console.log("closeTriggerTap", ev);
     },
 
-    handleTouchStart(e: WechatMiniprogram.TouchEvent) {
-      const touch = e.touches[0];
-      if (!touch) return;
-      this.send({
-        type: "SWIPE_START",
-        point: { x: touch.clientX, y: touch.clientY },
-      });
+    handleTouchStart() {
+      this.send({ type: "SWIPE_START" });
     },
 
-    handleTouchMove(e: WechatMiniprogram.TouchEvent) {
-      const touch = e.touches[0];
-      if (!touch) return;
-      this.send({
-        type: "SWIPE_MOVE",
-        point: { x: touch.clientX, y: touch.clientY },
-      });
-    },
-
-    handleTouchEnd() {
-      this.send({ type: "SWIPE_END" });
+    handleTouchEnd({ passed }: { passed: boolean }) {
+      this.send({ type: "SWIPE_END", passed });
     },
   },
 });

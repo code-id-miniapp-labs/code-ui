@@ -11,8 +11,6 @@ import type {
 import { ensureStateIndex } from "./state";
 import { extendMachine } from "./extend-machine";
 
-// ─── Guard combinators ────────────────────────────────────────────────────────
-
 export function createGuards<T extends MachineSchema>() {
   return {
     /** All guards must pass */

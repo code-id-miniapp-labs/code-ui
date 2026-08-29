@@ -24,12 +24,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         }
       },
     })),
-    dragOffset: bindable<number>(() => ({
-      defaultValue: 0,
-    })),
-    startPoint: bindable<{ x: number; y: number } | null>(() => ({
-      defaultValue: null,
-    })),
     keyboardHeight: bindable<number>(() => ({
       defaultValue: 0,
     })),
@@ -41,7 +35,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
   computed: {
     isOpen: ({ context }) => context.get("open"),
-    isDragging: ({ context }) => context.get("dragOffset") > 0,
     placement: ({ prop }) => prop("placement") ?? "bottom",
   },
 
@@ -94,7 +87,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         SWIPE_START: {
           target: "swiping",
           guard: "isDismissible",
-          actions: ["setStartPoint"],
         },
         KEYBOARD_CHANGE: {
           actions: ["setKeyboardHeight"],
@@ -105,18 +97,14 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     swiping: {
       tags: ["open", "swiping"],
       on: {
-        SWIPE_MOVE: {
-          actions: ["calculateDragOffset"],
-        },
         SWIPE_END: [
           {
             target: "closing",
-            guard: "hasPassedThreshold",
-            actions: ["setClosedContext", "resetDragOffset"],
+            guard: "swipePassed",
+            actions: ["setClosedContext"],
           },
           {
             target: "open",
-            actions: ["resetDragOffset"],
           },
         ],
         KEYBOARD_CHANGE: {
@@ -124,7 +112,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         },
         CLOSE: {
           target: "closing",
-          actions: ["setClosedContext", "resetDragOffset"],
+          actions: ["setClosedContext"],
         },
       },
     },
@@ -148,11 +136,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     guards: {
       closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick") ?? true,
       isDismissible: ({ prop }) => prop("dismissible") ?? true,
-      hasPassedThreshold: ({ context, prop }) => {
-        const threshold = prop("threshold") ?? 80;
-        const dragOffset = context.get("dragOffset");
-        return dragOffset >= threshold;
-      },
+      swipePassed: ({ event }) => "passed" in event && (event as any).passed === true,
     },
 
     actions: {
@@ -161,36 +145,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       },
       setClosedContext: ({ context }) => {
         context.set("open", false);
-      },
-      setStartPoint: ({ context, event }) => {
-        if ("point" in event) {
-          context.set("startPoint", event.point);
-        }
-      },
-      calculateDragOffset: ({ context, event, prop }) => {
-        if (!("point" in event)) return;
-        const start = context.get("startPoint");
-        if (!start) return;
-
-        const placement = prop("placement") ?? "bottom";
-        let delta = 0;
-
-        if (placement === "bottom") {
-          delta = event.point.y - start.y;
-        } else if (placement === "top") {
-          delta = start.y - event.point.y;
-        } else if (placement === "right") {
-          delta = event.point.x - start.x;
-        } else if (placement === "left") {
-          delta = start.x - event.point.x;
-        }
-
-        // Only positive drag (towards close)
-        context.set("dragOffset", Math.max(0, delta));
-      },
-      resetDragOffset: ({ context }) => {
-        context.set("dragOffset", 0);
-        context.set("startPoint", null);
       },
       setKeyboardHeight: ({ context, event }) => {
         if ("height" in event) {

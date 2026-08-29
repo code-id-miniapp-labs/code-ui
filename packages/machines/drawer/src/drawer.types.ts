@@ -51,23 +51,19 @@ export type DrawerEvent =
   | { type: "TOGGLE" }
   | { type: "BACKDROP.TAP" }
   | { type: "CLOSE_TRIGGER.TAP" }
-  | { type: "SWIPE_START"; point: { x: number; y: number } }
-  | { type: "SWIPE_MOVE"; point: { x: number; y: number } }
-  | { type: "SWIPE_END" }
+  | { type: "SWIPE_START" }
+  | { type: "SWIPE_END"; passed: boolean }
   | { type: "ANIMATION_END" }
   | { type: "KEYBOARD_CHANGE"; height: number };
 
 export interface DrawerContext {
   open: boolean;
-  dragOffset: number;
-  startPoint: { x: number; y: number } | null;
   keyboardHeight: number;
   ui: DrawerUI;
 }
 
 export interface DrawerComputed {
   isOpen: boolean;
-  isDragging: boolean;
   placement: Placement;
 }
 
@@ -94,10 +90,10 @@ export interface DrawerApi {
   state: DrawerState;
   /** Placement ('bottom' | 'top' | 'left' | 'right') */
   placement: Placement;
-  /** Whether user is actively swiping */
-  dragging: boolean;
-  /** Current drag offset in px */
-  dragOffset: number;
+  /** Drag distance threshold in px passed to WXS gesture handler */
+  threshold: number;
+  /** Close animation duration in ms — synced to WXS exit animation */
+  duration: number;
   /** Resolved UI class names for each drawer anatomy part */
   ui: Record<DrawerAnatomyPart, string>;
   /** Open or close the drawer */
