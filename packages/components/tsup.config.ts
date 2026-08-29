@@ -152,6 +152,26 @@ function triggerCopyAssets(): Promise<void> {
   });
 }
 
+const externalizeSharedRuntimePlugin = {
+  name: "externalize-shared-runtime",
+  setup(build: any) {
+    const sharedPkgs = [
+      "@code-ui/core",
+      "@code-ui/anatomy",
+      "@code-ui/utils",
+      "@code-ui/miniapp",
+      "alien-signals",
+    ];
+    const filter = new RegExp(`^(${sharedPkgs.join("|")})$`);
+    build.onResolve({ filter }, () => {
+      return {
+        path: "../_shared/runtime",
+        external: true,
+      };
+    });
+  },
+};
+
 export default defineConfig([
   // 1. Root package entry (for JS / TS npm imports)
   {
@@ -217,6 +237,7 @@ export default defineConfig([
     target: "es2015",
     external: ["../_shared/runtime", "../_shared/runtime.js", "../_shared/runtime.cjs"],
     noExternal: [/@code-ui\/.*/, "alien-signals"],
+    esbuildPlugins: [externalizeSharedRuntimePlugin],
     esbuildOptions(options) {
       options.pure = ["console.log", "console.warn"];
       options.legalComments = "none";
