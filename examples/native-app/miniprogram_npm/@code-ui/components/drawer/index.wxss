@@ -137,7 +137,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16rpx 0 8rpx 0;
+  padding: 20rpx 0 16rpx 0;
+  min-height: 48rpx;
+  box-sizing: border-box;
   touch-action: none;
   overscroll-behavior: contain;
 }

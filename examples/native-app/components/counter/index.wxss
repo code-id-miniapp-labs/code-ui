@@ -1,0 +1,142 @@
+.bench-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin: 20rpx 0;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #e5e7eb;
+}
+
+.bench-header {
+  margin-bottom: 20rpx;
+}
+
+.bench-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #111827;
+}
+
+.bench-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-top: 4rpx;
+}
+
+.bench-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.bench-banner {
+  background: #eff6ff;
+  border-left: 6rpx solid #3b82f6;
+  padding: 12rpx 16rpx;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.bench-banner-text {
+  font-size: 24rpx;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.bench-section {
+  background: #f9fafb;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid #f3f4f6;
+}
+
+.bench-section--heavy {
+  background: #fffbeb;
+  border-color: #fef3c7;
+}
+
+.bench-section-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12rpx;
+}
+
+.bench-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 10rpx;
+}
+
+.bench-badge {
+  background: #ffffff;
+  border: 1rpx solid #e5e7eb;
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: #4b5563;
+  font-family: monospace;
+}
+
+.bench-eval-count {
+  display: block;
+  font-size: 22rpx;
+  color: #059669;
+  font-weight: 600;
+}
+
+.bench-category-filters {
+  display: flex;
+  gap: 10rpx;
+  margin-bottom: 16rpx;
+}
+
+.filter-pill {
+  padding: 8rpx 18rpx;
+  background: #ffffff;
+  border: 1rpx solid #d1d5db;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #4b5563;
+}
+
+.filter-pill.active {
+  background: #f59e0b;
+  border-color: #d97706;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.bench-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.bench-stat-item {
+  background: #ffffff;
+  border-radius: 8rpx;
+  padding: 12rpx;
+  text-align: center;
+  border: 1rpx solid #fde68a;
+}
+
+.stat-num {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.stat-lbl {
+  display: block;
+  font-size: 20rpx;
+  color: #78350f;
+  margin-top: 2rpx;
+}

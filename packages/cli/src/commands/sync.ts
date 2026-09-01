@@ -79,13 +79,24 @@ export async function syncCommand(options: SyncCommandOptions = {}) {
   } catch {}
   await fs.mkdir(outputPath, { recursive: true });
 
-  // 5. Copy shared runtime
+  // 5. Copy shared runtime & root package entry
   const sharedSrc = path.join(sourceDir, "_shared");
   const sharedDest = path.join(outputPath, "_shared");
   try {
     await fs.access(sharedSrc);
     await fs.cp(sharedSrc, sharedDest, { recursive: true, force: true });
   } catch {}
+
+  // Copy root index bundle files so require("@code-ui/components") works
+  const rootFiles = ["index.js", "index.d.ts"];
+  for (const file of rootFiles) {
+    const srcFile = path.join(sourceDir, file);
+    const destFile = path.join(outputPath, file);
+    try {
+      await fs.access(srcFile);
+      await fs.copyFile(srcFile, destFile);
+    } catch {}
+  }
 
   // 6. Copy selected components
   for (const comp of targetComponents) {
@@ -104,6 +115,7 @@ export async function syncCommand(options: SyncCommandOptions = {}) {
     name: "@code-ui/components",
     version: "0.0.1",
     miniprogram: ".",
+    main: "index.js",
   };
   await fs.writeFile(
     path.join(outputPath, "package.json"),

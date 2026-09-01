@@ -19,7 +19,6 @@ Component({
     multipleSlots: true,
     addGlobalClass: true,
     styleIsolation: "apply-shared",
-    virtualHost: true,
   },
 
   lifetimes: {
@@ -57,12 +56,19 @@ Component({
       this.triggerEvent("closeTriggerTap", ev);
     },
 
-    handleTouchStart() {
-      this.send({ type: "SWIPE_START" });
+    handleTouchStart(value?: any) {
+      this.send({ type: "DRAG_START" });
+      this.triggerEvent("dragstart", value || {});
     },
 
-    handleTouchEnd({ passed }: { passed: boolean }) {
-      this.send({ type: "SWIPE_END", passed });
+    handleTouchMove(value?: any) {
+      this.triggerEvent("drag", value || {});
+    },
+
+    handleTouchEnd(value?: { passed: boolean; offset?: number }) {
+      const passed = value ? value.passed : false;
+      this.send({ type: "DRAG_END", passed });
+      this.triggerEvent("dragend", value || { passed: false });
     },
   },
 });

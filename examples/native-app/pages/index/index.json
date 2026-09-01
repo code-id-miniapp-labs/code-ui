@@ -2,6 +2,7 @@
   "navigationBarTitleText": "Native @code-ui Showcase",
   "usingComponents": {
     "cui-button": "@code-ui/components/button/index",
-    "cui-drawer": "@code-ui/components/drawer/index"
+    "cui-drawer": "@code-ui/components/drawer/index",
+    "counter": "/components/counter/index"
   }
 }

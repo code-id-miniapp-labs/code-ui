@@ -1,0 +1,113 @@
+<view class="bench-card">
+  <view class="bench-header">
+    <text class="bench-title">⚡ alien-signals Computed Benchmark</text>
+    <text class="bench-subtitle">30+ Computeds with Fine-Grained Tracking</text>
+  </view>
+
+  <!-- Control Buttons -->
+  <view class="bench-actions">
+    <cui-button variant="primary" size="sm" bind:tap="handleIncrementA">
+      +1 A (a={{a}})
+    </cui-button>
+    <cui-button variant="secondary" size="sm" bind:tap="handleIncrementB">
+      +1 B (b={{b}})
+    </cui-button>
+    <cui-button variant="outline" size="sm" bind:tap="handleStressTest">
+      ⚡ 50 Rapid Mutates
+    </cui-button>
+  </view>
+
+  <!-- Progress / benchmark duration banner -->
+  <view class="bench-banner" wx:if="{{rapidRunProgress}}">
+    <text class="bench-banner-text">{{rapidRunProgress}}</text>
+  </view>
+
+  <!-- Stats Grid for Group A (10 computeds) -->
+  <view class="bench-section">
+    <view class="bench-section-title">Group A Computeds (Depends only on A)</view>
+    <view class="bench-badge-row">
+      <view class="bench-badge">sq: {{a_sq}}</view>
+      <view class="bench-badge">cube: {{a_cube}}</view>
+      <view class="bench-badge">sqrt: {{a_sqrt}}</view>
+      <view class="bench-badge">sin: {{a_sin}}</view>
+      <view class="bench-badge">hex: {{a_hex}}</view>
+      <view class="bench-badge">bin: {{a_binary}}</view>
+      <view class="bench-badge">{{a_isEven}}</view>
+      <view class="bench-badge">{{a_label}}</view>
+    </view>
+    <text class="bench-eval-count">Status: {{evalA_summary}}</text>
+  </view>
+
+  <!-- Stats Grid for Group B (10 computeds) -->
+  <view class="bench-section">
+    <view class="bench-section-title">Group B Computeds (Depends only on B)</view>
+    <view class="bench-badge-row">
+      <view class="bench-badge">sq: {{b_sq}}</view>
+      <view class="bench-badge">cube: {{b_cube}}</view>
+      <view class="bench-badge">sqrt: {{b_sqrt}}</view>
+      <view class="bench-badge">sin: {{b_sin}}</view>
+      <view class="bench-badge">hex: {{b_hex}}</view>
+      <view class="bench-badge">bin: {{b_binary}}</view>
+      <view class="bench-badge">{{b_isEven}}</view>
+      <view class="bench-badge">{{b_label}}</view>
+    </view>
+    <text class="bench-eval-count">Status: {{evalB_summary}}</text>
+  </view>
+
+  <!-- Combined Group (Depends on A & B) -->
+  <view class="bench-section">
+    <view class="bench-section-title">Combined Computeds (A + B)</view>
+    <view class="bench-badge-row">
+      <view class="bench-badge">Sum: {{combined_sum}}</view>
+      <view class="bench-badge">Product: {{combined_product}}</view>
+      <view class="bench-badge">Ratio: {{combined_ratio}}</view>
+    </view>
+  </view>
+
+  <!-- Heavy Computation Group (2,000 items filtering & stats) -->
+  <view class="bench-section bench-section--heavy">
+    <view class="bench-section-title">🔥 Heavy 2,000-Item Aggregation</view>
+    <view class="bench-category-filters">
+      <view
+        class="filter-pill {{filterCategory === 'all' ? 'active' : ''}}"
+        data-cat="all"
+        bind:tap="handleFilterCategory"
+      >All</view>
+      <view
+        class="filter-pill {{filterCategory === 'finance' ? 'active' : ''}}"
+        data-cat="finance"
+        bind:tap="handleFilterCategory"
+      >Finance</view>
+      <view
+        class="filter-pill {{filterCategory === 'tech' ? 'active' : ''}}"
+        data-cat="tech"
+        bind:tap="handleFilterCategory"
+      >Tech</view>
+      <view
+        class="filter-pill {{filterCategory === 'retail' ? 'active' : ''}}"
+        data-cat="retail"
+        bind:tap="handleFilterCategory"
+      >Retail</view>
+    </view>
+
+    <view class="bench-stats-grid">
+      <view class="bench-stat-item">
+        <text class="stat-num">{{heavyListStats.total}}</text>
+        <text class="stat-lbl">Matched</text>
+      </view>
+      <view class="bench-stat-item">
+        <text class="stat-num">{{heavyListStats.avg}}</text>
+        <text class="stat-lbl">Average</text>
+      </view>
+      <view class="bench-stat-item">
+        <text class="stat-num">{{heavyListStats.max}}</text>
+        <text class="stat-lbl">Max</text>
+      </view>
+      <view class="bench-stat-item">
+        <text class="stat-num">{{heavyListStats.computeMs}}ms</text>
+        <text class="stat-lbl">Compute Latency</text>
+      </view>
+    </view>
+    <text class="bench-eval-count">Heavy Evals: {{heavyListStats.evalCount}} (Idle when mutating A or B)</text>
+  </view>
+</view>

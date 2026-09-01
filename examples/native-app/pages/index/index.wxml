@@ -9,6 +9,12 @@
     <text class="hero-subtitle">
       Zero framework layer. Pure native WeChat MiniProgram components powered by headless state machines.
     </text>
+    <view style="margin-top: 20rpx;">
+      <cui-button variant="primary" bind:tap="handleNavSkyline">
+        🚀 Open Skyline Page + Computed Demo →
+      </cui-button>
+    </view>
+    <counter />
   </view>
   <!-- Section 1: Button Showcase -->
   <view class="config-card">
@@ -150,8 +156,7 @@
       </view>
     </picker>
   </view>
-  <!-- Native Drawer Component Instance -->
-  <cui-drawer open="{{isDrawerOpen}}" placement="{{placement}}" threshold="{{threshold}}" close-on-backdrop-click="{{closeOnBackdrop}}" dismissible="{{dismissible}}" bind:close="handleDrawerClose" bind:backdropTap="handleBackdropTap" bind:closeTriggerTap="handleCloseTriggerTap">
+  <cui-drawer open="{{isDrawerOpen}}" placement="{{placement}}" threshold="{{threshold}}" close-on-backdrop-click="{{closeOnBackdrop}}" dismissible="{{dismissible}}" bind:close="handleDrawerClose" bind:backdropTap="handleBackdropTap" bind:closeTriggerTap="handleCloseTriggerTap" bind:dragstart="handleDragStart" bind:drag="handleDrag" bind:dragend="handleDragEnd" bind:closetriggertap="handleCloseTriggerTap">
     <view slot="header">
       <text class="drawer-title">Native Drawer ({{placement}})</text>
     </view>

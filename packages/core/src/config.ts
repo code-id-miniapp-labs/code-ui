@@ -100,12 +100,6 @@ export function resetConfig(): void {
   configBus.emit("reset");
 }
 
-/**
- * Subscribe to configuration changes.
- * Framework adapters (e.g. @code-ui/miniapp) use this to bridge config
- * updates into their own reactive system.
- * Returns an unsubscribe function.
- */
 export function subscribeConfig(
   callback: (config: CodeUIConfig) => void,
 ): () => void {
@@ -134,16 +128,6 @@ export interface MergeUIOptions<TSlots extends string> {
   instanceUI?: Partial<Record<TSlots, string>> | undefined;
 }
 
-/**
- * Reconciles and resolves the final class names for all anatomy slots of a component.
- * Merging order (later overrides / appends cleanly with earlier):
- * 1. Component Base Default Slots
- * 2. Global Component Config Base Slots (`config.ui` / `config.slots`)
- * 3. Global Component Config Variant Slots (`config.variants.variant[v]`)
- * 4. Global Component Config Size Slots (`config.variants.size[s]`)
- * 5. Global Component Config Extra Variant Slots
- * 6. Per-Instance `ui` prop overrides
- */
 export function mergeUI<TSlots extends string>(
   options: MergeUIOptions<TSlots>,
 ): Record<TSlots, string> {

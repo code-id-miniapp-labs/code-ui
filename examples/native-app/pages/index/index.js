@@ -23,6 +23,11 @@ Page({
         countryIndex: 2,
         selectedRegion: ["Guangdong", "Shenzhen", "Nanshan"],
     },
+    handleNavSkyline() {
+        wx.navigateTo({
+            url: "/pages/skyline/index",
+        });
+    },
     handleButtonTap(e) {
         const variant = e.currentTarget.dataset.variant || "button";
         wx.showToast({
@@ -77,6 +82,15 @@ Page({
     },
     handleDrawerClose() {
         this.setData({ isDrawerOpen: false });
+    },
+    handleDragStart(e) {
+        console.log("drag start", e);
+    },
+    handleDrag(e) {
+        console.log("drag", e);
+    },
+    handleDragEnd(e) {
+        console.log("drag end", e);
     },
     handlePickerChange(e) {
         const val = e.detail.value;

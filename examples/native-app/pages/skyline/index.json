@@ -1,0 +1,10 @@
+{
+  "renderer": "skyline",
+  "componentFramework": "glass-easel",
+  "navigationBarTitleText": "Skyline Page + Computed",
+  "navigationBarBackgroundColor": "#0f172a",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "cui-button": "@code-ui/components/button/index"
+  }
+}

@@ -81,10 +81,15 @@ function onTouchStart(event, ownerInstance) {
   // Disable CSS transitions immediately — no class names needed
   if (_contentEl) _contentEl.setStyle('transition: none;');
 
-  ownerInstance.callMethod('handleTouchStart');
+  ownerInstance.callMethod('handleTouchStart', {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+    startX: startX,
+    startY: startY
+  });
 }
 
-function onTouchMove(event) {
+function onTouchMove(event, ownerInstance) {
   var touch   = dom.getTouch(event);
   var dataset = dom.getDataset(event);
   if (!touch) return;
@@ -97,6 +102,14 @@ function onTouchMove(event) {
 
   if (_contentEl)  _contentEl.setStyle(_buildTransform(offset, placement));
   if (_backdropEl) _backdropEl.setStyle(_buildBackdropOpacity(offset, dataset.threshold));
+
+  if (ownerInstance) {
+    ownerInstance.callMethod('handleTouchMove', {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      offset: offset
+    });
+  }
 }
 
 function onTouchEnd(event, ownerInstance) {
@@ -134,7 +147,10 @@ function onTouchEnd(event, ownerInstance) {
   isDragging  = false;
   lastOffset  = 0;
 
-  ownerInstance.callMethod('handleTouchEnd', { passed: passed });
+  ownerInstance.callMethod('handleTouchEnd', {
+    passed: passed,
+    offset: offset
+  });
 }
 
 module.exports = {
@@ -142,3 +158,4 @@ module.exports = {
   onTouchMove:  onTouchMove,
   onTouchEnd:   onTouchEnd,
 };
+

@@ -41,9 +41,9 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   watch: ({ prop, state, send }) => {
     const controlledOpen = prop("open");
     if (controlledOpen !== undefined) {
-      if (controlledOpen && !state.matches("open", "swiping")) {
+      if (controlledOpen && !state.matches("open", "dragging")) {
         send({ type: "OPEN" });
-      } else if (!controlledOpen && state.matches("open", "swiping")) {
+      } else if (!controlledOpen && state.matches("open", "dragging")) {
         send({ type: "CLOSE" });
       }
     }
@@ -84,8 +84,8 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
           target: "closing",
           actions: ["setClosedContext"],
         },
-        SWIPE_START: {
-          target: "swiping",
+        DRAG_START: {
+          target: "dragging",
           guard: "isDismissible",
         },
         KEYBOARD_CHANGE: {
@@ -94,13 +94,13 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       },
     },
 
-    swiping: {
-      tags: ["open", "swiping"],
+    dragging: {
+      tags: ["open", "dragging"],
       on: {
-        SWIPE_END: [
+        DRAG_END: [
           {
             target: "closing",
-            guard: "swipePassed",
+            guard: "dragPassed",
             actions: ["setClosedContext"],
           },
           {
@@ -136,7 +136,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     guards: {
       closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick") ?? true,
       isDismissible: ({ prop }) => prop("dismissible") ?? true,
-      swipePassed: ({ event }) => "passed" in event && (event as any).passed === true,
+      dragPassed: ({ event }) => "passed" in event && (event as any).passed === true,
     },
 
     actions: {

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "cui-button": "@code-ui/components/button/index"
+  }
+}

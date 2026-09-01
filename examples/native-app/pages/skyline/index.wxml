@@ -1,0 +1,116 @@
+<view class="skyline-container">
+  <!-- Header -->
+  <view class="skyline-header">
+    <view class="engine-tag">Skyline Native Engine + computedBehavior</view>
+    <text class="page-title">Shopping Cart & Checkout</text>
+    <text class="page-subtitle">Reactive Page-level Computed Signals</text>
+  </view>
+
+  <!-- Free shipping status progress -->
+  <view class="shipping-banner {{freeShippingProgress.qualified ? 'shipping-banner--qualified' : ''}}">
+    <view class="shipping-banner-header">
+      <text class="shipping-icon">{{freeShippingProgress.qualified ? '🎉' : '🚚'}}</text>
+      <text class="shipping-text" wx:if="{{freeShippingProgress.qualified}}">
+        You unlocked Free Shipping!
+      </text>
+      <text class="shipping-text" wx:else>
+        Add ${{freeShippingProgress.remaining}} more for Free Shipping
+      </text>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{freeShippingProgress.percentage}}%;" />
+    </view>
+  </view>
+
+  <!-- Cart Items List -->
+  <view class="card-section">
+    <view class="section-title-row">
+      <text class="section-title">Cart Items ({{itemCount}})</text>
+      <cui-button size="sm" variant="outline" bind:tap="handleAddItem">
+        + Add New Product
+      </cui-button>
+    </view>
+
+    <view class="item-list">
+      <block wx:for="{{items}}" wx:key="id">
+        <view class="cart-item">
+          <text class="item-icon">{{item.icon}}</text>
+          <view class="item-info">
+            <text class="item-name">{{item.name}}</text>
+            <text class="item-price">${{item.price}} each</text>
+          </view>
+          <view class="item-stepper">
+            <view
+              class="stepper-btn"
+              data-id="{{item.id}}"
+              bind:tap="handleDecreaseQuantity"
+            >-</view>
+            <text class="stepper-count">{{item.quantity}}</text>
+            <view
+              class="stepper-btn"
+              data-id="{{item.id}}"
+              bind:tap="handleIncreaseQuantity"
+            >+</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- Coupon Section -->
+  <view class="card-section">
+    <view class="coupon-row">
+      <view class="coupon-info">
+        <text class="coupon-tag">COUPON</text>
+        <text class="coupon-code">{{couponCode}} (20% OFF)</text>
+      </view>
+      <cui-button
+        size="sm"
+        variant="{{couponApplied ? 'primary' : 'outline'}}"
+        bind:tap="handleToggleCoupon"
+      >
+        {{couponApplied ? 'Applied ✓' : 'Apply'}}
+      </cui-button>
+    </view>
+  </view>
+
+  <!-- Order Summary (Computed Values) -->
+  <view class="card-section summary-card">
+    <text class="section-title">Computed Order Summary</text>
+    
+    <view class="summary-line">
+      <text class="summary-label">Subtotal ({{itemCount}} items)</text>
+      <text class="summary-value">${{subtotal}}</text>
+    </view>
+
+    <view class="summary-line discount-line" wx:if="{{couponApplied}}">
+      <text class="summary-label">Coupon Discount (20%)</text>
+      <text class="summary-value">-${{discountAmount}}</text>
+    </view>
+
+    <view class="summary-line">
+      <text class="summary-label">Shipping</text>
+      <text class="summary-value {{effectiveShipping === 0 ? 'free-text' : ''}}">
+        {{effectiveShipping === 0 ? 'FREE' : '$' + effectiveShipping}}
+      </text>
+    </view>
+
+    <view class="summary-line">
+      <text class="summary-label">Estimated Tax (8%)</text>
+      <text class="summary-value">${{taxAmount}}</text>
+    </view>
+
+    <view class="summary-divider" />
+
+    <view class="summary-line total-line">
+      <text class="total-label">Grand Total</text>
+      <text class="total-value">${{grandTotal}}</text>
+    </view>
+
+    <view style="margin-top: 24rpx;">
+      <cui-button variant="primary" size="lg">
+        Proceed to Checkout (${{grandTotal}})
+      </cui-button>
+    </view>
+  </view>
+</view>

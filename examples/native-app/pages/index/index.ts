@@ -52,6 +52,10 @@ export interface IndexPageCustom {
   handleRegionChange: (
     e: WechatMiniprogram.CustomEvent<{ value: string[] }>,
   ) => void;
+  handleDragStart: (e: WechatMiniprogram.CustomEvent) => void;
+  handleDrag: (e: WechatMiniprogram.CustomEvent) => void;
+  handleDragEnd: (e: WechatMiniprogram.CustomEvent) => void;
+  handleNavSkyline: () => void;
 }
 
 const years = ["2022", "2023", "2024", "2025", "2026"];
@@ -77,6 +81,12 @@ Page<IndexPageData, IndexPageCustom>({
     countries,
     countryIndex: 2,
     selectedRegion: ["Guangdong", "Shenzhen", "Nanshan"],
+  },
+
+  handleNavSkyline() {
+    wx.navigateTo({
+      url: "/pages/skyline/index",
+    });
   },
 
   handleButtonTap(e) {
@@ -142,6 +152,15 @@ Page<IndexPageData, IndexPageCustom>({
 
   handleDrawerClose() {
     this.setData({ isDrawerOpen: false });
+  },
+  handleDragStart(e) {
+    console.log("drag start", e);
+  },
+  handleDrag(e) {
+    console.log("drag", e);
+  },
+  handleDragEnd(e) {
+    console.log("drag end", e);
   },
 
   handlePickerChange(e) {

@@ -4,7 +4,7 @@ import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./drawer.anatomy";
 
 export type Placement = "top" | "bottom" | "left" | "right";
-export type DrawerState = "open" | "closed" | "closing" | "swiping";
+export type DrawerState = "open" | "closed" | "closing" | "dragging";
 
 export type DrawerAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type DrawerUI = ComponentUI<typeof anatomy>;
@@ -36,7 +36,7 @@ export interface DrawerProps {
   onClose?: () => void;
   /** Whether clicking the backdrop closes the drawer */
   closeOnBackdropClick?: boolean;
-  /** Whether the drawer can be swiped to close */
+  /** Whether the drawer can be dragged to close */
   dismissible?: boolean;
   /** Drag distance threshold in px to trigger close */
   threshold?: number;
@@ -51,8 +51,8 @@ export type DrawerEvent =
   | { type: "TOGGLE" }
   | { type: "BACKDROP.TAP" }
   | { type: "CLOSE_TRIGGER.TAP" }
-  | { type: "SWIPE_START" }
-  | { type: "SWIPE_END"; passed: boolean }
+  | { type: "DRAG_START" }
+  | { type: "DRAG_END"; passed: boolean }
   | { type: "ANIMATION_END" }
   | { type: "KEYBOARD_CHANGE"; height: number };
 
@@ -69,7 +69,7 @@ export interface DrawerComputed {
 
 export interface DrawerSchema extends MachineSchema {
   state: DrawerState;
-  tag: "open" | "closed" | "swiping";
+  tag: "open" | "closed" | "dragging";
   event: DrawerEvent;
   props: DrawerProps;
   context: DrawerContext;
@@ -86,7 +86,7 @@ export type DrawerParams = Params<DrawerSchema>;
 export interface DrawerApi {
   /** Whether the drawer is open */
   open: boolean;
-  /** Current machine state ('open' | 'closed' | 'closing' | 'swiping') */
+  /** Current machine state ('open' | 'closed' | 'closing' | 'dragging') */
   state: DrawerState;
   /** Placement ('bottom' | 'top' | 'left' | 'right') */
   placement: Placement;

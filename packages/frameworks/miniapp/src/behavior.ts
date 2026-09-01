@@ -2,6 +2,8 @@ import { MiniappMachine } from "./machine";
 import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
 import type { Machine, MachineSchema } from "@code-ui/core";
+import { isObject, runIfFn } from "@code-ui/utils";
+import { computedBehavior } from "./behaviors/computed-behavior";
 
 export interface CreateMachineBehaviorOptions<
   T extends MachineSchema,
@@ -106,24 +108,27 @@ export function createMachineBehavior<
   } = options;
 
   let discoveredProps: string[] = [];
-  if (typeof machineDef?.props === "function") {
-    try {
-      const defaultProps = machineDef.props({
-        props: {} as any,
-        scope: {} as any,
-      });
-      if (defaultProps && typeof defaultProps === "object") {
-        discoveredProps = Object.keys(defaultProps);
-      }
-    } catch {}
-  }
+
+  try {
+    const defaultProps = runIfFn(machineDef.props, {
+      props: {},
+      scope: {} as any,
+    });
+
+    if (defaultProps && isObject(defaultProps)) {
+      discoveredProps = Object.keys(defaultProps);
+    }
+  } catch {}
 
   const syncProps =
     explicitSyncProps && explicitSyncProps.length > 0
       ? explicitSyncProps
       : (discoveredProps as Array<keyof T["props"]>);
 
-  const behaviors: string[] = [];
+  // Always include computedBehavior — zero overhead when defFields.computed is absent
+  // Cast to any: WeChat's BehaviorOption type is opaque and doesn't accept
+  // a union of (string | Behavior instance), but the runtime accepts both.
+  const behaviors: any[] = [computedBehavior];
   if (formField) behaviors.push("wx://form-field");
   if (exportApi) behaviors.push("wx://component-export");
 

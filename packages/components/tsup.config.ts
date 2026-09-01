@@ -187,7 +187,6 @@ export default defineConfig([
     target: "es2015",
     noExternal: [/@code-ui\/.*/, "alien-signals"],
     esbuildOptions(options) {
-      options.pure = ["console.log", "console.warn"];
       options.legalComments = "none";
     },
     outExtension({ format }) {
@@ -213,7 +212,6 @@ export default defineConfig([
     target: "es2015",
     noExternal: [/@code-ui\/.*/, "alien-signals"],
     esbuildOptions(options) {
-      options.pure = ["console.log", "console.warn"];
       options.legalComments = "none";
     },
     outExtension() {
@@ -239,7 +237,6 @@ export default defineConfig([
     noExternal: [/@code-ui\/.*/, "alien-signals"],
     esbuildPlugins: [externalizeSharedRuntimePlugin],
     esbuildOptions(options) {
-      options.pure = ["console.log", "console.warn"];
       options.legalComments = "none";
     },
     outExtension() {
