@@ -1,5 +1,3 @@
-/// <reference types="miniprogram-api-typings" />
-
 export interface IAppOption {
   globalData: {
     userInfo?: WechatMiniprogram.UserInfo;

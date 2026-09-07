@@ -17,8 +17,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -27,7 +27,7 @@
     "@tarojs/cli": "^4.2.1",
     "@tarojs/service": "^4.2.1",
     "@types/node": "^26.2.0",
-    "tsup": "^8.3.0",
+    "tsdown": "^0.23.0",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {

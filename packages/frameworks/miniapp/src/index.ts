@@ -20,6 +20,11 @@ export {
 } from "./behaviors/computed-behavior";
 export type {
   ComputedDefs,
+  ComputedDef,
+  ComputedGetter,
+  ComputedSetter,
+  WritableComputedDef,
+  ExtractComputedReturns,
   ComponentOptionsWithComputed,
   PageOptionsWithComputed,
 } from "./behaviors/computed-behavior";

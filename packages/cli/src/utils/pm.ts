@@ -33,6 +33,6 @@ export function installDependencies(
   try {
     execSync(command, { cwd, stdio: "inherit" });
   } catch (error) {
-    throw new Error(`Failed to install dependencies: ${command}`);
+    throw new Error(`Failed to install dependencies: ${command}`, { cause: error });
   }
 }

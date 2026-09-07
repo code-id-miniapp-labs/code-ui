@@ -19,8 +19,8 @@
     "./wxs/*": "./dist/wxs/*"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "alien-signals": "^1.0.4",
-    "tsup": "^8.3.0",
+    "tsdown": "^0.23.0",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {

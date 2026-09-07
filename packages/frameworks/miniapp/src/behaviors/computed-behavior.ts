@@ -6,16 +6,110 @@ import {
   signal,
 } from "alien-signals";
 
+export type ComputedGetter<T = any, TThis = any> = (this: TThis) => T;
+export type ComputedSetter<T = any, TThis = any> = (
+  this: TThis,
+  val: T,
+) => void;
+
+export interface WritableComputedDef<T = any, TThis = any> {
+  get: ComputedGetter<T, TThis>;
+  set?: ComputedSetter<T, TThis>;
+}
+
+export type ComputedDef<T = any, TThis = any> =
+  | ComputedGetter<T, TThis>
+  | WritableComputedDef<T, TThis>;
+
 /**
  * @example
  * ```ts
  * const computed: ComputedDefs = {
+ *   // Function syntax
  *   fullName() { return this.data.firstName + ' ' + this.data.lastName },
- *   doubled() { return this.data.count * 2 }
+ *   // Object syntax with get and set
+ *   fullNameWritable: {
+ *     get() { return this.data.firstName + ' ' + this.data.lastName },
+ *     set(val: string) {
+ *       const [first, last] = val.split(' ');
+ *       this.setData({ firstName: first, lastName: last });
+ *     }
+ *   }
  * }
  * ```
  */
-export type ComputedDefs = Record<string, (...args: any[]) => any>;
+export type ComputedDefs = Record<string, ComputedDef>;
+
+export type ExtractComputedReturns<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => infer R
+    ? R
+    : T[K] extends { get: (...args: any[]) => infer R }
+      ? R
+      : any;
+};
+
+export function parseComputedDef(def?: ComputedDef): {
+  get: (...args: any[]) => any;
+  set?: (val: any) => void;
+} {
+  if (typeof def === "function") {
+    return { get: def };
+  }
+  if (def && typeof def === "object") {
+    if (typeof (def as any).get === "function") {
+      return {
+        get: (def as any).get,
+        set:
+          typeof (def as any).set === "function" ? (def as any).set : undefined,
+      };
+    }
+  }
+  return {
+    get: () => undefined,
+  };
+}
+
+export type ComponentInstanceBase<
+  TData extends WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption,
+> = WechatMiniprogram.Component.InstanceMethods<TData> & {
+  data: TData & WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
+  properties: TData &
+    WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
+  triggerEvent<DetailType = any>(
+    name: string,
+    detail?: DetailType,
+    options?: WechatMiniprogram.Component.TriggerEventOption,
+  ): void;
+  is: string;
+  id: string;
+  dataset: Record<string, any>;
+};
+
+export type ComponentInstanceFull<
+  TData extends WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption,
+  TMethod extends WechatMiniprogram.Component.MethodOption,
+  TComputed,
+  TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
+  TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
+  TIsPage extends boolean = false,
+> = WechatMiniprogram.Component.Instance<
+  TData & ExtractComputedReturns<TComputed>,
+  TProperty,
+  TMethod,
+  TBehavior,
+  TCustomInstanceProperty,
+  TIsPage
+> &
+  ExtractComputedReturns<TComputed>;
+
+export type ComponentComputedDefs<
+  TData extends WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption,
+> = {
+  [key: string]: ComputedDef<any, ComponentInstanceBase<TData, TProperty>>;
+};
 
 export type ComponentOptionsWithComputed<
   TData extends WechatMiniprogram.Component.DataOption =
@@ -24,51 +118,43 @@ export type ComponentOptionsWithComputed<
     WechatMiniprogram.Component.PropertyOption,
   TMethod extends WechatMiniprogram.Component.MethodOption =
     WechatMiniprogram.Component.MethodOption,
+  TComputed extends ComponentComputedDefs<TData, TProperty> =
+    ComponentComputedDefs<TData, TProperty>,
   TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
-  TComputed extends ComputedDefs = ComputedDefs,
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
-  TInstance = WechatMiniprogram.Component.Instance<
-    TData,
-    TProperty,
-    TMethod,
-    TBehavior,
-    TCustomInstanceProperty,
-    TIsPage
-  >,
-> = WechatMiniprogram.Component.Options<
-  TData,
-  TProperty,
-  TMethod,
-  TBehavior,
-  TCustomInstanceProperty,
-  TIsPage
-> & {
-  /**
-   * Signal-powered computed properties.
-   * Inside computed getters, `this.data` and `this.properties` have full autocomplete.
-   *
-   * @example
-   * ```ts
-   * computed: {
-   *   b() { return this.data.a + 100 }
-   * }
-   * ```
-   */
-  computed?: TComputed & ThisType<TInstance>;
-};
+> = Partial<WechatMiniprogram.Component.Data<TData>> &
+  Partial<WechatMiniprogram.Component.Property<TProperty>> &
+  Partial<WechatMiniprogram.Component.Method<TMethod, TIsPage>> &
+  Partial<WechatMiniprogram.Component.OtherOption> &
+  Partial<WechatMiniprogram.Component.Lifetimes> & {
+    behaviors?: TBehavior;
+    computed?: TComputed;
+  } &
+  ThisType<
+    ComponentInstanceFull<
+      TData,
+      TProperty,
+      TMethod,
+      TComputed,
+      TBehavior,
+      TCustomInstanceProperty,
+      TIsPage
+    >
+  >;
 
 /**
- * Typed wrapper for `Component()` that adds support for the `computed` field.
- * Passes the options through unchanged — typing only.
- *
  * @example
  * ```ts
  * Component(createComponentOptions({
  *   behaviors: [computedBehavior],
  *   data: { a: 0 },
  *   computed: {
- *     b() { return this.data.a + 100 }
+ *     b() { return this.data.a + 100 },
+ *     c: {
+ *       get() { return this.data.a * 2 },
+ *       set(val) { this.setData({ a: val / 2 }) }
+ *     }
  *   },
  * }))
  * ```
@@ -77,8 +163,8 @@ export function createComponentOptions<
   TData extends WechatMiniprogram.Component.DataOption,
   TProperty extends WechatMiniprogram.Component.PropertyOption,
   TMethod extends WechatMiniprogram.Component.MethodOption,
+  TComputed extends ComponentComputedDefs<TData, TProperty>,
   TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
-  TComputed extends ComputedDefs = ComputedDefs,
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
 >(
@@ -86,21 +172,22 @@ export function createComponentOptions<
     TData,
     TProperty,
     TMethod,
-    TBehavior,
     TComputed,
+    TBehavior,
     TCustomInstanceProperty,
     TIsPage
   >,
-): ComponentOptionsWithComputed<
-  TData,
+): WechatMiniprogram.Component.Options<
+  TData & ExtractComputedReturns<TComputed>,
   TProperty,
   TMethod,
   TBehavior,
-  TComputed,
   TCustomInstanceProperty,
   TIsPage
-> {
-  const computedDefs = options.computed;
+> & {
+  computed?: TComputed;
+} {
+  const computedDefs = options.computed as ComputedDefs | undefined;
   if (computedDefs) {
     (options as any)[_COMPUTED_DEFS] = computedDefs;
 
@@ -112,10 +199,11 @@ export function createComponentOptions<
     }
     options.behaviors = behaviors as unknown as TBehavior;
 
-    options.data = options.data || ({} as TData);
-    for (const [key, getter] of Object.entries(computedDefs)) {
+    options.data = (options.data || {}) as TData;
+    for (const [key, def] of Object.entries(computedDefs)) {
       try {
-        const val = getter.call({
+        const { get } = parseComputedDef(def);
+        const val = get.call({
           data: options.data,
           properties: options.properties || options.data,
         });
@@ -126,20 +214,47 @@ export function createComponentOptions<
     }
   }
 
-  return options;
+  return options as any;
 }
+
+export type PageInstanceBase<TData extends WechatMiniprogram.Page.DataOption> =
+  WechatMiniprogram.Page.InstanceMethods<TData> & {
+    data: TData;
+    is: string;
+    route: string;
+    options: Record<string, string | undefined>;
+  };
+
+export type PageInstanceFull<
+  TData extends WechatMiniprogram.Page.DataOption,
+  TComputed,
+  TCustom extends WechatMiniprogram.Page.CustomOption,
+> = WechatMiniprogram.Page.Instance<
+  TData & ExtractComputedReturns<TComputed>,
+  TCustom
+> &
+  ExtractComputedReturns<TComputed>;
+
+export type ComputedDefsForPage<
+  TData extends WechatMiniprogram.Page.DataOption,
+> = {
+  [key: string]: ComputedDef<any, PageInstanceBase<TData>>;
+};
 
 export type PageOptionsWithComputed<
   TData extends WechatMiniprogram.Page.DataOption =
     WechatMiniprogram.Page.DataOption,
+  TComputed extends ComputedDefsForPage<TData> = ComputedDefsForPage<TData>,
   TCustom extends WechatMiniprogram.Page.CustomOption =
     WechatMiniprogram.Page.CustomOption,
-  TComputed extends ComputedDefs = ComputedDefs,
-  TInstance = WechatMiniprogram.Page.Instance<TData, TCustom>,
-> = WechatMiniprogram.Page.Options<TData, TCustom> & {
-  behaviors?: any[];
-  computed?: TComputed & ThisType<TInstance>;
-};
+> = (TCustom &
+  Partial<WechatMiniprogram.Page.Data<TData>> &
+  Partial<WechatMiniprogram.Page.ILifetime> & {
+    options?: WechatMiniprogram.Component.ComponentOptions;
+    behaviors?: any[];
+    computed?: TComputed;
+  }) &
+  ThisType<PageInstanceFull<TData, TComputed, TCustom>>;
 
 /**
  * Typed wrapper for `Page()` that adds support for the `computed` field
@@ -151,32 +266,42 @@ export type PageOptionsWithComputed<
  *   behaviors: [computedBehavior],
  *   data: { count: 1 },
  *   computed: {
- *     doubled() { return this.data.count * 2 }
+ *     doubled() { return this.data.count * 2 },
+ *     quadrupled: {
+ *       get() { return this.data.count * 4 },
+ *       set(val) { this.setData({ count: val / 4 }) }
+ *     }
  *   },
  * }))
  * ```
  */
 export function createPageOptions<
   TData extends WechatMiniprogram.Page.DataOption,
+  TComputed extends ComputedDefsForPage<TData>,
   TCustom extends WechatMiniprogram.Page.CustomOption,
-  TComputed extends ComputedDefs = ComputedDefs,
 >(
-  options: PageOptionsWithComputed<TData, TCustom, TComputed>,
-): PageOptionsWithComputed<TData, TCustom, TComputed> {
-  const computedDefs = options.computed;
+  options: PageOptionsWithComputed<TData, TComputed, TCustom>,
+): WechatMiniprogram.Page.Options<
+  TData & ExtractComputedReturns<TComputed>,
+  TCustom
+> & {
+  computed?: TComputed;
+} {
+  const computedDefs = options.computed as ComputedDefs | undefined;
   if (computedDefs) {
     (options as any)[_COMPUTED_DEFS] = computedDefs;
 
-    const behaviors = options.behaviors ? [...options.behaviors] : [];
+    const behaviors = (options.behaviors ? [...options.behaviors] : []) as any[];
     if (!behaviors.includes(computedBehavior)) {
       behaviors.push(computedBehavior);
     }
     options.behaviors = behaviors;
 
-    options.data = options.data || ({} as TData);
-    for (const [key, getter] of Object.entries(computedDefs)) {
+    options.data = (options.data || {}) as TData;
+    for (const [key, def] of Object.entries(computedDefs)) {
       try {
-        const val = getter.call({
+        const { get } = parseComputedDef(def);
+        const val = get.call({
           data: options.data,
           properties: options.data,
         });
@@ -186,8 +311,8 @@ export function createPageOptions<
       } catch {}
     }
 
-    const originalOnLoad = options.onLoad;
-    options.onLoad = function (
+    const originalOnLoad = (options as any).onLoad;
+    (options as any).onLoad = function (
       this: any,
       query: Record<string, string | undefined>,
     ) {
@@ -196,7 +321,7 @@ export function createPageOptions<
     };
   }
 
-  return options;
+  return options as any;
 }
 
 const _COMPUTED_INITIALIZED = "__cui_computedInit__" as const;
@@ -262,13 +387,11 @@ function applyPathUpdate(
     const isNextNumber = typeof nextKey === "number";
     const existing = current[key];
 
-    const clonedChild = Array.isArray(existing)
-      ? [...existing]
-      : existing !== null && typeof existing === "object"
-        ? { ...existing }
-        : isNextNumber
-          ? []
-          : {};
+    let clonedChild = cloneValue(existing);
+
+    if (existing === null && typeof existing !== "object") {
+      clonedChild = isNextNumber ? [] : {};
+    }
 
     current[key] = clonedChild;
     current = clonedChild;
@@ -309,6 +432,7 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
   };
 
   const computedSignals: Record<string, () => any> = {};
+  const computedSetters: Record<string, (val: any) => void> = {};
 
   const reactiveData = new Proxy({} as Record<string, any>, {
     get(_target, prop) {
@@ -317,6 +441,23 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
         return computedSignals[prop]();
       }
       return getDataSignal(prop)();
+    },
+    set(_target, prop, val) {
+      if (typeof prop === "string" && computedSetters[prop]) {
+        computedSetters[prop](val);
+        return true;
+      }
+      if (typeof prop === "string" && prop in computedDefs) {
+        console.warn(
+          `[code-ui/computed] Cannot set read-only computed property "${prop}".`,
+        );
+        return false;
+      }
+      if (typeof prop === "string") {
+        self.setData({ [prop]: val });
+        return true;
+      }
+      return false;
     },
     has(_target, prop) {
       if (typeof prop !== "string") return false;
@@ -345,8 +486,32 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
   });
 
   for (const key of computedKeys) {
-    const getter = computedDefs[key];
-    computedSignals[key] = alienComputed(() => getter?.call(computedCtx));
+    const { get, set } = parseComputedDef(computedDefs[key]);
+    computedSignals[key] = alienComputed(() => get.call(computedCtx));
+    if (set) {
+      computedSetters[key] = (val: any) => set.call(computedCtx, val);
+    }
+  }
+
+  for (const key of computedKeys) {
+    if (!(key in self)) {
+      Object.defineProperty(self, key, {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return computedSignals[key]?.();
+        },
+        set(val) {
+          if (computedSetters[key]) {
+            computedSetters[key](val);
+          } else {
+            console.warn(
+              `[code-ui/computed] Cannot set read-only computed property "${key}".`,
+            );
+          }
+        },
+      });
+    }
   }
 
   const cache: Record<string, any> = {};
@@ -386,59 +551,86 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
 
   self[_COMPUTED_FLUSH] = flush;
 
-  self.setData = (
-    data: Record<string, any>,
-    callback?: () => void,
-  ): void => {
+  self.setData = (data: Record<string, any>, callback?: () => void): void => {
     if (self[_COMPUTED_FLUSHING]) {
       originalSetData(data, callback);
       return;
     }
 
+    const computedSetEntries: Array<[string, any]> = [];
+    const normalData: Record<string, any> = {};
+
     for (const path of Object.keys(data)) {
       const val = data[path];
-      const tokens = parsePath(path);
-
-      if (tokens.length === 0) continue;
-
-      const rootKey = tokens[0] as string;
-      const sig = getDataSignal(rootKey);
-
-      if (tokens.length === 1) {
-        const nextVal = cloneValue(val);
-        if (self.data) {
-          self.data[rootKey] = nextVal;
-        }
-        sig(nextVal);
+      if (path in computedSetters) {
+        computedSetEntries.push([path, val]);
+      } else if (path in computedDefs) {
+        console.warn(
+          `[code-ui/computed] Cannot set read-only computed property "${path}". Provide a "set(val)" handler in computed definition to allow writes.`,
+        );
       } else {
-        const currentRoot = self.data?.[rootKey];
-        const newRoot = applyPathUpdate(currentRoot, tokens.slice(1), val);
-        if (self.data) {
-          self.data[rootKey] = newRoot;
+        normalData[path] = val;
+      }
+    }
+
+    if (Object.keys(normalData).length > 0) {
+      for (const path of Object.keys(normalData)) {
+        const val = normalData[path];
+        const tokens = parsePath(path);
+
+        if (tokens.length === 0) continue;
+
+        const rootKey = tokens[0] as string;
+        const sig = getDataSignal(rootKey);
+
+        if (tokens.length === 1) {
+          const nextVal = cloneValue(val);
+          if (self.data) {
+            self.data[rootKey] = nextVal;
+          }
+          sig(nextVal);
+        } else {
+          const currentRoot = self.data?.[rootKey];
+          const newRoot = applyPathUpdate(currentRoot, tokens.slice(1), val);
+          if (self.data) {
+            self.data[rootKey] = newRoot;
+          }
+          sig(newRoot);
         }
-        sig(newRoot);
+      }
+
+      const computedUpdates: Record<string, any> = {};
+      for (const key of computedKeys) {
+        const val = computedSignals[key]?.();
+        if (!isEqual(cache[key], val)) {
+          cache[key] = val;
+          computedUpdates[key] = val;
+        }
+      }
+
+      const mergedData =
+        Object.keys(computedUpdates).length > 0
+          ? { ...normalData, ...computedUpdates }
+          : normalData;
+
+      self[_COMPUTED_FLUSHING] = true;
+      try {
+        originalSetData(mergedData, callback);
+      } finally {
+        self[_COMPUTED_FLUSHING] = false;
       }
     }
 
-    const computedUpdates: Record<string, any> = {};
-    for (const key of computedKeys) {
-      const val = computedSignals[key]?.();
-      if (!isEqual(cache[key], val)) {
-        cache[key] = val;
-        computedUpdates[key] = val;
-      }
+    for (const [key, val] of computedSetEntries) {
+      computedSetters[key]?.(val);
     }
 
-    const mergedData =
-      Object.keys(computedUpdates).length > 0
-        ? { ...data, ...computedUpdates }
-        : data;
-
-    self[_COMPUTED_FLUSHING] = true;
-    try {
-      originalSetData(mergedData, callback);
-    } finally {
-      self[_COMPUTED_FLUSHING] = false;
+    if (
+      Object.keys(normalData).length === 0 &&
+      computedSetEntries.length > 0 &&
+      callback
+    ) {
+      callback();
     }
   };
 
@@ -456,7 +648,11 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
  *   behaviors: [computedBehavior],
  *   data: { a: 0 },
  *   computed: {
- *     b() { return this.data.a + 100 }
+ *     b() { return this.data.a + 100 },
+ *     c: {
+ *       get() { return this.data.a * 2 },
+ *       set(val) { this.setData({ a: val / 2 }) }
+ *     }
  *   },
  *   methods: {
  *     onTap() { this.setData({ a: this.data.a + 1 }) }
@@ -479,7 +675,8 @@ export const computedBehavior = Behavior({
     defFields.data = defFields.data || {};
     for (const key of keys) {
       try {
-        const val = computedDefs[key]?.call({
+        const { get } = parseComputedDef(computedDefs[key]);
+        const val = get.call({
           data: defFields.data,
           properties: defFields.properties || defFields.data,
         });
@@ -514,4 +711,3 @@ export const computedBehavior = Behavior({
     },
   },
 });
-

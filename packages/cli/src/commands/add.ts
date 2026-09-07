@@ -138,7 +138,7 @@ export async function addCommand(
     try {
       installDependencies(Array.from(allDependencies), { cwd });
       logger.success("Dependencies installed successfully.");
-    } catch (err: any) {
+    } catch {
       logger.warn(`Could not automatically install dependencies. Please run: pnpm add ${Array.from(allDependencies).join(" ")}`);
     }
   }

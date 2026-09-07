@@ -87,16 +87,18 @@ export async function syncCommand(options: SyncCommandOptions = {}) {
     await fs.cp(sharedSrc, sharedDest, { recursive: true, force: true });
   } catch {}
 
-  // Copy root index bundle files so require("@code-ui/components") works
-  const rootFiles = ["index.js", "index.d.ts"];
-  for (const file of rootFiles) {
-    const srcFile = path.join(sourceDir, file);
-    const destFile = path.join(outputPath, file);
-    try {
-      await fs.access(srcFile);
-      await fs.copyFile(srcFile, destFile);
-    } catch {}
-  }
+  // 5b. Write lightweight root entrypoint so require("@code-ui/components") works
+  // without copying the entire duplicate monolithic index.js bundle into miniprogram_npm
+  await fs.writeFile(
+    path.join(outputPath, "index.js"),
+    'module.exports = require("./_shared/runtime");\n',
+    "utf-8"
+  );
+  try {
+    const dtsSrc = path.join(sourceDir, "_shared/runtime.d.ts");
+    await fs.access(dtsSrc);
+    await fs.copyFile(dtsSrc, path.join(outputPath, "index.d.ts"));
+  } catch {}
 
   // 6. Copy selected components
   for (const comp of targetComponents) {

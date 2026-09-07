@@ -37,8 +37,7 @@ Page((0, components_1.createPageOptions)({
     computed: {
         // 1. Total items count
         itemCount() {
-            console.log("render");
-            return this.data.items.reduce((acc, item) => acc + item.quantity, 0);
+            return this.data.items.length;
         },
         // 2. Subtotal before discounts
         subtotal() {
@@ -87,6 +86,15 @@ Page((0, components_1.createPageOptions)({
                 remaining: remaining.toFixed(2),
                 percentage: Math.min(100, Math.round((sub / this.data.freeShippingThreshold) * 100)),
             };
+        },
+        // 8. Writable computed example (get and set)
+        discountPercent: {
+            get() {
+                return Math.round(this.data.couponDiscountRate * 100);
+            },
+            set(val) {
+                this.setData({ couponDiscountRate: val / 100 });
+            },
         },
     },
     onLoad() {

@@ -4,5 +4,5 @@
     "outDir": "./dist",
     "types": ["miniprogram-api-typings", "node"]
   },
-  "include": ["src", "tsup.config.ts"]
+  "include": ["src", "tsdown.config.ts"]
 }

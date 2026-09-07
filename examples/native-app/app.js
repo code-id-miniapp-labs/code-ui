@@ -1,5 +1,4 @@
 "use strict";
-/// <reference types="miniprogram-api-typings" />
 Object.defineProperty(exports, "__esModule", { value: true });
 App({
     globalData: {},
