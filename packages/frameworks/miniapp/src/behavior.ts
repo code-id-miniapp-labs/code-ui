@@ -3,7 +3,6 @@ import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
 import type { Machine, MachineSchema } from "@code-ui/core";
 import { isObject, runIfFn } from "@code-ui/utils";
-import { computedBehavior } from "./behaviors/computed-behavior";
 
 export interface CreateMachineBehaviorOptions<
   T extends MachineSchema,
@@ -125,10 +124,7 @@ export function createMachineBehavior<
       ? explicitSyncProps
       : (discoveredProps as Array<keyof T["props"]>);
 
-  // Always include computedBehavior — zero overhead when defFields.computed is absent
-  // Cast to any: WeChat's BehaviorOption type is opaque and doesn't accept
-  // a union of (string | Behavior instance), but the runtime accepts both.
-  const behaviors: any[] = [computedBehavior];
+  const behaviors: any[] = [];
   if (formField) behaviors.push("wx://form-field");
   if (exportApi) behaviors.push("wx://component-export");
 
