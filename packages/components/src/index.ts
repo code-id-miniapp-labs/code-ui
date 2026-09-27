@@ -4,3 +4,7 @@ export * from "@code-ui/miniapp";
 export * from "@code-ui/core";
 export * from "@code-ui/anatomy";
 export * from "./jsx";
+export { buttonTheme } from "./runtime/button/theme";
+export type { ButtonSlots } from "./runtime/button/theme";
+export { drawerTheme } from "./runtime/drawer/theme";
+export type { DrawerSlots } from "./runtime/drawer/theme";

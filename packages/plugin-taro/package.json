@@ -2,6 +2,9 @@
   "name": "@code-ui/plugin-taro",
   "version": "0.0.1",
   "description": "Taro plugin for @code-ui — auto-configures webpack compile rules, asset copy, and JSX types",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -13,9 +16,6 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",

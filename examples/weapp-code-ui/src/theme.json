@@ -1,0 +1,5 @@
+{
+  "$schema": "https://vite.weapp.dev/theme.json",
+  "light": {},
+  "dark": {}
+}

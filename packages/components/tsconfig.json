@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
+    "declaration": false,
     "types": ["miniprogram-api-typings", "node"]
   },
-  "include": ["src", "tsdown.config.ts"]
+  "include": ["src"]
 }

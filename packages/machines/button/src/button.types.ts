@@ -1,16 +1,26 @@
-import type { AnatomyPartName, ComponentUI, ResolvedUI } from "@code-ui/anatomy";
+import type {
+  AnatomyPartName,
+  ComponentUI,
+  ResolvedUI,
+} from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./button.anatomy";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+export type ButtonVariant =
+  | "solid"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "primary"
+  | "danger";
+export type ButtonColor = "primary" | "neutral" | "danger" | "success";
 export type ButtonSize = "sm" | "md" | "lg";
 export type ButtonState = "idle" | "loading" | "success" | "error";
 
 export type ButtonAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type ButtonUI = ComponentUI<typeof anatomy>;
 export type ButtonResolvedUI = ResolvedUI<typeof anatomy>;
-
 
 export interface ButtonProps {
   /** The unique id of the component */
@@ -27,8 +37,12 @@ export interface ButtonProps {
   loading?: boolean;
   /** Visual variant of the button */
   variant?: ButtonVariant;
+  /** Color theme of the button */
+  color?: ButtonColor;
   /** Size variant of the button */
   size?: ButtonSize;
+  /** Whether the button spans full container width */
+  block?: boolean;
   /** Whether to automatically handle async promise loading */
   loadingAuto?: boolean;
   /** Duration in ms to auto-reset from success or error back to idle */
@@ -51,10 +65,12 @@ export interface ButtonContext {
   loading: boolean;
   disabled: boolean;
   variant: ButtonVariant;
+  color: ButtonColor;
   size: ButtonSize;
+  block: boolean;
   ui: ButtonUI;
+  internalLoading: boolean;
 }
-
 
 export interface ButtonComputed {
   isLoading: boolean;
@@ -87,10 +103,12 @@ export interface ButtonApi {
   disabled: boolean;
   /** Visual variant */
   variant: ButtonVariant;
+  /** Color theme */
+  color: ButtonColor;
   /** Size */
   size: ButtonSize;
-  /** Resolved UI class names for each button anatomy part */
-  ui: Record<ButtonAnatomyPart, string>;
+  /** Whether the button spans full width */
+  block: boolean;
   /** Set loading state manually */
   setLoading(loading: boolean): void;
 

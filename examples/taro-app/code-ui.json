@@ -1,6 +1,0 @@
-{
-  "style": "wxss",
-  "componentDir": "src/components/ui",
-  "typescript": true,
-  "prefix": "cui-"
-}

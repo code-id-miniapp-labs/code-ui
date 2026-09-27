@@ -34,6 +34,20 @@ export interface CreateMachineBehaviorOptions<
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
   exportApi?: boolean;
+  /**
+   * Delay `machine.start()` until the first `send()` call.
+   *
+   * Use this for components that are rendered but rarely interacted with
+   * (e.g. a disabled button in a long list). The machine is constructed immediately
+   * so `updateProps` observers work, but the 3 alien-signals `effect()` watchers
+   * (state + context + watch) are only activated on first user interaction.
+   *
+   * ⚠️  Do NOT set on components that drive visible reactive state on mount
+   * (e.g. Drawer, which must sync `drawer.open` to the template immediately).
+   *
+   * @default false
+   */
+  deferred?: boolean;
 }
 
 /**
@@ -97,6 +111,9 @@ export function createMachineBehavior<
   T extends MachineSchema,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(options: CreateMachineBehaviorOptions<T, Data>) {
+  if (typeof Behavior === "undefined") {
+    return {} as any;
+  }
   const {
     machine: machineDef,
     connect,
@@ -104,6 +121,7 @@ export function createMachineBehavior<
     syncProps: explicitSyncProps,
     formField = false,
     exportApi = false,
+    deferred = false,
   } = options;
 
   let discoveredProps: string[] = [];
@@ -161,16 +179,19 @@ export function createMachineBehavior<
         const machine = new MiniappMachine(machineDef, initialProps);
 
         this.__codeUiMachine = machine;
+        this.__codeUiDeferred = deferred;
 
-        machine.start();
+        if (!deferred) {
+          machine.start();
 
-        if (connect) {
-          this.__codeUiDispose = connectToComponent(
-            machine,
-            this,
-            connect,
-            key,
-          );
+          if (connect) {
+            this.__codeUiDispose = connectToComponent(
+              machine,
+              this,
+              connect,
+              key,
+            );
+          }
         }
       },
 
@@ -184,6 +205,19 @@ export function createMachineBehavior<
 
     methods: {
       send(this: any, event: T["event"]) {
+        // Lazy startup: boot the machine on first send() if deferred
+        if (this.__codeUiDeferred && this.__codeUiMachine) {
+          this.__codeUiDeferred = false;
+          this.__codeUiMachine.start();
+          if (connect) {
+            this.__codeUiDispose = connectToComponent(
+              this.__codeUiMachine,
+              this,
+              connect,
+              key,
+            );
+          }
+        }
         this.__codeUiMachine?.send(event);
       },
       getMachine(this: any): MiniappMachine<T> | null {

@@ -94,8 +94,6 @@ export interface DrawerApi {
   threshold: number;
   /** Close animation duration in ms — synced to WXS exit animation */
   duration: number;
-  /** Resolved UI class names for each drawer anatomy part */
-  ui: Record<DrawerAnatomyPart, string>;
   /** Open or close the drawer */
   setOpen(open: boolean): void;
   /** Open the drawer */

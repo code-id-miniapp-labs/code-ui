@@ -1,7 +1,6 @@
-import type { ButtonAnatomyPart, ButtonApi, ButtonService } from "./button.types";
-import { anatomy, parts } from "./button.anatomy";
+import type { ButtonApi, ButtonService } from "./button.types";
+import { parts } from "./button.anatomy";
 import * as dom from "./button.dom";
-import { getComponentConfig, mergeUI } from "@code-ui/core";
 
 export function connectButton(service: ButtonService): ButtonApi {
   const { state, send, context, computed, scope } = service;
@@ -10,27 +9,18 @@ export function connectButton(service: ButtonService): ButtonApi {
   const loading = computed("isLoading");
   const disabled = computed("isDisabled");
   const variant = context.get("variant");
+  const color = context.get("color");
   const size = context.get("size");
-  const instanceUI = context.get("ui");
-
-  const globalConfig = getComponentConfig<ButtonAnatomyPart>("button");
-
-  const resolvedUI = mergeUI({
-    anatomy,
-    globalConfig,
-    variant,
-    size,
-    instanceUI,
-  });
-
+  const block = context.get("block");
 
   return {
     state: currentState,
     loading,
     disabled,
     variant,
+    color,
     size,
-    ui: resolvedUI,
+    block,
 
     setLoading(nextLoading: boolean) {
       send({ type: "SET_LOADING", loading: nextLoading });
@@ -41,6 +31,7 @@ export function connectButton(service: ButtonService): ButtonApi {
     },
 
     handleTap(event?: any) {
+      console.log("TAP KINGG handleTAP");
       send({ type: "TAP", event });
     },
 
@@ -51,33 +42,30 @@ export function connectButton(service: ButtonService): ButtonApi {
       "data-loading": loading ? "true" : undefined,
       "data-disabled": disabled ? "true" : undefined,
       "data-variant": variant,
+      "data-color": color,
       "data-size": size,
+      "data-block": block ? "true" : undefined,
       disabled: disabled || loading,
       role: "button",
       "aria-busy": loading ? "true" : undefined,
       "aria-disabled": disabled ? "true" : undefined,
-      className: resolvedUI.root,
     },
 
     spinnerProps: {
       id: dom.getSpinnerId(scope),
       ...parts.spinner.attrs,
       "aria-hidden": "true",
-      className: resolvedUI.spinner,
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
       ...parts.label.attrs,
-      className: resolvedUI.label,
     },
 
     iconProps: {
       id: dom.getIconId(scope),
       ...parts.icon.attrs,
       "aria-hidden": "true",
-      className: resolvedUI.icon,
     },
   };
 }
-

@@ -1,5 +1,4 @@
-import { cx, defu, createEventBus } from "@code-ui/utils";
-import type { EventBus } from "@code-ui/utils";
+import { defu } from "@code-ui/utils";
 
 export type SlotRecord<TSlots extends string = string> = Partial<
   Record<TSlots, string>
@@ -11,29 +10,137 @@ export interface ComponentVariantsConfig<TSlots extends string = string> {
   [customVariantKey: string]: Record<string, SlotRecord<TSlots>> | undefined;
 }
 
+export interface ComponentRegistry {
+  button: "root" | "label" | "icon" | "spinner";
+  drawer:
+    | "root"
+    | "backdrop"
+    | "content"
+    | "grabber"
+    | "grabberBar"
+    | "header"
+    | "title"
+    | "description"
+    | "closeTrigger"
+    | "body"
+    | "footer";
+  [componentName: string]: string;
+}
+
+export type KnownComponentSlots<TName extends string> =
+  TName extends keyof ComponentRegistry ? ComponentRegistry[TName] : string;
+
 export interface ComponentConfig<TSlots extends string = string> {
-  /** Default component properties */
-  defaultProps?: Record<string, any>;
   /** Global default slot classes for this component */
-  ui?: SlotRecord<TSlots>;
-  /** Alias for ui slot classes */
   slots?: SlotRecord<TSlots>;
+  /** Alias for slots */
+  ui?: SlotRecord<TSlots>;
   /** Variant-specific slot classes */
   variants?: ComponentVariantsConfig<TSlots>;
+  /** Compound variants rules */
+  compoundVariants?: Array<Record<string, any>>;
+  /** Default variant values */
+  defaultVariants?: Record<string, any>;
+  /** Alias for defaultVariants */
+  defaultProps?: Record<string, any>;
+}
+
+export interface UIColorsConfig {
+  /** Primary brand color */
+  primary?: string;
+  /** Neutral/gray color */
+  neutral?: string;
+  /** Success color */
+  success?: string;
+  /** Warning color */
+  warning?: string;
+  /** Danger/destructive color */
+  danger?: string;
+  /** Info color */
+  info?: string;
+  /** Background color */
+  background?: string;
+  /** Foreground/text color */
+  foreground?: string;
+  /** Muted text/background color */
+  muted?: string;
+  /** Border color */
+  border?: string;
+  /** Allow custom color keys */
+  [colorName: string]: string | undefined;
+}
+
+export interface UIConfig {
+  /** Design token colors */
+  colors?: UIColorsConfig;
+  /** Border radius tokens */
+  radius?: {
+    sm?: string;
+    md?: string;
+    lg?: string;
+    full?: string;
+    [key: string]: string | undefined;
+  };
+  /** Transition duration tokens */
+  transition?: {
+    fast?: string;
+    normal?: string;
+    slow?: string;
+    [key: string]: string | undefined;
+  };
+  /** Font family tokens */
+  font?: {
+    sans?: string;
+    mono?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 export interface CodeUIConfig {
   /** Global prefix for custom components */
   prefix?: string | undefined;
+  /** Global design token configuration (colors, radius, transitions) */
+  ui?: UIConfig | undefined;
   /** Component-level styling and configuration overrides */
-  components?: Record<string, ComponentConfig<any>> | undefined;
-  /** Global theme tokens and custom properties */
-  theme?: Record<string, any> | undefined;
+  components?:
+    | ({
+        [K in keyof ComponentRegistry]?: ComponentConfig<ComponentRegistry[K]>;
+      } & Record<string, ComponentConfig<any> | undefined>)
+    | undefined;
 }
 
-interface ConfigEvents {
-  change: CodeUIConfig;
-  reset: void;
+/**
+ * Type-safe configuration helper for cui.config.ts
+ *
+ * @example
+ * ```ts
+ * import { defineConfig } from '@code-ui/core'
+ *
+ * export default defineConfig({
+ *   prefix: 'cui',
+ *   ui: {
+ *     colors: {
+ *       primary: '#10b981',
+ *       neutral: '#737373',
+ *       danger: '#ef4444',
+ *     },
+ *     radius: {
+ *       md: '12rpx',
+ *       lg: '16rpx',
+ *     },
+ *   },
+ *   components: {
+ *     button: {
+ *       slots: {
+ *         root: 'rounded-full font-bold'
+ *       }
+ *     }
+ *   }
+ * })
+ * ```
+ */
+export function defineConfig(config: CodeUIConfig): CodeUIConfig {
+  return config;
 }
 
 const initialConfig: CodeUIConfig = {
@@ -54,10 +161,6 @@ if (!g.__CODE_UI_GLOBAL_CONFIG__) {
   g.__CODE_UI_GLOBAL_CONFIG__ = initialConfig;
 }
 
-const configBus: EventBus<ConfigEvents> =
-  g.__CODE_UI_CONFIG_BUS__ ||
-  (g.__CODE_UI_CONFIG_BUS__ = createEventBus<ConfigEvents>());
-
 /**
  * Configure global Code-UI settings, themes, and component slot classes.
  * Can be called multiple times; subsequent calls merge recursively with existing config.
@@ -70,9 +173,6 @@ export function setConfig(
   const merged = defu(next, current) as CodeUIConfig;
 
   g.__CODE_UI_GLOBAL_CONFIG__ = merged;
-
-  // Broadcast to all subscribers (framework adapters) and other bundle instances
-  configBus.emit("change", merged);
 }
 
 /**
@@ -84,12 +184,99 @@ export function getConfig(): CodeUIConfig {
 
 /**
  * Retrieve the configuration for a specific component.
+ * Normalizes component names (stripping prefix) and aligns slot/variant aliases.
  */
 export function getComponentConfig<TSlots extends string = string>(
   componentName: string,
 ): ComponentConfig<TSlots> {
   const config = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
-  return (config.components?.[componentName] || {}) as ComponentConfig<TSlots>;
+  const prefix = config.prefix || "cui";
+  const normalizedName = componentName
+    .replace(new RegExp(`^(?:${prefix}|cui|c)-`, "i"), "")
+    .toLowerCase();
+
+  const raw =
+    (config.components?.[componentName] ||
+      config.components?.[normalizedName] ||
+      {}) as ComponentConfig<TSlots>;
+
+  const slots = defu(raw.slots || {}, raw.ui || {}) as SlotRecord<TSlots>;
+  const defaultVariants = defu(
+    raw.defaultVariants || {},
+    raw.defaultProps || {},
+  );
+
+  return {
+    slots,
+    ui: slots,
+    variants: raw.variants,
+    compoundVariants: raw.compoundVariants,
+    defaultVariants,
+    defaultProps: defaultVariants,
+  } as ComponentConfig<TSlots>;
+}
+
+/**
+ * Retrieve the active `ui` design tokens from global config.
+ */
+export function getUI(): UIConfig {
+  const config = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
+  return config.ui || {};
+}
+
+/**
+ * Retrieve the active colors from global config.
+ */
+export function getColors(): UIColorsConfig {
+  return getUI().colors || {};
+}
+
+/**
+ * Flatten the `ui` config into a flat `Record<string, string>` of CSS custom properties.
+ * e.g. `{ colors: { primary: '#10b981' } }` → `{ '--cui-color-primary': '#10b981' }`
+ */
+export function flattenUI(prefix = "cui"): Record<string, string> {
+  const ui = getUI();
+  const result: Record<string, string> = {};
+
+  if (ui.colors) {
+    for (const [key, val] of Object.entries(ui.colors)) {
+      if (val) result[`--${prefix}-color-${key}`] = val;
+    }
+  }
+  if (ui.radius) {
+    for (const [key, val] of Object.entries(ui.radius)) {
+      if (val) result[`--${prefix}-radius-${key}`] = val;
+    }
+  }
+  if (ui.transition) {
+    for (const [key, val] of Object.entries(ui.transition)) {
+      if (val) result[`--${prefix}-transition-${key}`] = val;
+    }
+  }
+  if (ui.font) {
+    for (const [key, val] of Object.entries(ui.font)) {
+      if (val) result[`--${prefix}-font-${key}`] = val;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Format active UI tokens as an inline CSS style string for binding to page or container.
+ *
+ * @example
+ * ```ts
+ * const style = getThemeStyle();
+ * // Output: "--cui-color-primary:#10b981;--cui-radius-md:12rpx"
+ * ```
+ */
+export function getThemeStyle(): string {
+  const tokens = flattenUI(getConfig().prefix || "cui");
+  return Object.entries(tokens)
+    .map(([key, val]) => `${key}:${val}`)
+    .join(";");
 }
 
 /**
@@ -97,107 +284,4 @@ export function getComponentConfig<TSlots extends string = string>(
  */
 export function resetConfig(): void {
   g.__CODE_UI_GLOBAL_CONFIG__ = initialConfig;
-  configBus.emit("reset");
-}
-
-export function subscribeConfig(
-  callback: (config: CodeUIConfig) => void,
-): () => void {
-  const offChange = configBus.on("change", callback);
-  const offReset = configBus.on("reset", () => callback(initialConfig));
-  return () => {
-    offChange();
-    offReset();
-  };
-}
-
-export interface MergeUIOptions<TSlots extends string> {
-  /** Anatomy instance or definition to automatically infer slot keys from */
-  anatomy?: { keys: () => TSlots[] } | undefined;
-  /** Base default slot classes defined by the component */
-  defaultSlots?: Partial<Record<TSlots, string>> | undefined;
-  /** Global component config from setConfig */
-  globalConfig?: ComponentConfig<TSlots> | undefined;
-  /** Active visual variant (e.g. 'primary', 'secondary', 'outline') */
-  variant?: string | undefined;
-  /** Active size variant (e.g. 'sm', 'md', 'lg') */
-  size?: string | undefined;
-  /** Additional custom variant names & values */
-  extraVariants?: Record<string, string | undefined> | undefined;
-  /** Per-instance `ui` prop overrides */
-  instanceUI?: Partial<Record<TSlots, string>> | undefined;
-}
-
-export function mergeUI<TSlots extends string>(
-  options: MergeUIOptions<TSlots>,
-): Record<TSlots, string> {
-  const {
-    anatomy,
-    defaultSlots,
-    globalConfig,
-    variant,
-    size,
-    extraVariants,
-    instanceUI,
-  } = options;
-
-  const result = {} as Record<TSlots, string>;
-  const allSlots: TSlots[] = anatomy
-    ? anatomy.keys()
-    : defaultSlots
-      ? (Object.keys(defaultSlots) as TSlots[])
-      : [];
-
-  const safeInstanceUI = (
-    instanceUI && typeof instanceUI === "object" ? instanceUI : {}
-  ) as Record<string, string | undefined>;
-
-  const globalBaseUI = (globalConfig?.ui ||
-    globalConfig?.slots ||
-    {}) as Record<string, string | undefined>;
-  const globalVariants = (globalConfig?.variants || {}) as Record<
-    string,
-    Record<string, Record<string, string | undefined> | undefined> | undefined
-  >;
-
-  const variantRecord =
-    variant && globalVariants.variant
-      ? globalVariants.variant[variant]
-      : undefined;
-  const sizeRecord =
-    size && globalVariants.size ? globalVariants.size[size] : undefined;
-
-  for (const slot of allSlots) {
-    const slotKey = slot as string;
-    const defaultClass = defaultSlots?.[slot] || "";
-    const globalBaseClass = globalBaseUI[slotKey] || "";
-
-    const globalVariantClass = variantRecord?.[slotKey] || "";
-    const globalSizeClass = sizeRecord?.[slotKey] || "";
-
-    let globalExtraClass = "";
-    if (extraVariants) {
-      for (const [vKey, vVal] of Object.entries(extraVariants)) {
-        if (vVal && globalVariants[vKey]?.[vVal]) {
-          const cls = globalVariants[vKey]![vVal]![slotKey];
-          if (cls) {
-            globalExtraClass = cx(globalExtraClass, cls);
-          }
-        }
-      }
-    }
-
-    const instanceClass = safeInstanceUI[slotKey] || "";
-
-    result[slot] = cx(
-      defaultClass,
-      globalBaseClass,
-      globalVariantClass,
-      globalSizeClass,
-      globalExtraClass,
-      instanceClass,
-    );
-  }
-
-  return result;
 }

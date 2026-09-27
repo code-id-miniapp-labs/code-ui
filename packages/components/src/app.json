@@ -1,0 +1,10 @@
+{
+  "pages": [],
+  "component": true,
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "cui-button": "runtime/button/index",
+    "cui-drawer": "runtime/drawer/index"
+  }
+}

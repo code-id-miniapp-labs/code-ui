@@ -3,7 +3,9 @@
  * platform properties (openType, formType, hoverClass, customer service, privacy)
  * and event forwarding.
  */
-export const wxButtonBehavior = Behavior({
+export const wxButtonBehavior =
+  typeof Behavior !== "undefined"
+    ? Behavior({
   properties: {
     openType: {
       type: String,
@@ -82,4 +84,4 @@ export const wxButtonBehavior = Behavior({
       this.triggerEvent("agreeprivacyauthorization", e.detail);
     },
   },
-});
+}) : ({} as any);

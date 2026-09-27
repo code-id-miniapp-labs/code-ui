@@ -35,8 +35,6 @@ export { MachineStatus, INIT_STATE } from "./types";
 export { createMachine, createGuards, setup } from "./create-machine";
 export { extendMachine } from "./extend-machine";
 
-
-
 export { createScope } from "./scope";
 export { createRefs } from "./refs";
 
@@ -52,17 +50,23 @@ export {
 } from "./state";
 
 export {
+  defineConfig,
   setConfig,
   getConfig,
   getComponentConfig,
+  getUI,
+  getColors,
+  flattenUI,
+  getThemeStyle,
   resetConfig,
-  subscribeConfig,
-  mergeUI,
 } from "./config";
 export type {
   CodeUIConfig,
+  UIConfig,
+  UIColorsConfig,
   ComponentConfig,
   ComponentVariantsConfig,
+  ComponentRegistry,
+  KnownComponentSlots,
   SlotRecord,
-  MergeUIOptions,
 } from "./config";

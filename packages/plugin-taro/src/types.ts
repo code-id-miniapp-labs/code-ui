@@ -30,4 +30,11 @@ export interface CodeUIPluginOptions {
    * Defaults to true.
    */
   injectTypes?: boolean;
+
+  /**
+   * Theme preset to apply ("default" | "light" | "emerald" | "sunset") or
+   * a custom dictionary of CSS custom property tokens.
+   * Automatically copies/generates theme.wxss into the miniprogram output.
+   */
+  theme?: "default" | "light" | "emerald" | "sunset" | Record<string, string>;
 }

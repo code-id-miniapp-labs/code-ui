@@ -1,0 +1,66 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Header / Hero -->
+  <view class="px-6 pt-10 pb-6 bg-white border-b border-neutral-200">
+    <view class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
+      <text class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></text>
+      <text>cui.config.ts Active</text>
+    </view>
+    <view class="text-2xl font-extrabold tracking-tight text-neutral-950">Code UI</view>
+    <view class="text-sm text-neutral-500 mt-1 leading-relaxed">
+      Prebuilt native MiniProgram UI components powered by Zag FSM, alien-signals & Tailwind CSS.
+    </view>
+  </view>
+  <view class="px-5 py-6 flex flex-col gap-8">
+    <!-- Section 1: drawer Variants -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">Button Variants</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">solid, outline, ghost, secondary</view>
+      <view class="flex flex-wrap gap-2.5 items-center"></view>
+    </view>
+    <!-- Section 2: Button Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">Button Colors</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">primary, danger, neutral</view>
+      <view class="flex flex-wrap gap-2.5 items-center"></view>
+    </view>
+    <!-- Section 3: Button Sizes -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">Button Sizes</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">sm, md, lg</view>
+      <view class="flex flex-wrap gap-3 items-center"></view>
+    </view>
+    <!-- Section 4: Async Auto-Loading & FSM State -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">FSM State & Auto-Loading</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+        Managed by finite state machine with automatic async spinner handling.
+      </view>
+      <view class="flex flex-col gap-3">
+        <view class="flex items-center justify-between text-xs text-neutral-500 px-1">
+          <text>Clicks completed:</text>
+          <text class="font-bold text-neutral-800">{{count}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- Section 5: Local UI Prop Override -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">Local UI Prop Styling</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+        Custom slot override via Nuxt UI v4-style local ui prop.
+      </view>
+      <view class="flex flex-wrap gap-3 items-center">
+        <c-button loadingAuto="{{true}}" bind:tap="handleAsyncAction" loading="{{true}}">
+          Mabar king
+        </c-button>
+      </view>
+    </view>
+    <!-- Section 6: Drawer Component -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-base font-bold text-neutral-900">Drawer Component</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+        Gesture-driven bottom sheet with backdrop & smooth animations.
+      </view>
+      <view class="flex flex-col gap-2.5"></view>
+    </view>
+  </view>
+</view>

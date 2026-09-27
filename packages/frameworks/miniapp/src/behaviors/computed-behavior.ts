@@ -45,7 +45,7 @@ export type ExtractComputedReturns<T> = {
     ? R
     : T[K] extends { get: (...args: any[]) => infer R }
       ? R
-      : any;
+      : T[K];
 };
 
 export function parseComputedDef(def?: ComputedDef): {
@@ -69,12 +69,16 @@ export function parseComputedDef(def?: ComputedDef): {
   };
 }
 
+export type SafeData<T> = [T] extends [never] ? WechatMiniprogram.Component.DataOption : T;
+export type SafeMethod<T> = [T] extends [never] ? WechatMiniprogram.Component.MethodOption : T;
+
+
 export type ComponentInstanceBase<
   TData extends WechatMiniprogram.Component.DataOption,
   TProperty extends WechatMiniprogram.Component.PropertyOption,
-> = WechatMiniprogram.Component.InstanceMethods<TData> & {
-  data: TData & WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
-  properties: TData &
+> = WechatMiniprogram.Component.InstanceMethods<SafeData<TData>> & {
+  data: SafeData<TData> & WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
+  properties: SafeData<TData> &
     WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
   triggerEvent<DetailType = any>(
     name: string,
@@ -95,14 +99,13 @@ export type ComponentInstanceFull<
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
 > = WechatMiniprogram.Component.Instance<
-  TData & ExtractComputedReturns<TComputed>,
+  SafeData<TData> & ExtractComputedReturns<TComputed>,
   TProperty,
-  TMethod,
+  SafeMethod<TMethod>,
   TBehavior,
   TCustomInstanceProperty,
   TIsPage
-> &
-  ExtractComputedReturns<TComputed>;
+>;
 
 export type ComponentComputedDefs<
   TData extends WechatMiniprogram.Component.DataOption,
@@ -112,33 +115,29 @@ export type ComponentComputedDefs<
 };
 
 export type ComponentOptionsWithComputed<
-  TData extends WechatMiniprogram.Component.DataOption =
-    WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption =
-    WechatMiniprogram.Component.PropertyOption,
-  TMethod extends WechatMiniprogram.Component.MethodOption =
-    WechatMiniprogram.Component.MethodOption,
-  TComputed extends ComponentComputedDefs<TData, TProperty> =
-    ComponentComputedDefs<TData, TProperty>,
+  TData extends WechatMiniprogram.Component.DataOption = WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption = WechatMiniprogram.Component.PropertyOption,
+  TMethod extends WechatMiniprogram.Component.MethodOption = WechatMiniprogram.Component.MethodOption,
+  TComputed extends ComponentComputedDefs<TData, TProperty> = ComponentComputedDefs<TData, TProperty>,
   TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
-> = Partial<WechatMiniprogram.Component.Data<TData>> &
-  Partial<WechatMiniprogram.Component.Property<TProperty>> &
-  Partial<WechatMiniprogram.Component.Method<TMethod, TIsPage>> &
-  Partial<WechatMiniprogram.Component.OtherOption> &
-  Partial<WechatMiniprogram.Component.Lifetimes> & {
-    behaviors?: TBehavior;
-    computed?: TComputed;
-  } &
+> = {
+  data?: TData;
+  properties?: TProperty;
+  methods?: TMethod;
+  behaviors?: TBehavior;
+  computed?: TComputed;
+} & Partial<WechatMiniprogram.Component.OtherOption> &
+  Partial<WechatMiniprogram.Component.Lifetimes> &
   ThisType<
     ComponentInstanceFull<
       TData,
       TProperty,
-      TMethod,
+      WechatMiniprogram.Component.MethodOption, // Break circularity for method inference
       TComputed,
       TBehavior,
-      TCustomInstanceProperty,
+      TCustomInstanceProperty & Record<string, any>,
       TIsPage
     >
   >;
@@ -160,10 +159,10 @@ export type ComponentOptionsWithComputed<
  * ```
  */
 export function createComponentOptions<
-  TData extends WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption,
-  TMethod extends WechatMiniprogram.Component.MethodOption,
-  TComputed extends ComponentComputedDefs<TData, TProperty>,
+  TData extends WechatMiniprogram.Component.DataOption = WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption = WechatMiniprogram.Component.PropertyOption,
+  TMethod extends WechatMiniprogram.Component.MethodOption = WechatMiniprogram.Component.MethodOption,
+  TComputed extends ComponentComputedDefs<TData, TProperty> = ComponentComputedDefs<TData, TProperty>,
   TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
@@ -177,16 +176,7 @@ export function createComponentOptions<
     TCustomInstanceProperty,
     TIsPage
   >,
-): WechatMiniprogram.Component.Options<
-  TData & ExtractComputedReturns<TComputed>,
-  TProperty,
-  TMethod,
-  TBehavior,
-  TCustomInstanceProperty,
-  TIsPage
-> & {
-  computed?: TComputed;
-} {
+): any {
   const computedDefs = options.computed as ComputedDefs | undefined;
   if (computedDefs) {
     (options as any)[_COMPUTED_DEFS] = computedDefs;
@@ -230,10 +220,9 @@ export type PageInstanceFull<
   TComputed,
   TCustom extends WechatMiniprogram.Page.CustomOption,
 > = WechatMiniprogram.Page.Instance<
-  TData & ExtractComputedReturns<TComputed>,
+  SafeData<TData> & ExtractComputedReturns<TComputed>,
   TCustom
-> &
-  ExtractComputedReturns<TComputed>;
+>;
 
 export type ComputedDefsForPage<
   TData extends WechatMiniprogram.Page.DataOption,
@@ -247,13 +236,12 @@ export type PageOptionsWithComputed<
   TComputed extends ComputedDefsForPage<TData> = ComputedDefsForPage<TData>,
   TCustom extends WechatMiniprogram.Page.CustomOption =
     WechatMiniprogram.Page.CustomOption,
-> = (TCustom &
-  Partial<WechatMiniprogram.Page.Data<TData>> &
-  Partial<WechatMiniprogram.Page.ILifetime> & {
-    options?: WechatMiniprogram.Component.ComponentOptions;
-    behaviors?: any[];
-    computed?: TComputed;
-  }) &
+> = (TCustom & {
+  data?: TData;
+  options?: WechatMiniprogram.Component.ComponentOptions;
+  behaviors?: any[];
+  computed?: TComputed;
+} & Partial<WechatMiniprogram.Page.ILifetime>) &
   ThisType<PageInstanceFull<TData, TComputed, TCustom>>;
 
 /**
@@ -281,12 +269,7 @@ export function createPageOptions<
   TCustom extends WechatMiniprogram.Page.CustomOption,
 >(
   options: PageOptionsWithComputed<TData, TComputed, TCustom>,
-): WechatMiniprogram.Page.Options<
-  TData & ExtractComputedReturns<TComputed>,
-  TCustom
-> & {
-  computed?: TComputed;
-} {
+): any {
   const computedDefs = options.computed as ComputedDefs | undefined;
   if (computedDefs) {
     (options as any)[_COMPUTED_DEFS] = computedDefs;
@@ -660,7 +643,9 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
  * })
  * ```
  */
-export const computedBehavior = Behavior({
+export const computedBehavior =
+  typeof Behavior !== "undefined"
+    ? /*#__PURE__*/ Behavior({
   definitionFilter(defFields: any) {
     const computedDefs: ComputedDefs = defFields.computed ?? {};
     const keys = Object.keys(computedDefs);
@@ -710,4 +695,4 @@ export const computedBehavior = Behavior({
       this[_COMPUTED_FLUSH]?.();
     },
   },
-});
+}) : ({} as any);

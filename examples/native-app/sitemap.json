@@ -1,9 +1,0 @@
-{
-  "desc": "About page check rules: https://developers.weixin.qq.com/miniprogram/dev/framework/sitemap.html",
-  "rules": [
-    {
-      "action": "allow",
-      "page": "*"
-    }
-  ]
-}

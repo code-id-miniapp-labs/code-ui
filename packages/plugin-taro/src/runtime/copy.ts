@@ -79,6 +79,45 @@ export async function copyComponents(
     // If no _shared chunk exists, continue
   }
 
+  const themesSrc = path.join(sourcePath, "themes");
+  const themesDest = path.join(outputPath, "themes");
+  try {
+    await fs.access(themesSrc);
+    await fs.cp(themesSrc, themesDest, { recursive: true, force: true });
+  } catch {
+    // If no themes directory exists, continue
+  }
+
+  // Handle active theme preset or custom token overrides
+  if (options.theme) {
+    try {
+      if (typeof options.theme === "string") {
+        const presetFile = path.join(themesSrc, `${options.theme}.wxss`);
+        await fs.access(presetFile);
+        await fs.copyFile(presetFile, path.join(outputPath, "theme.wxss"));
+        console.log(
+          `[code-ui] 🎨 Applied theme preset: "${options.theme}" → theme.wxss`,
+        );
+      } else if (typeof options.theme === "object") {
+        const wxssLines = Object.entries(options.theme)
+          .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
+          .join("\n");
+        const customWxss = `page, :root {\n${wxssLines}\n}\n`;
+        await fs.writeFile(
+          path.join(outputPath, "theme.wxss"),
+          customWxss,
+          "utf-8",
+        );
+        console.log(`[code-ui] 🎨 Generated custom theme → theme.wxss`);
+      }
+    } catch (err) {
+      console.warn(
+        `[code-ui] ⚠️  Failed to apply theme "${options.theme}":`,
+        err,
+      );
+    }
+  }
+
   for (const comp of targetComponents) {
     const srcDir = path.join(sourcePath, comp);
     const destDir = path.join(outputPath, comp);

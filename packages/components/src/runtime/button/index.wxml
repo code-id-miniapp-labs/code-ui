@@ -1,0 +1,11 @@
+<button id="{{button.rootProps.id}}" class="{{ classes.root }}" data-scope="button" data-part="root" data-state="{{button.state}}" data-variant="{{button.variant || 'primary'}}" data-size="{{button.size || 'md'}}" data-loading="{{button.loading || button.internalLoading ? 'true' : 'false'}}" data-disabled="{{button.disabled ? 'true' : 'false'}}" disabled="{{button.disabled || button.loading}}" open-type="{{openType}}" form-type="{{formType}}" hover-class="{{hoverClass || (button.disabled || button.loading ? 'none' : '')}}" hover-start-time="{{hoverStartTime}}" hover-stay-time="{{hoverStayTime}}" hover-stop-propagation="{{hoverStopPropagation}}" lang="{{lang}}" session-from="{{sessionFrom}}" send-message-title="{{sendMessageTitle}}" send-message-path="{{sendMessagePath}}" send-message-img="{{sendMessageImg}}" show-message-card="{{showMessageCard}}" app-parameter="{{appParameter}}" catchtap="handleTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact" binderror="handleError" bindopensetting="handleOpenSetting" bindlaunchapp="handleLaunchApp" bindagreeprivacyauthorization="handleAgreePrivacyAuthorization">
+  <view id="{{button.spinnerProps.id}}" class="{{ classes.spinner }}" data-scope="button" data-part="spinner" wx:if="{{button.loading || button.internalLoading}}">
+    <view class="w-full h-full rounded-full border-2 border-current border-t-transparent animate-spin" />
+  </view>
+  <view id="{{button.iconProps.id}}" class="{{ classes.icon }}" data-scope="button" data-part="icon" wx:if="{{!button.loading}}">
+    <slot name="icon" />
+  </view>
+  <view id="{{button.labelProps.id}}" class="{{ classes.label }}" data-scope="button" data-part="label">
+    <slot />
+  </view>
+</button>

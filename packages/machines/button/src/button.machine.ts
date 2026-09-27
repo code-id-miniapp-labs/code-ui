@@ -14,6 +14,10 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
   },
 
   context: ({ prop, bindable }) => ({
+    internalLoading: bindable<boolean>(() => ({
+      value: false,
+      defaultValue: false,
+    })),
     loading: bindable<boolean>(() => ({
       value: prop("loading"),
       defaultValue: false,
@@ -24,11 +28,19 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     })),
     variant: bindable<any>(() => ({
       value: prop("variant"),
+      defaultValue: "solid",
+    })),
+    color: bindable<any>(() => ({
+      value: prop("color"),
       defaultValue: "primary",
     })),
     size: bindable<any>(() => ({
       value: prop("size"),
       defaultValue: "md",
+    })),
+    block: bindable<any>(() => ({
+      value: prop("block"),
+      defaultValue: false,
     })),
     ui: bindable<any>(() => ({
       value: prop("ui") ?? {},
@@ -37,7 +49,8 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
   }),
 
   computed: {
-    isLoading: ({ context }) => context.get("loading"),
+    isLoading: ({ context }) =>
+      context.get("loading") || context.get("internalLoading"),
     isDisabled: ({ context }) =>
       context.get("disabled") || context.get("loading"),
     isInteractive: ({ context }) =>
@@ -148,6 +161,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       },
       clearLoadingContext: ({ context }) => {
         context.set("loading", false);
+        context.set("internalLoading", false);
       },
       setDisabledContext: ({ context, event }) => {
         if ("disabled" in event) {
@@ -159,19 +173,19 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         prop("onTap")?.(rawEvent);
         prop("onClick")?.(rawEvent);
       },
-      executeAsyncHandler: ({ prop, event, send }) => {
+      executeAsyncHandler: ({ prop, event, send, context }) => {
         const rawEvent = "event" in event ? event.event : undefined;
 
-        const result =
-          prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
+        const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
 
         if (isPromise(result)) {
+          context.set("internalLoading", true);
           Promise.resolve(result)
-            .then(() => {
-              send({ type: "RESOLVE" });
-            })
             .catch((err) => {
               send({ type: "REJECT", error: err });
+            })
+            .finally(() => {
+              send({ type: "RESOLVE" });
             });
         } else {
           send({ type: "RESOLVE" });

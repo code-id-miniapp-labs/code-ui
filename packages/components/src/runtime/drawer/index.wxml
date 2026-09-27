@@ -1,0 +1,23 @@
+<wxs src="@machines/drawer-gesture.wxs" module="gesture" />
+<view id="{{drawer.rootProps.id}}" class="{{ classes.root }}" data-scope="drawer" data-part="root" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" wx:if="{{drawer.state !== 'closed'}}">
+  <view id="{{drawer.backdropProps.id}}" class="{{ classes.backdrop }}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{drawer.backdropProps['aria-hidden']}}" bindtap="handleBackdropTap" catchtouchmove="noop" />
+  <view id="{{drawer.contentProps.id}}" class="{{ classes.content }}" data-scope="drawer" data-part="content" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" role="{{drawer.contentProps.role}}" aria-modal="{{drawer.contentProps['aria-modal']}}" aria-hidden="{{drawer.contentProps['aria-hidden']}}">
+    <view id="{{drawer.grabberProps.id}}" class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{drawer.placement}}" data-threshold="{{drawer.threshold}}" data-duration="{{drawer.duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" wx:if="{{drawer.placement === 'bottom' || drawer.placement === 'top'}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
+      <view class="{{ classes.grabberBar }}" />
+    </view>
+    <view class="{{ classes.header }}" catchtouchmove="noop">
+      <view class="flex-1">
+        <slot name="header" />
+      </view>
+      <view id="{{drawer.closeTriggerProps.id}}" class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger" aria-label="{{drawer.closeTriggerProps['aria-label']}}" bindtap="handleCloseTap">
+        <text class="text-sm leading-none font-bold">✕</text>
+      </view>
+    </view>
+    <scroll-view scroll-y class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}">
+      <slot />
+    </scroll-view>
+    <view class="{{ classes.footer }}" catchtouchmove="noop">
+      <slot name="footer" />
+    </view>
+  </view>
+</view>

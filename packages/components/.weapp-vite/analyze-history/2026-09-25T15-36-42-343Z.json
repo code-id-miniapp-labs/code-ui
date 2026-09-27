@@ -1,0 +1,689 @@
+{
+  "metadata": {
+    "projectName": "@code-ui/components",
+    "generatedAt": "2026-09-25T15:36:42.342Z",
+    "budgets": {
+      "totalBytes": 20971520,
+      "mainBytes": 2097152,
+      "subPackageBytes": 2097152,
+      "independentBytes": 2097152,
+      "warningRatio": 0.85,
+      "source": "config"
+    },
+    "history": {
+      "enabled": true,
+      "dir": ".weapp-vite/analyze-history",
+      "limit": 20,
+      "latestSnapshot": ".weapp-vite/analyze-history/2026-09-25T15-36-42-343Z.json"
+    }
+  },
+  "packages": [
+    {
+      "id": "__main__",
+      "label": "主包",
+      "type": "main",
+      "files": [
+        {
+          "file": "app.js",
+          "type": "chunk",
+          "from": "main",
+          "size": 8,
+          "gzipSize": 28,
+          "brotliSize": 12,
+          "isEntry": true,
+          "modules": [
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.css?nativeStyle=wxss",
+              "source": "app.css?nativeStyle=wxss",
+              "sourceType": "src",
+              "bytes": 0
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=json&lang.js",
+              "source": "app.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=json&lang.js",
+              "sourceType": "src",
+              "bytes": 600,
+              "originalBytes": 600
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.ts",
+              "source": "app.ts",
+              "sourceType": "src",
+              "bytes": 43,
+              "originalBytes": 43
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=script&lang.js",
+              "source": "app.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=script&lang.js",
+              "sourceType": "src",
+              "bytes": 372,
+              "originalBytes": 372
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.wxss?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=style&lang.js",
+              "source": "app.wxss?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=style&lang.js",
+              "sourceType": "src",
+              "bytes": 386,
+              "originalBytes": 386
+            }
+          ]
+        },
+        {
+          "file": "app.json",
+          "type": "asset",
+          "from": "main",
+          "size": 226,
+          "gzipSize": 160,
+          "brotliSize": 131,
+          "source": "app.json",
+          "sourceType": "src"
+        },
+        {
+          "file": "app.wxss",
+          "type": "asset",
+          "from": "main",
+          "size": 15846,
+          "gzipSize": 3256,
+          "brotliSize": 2776,
+          "source": "app.wxss",
+          "sourceType": "src"
+        },
+        {
+          "file": "common.js",
+          "type": "chunk",
+          "from": "main",
+          "size": 12609,
+          "gzipSize": 4405,
+          "brotliSize": 3984,
+          "isEntry": false,
+          "modules": [
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/anatomy/dist/index.js",
+              "source": "../anatomy/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 1096,
+              "originalBytes": 1096
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/core/dist/index.js",
+              "source": "../core/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 11596,
+              "originalBytes": 11596
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/utils/dist/index.js",
+              "source": "../utils/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 9975,
+              "originalBytes": 9975
+            }
+          ]
+        },
+        {
+          "file": "dist.js",
+          "type": "chunk",
+          "from": "main",
+          "size": 17336,
+          "gzipSize": 6023,
+          "brotliSize": 5544,
+          "isEntry": false,
+          "modules": [
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/node_modules/.pnpm/alien-signals@1.0.13/node_modules/alien-signals/esm/index.mjs",
+              "source": "../../node_modules/.pnpm/alien-signals@1.0.13/node_modules/alien-signals/esm/index.mjs",
+              "sourceType": "node_modules",
+              "bytes": 10919,
+              "originalBytes": 10919
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/frameworks/miniapp/dist/index.js",
+              "source": "../frameworks/miniapp/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 23348,
+              "originalBytes": 23348
+            }
+          ],
+          "imports": [
+            "common.js"
+          ]
+        },
+        {
+          "file": "runtime/button/index.js",
+          "type": "chunk",
+          "from": "main",
+          "size": 4362,
+          "gzipSize": 1587,
+          "brotliSize": 1413,
+          "isEntry": true,
+          "modules": [
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/machines/button/dist/index.js",
+              "source": "../machines/button/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 6386,
+              "originalBytes": 6386
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+              "source": "runtime/button/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+              "sourceType": "src",
+              "bytes": 480,
+              "originalBytes": 480
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.ts",
+              "source": "runtime/button/index.ts",
+              "sourceType": "src",
+              "bytes": 632,
+              "originalBytes": 632
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+              "source": "runtime/button/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+              "sourceType": "src",
+              "bytes": 1287,
+              "originalBytes": 1287
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+              "source": "runtime/button/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+              "sourceType": "src",
+              "bytes": 2425,
+              "originalBytes": 2425
+            }
+          ],
+          "imports": [
+            "common.js",
+            "dist.js"
+          ]
+        },
+        {
+          "file": "runtime/button/index.json",
+          "type": "asset",
+          "from": "main",
+          "size": 48,
+          "gzipSize": 59,
+          "brotliSize": 44,
+          "source": "runtime/button/index.json",
+          "sourceType": "src"
+        },
+        {
+          "file": "runtime/button/index.wxml",
+          "type": "asset",
+          "from": "main",
+          "size": 1839,
+          "gzipSize": 640,
+          "brotliSize": 533,
+          "source": "runtime/button/index.wxml",
+          "sourceType": "src"
+        },
+        {
+          "file": "runtime/drawer/drawer-gesture.wxs",
+          "type": "asset",
+          "from": "main",
+          "size": 4683,
+          "gzipSize": 1057,
+          "brotliSize": 903,
+          "source": "runtime/drawer/drawer-gesture.wxs",
+          "sourceType": "src"
+        },
+        {
+          "file": "runtime/drawer/index.js",
+          "type": "chunk",
+          "from": "main",
+          "size": 5085,
+          "gzipSize": 1874,
+          "brotliSize": 1658,
+          "isEntry": true,
+          "modules": [
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/machines/drawer/dist/index.js",
+              "source": "../machines/drawer/dist/index.js",
+              "sourceType": "workspace",
+              "bytes": 6665,
+              "originalBytes": 6665
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/drawer-gesture.wxs?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=wxs&lang.js",
+              "source": "runtime/drawer/drawer-gesture.wxs?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=wxs&lang.js",
+              "sourceType": "src",
+              "bytes": 5401,
+              "originalBytes": 5401
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+              "source": "runtime/drawer/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+              "sourceType": "src",
+              "bytes": 480,
+              "originalBytes": 480
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.ts",
+              "source": "runtime/drawer/index.ts",
+              "sourceType": "src",
+              "bytes": 1496,
+              "originalBytes": 1496
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+              "source": "runtime/drawer/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+              "sourceType": "src",
+              "bytes": 2444,
+              "originalBytes": 2444
+            },
+            {
+              "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+              "source": "runtime/drawer/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+              "sourceType": "src",
+              "bytes": 2741,
+              "originalBytes": 2743
+            }
+          ],
+          "imports": [
+            "common.js",
+            "dist.js"
+          ]
+        },
+        {
+          "file": "runtime/drawer/index.json",
+          "type": "asset",
+          "from": "main",
+          "size": 48,
+          "gzipSize": 59,
+          "brotliSize": 44,
+          "source": "runtime/drawer/index.json",
+          "sourceType": "src"
+        },
+        {
+          "file": "runtime/drawer/index.wxml",
+          "type": "asset",
+          "from": "main",
+          "size": 2172,
+          "gzipSize": 629,
+          "brotliSize": 562,
+          "source": "runtime/drawer/index.wxml",
+          "sourceType": "src"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/node_modules/.pnpm/alien-signals@1.0.13/node_modules/alien-signals/esm/index.mjs",
+      "source": "../../node_modules/.pnpm/alien-signals@1.0.13/node_modules/alien-signals/esm/index.mjs",
+      "sourceType": "node_modules",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "dist.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/anatomy/dist/index.js",
+      "source": "../anatomy/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "common.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/core/dist/index.js",
+      "source": "../core/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "common.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/frameworks/miniapp/dist/index.js",
+      "source": "../frameworks/miniapp/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "dist.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/machines/button/dist/index.js",
+      "source": "../machines/button/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/machines/drawer/dist/index.js",
+      "source": "../machines/drawer/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/utils/dist/index.js",
+      "source": "../utils/dist/index.js",
+      "sourceType": "workspace",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "common.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.css?nativeStyle=wxss",
+      "source": "app.css?nativeStyle=wxss",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.json",
+      "source": "app.json",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=json&lang.js",
+      "source": "app.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=json&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.ts",
+      "source": "app.ts",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=script&lang.js",
+      "source": "app.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=script&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.wxss",
+      "source": "app.wxss",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.wxss"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/app.wxss?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=style&lang.js",
+      "source": "app.wxss?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fapp.ts&weapp-vite-sidecar=style&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "app.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.json",
+      "source": "runtime/button/index.json",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+      "source": "runtime/button/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.ts",
+      "source": "runtime/button/index.ts",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+      "source": "runtime/button/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.wxml",
+      "source": "runtime/button/index.wxml",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.wxml"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/button/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+      "source": "runtime/button/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fbutton%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/button/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/drawer-gesture.wxs",
+      "source": "runtime/drawer/drawer-gesture.wxs",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/drawer-gesture.wxs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/drawer-gesture.wxs?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=wxs&lang.js",
+      "source": "runtime/drawer/drawer-gesture.wxs?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=wxs&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.json",
+      "source": "runtime/drawer/index.json",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+      "source": "runtime/drawer/index.json?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=json&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.ts",
+      "source": "runtime/drawer/index.ts",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+      "source": "runtime/drawer/index.ts?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=script&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.wxml",
+      "source": "runtime/drawer/index.wxml",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.wxml"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/Users/rdjanuar/Project/personal/code-ui/packages/components/src/runtime/drawer/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+      "source": "runtime/drawer/index.wxml?raw&weapp-vite-sidecar-owner=%2FUsers%2Frdjanuar%2FProject%2Fpersonal%2Fcode-ui%2Fpackages%2Fcomponents%2Fsrc%2Fruntime%2Fdrawer%2Findex.ts&weapp-vite-sidecar=template&lang.js",
+      "sourceType": "src",
+      "packages": [
+        {
+          "packageId": "__main__",
+          "files": [
+            "runtime/drawer/index.js"
+          ]
+        }
+      ]
+    }
+  ],
+  "subPackages": [],
+  "components": [],
+  "glassEasel": {
+    "detected": false,
+    "minimumBaseLibrary": "3.8.12",
+    "migrationGuide": "https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/glass-easel/migration.html",
+    "diagnostics": [],
+    "summary": {
+      "errors": 0,
+      "warnings": 0
+    }
+  }
+}

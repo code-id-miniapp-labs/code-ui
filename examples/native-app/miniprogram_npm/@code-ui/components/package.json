@@ -1,6 +1,0 @@
-{
-  "name": "@code-ui/components",
-  "version": "0.0.1",
-  "miniprogram": ".",
-  "main": "index.js"
-}

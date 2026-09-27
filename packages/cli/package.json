@@ -1,7 +1,7 @@
 {
   "name": "@code-ui/cli",
   "version": "0.0.1",
-  "description": "CLI tool to add code-ui native MiniProgram components to your project (shadcn-style)",
+  "description": "CLI tool for code-ui prebuilt WeChat MiniProgram component library",
   "type": "module",
   "bin": {
     "code-ui": "./dist/index.js"
@@ -18,6 +18,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@code-ui/core": "workspace:*",
+    "c12": "^2.0.4",
     "commander": "^12.1.0",
     "picocolors": "^1.1.1",
     "prompts": "^2.4.2"

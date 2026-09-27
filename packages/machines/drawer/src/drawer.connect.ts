@@ -1,32 +1,18 @@
 import type {
-  DrawerAnatomyPart,
   DrawerApi,
   DrawerService,
 } from "./drawer.types";
-import { anatomy, parts } from "./drawer.anatomy";
+import { parts } from "./drawer.anatomy";
 import * as dom from "./drawer.dom";
-import { getComponentConfig, mergeUI } from "@code-ui/core";
 
 export function connectDrawer(service: DrawerService): DrawerApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, computed, scope } = service;
 
   const open = state.hasTag("open");
   const currentState = state.get();
   const placement = computed("placement");
   const threshold = service.prop("threshold") ?? 80;
   const duration  = service.prop("duration")  ?? 300;
-  const instanceUI = context.get("ui");
-
-  const globalConfig = getComponentConfig<DrawerAnatomyPart>("drawer");
-
-  const resolvedUI = mergeUI({
-    anatomy,
-    globalConfig,
-    extraVariants: {
-      placement,
-    },
-    instanceUI,
-  });
 
   return {
     open,
@@ -34,7 +20,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     placement,
     threshold,
     duration,
-    ui: resolvedUI,
 
     setOpen(nextOpen: boolean) {
       if (open === nextOpen) return;
@@ -54,7 +39,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       ...parts.root.attrs,
       "data-state": currentState,
       "data-placement": placement,
-      className: resolvedUI.root,
     },
 
     backdropProps: {
@@ -62,7 +46,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       ...parts.backdrop.attrs,
       "data-state": open ? "open" : "closed",
       "aria-hidden": !open,
-      className: resolvedUI.backdrop,
     },
 
     contentProps: {
@@ -73,7 +56,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       role: "dialog",
       "aria-modal": "true",
       "aria-hidden": !open,
-      className: resolvedUI.content,
     },
 
     grabberProps: {
@@ -81,29 +63,24 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       ...parts.grabber.attrs,
       "data-state": currentState,
       "data-placement": placement,
-      className: resolvedUI.grabber,
     },
 
     closeTriggerProps: {
       id: dom.getCloseTriggerId(scope),
       ...parts.closeTrigger.attrs,
       "aria-label": "Close",
-      className: resolvedUI.closeTrigger,
     },
 
     headerProps: {
       ...parts.header.attrs,
-      className: resolvedUI.header,
     },
 
     bodyProps: {
       ...parts.body.attrs,
-      className: resolvedUI.body,
     },
 
     footerProps: {
       ...parts.footer.attrs,
-      className: resolvedUI.footer,
     },
   };
 }

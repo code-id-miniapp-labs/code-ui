@@ -1,5 +1,4 @@
-import { effect, effectScope, signal } from "alien-signals";
-import { subscribeConfig } from "@code-ui/core";
+import { effect, effectScope } from "alien-signals";
 import { diffSnapshot } from "@code-ui/utils";
 import type { MachineSchema, Service } from "@code-ui/core";
 import type { MiniappMachine } from "./machine";
@@ -26,8 +25,6 @@ export function connectToPage<
   let pendingDelta: Record<string, any> = {};
   let isBatchScheduled = false;
 
-  const configVersion = signal(0);
-  const unsubConfig = subscribeConfig(() => configVersion(configVersion() + 1));
 
   function flushSetData() {
     isBatchScheduled = false;
@@ -40,7 +37,6 @@ export function connectToPage<
 
   const stopScope = effectScope(() => {
     disposeEffect = effect(() => {
-      configVersion();
       const snapshot = connect(machine.service);
 
       const delta = diffSnapshot(prevSnapshot, snapshot, key);
@@ -64,7 +60,6 @@ export function connectToPage<
   });
 
   return () => {
-    unsubConfig();
     disposeEffect?.();
     stopScope();
     pendingDelta = {};

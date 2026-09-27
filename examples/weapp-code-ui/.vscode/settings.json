@@ -1,0 +1,228 @@
+{
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never",
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "never",
+    "source.organizeImports": "never"
+  },
+  "eslint.rules.customizations": [
+    {
+      "rule": "format/*",
+      "severity": "off"
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off"
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off"
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off"
+    },
+    {
+      "rule": "*-order",
+      "severity": "off"
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off"
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off"
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off"
+    },
+    {
+      "rule": "*semi",
+      "severity": "off"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "yaml",
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "astro",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
+  ],
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "files.associations": {
+    "*.wxml": "html",
+    "*.wxss": "css"
+  },
+  "html.customData": [
+    "./.weapp-vite/mini-program.html-data.json"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "wxml": "html"
+  },
+  "stylelint.validate": [
+    "css",
+    "scss",
+    "vue"
+  ],
+  "vue.server.hybridMode": true,
+  "typescript.disableReferencedProjectLoad": true,
+  "typescript.disableSolutionSearching": true,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "javascript.preferences.includePackageJsonAutoImports": "off",
+  "search.followSymlinks": false,
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/dist-*/**": true,
+    "**/dist-plugin/**": true,
+    "**/dist-web/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/miniprogram_npm/**": true,
+    "**/.cache/**": true,
+    "**/.smartapp-automator/**": true,
+    "**/.minidev/**": true,
+    "**/.playwright/**": true,
+    "**/.pnpm-store/**": true,
+    "**/.tmp/**": true,
+    "**/.turbo/**": true,
+    "**/.vite/**": true,
+    "**/.vite-inspect/**": true,
+    "**/.playwright-cli/**": true,
+    "**/.codex-tmp/**": true,
+    "**/.weapp-vite/**": true,
+    "**/.wevu-config/**": true,
+    "**/__temp__/**": true,
+    "**/docs/reports/**": true
+  },
+  "files.exclude": {
+    "node_modules": true,
+    "dist": true,
+    "**/dist-*": true,
+    "**/dist-plugin": true,
+    "**/dist-web": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/miniprogram_npm": true,
+    "**/.cache": true,
+    "**/.smartapp-automator": true,
+    "**/.codex-tmp": true,
+    "**/.minidev": true,
+    "**/.playwright": true,
+    "**/.playwright-cli": true,
+    "**/.pnpm-store": true,
+    "**/.tmp": true,
+    "**/.turbo": true,
+    "**/.vite": true,
+    "**/.vite-inspect": true,
+    "**/.weapp-vite": true,
+    "**/.wevu-config": true,
+    "**/__temp__": true,
+    "**/docs/reports": true
+  },
+  "search.exclude": {
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/dist-*/**": true,
+    "**/dist-plugin/**": true,
+    "**/dist-web/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/miniprogram_npm/**": true,
+    "**/.cache/**": true,
+    "**/.smartapp-automator/**": true,
+    "**/.minidev/**": true,
+    "**/.playwright/**": true,
+    "**/.pnpm-store/**": true,
+    "**/.tmp/**": true,
+    "**/.turbo/**": true,
+    "**/.vite/**": true,
+    "**/.vite-inspect/**": true,
+    "**/.playwright-cli/**": true,
+    "**/.codex-tmp/**": true,
+    "**/.weapp-vite/**": true,
+    "**/.wevu-config/**": true,
+    "**/__temp__/**": true,
+    "**/docs/reports/**": true
+  },
+  "tailwindCSS.files.exclude": [
+    "**/*",
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-*/**",
+    "**/dist-plugin/**",
+    "**/dist-web/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/miniprogram_npm/**",
+    "**/.cache/**",
+    "**/.smartapp-automator/**",
+    "**/.minidev/**",
+    "**/.playwright/**",
+    "**/.pnpm-store/**",
+    "**/.tmp/**",
+    "**/.turbo/**",
+    "**/.vite/**",
+    "**/.vite-inspect/**",
+    "**/.playwright-cli/**",
+    "**/.codex-tmp/**",
+    "**/.weapp-vite/**",
+    "**/.wevu-config/**",
+    "**/__temp__/**",
+    "**/docs/reports/**"
+  ],
+  "tailwindCSS.codeActions": false,
+  "i18n-ally.usage.scanningIgnore": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-*/**",
+    "**/dist-plugin/**",
+    "**/dist-web/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/miniprogram_npm/**",
+    "**/.cache/**",
+    "**/.smartapp-automator/**",
+    "**/.minidev/**",
+    "**/.playwright/**",
+    "**/.pnpm-store/**",
+    "**/.tmp/**",
+    "**/.turbo/**",
+    "**/.vite/**",
+    "**/.vite-inspect/**",
+    "**/.playwright-cli/**",
+    "**/.codex-tmp/**",
+    "**/.weapp-vite/**",
+    "**/.wevu-config/**",
+    "**/__temp__/**",
+    "**/docs/reports/**"
+  ],
+  "vue.tsserver.useWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
