@@ -1,7 +1,6 @@
 import type { DrawerProps } from "./drawer.types";
 
 export const defaultDrawerProps: DrawerProps = {
-  open: false,
   defaultOpen: false,
   placement: "bottom",
   closeOnBackdropClick: true,

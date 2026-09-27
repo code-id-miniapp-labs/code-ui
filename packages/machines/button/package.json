@@ -21,6 +21,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.mts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

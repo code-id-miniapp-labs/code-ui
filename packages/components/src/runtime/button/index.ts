@@ -35,13 +35,26 @@ Component(
     properties: createProperties(defaultButtonProps),
 
     computed: {
-      classes() {
+      loading() {
+        return Boolean(
+          this.data.button?.loading || this.data.button?.internalLoading,
+        );
+      },
+      disabled() {
+        return Boolean(this.data.button?.disabled ?? this.data.disabled);
+      },
+      classes(this: any) {
         const variant = this.data.variant;
         const color = this.data.color;
         const size = this.data.size;
         const block = this.data.block;
-        const disabled = this.data.disabled;
-        const loading = this.data.loading;
+        const disabled = Boolean(
+          this.data.button?.disabled ?? this.data.disabled,
+        );
+        const loading = Boolean(
+          this.data.button?.loading || this.data.button?.internalLoading,
+        );
+
         const ui = this.data.ui;
 
         const theme = getResolvedTheme("button", buttonTheme);
@@ -61,7 +74,12 @@ Component(
     methods: {
       handleTap(e: WechatMiniprogram.TouchEvent) {
         const buttonData = (this as any).data.button;
-        if (buttonData?.disabled || buttonData?.loading) return;
+        if (
+          buttonData?.disabled ||
+          buttonData?.loading ||
+          (this as any).data.disabled
+        )
+          return;
         this.send({ type: "TAP", event: e });
       },
     },

@@ -49,9 +49,7 @@
         Custom slot override via Nuxt UI v4-style local ui prop.
       </view>
       <view class="flex flex-wrap gap-3 items-center">
-        <c-button loadingAuto="{{true}}" bind:tap="handleAsyncAction" loading="{{true}}">
-          Mabar king
-        </c-button>
+        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}">Mabar king</c-button>
       </view>
     </view>
     <!-- Section 6: Drawer Component -->
@@ -62,5 +60,6 @@
       </view>
       <view class="flex flex-col gap-2.5"></view>
     </view>
+    <c-drawer>asd</c-drawer>
   </view>
 </view>

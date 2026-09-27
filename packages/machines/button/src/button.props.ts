@@ -11,4 +11,3 @@ export const defaultButtonProps: ButtonProps = {
   autoResetDuration: 1500,
   ui: {},
 };
-

@@ -22,7 +22,7 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     duration,
 
     setOpen(nextOpen: boolean) {
-      if (open === nextOpen) return;
+      if (state.hasTag("open") === nextOpen) return;
       send({ type: nextOpen ? "OPEN" : "CLOSE" });
     },
 

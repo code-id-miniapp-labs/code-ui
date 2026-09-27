@@ -501,7 +501,7 @@ export default config;
                   }
                 }
               }
-            } catch (e) {
+            } catch {
               // ignore malformed json
             }
           }
@@ -541,7 +541,7 @@ export default config;
                 }
               }
             }
-          } catch (e) {
+          } catch {
             // ignore malformed json
           }
         }
@@ -563,14 +563,16 @@ export default config;
           let match;
           while ((match = wxsRegex.exec(wxmlContent)) !== null) {
             const src = match[1];
-            const absoluteWxsPath = path.resolve(
-              path.dirname(sourceWxmlPath),
-              src,
-            );
-            const relWxs = path
-              .relative(librarySourceDir, absoluteWxsPath)
-              .replace(/\\/g, "/");
-            usedWxs.add(relWxs);
+            if (src) {
+              const absoluteWxsPath = path.resolve(
+                path.dirname(sourceWxmlPath),
+                src,
+              );
+              const relWxs = path
+                .relative(librarySourceDir, absoluteWxsPath)
+                .replace(/\\/g, "/");
+              usedWxs.add(relWxs);
+            }
           }
         }
       }

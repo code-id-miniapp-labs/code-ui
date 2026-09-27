@@ -78,6 +78,11 @@ export interface ButtonComputed {
   isInteractive: boolean;
 }
 
+export interface ButtonRefs {
+  prevLoading: boolean | undefined;
+  prevDisabled: boolean | undefined;
+}
+
 export interface ButtonSchema extends MachineSchema {
   state: ButtonState;
   tag: "loading" | "disabled";
@@ -85,6 +90,7 @@ export interface ButtonSchema extends MachineSchema {
   props: ButtonProps;
   context: ButtonContext;
   computed: ButtonComputed;
+  refs: ButtonRefs;
   action: string;
   effect: string;
   guard: string;
@@ -99,6 +105,8 @@ export interface ButtonApi {
   state: ButtonState;
   /** Whether the button is loading */
   loading: boolean;
+  /** Internal auto-loading state */
+  internalLoading: boolean;
   /** Whether the button is disabled */
   disabled: boolean;
   /** Visual variant */

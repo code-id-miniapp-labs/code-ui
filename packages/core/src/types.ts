@@ -220,6 +220,10 @@ export interface DeepPartialMachineState<
 }
 
 interface ComputedParams<T extends Dict> {
+  state: Bindable<T["state"]> & {
+    matches: (...values: T["state"][]) => boolean;
+    hasTag: (tag: T["tag"]) => boolean;
+  };
   context: BindableContext<T>;
   event: EventType<T["event"]>;
   prop: PropFn<T>;

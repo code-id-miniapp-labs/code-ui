@@ -7,6 +7,7 @@ import {
 import {
   isFunction,
   isString,
+  isPromise,
   callAll,
   runIfFn,
   warn,
@@ -141,7 +142,58 @@ export class MiniappMachine<T extends MachineSchema> {
         const _component = this.scope?.component;
         if (_component && typeof _component.triggerEvent === "function") {
           const eventName = key.charAt(2).toLowerCase() + key.slice(3);
-          value = (detail: any) => _component.triggerEvent(eventName, detail);
+          value = (detail: any) => {
+            let asyncPromise: Promise<any> | undefined;
+
+            if (detail && typeof detail === "object") {
+              const origSetPromise = (detail as any).setPromise;
+              (detail as any).setPromise = (p: Promise<any>) => {
+                asyncPromise = p;
+                origSetPromise?.(p);
+              };
+            }
+
+            const owner: any =
+              typeof (_component as any).selectOwnerComponent === "function"
+                ? (_component as any).selectOwnerComponent()
+                : typeof getCurrentPages === "function"
+                  ? getCurrentPages()?.slice(-1)[0]
+                  : undefined;
+
+            const restored: Array<[string, Function]> = [];
+            if (owner && typeof owner === "object") {
+              for (const propName of Object.keys(owner)) {
+                if (
+                  typeof owner[propName] === "function" &&
+                  !propName.startsWith("__") &&
+                  propName !== "setData"
+                ) {
+                  const orig = owner[propName];
+                  restored.push([propName, orig]);
+                  owner[propName] = function (this: any, ...args: any[]) {
+                    const ret = orig.apply(this, args);
+                    if (isPromise(ret)) {
+                      asyncPromise = ret;
+                    }
+                    return ret;
+                  };
+                }
+              }
+            }
+
+            try {
+              const ret = _component.triggerEvent(eventName, detail);
+              if (isPromise(ret)) {
+                return ret;
+              }
+            } finally {
+              for (const [propName, orig] of restored) {
+                owner[propName] = orig;
+              }
+            }
+
+            return asyncPromise;
+          };
         }
       }
 
@@ -187,6 +239,7 @@ export class MiniappMachine<T extends MachineSchema> {
           key as string,
           alienComputed(() =>
             machine.computed?.[key]({
+              state: this.getState(),
               context: ctx as any,
               event: this.getEvent(),
               prop,

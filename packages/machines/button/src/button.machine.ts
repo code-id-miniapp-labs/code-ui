@@ -13,18 +13,20 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     return prop("loading") ? "loading" : "idle";
   },
 
+  refs: ({ prop }) => ({
+    prevLoading: prop("loading"),
+    prevDisabled: prop("disabled"),
+  }),
+
   context: ({ prop, bindable }) => ({
     internalLoading: bindable<boolean>(() => ({
-      value: false,
       defaultValue: false,
     })),
     loading: bindable<boolean>(() => ({
-      value: prop("loading"),
-      defaultValue: false,
+      defaultValue: Boolean(prop("loading")),
     })),
     disabled: bindable<boolean>(() => ({
-      value: prop("disabled"),
-      defaultValue: false,
+      defaultValue: Boolean(prop("disabled")),
     })),
     variant: bindable<any>(() => ({
       value: prop("variant"),
@@ -53,18 +55,26 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       context.get("loading") || context.get("internalLoading"),
     isDisabled: ({ context }) =>
       context.get("disabled") || context.get("loading"),
-    isInteractive: ({ context }) =>
-      !context.get("disabled") && !context.get("loading"),
+    isInteractive: ({ context, state }) =>
+      !state.matches("loading") &&
+      !context.get("disabled") &&
+      !context.get("loading"),
   },
 
-  watch: ({ prop, state, send }) => {
-    const controlledLoading = prop("loading");
-    if (controlledLoading !== undefined) {
-      if (controlledLoading && !state.matches("loading")) {
-        send({ type: "SET_LOADING", loading: true });
-      } else if (!controlledLoading && state.matches("loading")) {
-        send({ type: "SET_LOADING", loading: false });
-      }
+  watch: ({ prop, refs, context, send }) => {
+    const nextLoading = prop("loading");
+    if (nextLoading !== undefined && nextLoading !== refs.get("prevLoading")) {
+      refs.set("prevLoading", nextLoading);
+      send({ type: "SET_LOADING", loading: nextLoading });
+    }
+
+    const nextDisabled = prop("disabled");
+    if (
+      nextDisabled !== undefined &&
+      nextDisabled !== refs.get("prevDisabled")
+    ) {
+      refs.set("prevDisabled", nextDisabled);
+      context.set("disabled", nextDisabled);
     }
   },
 
@@ -119,9 +129,21 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     success: {
       effects: ["autoResetEffect"],
       on: {
-        TAP: {
-          target: "idle",
-        },
+        TAP: [
+          {
+            guard: "isInteractiveAndHasAsyncHandler",
+            target: "loading",
+            actions: ["executeAsyncHandler"],
+          },
+          {
+            guard: "isInteractive",
+            target: "idle",
+            actions: ["executeTapHandler"],
+          },
+          {
+            target: "idle",
+          },
+        ],
         RESET: {
           target: "idle",
         },
@@ -131,9 +153,21 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     error: {
       effects: ["autoResetEffect"],
       on: {
-        TAP: {
-          target: "idle",
-        },
+        TAP: [
+          {
+            guard: "isInteractiveAndHasAsyncHandler",
+            target: "loading",
+            actions: ["executeAsyncHandler"],
+          },
+          {
+            guard: "isInteractive",
+            target: "idle",
+            actions: ["executeTapHandler"],
+          },
+          {
+            target: "idle",
+          },
+        ],
         RESET: {
           target: "idle",
         },
@@ -151,7 +185,9 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         "loading" in event && event.loading === false,
       isInteractiveAndHasAsyncHandler: ({ context, prop }) => {
         if (context.get("disabled") || context.get("loading")) return false;
-        return Boolean(prop("loadingAuto") && prop("onTap"));
+        return Boolean(
+          prop("loadingAuto") && (prop("onTap") || prop("onClick")),
+        );
       },
     },
 
@@ -170,17 +206,39 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       },
       executeTapHandler: ({ prop, event }) => {
         const rawEvent = "event" in event ? event.event : undefined;
-        prop("onTap")?.(rawEvent);
-        prop("onClick")?.(rawEvent);
+        const onTap = prop("onTap");
+        const onClick = prop("onClick");
+        if (onTap) {
+          onTap(rawEvent);
+          if (onClick && onClick !== onTap) {
+            onClick(rawEvent);
+          }
+        } else {
+          onClick?.(rawEvent);
+        }
       },
       executeAsyncHandler: ({ prop, event, send, context }) => {
         const rawEvent = "event" in event ? event.event : undefined;
 
-        const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
+        context.set("internalLoading", true);
 
-        if (isPromise(result)) {
-          context.set("internalLoading", true);
-          Promise.resolve(result)
+        let capturedPromise: Promise<any> | undefined;
+        if (rawEvent && typeof rawEvent === "object") {
+          const detail = (rawEvent as any).detail ?? rawEvent;
+          if (detail && typeof detail === "object") {
+            const origSetPromise = detail.setPromise;
+            detail.setPromise = (p: Promise<any>) => {
+              capturedPromise = p;
+              origSetPromise?.(p);
+            };
+          }
+        }
+
+        const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
+        const promise = isPromise(result) ? result : capturedPromise;
+
+        if (isPromise(promise)) {
+          Promise.resolve(promise)
             .catch((err) => {
               send({ type: "REJECT", error: err });
             })

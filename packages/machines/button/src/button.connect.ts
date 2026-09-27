@@ -7,6 +7,7 @@ export function connectButton(service: ButtonService): ButtonApi {
 
   const currentState = state.get();
   const loading = computed("isLoading");
+  const internalLoading = Boolean(context.get("internalLoading"));
   const disabled = computed("isDisabled");
   const variant = context.get("variant");
   const color = context.get("color");
@@ -16,6 +17,7 @@ export function connectButton(service: ButtonService): ButtonApi {
   return {
     state: currentState,
     loading,
+    internalLoading,
     disabled,
     variant,
     color,
@@ -31,7 +33,6 @@ export function connectButton(service: ButtonService): ButtonApi {
     },
 
     handleTap(event?: any) {
-      console.log("TAP KINGG handleTAP");
       send({ type: "TAP", event });
     },
 
@@ -39,16 +40,16 @@ export function connectButton(service: ButtonService): ButtonApi {
       id: dom.getRootId(scope),
       ...parts.root.attrs,
       "data-state": currentState,
-      "data-loading": loading ? "true" : undefined,
-      "data-disabled": disabled ? "true" : undefined,
+      "data-loading": loading ? "true" : "false",
+      "data-disabled": disabled ? "true" : "false",
       "data-variant": variant,
       "data-color": color,
       "data-size": size,
-      "data-block": block ? "true" : undefined,
+      "data-block": block ? "true" : "false",
       disabled: disabled || loading,
       role: "button",
-      "aria-busy": loading ? "true" : undefined,
-      "aria-disabled": disabled ? "true" : undefined,
+      "aria-busy": loading ? "true" : "false",
+      "aria-disabled": disabled ? "true" : "false",
     },
 
     spinnerProps: {
