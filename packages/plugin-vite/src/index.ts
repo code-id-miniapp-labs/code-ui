@@ -440,8 +440,6 @@ export default config;
     },
 
     async closeBundle() {
-      if (!treeShakeOpts.enable) return;
-
       const treeLibrary = treeShakeOpts.library || "@code-ui/components";
       const outDir = viteConfigObj?.build?.outDir || "dist";
       const distRoot = path.resolve(projectRoot, outDir);
@@ -674,55 +672,21 @@ export default config;
       // 2. PURGE - remove whatever is still unused. Safe to delete outright
       // now: the permanent copy lives in node_modules, not in a folder
       // inside dist that a clean build could wipe out.
-      if (fs.existsSync(runtimeDir)) {
-        const components = fs.readdirSync(runtimeDir);
-        for (const comp of components) {
-          const compDir = path.join(runtimeDir, comp);
-          if (fs.statSync(compDir).isDirectory()) {
-            const relToLib = "runtime/" + comp;
-            if (!usedComponentDirs.has(relToLib)) {
-              try {
-                savedBytes += getDirSize(compDir);
-                fs.rmSync(compDir, { recursive: true, force: true });
-                removedComponents++;
-              } catch (err) {
-                console.warn(
-                  `[code-ui:tree-shake] Failed to purge "${relToLib}":`,
-                  err,
-                );
-              }
-            }
-          }
-        }
-      }
-
-      if (fs.existsSync(wxsDir)) {
-        function purgeUnusedWxs(dir: string) {
-          const items = fs.readdirSync(dir);
-          for (const item of items) {
-            const fullPath = path.join(dir, item);
-            if (fs.statSync(fullPath).isDirectory()) {
-              purgeUnusedWxs(fullPath);
-              if (
-                fs.existsSync(fullPath) &&
-                fs.readdirSync(fullPath).length === 0
-              ) {
+      if (treeShakeOpts.enable) {
+        if (fs.existsSync(runtimeDir)) {
+          const components = fs.readdirSync(runtimeDir);
+          for (const comp of components) {
+            const compDir = path.join(runtimeDir, comp);
+            if (fs.statSync(compDir).isDirectory()) {
+              const relToLib = "runtime/" + comp;
+              if (!usedComponentDirs.has(relToLib)) {
                 try {
-                  fs.rmdirSync(fullPath);
-                } catch {}
-              }
-            } else if (item.endsWith(".wxs")) {
-              const relToLib = path
-                .relative(miniprogramNpmPath, fullPath)
-                .replace(/\\/g, "/");
-              if (!usedWxs.has(relToLib)) {
-                try {
-                  savedBytes += fs.statSync(fullPath).size;
-                  fs.rmSync(fullPath, { force: true });
-                  removedWxs++;
+                  savedBytes += getDirSize(compDir);
+                  fs.rmSync(compDir, { recursive: true, force: true });
+                  removedComponents++;
                 } catch (err) {
                   console.warn(
-                    `[code-ui:tree-shake] Failed to purge wxs "${relToLib}":`,
+                    `[code-ui:tree-shake] Failed to purge "${relToLib}":`,
                     err,
                   );
                 }
@@ -730,14 +694,50 @@ export default config;
             }
           }
         }
-        purgeUnusedWxs(wxsDir);
-      }
 
-      if (removedComponents > 0 || removedWxs > 0) {
-        const kb = (savedBytes / 1024).toFixed(2);
-        console.log(
-          `\n\x1b[32m✔ [code-ui:tree-shake] Purged ${removedComponents} unused components and ${removedWxs} WXS scripts. Saved ${kb} KB.\x1b[0m\n`,
-        );
+        if (fs.existsSync(wxsDir)) {
+          function purgeUnusedWxs(dir: string) {
+            const items = fs.readdirSync(dir);
+            for (const item of items) {
+              const fullPath = path.join(dir, item);
+              if (fs.statSync(fullPath).isDirectory()) {
+                purgeUnusedWxs(fullPath);
+                if (
+                  fs.existsSync(fullPath) &&
+                  fs.readdirSync(fullPath).length === 0
+                ) {
+                  try {
+                    fs.rmdirSync(fullPath);
+                  } catch {}
+                }
+              } else if (item.endsWith(".wxs")) {
+                const relToLib = path
+                  .relative(miniprogramNpmPath, fullPath)
+                  .replace(/\\/g, "/");
+                if (!usedWxs.has(relToLib)) {
+                  try {
+                    savedBytes += fs.statSync(fullPath).size;
+                    fs.rmSync(fullPath, { force: true });
+                    removedWxs++;
+                  } catch (err) {
+                    console.warn(
+                      `[code-ui:tree-shake] Failed to purge wxs "${relToLib}":`,
+                      err,
+                    );
+                  }
+                }
+              }
+            }
+          }
+          purgeUnusedWxs(wxsDir);
+        }
+
+        if (removedComponents > 0 || removedWxs > 0) {
+          const kb = (savedBytes / 1024).toFixed(2);
+          console.log(
+            `\n\x1b[32m✔ [code-ui:tree-shake] Purged ${removedComponents} unused components and ${removedWxs} WXS scripts. Saved ${kb} KB.\x1b[0m\n`,
+          );
+        }
       }
     },
   };

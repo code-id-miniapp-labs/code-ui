@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@code-ui/components": "workspace:*",
-    "@code-ui/miniapp": "workspace:*",
     "@code-ui/plugin-vite": "workspace:*"
   },
   "devDependencies": {
@@ -47,7 +46,6 @@
     "stylelint": "^17.15.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "weapp-vite": "^7.3.0",
-    "wevu": "^7.3.0"
+    "weapp-vite": "^7.3.0"
   }
 }

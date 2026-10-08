@@ -26,9 +26,6 @@ importers:
       '@code-ui/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@code-ui/miniapp':
-        specifier: workspace:*
-        version: link:../../packages/frameworks/miniapp
       '@code-ui/plugin-vite':
         specifier: workspace:*
         version: link:../../packages/plugin-vite
@@ -66,9 +63,6 @@ importers:
       weapp-vite:
         specifier: ^7.3.0
         version: 7.3.0(@babel/core@8.0.6)(@oxc-project/types@0.151.0)(@types/node@26.6.2)(esbuild@0.28.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(hono@4.13.9)(jiti@2.7.0)(less@4.9.0(supports-color@10.2.2))(lightningcss@1.33.0)(miniprogram-api-typings@5.2.3)(rollup@4.63.5)(sass@1.105.0)(srvx@1.0.5)(stylus@0.64.0(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)(terser@5.50.0)(vitest@5.0.2(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.0(supports-color@10.2.2))(sass@1.105.0)(stylus@0.64.0(supports-color@10.2.2))(terser@5.50.0)(yaml@2.9.1)))(yaml@2.9.1)
-      wevu:
-        specifier: ^7.3.0
-        version: 7.3.0(@babel/core@8.0.6)(miniprogram-api-typings@5.2.3)(rolldown@1.2.10)(rollup@4.63.5)(typescript@6.0.3)(vitest@5.0.2(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.0(supports-color@10.2.2))(sass@1.105.0)(stylus@0.64.0(supports-color@10.2.2))(terser@5.50.0)(yaml@2.9.1)))
 
   packages/anatomy:
     devDependencies:
@@ -259,6 +253,31 @@ importers:
       '@types/node':
         specifier: ^26.2.0
         version: 26.2.0
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.11)(typescript@5.9.3)(vue-tsc@3.3.11(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/pin-input:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
       alien-signals:
         specifier: ^1.0.4
         version: 1.0.13
@@ -10669,14 +10688,14 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.2
 
   '@types/gensync@1.0.5': {}
 
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 26.2.0
+      '@types/node': 26.6.2
 
   '@types/hast@3.0.5':
     dependencies:
@@ -10690,7 +10709,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.2
 
   '@types/lodash.debounce@4.0.9':
     dependencies:
@@ -10721,7 +10740,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.6.2
 
   '@types/sass@1.45.0':
     dependencies:
