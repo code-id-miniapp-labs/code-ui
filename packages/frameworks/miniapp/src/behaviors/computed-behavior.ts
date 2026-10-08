@@ -3,8 +3,13 @@ import {
   computed as alienComputed,
   effect,
   effectScope,
+  endBatch,
+  pauseTracking,
+  resumeTracking,
   signal,
+  startBatch,
 } from "alien-signals";
+
 
 export type ComputedGetter<T = any, TThis = any> = (this: TThis) => T;
 export type ComputedSetter<T = any, TThis = any> = (
@@ -40,6 +45,19 @@ export type ComputedDef<T = any, TThis = any> =
  */
 export type ComputedDefs = Record<string, ComputedDef>;
 
+/**
+ * Constraint used to infer the `computed` option of
+ * {@link createComponentOptions} / {@link createPageOptions}.
+ *
+ * NOTE: the signatures intentionally declare **no** explicit `this` parameter.
+ * An explicit `this: any` on the contextual signature takes precedence over
+ * `ThisType<…>`, which made `this` inside every getter collapse to `any`.
+ */
+export type ComputedDefsOption = Record<
+  string,
+  (() => any) | { get(): any; set?(val: any): void }
+>;
+
 export type ExtractComputedReturns<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => infer R
     ? R
@@ -69,15 +87,86 @@ export function parseComputedDef(def?: ComputedDef): {
   };
 }
 
-export type SafeData<T> = [T] extends [never] ? WechatMiniprogram.Component.DataOption : T;
-export type SafeMethod<T> = [T] extends [never] ? WechatMiniprogram.Component.MethodOption : T;
 
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+/** `true` when `T` has a `string` index signature (i.e. its keys are unknown). */
+type HasStringIndex<T> = string extends keyof T ? true : false;
+
+/** Removes `string` index signatures, keeping only explicitly declared keys. */
+type FilterUnknownKeys<T> = {
+  [K in keyof T as string extends K ? never : K]: T[K];
+};
+
+/**
+ * Drops `any` entries from the `behaviors` tuple. Untyped behaviors (e.g. ones
+ * created with a `typeof Behavior !== "undefined" ? … : ({} as any)` fallback)
+ * would otherwise poison the whole instance intersection.
+ */
+type TypedBehaviors<T> = T extends readonly [infer H, ...infer R]
+  ? IsAny<H> extends true
+    ? TypedBehaviors<R>
+    : [H, ...TypedBehaviors<R>]
+  : T extends readonly (infer U)[]
+    ? IsAny<U> extends true
+      ? []
+      : U[]
+    : [];
+
+type HasUntypedBehavior<T> = T extends readonly [infer H, ...infer R]
+  ? IsAny<H> extends true
+    ? true
+    : HasUntypedBehavior<R>
+  : T extends readonly (infer U)[]
+    ? IsAny<U>
+    : false;
+
+type Or<A extends boolean, B extends boolean> = A extends true ? true : B;
+
+/**
+ * Escape hatch used only when part of the component is untyped. In an
+ * intersection, an index signature never overrides declared properties, so
+ * every known key stays strongly typed while unknown keys fall back to `any`.
+ */
+type LooseWhen<B extends boolean> = B extends true ? Record<string, any> : {};
+
+type PropertiesToData<P> = {
+  [K in keyof FilterUnknownKeys<P>]: P[K] extends WechatMiniprogram.Component.AllProperty
+    ? WechatMiniprogram.Component.PropertyToData<P[K]>
+    : any;
+};
+
+/** `this.data` / `this.properties` of a component using `computed`. */
+export type ComponentComputedData<
+  TData,
+  TProperty,
+  TComputed,
+  TBehavior extends readonly any[] = [],
+> = FilterUnknownKeys<TData> &
+  WechatMiniprogram.Component.MixinData<TypedBehaviors<TBehavior>> &
+  WechatMiniprogram.Component.MixinProperties<TypedBehaviors<TBehavior>> &
+  PropertiesToData<TProperty> &
+  ExtractComputedReturns<TComputed> &
+  LooseWhen<
+    Or<
+      HasUntypedBehavior<TBehavior>,
+      Or<HasStringIndex<TProperty>, HasStringIndex<TData>>
+    >
+  >;
+
+export type SafeData<T> = [T] extends [never]
+  ? WechatMiniprogram.Component.DataOption
+  : T;
+export type SafeMethod<T> = [T] extends [never]
+  ? WechatMiniprogram.Component.MethodOption
+  : T;
 
 export type ComponentInstanceBase<
   TData extends WechatMiniprogram.Component.DataOption,
   TProperty extends WechatMiniprogram.Component.PropertyOption,
 > = WechatMiniprogram.Component.InstanceMethods<SafeData<TData>> & {
-  data: SafeData<TData> & WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
+  data: SafeData<TData> &
+    WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
   properties: SafeData<TData> &
     WechatMiniprogram.Component.PropertyOptionToData<TProperty>;
   triggerEvent<DetailType = any>(
@@ -90,36 +179,48 @@ export type ComponentInstanceBase<
   dataset: Record<string, any>;
 };
 
+/**
+ * `this` inside `computed`, `methods`, `lifetimes`, `observers`, … of a
+ * component created with {@link createComponentOptions}.
+ *
+ * Built from scratch instead of wrapping `WechatMiniprogram.Component.Instance`,
+ * because that type applies `Omit<TCustomInstanceProperty, …>` (which erases
+ * declared keys when an index signature is present) and mixes in behaviors
+ * without guarding against `any`.
+ */
 export type ComponentInstanceFull<
-  TData extends WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption,
-  TMethod extends WechatMiniprogram.Component.MethodOption,
-  TComputed,
-  TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
-  TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
-  TIsPage extends boolean = false,
-> = WechatMiniprogram.Component.Instance<
-  SafeData<TData> & ExtractComputedReturns<TComputed>,
+  TData,
   TProperty,
-  SafeMethod<TMethod>,
-  TBehavior,
-  TCustomInstanceProperty,
-  TIsPage
->;
+  TMethod,
+  TComputed,
+  TBehavior extends readonly any[] = [],
+  TCustomInstanceProperty = {},
+  TIsPage extends boolean = false,
+> = WechatMiniprogram.Component.InstanceProperties &
+  WechatMiniprogram.Component.InstanceMethods<
+    ComponentComputedData<TData, TProperty, TComputed, TBehavior>
+  > &
+  TMethod &
+  WechatMiniprogram.Component.MixinMethods<TypedBehaviors<TBehavior>> &
+  (TIsPage extends true ? WechatMiniprogram.Page.ILifetime : {}) &
+  TCustomInstanceProperty &
+  ExtractComputedReturns<TComputed> & {
+    data: ComponentComputedData<TData, TProperty, TComputed, TBehavior>;
+    properties: ComponentComputedData<TData, TProperty, TComputed, TBehavior>;
+  } & LooseWhen<HasUntypedBehavior<TBehavior>>;
 
-export type ComponentComputedDefs<
-  TData extends WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption,
-> = {
-  [key: string]: ComputedDef<any, ComponentInstanceBase<TData, TProperty>>;
-};
+/** @deprecated Use {@link ComputedDefsOption}. */
+export type ComponentComputedDefs = ComputedDefsOption;
 
 export type ComponentOptionsWithComputed<
-  TData extends WechatMiniprogram.Component.DataOption = WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption = WechatMiniprogram.Component.PropertyOption,
-  TMethod extends WechatMiniprogram.Component.MethodOption = WechatMiniprogram.Component.MethodOption,
-  TComputed extends ComponentComputedDefs<TData, TProperty> = ComponentComputedDefs<TData, TProperty>,
-  TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
+  TData extends WechatMiniprogram.Component.DataOption =
+    WechatMiniprogram.Component.DataOption,
+  TProperty extends WechatMiniprogram.Component.PropertyOption =
+    WechatMiniprogram.Component.PropertyOption,
+  TMethod extends WechatMiniprogram.Component.MethodOption =
+    WechatMiniprogram.Component.MethodOption,
+  TComputed extends ComputedDefsOption = ComputedDefsOption,
+  TBehavior extends readonly any[] = any[],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
 > = {
@@ -134,13 +235,34 @@ export type ComponentOptionsWithComputed<
     ComponentInstanceFull<
       TData,
       TProperty,
-      WechatMiniprogram.Component.MethodOption, // Break circularity for method inference
+      TMethod,
       TComputed,
       TBehavior,
-      TCustomInstanceProperty & Record<string, any>,
+      TCustomInstanceProperty,
       TIsPage
     >
   >;
+
+
+const _COMPUTED_INITIALIZED = "__cui_computedInit__" as const;
+const _COMPUTED_DEFS = "__cui_computedDefs__" as const;
+/** Synchronously re-syncs signals from `this.data` and emits computed changes. */
+const _COMPUTED_FLUSH = "__cui_computedFlush__" as const;
+/** Re-syncs tracked data signals from `this.data` (used by the `**` observer). */
+const _COMPUTED_SYNC = "__cui_computedSync__" as const;
+/** Tears down signals, effects and restores the original `setData`. */
+const _COMPUTED_DISPOSE = "__cui_computedDispose__" as const;
+
+const hasOwn = (obj: object, key: PropertyKey): boolean =>
+  Object.prototype.hasOwnProperty.call(obj, key);
+
+function ensureComputedBehavior(behaviors: readonly any[] | undefined): any[] {
+  const list = behaviors ? [...behaviors] : [];
+  if (!list.includes(computedBehavior)) {
+    list.push(computedBehavior);
+  }
+  return list;
+}
 
 /**
  * @example
@@ -159,11 +281,11 @@ export type ComponentOptionsWithComputed<
  * ```
  */
 export function createComponentOptions<
-  TData extends WechatMiniprogram.Component.DataOption = WechatMiniprogram.Component.DataOption,
-  TProperty extends WechatMiniprogram.Component.PropertyOption = WechatMiniprogram.Component.PropertyOption,
-  TMethod extends WechatMiniprogram.Component.MethodOption = WechatMiniprogram.Component.MethodOption,
-  TComputed extends ComponentComputedDefs<TData, TProperty> = ComponentComputedDefs<TData, TProperty>,
-  TBehavior extends WechatMiniprogram.Component.BehaviorOption = any[],
+  TData extends WechatMiniprogram.Component.DataOption = {},
+  TProperty extends WechatMiniprogram.Component.PropertyOption = {},
+  TMethod extends WechatMiniprogram.Component.MethodOption = {},
+  TComputed extends ComputedDefsOption = {},
+  const TBehavior extends readonly any[] = [],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
 >(
@@ -177,34 +299,12 @@ export function createComponentOptions<
     TIsPage
   >,
 ): any {
-  const computedDefs = options.computed as ComputedDefs | undefined;
-  if (computedDefs) {
-    (options as any)[_COMPUTED_DEFS] = computedDefs;
+  if (!options.computed) return options;
 
-    const behaviors = (
-      options.behaviors ? [...(options.behaviors as any[])] : []
-    ) as any[];
-    if (!behaviors.includes(computedBehavior)) {
-      behaviors.push(computedBehavior);
-    }
-    options.behaviors = behaviors as unknown as TBehavior;
-
-    options.data = (options.data || {}) as TData;
-    for (const [key, def] of Object.entries(computedDefs)) {
-      try {
-        const { get } = parseComputedDef(def);
-        const val = get.call({
-          data: options.data,
-          properties: options.properties || options.data,
-        });
-        if (val !== undefined) {
-          (options.data as any)[key] = val;
-        }
-      } catch {}
-    }
-  }
-
-  return options as any;
+  return {
+    ...options,
+    behaviors: ensureComputedBehavior(options.behaviors),
+  };
 }
 
 export type PageInstanceBase<TData extends WechatMiniprogram.Page.DataOption> =
@@ -220,20 +320,19 @@ export type PageInstanceFull<
   TComputed,
   TCustom extends WechatMiniprogram.Page.CustomOption,
 > = WechatMiniprogram.Page.Instance<
-  SafeData<TData> & ExtractComputedReturns<TComputed>,
-  TCustom
+  FilterUnknownKeys<TData> &
+    ExtractComputedReturns<TComputed> &
+    LooseWhen<HasStringIndex<TData>>,
+  Omit<TCustom, "data" | "computed"> & ExtractComputedReturns<TComputed>
 >;
 
-export type ComputedDefsForPage<
-  TData extends WechatMiniprogram.Page.DataOption,
-> = {
-  [key: string]: ComputedDef<any, PageInstanceBase<TData>>;
-};
+/** @deprecated Use {@link ComputedDefsOption}. */
+export type ComputedDefsForPage = ComputedDefsOption;
 
 export type PageOptionsWithComputed<
   TData extends WechatMiniprogram.Page.DataOption =
     WechatMiniprogram.Page.DataOption,
-  TComputed extends ComputedDefsForPage<TData> = ComputedDefsForPage<TData>,
+  TComputed extends ComputedDefsOption = ComputedDefsOption,
   TCustom extends WechatMiniprogram.Page.CustomOption =
     WechatMiniprogram.Page.CustomOption,
 > = (TCustom & {
@@ -264,54 +363,128 @@ export type PageOptionsWithComputed<
  * ```
  */
 export function createPageOptions<
-  TData extends WechatMiniprogram.Page.DataOption,
-  TComputed extends ComputedDefsForPage<TData>,
-  TCustom extends WechatMiniprogram.Page.CustomOption,
->(
-  options: PageOptionsWithComputed<TData, TComputed, TCustom>,
-): any {
+  TData extends WechatMiniprogram.Page.DataOption = {},
+  TComputed extends ComputedDefsOption = {},
+  TCustom extends WechatMiniprogram.Page.CustomOption = {},
+>(options: PageOptionsWithComputed<TData, TComputed, TCustom>): any {
   const computedDefs = options.computed as ComputedDefs | undefined;
-  if (computedDefs) {
-    (options as any)[_COMPUTED_DEFS] = computedDefs;
+  if (!computedDefs) return options;
 
-    const behaviors = (options.behaviors ? [...options.behaviors] : []) as any[];
-    if (!behaviors.includes(computedBehavior)) {
-      behaviors.push(computedBehavior);
-    }
-    options.behaviors = behaviors;
+  const data = {
+    ...(options.data as Record<string, any> | undefined),
+  };
+  Object.assign(data, evaluateInitialComputed(computedDefs, data));
 
-    options.data = (options.data || {}) as TData;
-    for (const [key, def] of Object.entries(computedDefs)) {
-      try {
-        const { get } = parseComputedDef(def);
-        const val = get.call({
-          data: options.data,
-          properties: options.data,
-        });
-        if (val !== undefined) {
-          (options.data as any)[key] = val;
-        }
-      } catch {}
-    }
+  const originalOnLoad = (options as any).onLoad;
+  const originalOnUnload = (options as any).onUnload;
 
-    const originalOnLoad = (options as any).onLoad;
-    (options as any).onLoad = function (
-      this: any,
-      query: Record<string, string | undefined>,
-    ) {
-      setupComputed(this, computedDefs);
+  return {
+    ...options,
+    data,
+    behaviors: ensureComputedBehavior(options.behaviors),
+    onLoad(this: any, query: Record<string, string | undefined>) {
+      setupComputed(this, computedDefs, { immediate: false });
+      this[_COMPUTED_FLUSH]?.();
       return originalOnLoad?.call(this, query);
-    };
-  }
-
-  return options as any;
+    },
+    onUnload(this: any) {
+      try {
+        return originalOnUnload?.call(this);
+      } finally {
+        this[_COMPUTED_DISPOSE]?.();
+      }
+    },
+  };
 }
 
-const _COMPUTED_INITIALIZED = "__cui_computedInit__" as const;
-const _COMPUTED_DEFS = "__cui_computedDefs__" as const;
-const _COMPUTED_SCOPE = "__cui_computedScope__" as const;
-const _COMPUTED_FLUSHING = "__cui_computedFlushing__" as const;
-const _COMPUTED_FLUSH = "__cui_computedFlush__" as const;
+
+function defaultValueForType(type: unknown): unknown {
+  switch (type) {
+    case String:
+      return "";
+    case Number:
+      return 0;
+    case Boolean:
+      return false;
+    case Array:
+      return [];
+    default:
+      return null;
+  }
+}
+
+function propertyDefault(def: unknown): unknown {
+  if (def === null) return null;
+  if (typeof def === "function") return defaultValueForType(def);
+  if (def && typeof def === "object") {
+    if ("value" in def) return (def as { value: unknown }).value;
+    return defaultValueForType((def as { type?: unknown }).type);
+  }
+  return undefined;
+}
+
+/**
+ * Evaluates computed getters at definition time so the first render already
+ * contains (default-prop based) computed values and the first runtime flush is
+ * usually a no-op.
+ *
+ * - `this.data` / `this.properties` contain property **default values** (not
+ *   the property schema) merged with `data`.
+ * - Other computed values are resolved lazily (`this.other`, `this.data.other`).
+ * - Getters that depend on runtime-only APIs (e.g. `this.setData`) are skipped.
+ */
+export function evaluateInitialComputed(
+  defs: ComputedDefs,
+  data?: Record<string, any>,
+  properties?: Record<string, unknown>,
+): Record<string, unknown> {
+  const keys = Object.keys(defs);
+  const base: Record<string, any> = {};
+  if (properties) {
+    for (const key of Object.keys(properties)) {
+      base[key] = propertyDefault(properties[key]);
+    }
+  }
+  if (data) Object.assign(base, data);
+
+  const results: Record<string, unknown> = {};
+  const done = new Set<string>();
+  const evaluating = new Set<string>();
+  const ctx: Record<string, any> = { data: base, properties: base };
+
+  const resolve = (key: string): unknown => {
+    if (done.has(key)) return results[key];
+    if (evaluating.has(key)) return undefined; // circular dependency
+    evaluating.add(key);
+    try {
+      results[key] = parseComputedDef(defs[key]).get.call(ctx);
+    } catch {
+      results[key] = undefined;
+    } finally {
+      evaluating.delete(key);
+      done.add(key);
+    }
+    return results[key];
+  };
+
+  for (const key of keys) {
+    const descriptor: PropertyDescriptor = {
+      configurable: true,
+      enumerable: true,
+      get: () => resolve(key),
+    };
+    Object.defineProperty(ctx, key, descriptor);
+    Object.defineProperty(base, key, descriptor);
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const key of keys) {
+    const val = resolve(key);
+    if (val !== undefined) out[key] = val;
+  }
+  return out;
+}
+
 
 function cloneValue<T>(val: T): T {
   if (Array.isArray(val)) {
@@ -323,7 +496,13 @@ function cloneValue<T>(val: T): T {
   return val;
 }
 
+/**
+ * Parses a `setData` path following WeChat semantics:
+ * `a.b` → object key, `a[0]` → array index.
+ */
 function parsePath(path: string): Array<string | number> {
+  if (path.indexOf(".") === -1 && path.indexOf("[") === -1) return [path];
+
   const tokens: Array<string | number> = [];
   const regex = /[^.[\]]+|\[(?:(-?\d+)|["'](.*?)["'])\]/g;
   let match: RegExpExecArray | null;
@@ -333,18 +512,13 @@ function parsePath(path: string): Array<string | number> {
     } else if (match[2] !== undefined) {
       tokens.push(match[2]);
     } else {
-      const seg = match[0];
-      const num = Number(seg);
-      tokens.push(
-        !isNaN(num) && !isNaN(parseFloat(seg)) && String(num) === seg
-          ? num
-          : seg,
-      );
+      tokens.push(match[0]);
     }
   }
   return tokens;
 }
 
+/** Immutable path update: copies only the containers along `subTokens`. */
 function applyPathUpdate(
   root: any,
   subTokens: Array<string | number>,
@@ -366,15 +540,15 @@ function applyPathUpdate(
   for (let i = 0; i < subTokens.length - 1; i++) {
     const key = subTokens[i];
     if (key === undefined) continue;
-    const nextKey = subTokens[i + 1];
-    const isNextNumber = typeof nextKey === "number";
+    const isNextNumber = typeof subTokens[i + 1] === "number";
     const existing = current[key];
 
-    let clonedChild = cloneValue(existing);
-
-    if (existing === null && typeof existing !== "object") {
-      clonedChild = isNextNumber ? [] : {};
-    }
+    const clonedChild =
+      existing === null || typeof existing !== "object"
+        ? isNextNumber
+          ? []
+          : {}
+        : cloneValue(existing);
 
     current[key] = clonedChild;
     current = clonedChild;
@@ -388,7 +562,31 @@ function applyPathUpdate(
   return newRoot;
 }
 
-function setupComputed(self: any, explicitDefs?: ComputedDefs) {
+const warnReadonly = (key: string) => {
+  console.warn(
+    `[code-ui/computed] Cannot set read-only computed property "${key}". Provide a "set(val)" handler in computed definition to allow writes.`,
+  );
+};
+
+
+export interface SetupComputedOptions {
+  /**
+   * Emit the initial computed diff synchronously during setup.
+   * The behavior disables this in `created` (where `setData` is not allowed and
+   * properties may not be applied yet) and flushes in `attached` instead.
+   * @default true
+   */
+  immediate?: boolean;
+}
+
+type DataSignal = ReturnType<typeof signal<unknown>>;
+type SetDataFn = (data: Record<string, any>, callback?: () => void) => void;
+
+export function setupComputed(
+  self: any,
+  explicitDefs?: ComputedDefs,
+  options: SetupComputedOptions = {},
+): void {
   if (!self || self[_COMPUTED_INITIALIZED]) return;
 
   const computedDefs: ComputedDefs =
@@ -403,225 +601,326 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
 
   self[_COMPUTED_INITIALIZED] = true;
 
-  const dataSignalMap = new Map<string, ReturnType<typeof signal<unknown>>>();
+  const computedKeySet = new Set(computedKeys);
+  const readData = (key: string): unknown => self.data?.[key];
 
-  const getDataSignal = (prop: string) => {
-    let sig = dataSignalMap.get(prop);
+  const dataSignals = new Map<string, DataSignal>();
+  const getDataSignal = (key: string): DataSignal => {
+    let sig = dataSignals.get(key);
     if (!sig) {
-      sig = signal((self.data as any)?.[prop]);
-      dataSignalMap.set(prop, sig);
+      sig = signal<unknown>(readData(key));
+      dataSignals.set(key, sig);
     }
     return sig;
   };
 
-  const computedSignals: Record<string, () => any> = {};
-  const computedSetters: Record<string, (val: any) => void> = {};
+  const computedSignals: Record<string, () => unknown> = Object.create(null);
+  const computedSetters: Record<string, (val: unknown) => void> =
+    Object.create(null);
 
-  const reactiveData = new Proxy({} as Record<string, any>, {
+  const readReactive = (key: string): unknown => {
+    const c = computedSignals[key];
+    return c ? c() : getDataSignal(key)();
+  };
+
+  const writeComputed = (key: string, val: unknown) => {
+    const setter = computedSetters[key];
+    if (setter) setter(val);
+    else warnReadonly(key);
+  };
+
+  /** Reactive view of `this.data` / `this.properties` used inside getters. */
+  const reactiveData = new Proxy(Object.create(null) as Record<string, any>, {
     get(_target, prop) {
       if (typeof prop !== "string") return undefined;
-      if (computedSignals[prop]) {
-        return computedSignals[prop]();
-      }
-      return getDataSignal(prop)();
+      return readReactive(prop);
     },
     set(_target, prop, val) {
-      if (typeof prop === "string" && computedSetters[prop]) {
-        computedSetters[prop](val);
-        return true;
-      }
-      if (typeof prop === "string" && prop in computedDefs) {
-        console.warn(
-          `[code-ui/computed] Cannot set read-only computed property "${prop}".`,
-        );
-        return false;
-      }
-      if (typeof prop === "string") {
-        self.setData({ [prop]: val });
-        return true;
-      }
-      return false;
+      if (typeof prop !== "string") return false;
+      self.setData({ [prop]: val });
+      return true;
     },
     has(_target, prop) {
       if (typeof prop !== "string") return false;
-      return (
-        prop in computedDefs ||
-        (self.data && prop in self.data) ||
-        (self.properties && prop in self.properties)
-      );
+      return computedKeySet.has(prop) || (!!self.data && prop in self.data);
+    },
+    ownKeys() {
+      const keys = new Set<string>(self.data ? Object.keys(self.data) : []);
+      for (const key of computedKeys) keys.add(key);
+      return [...keys];
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      if (typeof prop !== "string") return undefined;
+      if (!computedKeySet.has(prop) && !(self.data && hasOwn(self.data, prop))) {
+        return undefined;
+      }
+      return {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: readReactive(prop),
+      };
     },
   });
 
-  const boundMethodCache = new Map<string, Function>();
+  const boundMethodCache = new Map<string, { fn: Function; bound: Function }>();
+  /** `this` inside computed getters / setters. */
   const computedCtx = new Proxy(self, {
     get(target, prop) {
       if (typeof prop !== "string") return (target as any)[prop];
       if (prop === "data" || prop === "properties") return reactiveData;
+      if (computedKeySet.has(prop)) return readReactive(prop);
       const val = (target as any)[prop];
       if (typeof val !== "function") return val;
-      let bound = boundMethodCache.get(prop);
-      if (!bound) {
-        bound = val.bind(target) as Function;
-        boundMethodCache.set(prop, bound);
-      }
+      const cached = boundMethodCache.get(prop);
+      if (cached && cached.fn === val) return cached.bound;
+      const bound = val.bind(target) as Function;
+      boundMethodCache.set(prop, { fn: val, bound });
       return bound;
+    },
+    set(target, prop, val) {
+      if (typeof prop === "string" && computedKeySet.has(prop)) {
+        writeComputed(prop, val);
+        return true;
+      }
+      (target as any)[prop] = val;
+      return true;
     },
   });
 
   for (const key of computedKeys) {
     const { get, set } = parseComputedDef(computedDefs[key]);
-    computedSignals[key] = alienComputed(() => get.call(computedCtx));
-    if (set) {
-      computedSetters[key] = (val: any) => set.call(computedCtx, val);
-    }
-  }
-
-  for (const key of computedKeys) {
-    if (!(key in self)) {
-      Object.defineProperty(self, key, {
-        configurable: true,
-        enumerable: true,
-        get() {
-          return computedSignals[key]?.();
-        },
-        set(val) {
-          if (computedSetters[key]) {
-            computedSetters[key](val);
-          } else {
-            console.warn(
-              `[code-ui/computed] Cannot set read-only computed property "${key}".`,
-            );
-          }
-        },
-      });
-    }
-  }
-
-  const cache: Record<string, any> = {};
-  for (const key of computedKeys) {
-    cache[key] = (self.data as any)?.[key];
-  }
-
-  const originalSetData: (
-    data: Record<string, any>,
-    callback?: () => void,
-  ) => void = self.setData.bind(self);
-
-  const flush = () => {
-    if (self[_COMPUTED_FLUSHING]) return;
-
-    const update: Record<string, any> = {};
-    let dirty = false;
-
-    for (const key of computedKeys) {
-      const val = computedSignals[key]?.();
-      if (!isEqual(cache[key], val)) {
-        cache[key] = val;
-        update[key] = val;
-        dirty = true;
+    computedSignals[key] = alienComputed<unknown>((prev) => {
+      try {
+        return get.call(computedCtx);
+      } catch (err) {
+        console.error(
+          `[code-ui/computed] Error while evaluating computed "${key}":`,
+          err,
+        );
+        return prev !== undefined ? prev : readData(key);
       }
+    });
+    if (set) {
+      computedSetters[key] = (val: unknown) => set.call(computedCtx, val);
     }
+  }
 
-    if (!dirty) return;
+  const definedKeys: string[] = [];
+  for (const key of computedKeys) {
+    if (key in self) continue;
+    Object.defineProperty(self, key, {
+      configurable: true,
+      enumerable: true,
+      get: () => computedSignals[key]!(),
+      set: (val) => writeComputed(key, val),
+    });
+    definedKeys.push(key);
+  }
 
-    self[_COMPUTED_FLUSHING] = true;
+  /** Last values sent to the view, seeded from (definition-time) initial data. */
+  const cache: Record<string, unknown> = Object.create(null);
+  for (const key of computedKeys) {
+    cache[key] = readData(key);
+  }
+
+  /** Returns changed computed values (and commits them to `cache`), or `null`. */
+  const collectComputedUpdates = (): Record<string, unknown> | null => {
+    let updates: Record<string, unknown> | null = null;
+    pauseTracking();
     try {
-      originalSetData(update);
+      for (const key of computedKeys) {
+        const val = computedSignals[key]!();
+        if (!isEqual(cache[key], val)) {
+          cache[key] = val;
+          if (!updates) updates = {};
+          updates[key] = val;
+        }
+      }
     } finally {
-      self[_COMPUTED_FLUSHING] = false;
+      resumeTracking();
+    }
+    return updates;
+  };
+
+  const hadOwnSetData = hasOwn(self, "setData");
+  const originalSetData: SetDataFn = self.setData;
+
+  let disposed = false;
+  /** Effect runs only emit after the first explicit flush. */
+  let mounted = false;
+  /** > 0 while we're inside the original `setData` (observers fire there). */
+  let writeDepth = 0;
+  /** `true` while applying writes we're about to diff synchronously anyway. */
+  let applyingWrites = false;
+  let emitScheduled = false;
+
+  const callOriginal = (data: Record<string, any>, callback?: () => void) => {
+    writeDepth++;
+    try {
+      originalSetData.call(self, data, callback);
+    } finally {
+      writeDepth--;
     }
   };
 
-  self[_COMPUTED_FLUSH] = flush;
+  const emitPending = () => {
+    emitScheduled = false;
+    if (disposed) return;
+    const updates = collectComputedUpdates();
+    if (updates) callOriginal(updates);
+  };
 
-  self.setData = (data: Record<string, any>, callback?: () => void): void => {
-    if (self[_COMPUTED_FLUSHING]) {
-      originalSetData(data, callback);
+  const scheduleEmit = () => {
+    if (emitScheduled) return;
+    emitScheduled = true;
+    queueMicrotask(emitPending);
+  };
+
+  /**
+   * Pulls changes that bypassed our patched `setData` (parent property
+   * updates, writes through a stale `setData` reference) into the signals.
+   */
+  const syncFromData = () => {
+    if (!dataSignals.size) return;
+    pauseTracking();
+    startBatch();
+    try {
+      for (const [key, sig] of dataSignals) {
+        const current = readData(key);
+        if (!Object.is(sig(), current)) sig(current);
+      }
+    } finally {
+      endBatch();
+      resumeTracking();
+    }
+  };
+
+  const patchedSetData: SetDataFn = (data, callback) => {
+    if (disposed) {
+      originalSetData.call(self, data, callback);
       return;
     }
 
-    const computedSetEntries: Array<[string, any]> = [];
-    const normalData: Record<string, any> = {};
+    pauseTracking();
+    try {
+      const normal: Record<string, any> = {};
+      let hasNormal = false;
+      const setterEntries: Array<[string, unknown]> = [];
 
-    for (const path of Object.keys(data)) {
-      const val = data[path];
-      if (path in computedSetters) {
-        computedSetEntries.push([path, val]);
-      } else if (path in computedDefs) {
-        console.warn(
-          `[code-ui/computed] Cannot set read-only computed property "${path}". Provide a "set(val)" handler in computed definition to allow writes.`,
-        );
-      } else {
-        normalData[path] = val;
-      }
-    }
-
-    if (Object.keys(normalData).length > 0) {
-      for (const path of Object.keys(normalData)) {
-        const val = normalData[path];
-        const tokens = parsePath(path);
-
-        if (tokens.length === 0) continue;
-
-        const rootKey = tokens[0] as string;
-        const sig = getDataSignal(rootKey);
-
-        if (tokens.length === 1) {
-          const nextVal = cloneValue(val);
-          if (self.data) {
-            self.data[rootKey] = nextVal;
-          }
-          sig(nextVal);
-        } else {
-          const currentRoot = self.data?.[rootKey];
-          const newRoot = applyPathUpdate(currentRoot, tokens.slice(1), val);
-          if (self.data) {
-            self.data[rootKey] = newRoot;
-          }
-          sig(newRoot);
+      for (const path of Object.keys(data)) {
+        const val = data[path];
+        if (computedKeySet.has(path)) {
+          if (computedSetters[path]) setterEntries.push([path, val]);
+          else warnReadonly(path);
+          continue;
         }
+        normal[path] = val;
+        hasNormal = true;
       }
 
-      const computedUpdates: Record<string, any> = {};
-      for (const key of computedKeys) {
-        const val = computedSignals[key]?.();
-        if (!isEqual(cache[key], val)) {
-          cache[key] = val;
-          computedUpdates[key] = val;
+      if (hasNormal) {
+        applyingWrites = true;
+        startBatch();
+        try {
+          for (const path of Object.keys(normal)) {
+            const tokens = parsePath(path);
+            if (tokens.length === 0) continue;
+            const rootKey = String(tokens[0]);
+
+            if (computedKeySet.has(rootKey)) {
+              warnReadonly(path);
+              delete normal[path];
+              continue;
+            }
+
+            let nextRoot: unknown;
+            if (tokens.length === 1) {
+              const val = normal[path];
+              nextRoot =
+                val !== null &&
+                typeof val === "object" &&
+                Object.is(val, readData(rootKey))
+                  ? cloneValue(val)
+                  : val;
+              normal[path] = nextRoot;
+            } else {
+              nextRoot = applyPathUpdate(
+                readData(rootKey),
+                tokens.slice(1),
+                normal[path],
+              );
+            }
+
+            if (self.data) self.data[rootKey] = nextRoot;
+            dataSignals.get(rootKey)?.(nextRoot);
+          }
+        } finally {
+          endBatch();
+          applyingWrites = false;
         }
+
+        const updates = collectComputedUpdates();
+        callOriginal(updates ? Object.assign(normal, updates) : normal, callback);
       }
 
-      const mergedData =
-        Object.keys(computedUpdates).length > 0
-          ? { ...normalData, ...computedUpdates }
-          : normalData;
-
-      self[_COMPUTED_FLUSHING] = true;
-      try {
-        originalSetData(mergedData, callback);
-      } finally {
-        self[_COMPUTED_FLUSHING] = false;
+      for (const [key, val] of setterEntries) {
+        computedSetters[key]!(val);
       }
-    }
 
-    for (const [key, val] of computedSetEntries) {
-      computedSetters[key]?.(val);
-    }
-
-    if (
-      Object.keys(normalData).length === 0 &&
-      computedSetEntries.length > 0 &&
-      callback
-    ) {
-      callback();
+      if (!hasNormal && callback) {
+        callOriginal({}, callback);
+      }
+    } finally {
+      resumeTracking();
     }
   };
 
+  self.setData = patchedSetData;
+
+
+
   const stopScope = effectScope(() => {
-    effect(flush);
+    effect(() => {
+      for (const key of computedKeys) computedSignals[key]!();
+      if (!mounted || disposed || applyingWrites) return;
+      scheduleEmit();
+    });
   });
 
-  self[_COMPUTED_SCOPE] = stopScope;
+
+
+  self[_COMPUTED_SYNC] = () => {
+    if (disposed || writeDepth > 0) return;
+    syncFromData();
+  };
+
+  self[_COMPUTED_FLUSH] = () => {
+    if (disposed) return;
+    syncFromData();
+    mounted = true;
+    const updates = collectComputedUpdates();
+    if (updates) callOriginal(updates);
+  };
+
+  self[_COMPUTED_DISPOSE] = () => {
+    if (disposed) return;
+    disposed = true;
+    stopScope();
+    if (hadOwnSetData) self.setData = originalSetData;
+    else delete self.setData;
+    for (const key of definedKeys) delete self[key];
+    dataSignals.clear();
+    boundMethodCache.clear();
+    self[_COMPUTED_SYNC] = undefined;
+    self[_COMPUTED_FLUSH] = undefined;
+    self[_COMPUTED_DISPOSE] = undefined;
+    self[_COMPUTED_INITIALIZED] = false;
+  };
+
+  if (options.immediate !== false) {
+    self[_COMPUTED_FLUSH]();
+  }
 }
 
 /**
@@ -646,53 +945,53 @@ function setupComputed(self: any, explicitDefs?: ComputedDefs) {
 export const computedBehavior =
   typeof Behavior !== "undefined"
     ? /*#__PURE__*/ Behavior({
-  definitionFilter(defFields: any) {
-    const computedDefs: ComputedDefs = defFields.computed ?? {};
-    const keys = Object.keys(computedDefs);
-    if (!keys.length) return;
-    defFields[_COMPUTED_DEFS] = computedDefs;
+        definitionFilter(defFields: any) {
+          const computedDefs: ComputedDefs | undefined = defFields.computed;
+          if (!computedDefs || typeof computedDefs !== "object") return;
+          if (!Object.keys(computedDefs).length) return;
 
-    defFields.methods = defFields.methods || {};
-    defFields.methods[_COMPUTED_DEFS] = function () {
-      return computedDefs;
-    };
+          defFields.methods = defFields.methods || {};
+          defFields.methods[_COMPUTED_DEFS] = function () {
+            return computedDefs;
+          };
 
-    defFields.data = defFields.data || {};
-    for (const key of keys) {
-      try {
-        const { get } = parseComputedDef(computedDefs[key]);
-        const val = get.call({
-          data: defFields.data,
-          properties: defFields.properties || defFields.data,
-        });
-        if (val !== undefined) {
-          defFields.data[key] = val;
-        }
-      } catch {}
-    }
-  },
+          defFields.data = defFields.data || {};
+          Object.assign(
+            defFields.data,
+            evaluateInitialComputed(
+              computedDefs,
+              defFields.data,
+              defFields.properties,
+            ),
+          );
 
-  lifetimes: {
-    created(this: any) {
-      setupComputed(this);
-    },
+          defFields.observers = defFields.observers || {};
+          const userWildcard = defFields.observers["**"];
+          defFields.observers["**"] = function (this: any, ...args: any[]) {
+            this[_COMPUTED_SYNC]?.();
+            return userWildcard?.apply(this, args);
+          };
+        },
 
-    attached(this: any) {
-      setupComputed(this);
-      this[_COMPUTED_FLUSH]?.();
-    },
+        lifetimes: {
+          created(this: any) {
+            setupComputed(this, undefined, { immediate: false });
+          },
 
-    detached(this: any) {
-      this[_COMPUTED_SCOPE]?.();
-      this[_COMPUTED_SCOPE] = null;
-      this[_COMPUTED_FLUSH] = null;
-    },
-  },
+          attached(this: any) {
+            setupComputed(this, undefined, { immediate: false });
+            this[_COMPUTED_FLUSH]?.();
+          },
 
-  pageLifetimes: {
-    show(this: any) {
-      setupComputed(this);
-      this[_COMPUTED_FLUSH]?.();
-    },
-  },
-}) : ({} as any);
+          detached(this: any) {
+            this[_COMPUTED_DISPOSE]?.();
+          },
+        },
+
+        pageLifetimes: {
+          show(this: any) {
+            this[_COMPUTED_FLUSH]?.();
+          },
+        },
+      })
+    : ({} as any);

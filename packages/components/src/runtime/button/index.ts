@@ -40,10 +40,8 @@ Component(
           this.data.button?.loading || this.data.button?.internalLoading,
         );
       },
-      disabled() {
-        return Boolean(this.data.button?.disabled ?? this.data.disabled);
-      },
-      classes(this: any) {
+
+      classes() {
         const variant = this.data.variant;
         const color = this.data.color;
         const size = this.data.size;
@@ -51,9 +49,7 @@ Component(
         const disabled = Boolean(
           this.data.button?.disabled ?? this.data.disabled,
         );
-        const loading = Boolean(
-          this.data.button?.loading || this.data.button?.internalLoading,
-        );
+        const loading = this.loading;
 
         const ui = this.data.ui;
 
@@ -73,14 +69,8 @@ Component(
 
     methods: {
       handleTap(e: WechatMiniprogram.TouchEvent) {
-        const buttonData = (this as any).data.button;
-        if (
-          buttonData?.disabled ||
-          buttonData?.loading ||
-          (this as any).data.disabled
-        )
-          return;
-        this.send({ type: "TAP", event: e });
+        const api = this.data.button;
+        api?.handleTap?.(e);
       },
     },
   }),

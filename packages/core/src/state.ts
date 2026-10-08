@@ -11,6 +11,7 @@ const STATE_DELIMITER = ".";
 const ABSOLUTE_PREFIX = "#";
 const stateIndexCache = new WeakMap<object, Map<string, MachineState<any>>>();
 const stateIdIndexCache = new WeakMap<object, Map<string, string>>();
+const stateChainCache = new WeakMap<object, Map<string, StateChain<any>>>();
 
 function joinStatePath(parts: string[]) {
   return parts.join(STATE_DELIMITER);
@@ -114,6 +115,17 @@ export function getStateChain<T extends MachineSchema>(
   state: T["state"] | undefined,
 ): StateChain<T> {
   if (!state) return [];
+  const stateKey = String(state);
+
+  let cache = stateChainCache.get(machine);
+  if (!cache) {
+    cache = new Map();
+    stateChainCache.set(machine, cache);
+  }
+
+  const cached = cache.get(stateKey);
+  if (cached) return cached as StateChain<T>;
+
   const stateIndex = ensureStateIndex(machine);
   const segments = toSegments(state);
 
@@ -129,6 +141,7 @@ export function getStateChain<T extends MachineSchema>(
     chain.push({ path, state: current });
   }
 
+  cache.set(stateKey, chain);
   return chain;
 }
 

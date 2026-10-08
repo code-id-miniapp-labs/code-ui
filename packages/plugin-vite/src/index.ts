@@ -577,6 +577,51 @@ export default config;
         }
       }
 
+      // Deep scan for nested WXS dependencies (e.g. drawer-gesture.wxs -> require('./dom.wxs'))
+      const wxsQueue = Array.from(usedWxs);
+      const visitedWxs = new Set<string>(wxsQueue);
+      const wxsRequireRegex = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+
+      while (wxsQueue.length > 0) {
+        const currentRelWxs = wxsQueue.shift()!;
+        const absoluteWxsPath = path.resolve(librarySourceDir, currentRelWxs);
+
+        if (fs.existsSync(absoluteWxsPath)) {
+          try {
+            const content = fs.readFileSync(absoluteWxsPath, "utf-8");
+            let match: RegExpExecArray | null;
+            while ((match = wxsRequireRegex.exec(content)) !== null) {
+              const reqPath = match[1];
+              if (reqPath) {
+                const normalizedReq = reqPath.endsWith(".wxs")
+                  ? reqPath
+                  : `${reqPath}.wxs`;
+                const importedAbsolute = path.resolve(
+                  path.dirname(absoluteWxsPath),
+                  normalizedReq,
+                );
+                const relImported = path
+                  .relative(librarySourceDir, importedAbsolute)
+                  .replace(/\\/g, "/");
+
+                if (
+                  !relImported.startsWith("..") &&
+                  !path.isAbsolute(relImported)
+                ) {
+                  if (!visitedWxs.has(relImported)) {
+                    visitedWxs.add(relImported);
+                    usedWxs.add(relImported);
+                    wxsQueue.push(relImported);
+                  }
+                }
+              }
+            }
+          } catch {
+            // ignore read error
+          }
+        }
+      }
+
       let restoredComponents = 0;
       let restoredWxs = 0;
       let removedComponents = 0;
@@ -652,23 +697,40 @@ export default config;
       }
 
       if (fs.existsSync(wxsDir)) {
-        const files = fs.readdirSync(wxsDir);
-        for (const file of files) {
-          const relToLib = "wxs/" + file;
-          if (file.endsWith(".wxs") && !usedWxs.has(relToLib)) {
-            try {
-              const wxsFile = path.join(wxsDir, file);
-              savedBytes += fs.statSync(wxsFile).size;
-              fs.rmSync(wxsFile, { force: true });
-              removedWxs++;
-            } catch (err) {
-              console.warn(
-                `[code-ui:tree-shake] Failed to purge wxs "${file}":`,
-                err,
-              );
+        function purgeUnusedWxs(dir: string) {
+          const items = fs.readdirSync(dir);
+          for (const item of items) {
+            const fullPath = path.join(dir, item);
+            if (fs.statSync(fullPath).isDirectory()) {
+              purgeUnusedWxs(fullPath);
+              if (
+                fs.existsSync(fullPath) &&
+                fs.readdirSync(fullPath).length === 0
+              ) {
+                try {
+                  fs.rmdirSync(fullPath);
+                } catch {}
+              }
+            } else if (item.endsWith(".wxs")) {
+              const relToLib = path
+                .relative(miniprogramNpmPath, fullPath)
+                .replace(/\\/g, "/");
+              if (!usedWxs.has(relToLib)) {
+                try {
+                  savedBytes += fs.statSync(fullPath).size;
+                  fs.rmSync(fullPath, { force: true });
+                  removedWxs++;
+                } catch (err) {
+                  console.warn(
+                    `[code-ui:tree-shake] Failed to purge wxs "${relToLib}":`,
+                    err,
+                  );
+                }
+              }
             }
           }
         }
+        purgeUnusedWxs(wxsDir);
       }
 
       if (removedComponents > 0 || removedWxs > 0) {

@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@code-ui/components": "workspace:*",
+    "@code-ui/miniapp": "workspace:*",
     "@code-ui/plugin-vite": "workspace:*"
   },
   "devDependencies": {

@@ -33,6 +33,7 @@ export function connectButton(service: ButtonService): ButtonApi {
     },
 
     handleTap(event?: any) {
+      if (disabled || loading) return;
       send({ type: "TAP", event });
     },
 

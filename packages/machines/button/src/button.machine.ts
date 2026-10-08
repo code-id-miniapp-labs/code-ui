@@ -13,11 +13,6 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     return prop("loading") ? "loading" : "idle";
   },
 
-  refs: ({ prop }) => ({
-    prevLoading: prop("loading"),
-    prevDisabled: prop("disabled"),
-  }),
-
   context: ({ prop, bindable }) => ({
     internalLoading: bindable<boolean>(() => ({
       defaultValue: false,
@@ -51,31 +46,16 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
   }),
 
   computed: {
-    isLoading: ({ context }) =>
-      context.get("loading") || context.get("internalLoading"),
-    isDisabled: ({ context }) =>
-      context.get("disabled") || context.get("loading"),
-    isInteractive: ({ context, state }) =>
+    isLoading: ({ context, state }) =>
+      state.matches("loading") ||
+      Boolean(context.get("loading") || context.get("internalLoading")),
+    isDisabled: ({ context, computed, state }) =>
+      state.matches("loading") ||
+      Boolean(context.get("disabled") || computed("isLoading")),
+    isInteractive: ({ context, state, computed }) =>
       !state.matches("loading") &&
       !context.get("disabled") &&
-      !context.get("loading"),
-  },
-
-  watch: ({ prop, refs, context, send }) => {
-    const nextLoading = prop("loading");
-    if (nextLoading !== undefined && nextLoading !== refs.get("prevLoading")) {
-      refs.set("prevLoading", nextLoading);
-      send({ type: "SET_LOADING", loading: nextLoading });
-    }
-
-    const nextDisabled = prop("disabled");
-    if (
-      nextDisabled !== undefined &&
-      nextDisabled !== refs.get("prevDisabled")
-    ) {
-      refs.set("prevDisabled", nextDisabled);
-      context.set("disabled", nextDisabled);
-    }
+      !computed("isLoading"),
   },
 
   states: {
@@ -177,14 +157,30 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
   implementations: {
     guards: {
-      isInteractive: ({ context }) =>
-        !context.get("disabled") && !context.get("loading"),
+      isInteractive: ({ context, state, computed }) => {
+        if (state.matches("loading")) return false;
+        if (
+          context.get("disabled") ||
+          context.get("loading") ||
+          context.get("internalLoading")
+        )
+          return false;
+        if (computed("isLoading") || !computed("isInteractive")) return false;
+        return true;
+      },
       isLoadingTrue: ({ event }) =>
         "loading" in event && event.loading === true,
       isLoadingFalse: ({ event }) =>
         "loading" in event && event.loading === false,
-      isInteractiveAndHasAsyncHandler: ({ context, prop }) => {
-        if (context.get("disabled") || context.get("loading")) return false;
+      isInteractiveAndHasAsyncHandler: ({ context, state, prop, computed }) => {
+        if (state.matches("loading")) return false;
+        if (
+          context.get("disabled") ||
+          context.get("loading") ||
+          context.get("internalLoading")
+        )
+          return false;
+        if (computed("isLoading") || !computed("isInteractive")) return false;
         return Boolean(
           prop("loadingAuto") && (prop("onTap") || prop("onClick")),
         );
@@ -222,7 +218,9 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
         context.set("internalLoading", true);
 
-        let capturedPromise: Promise<any> | undefined;
+        let capturedPromise: Promise<any> | undefined =
+          (rawEvent as any)?.promise ?? (rawEvent as any)?.detail?.promise;
+        console.log("[code-ui debug] executeAsyncHandler START. capturedPromise pre-wrap:", !!capturedPromise);
         if (rawEvent && typeof rawEvent === "object") {
           const detail = (rawEvent as any).detail ?? rawEvent;
           if (detail && typeof detail === "object") {
@@ -237,15 +235,21 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
         const promise = isPromise(result) ? result : capturedPromise;
 
+        console.log("[code-ui debug] executeAsyncHandler result isPromise:", isPromise(result), "captured:", !!capturedPromise, "final promise:", !!promise);
+
         if (isPromise(promise)) {
+          console.log("[code-ui debug] attaching .then() to promise");
           Promise.resolve(promise)
-            .catch((err) => {
-              send({ type: "REJECT", error: err });
-            })
-            .finally(() => {
+            .then(() => {
+              console.log("[code-ui debug] promise resolved! sending RESOLVE");
               send({ type: "RESOLVE" });
+            })
+            .catch((err) => {
+              console.log("[code-ui debug] promise rejected! sending REJECT", err);
+              send({ type: "REJECT", error: err });
             });
         } else {
+          console.log("[code-ui debug] promise NOT found! sending RESOLVE sync");
           send({ type: "RESOLVE" });
         }
       },

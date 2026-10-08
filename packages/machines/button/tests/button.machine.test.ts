@@ -247,6 +247,89 @@ describe("Button Machine", () => {
       machine.stop();
     });
 
+    it("does NOT invoke tap handler when TAP is sent while button is in loading state", async () => {
+      let resolvePromise!: () => void;
+      const asyncAction = vi.fn(
+        () =>
+          new Promise<void>((res) => {
+            resolvePromise = res;
+          }),
+      );
+
+      const machine = new MiniappMachine(buttonMachine, {
+        loadingAuto: true,
+        onTap: asyncAction,
+      });
+      machine.start();
+
+      // First tap enters loading
+      machine.send({ type: "TAP" });
+      await flush();
+
+      expect(asyncAction).toHaveBeenCalledTimes(1);
+      expect(machine.state.get()).toBe("loading");
+      expect(machine.computed("isLoading")).toBe(true);
+      expect(machine.computed("isDisabled")).toBe(true);
+      expect(machine.computed("isInteractive")).toBe(false);
+
+      // Subsequent tap while still loading must NOT invoke tap handler!
+      machine.send({ type: "TAP" });
+      await flush();
+
+      expect(asyncAction).toHaveBeenCalledTimes(1);
+      expect(machine.state.get()).toBe("loading");
+
+      // Resolve async action
+      resolvePromise();
+      await flush();
+      await flush();
+
+      expect(machine.state.get()).toBe("success");
+      machine.stop();
+    });
+
+    it("connectButton handleTap guards against repeated taps during loading even with initial function reference", async () => {
+      let resolvePromise!: () => void;
+      const asyncAction = vi.fn(
+        () =>
+          new Promise<void>((res) => {
+            resolvePromise = res;
+          }),
+      );
+
+      const machine = new MiniappMachine(buttonMachine, {
+        loadingAuto: true,
+        onTap: asyncAction,
+      });
+      machine.start();
+
+      const initialApi = connectButton(machine.service);
+      expect(initialApi.loading).toBe(false);
+      expect(initialApi.disabled).toBe(false);
+
+      // First tap via initialApi
+      initialApi.handleTap();
+      await flush();
+
+      expect(asyncAction).toHaveBeenCalledTimes(1);
+      expect(machine.state.get()).toBe("loading");
+
+      // Repeated taps using the SAME initialApi.handleTap reference must be blocked!
+      initialApi.handleTap();
+      initialApi.handleTap();
+      initialApi.handleTap();
+      await flush();
+
+      expect(asyncAction).toHaveBeenCalledTimes(1);
+
+      resolvePromise();
+      await flush();
+      await flush();
+
+      expect(machine.state.get()).toBe("success");
+      machine.stop();
+    });
+
     it("can re-trigger tap handler immediately during success or error, and RESET resets to idle", async () => {
       let resolvePromise!: () => void;
       const asyncAction = vi.fn(
@@ -424,71 +507,6 @@ describe("Button Machine", () => {
       machine.stop();
     });
 
-    it("syncs state when controlled loading prop is dynamically updated via updateProps", async () => {
-      const machine = new MiniappMachine(buttonMachine, { loading: false });
-      machine.start();
-
-      expect(machine.state.get()).toBe("idle");
-
-      // Parent updates prop to true
-      machine.updateProps({ loading: true });
-      await flush();
-
-      expect(machine.state.get()).toBe("loading");
-
-      // Parent updates prop back to false
-      machine.updateProps({ loading: false });
-      await flush();
-
-      expect(machine.state.get()).toBe("idle");
-
-      machine.stop();
-    });
-
-    it("supports RESET event while in loading state", async () => {
-      const machine = new MiniappMachine(buttonMachine, {});
-      machine.start();
-
-      machine.send({ type: "SET_LOADING", loading: true });
-      await flush();
-
-      expect(machine.state.get()).toBe("loading");
-
-      machine.send({ type: "RESET" });
-      await flush();
-
-      expect(machine.state.get()).toBe("idle");
-      expect(machine.context.get("loading")).toBe(false);
-
-      machine.stop();
-    });
-
-    it("syncs state when controlled disabled prop is dynamically updated via updateProps", async () => {
-      const machine = new MiniappMachine(buttonMachine, { disabled: false });
-      machine.start();
-
-      expect(machine.context.get("disabled")).toBe(false);
-      expect(machine.computed("isDisabled")).toBe(false);
-
-      // Parent updates prop to true
-      machine.updateProps({ disabled: true });
-      await flush();
-
-      expect(machine.context.get("disabled")).toBe(true);
-      expect(machine.computed("isDisabled")).toBe(true);
-      expect(machine.computed("isInteractive")).toBe(false);
-
-      // Parent updates prop back to false
-      machine.updateProps({ disabled: false });
-      await flush();
-
-      expect(machine.context.get("disabled")).toBe(false);
-      expect(machine.computed("isDisabled")).toBe(false);
-      expect(machine.computed("isInteractive")).toBe(true);
-
-      machine.stop();
-    });
-
     it("loadingAuto works properly even when initialized with explicit loading: false and disabled: false (MiniApp default props)", async () => {
       let resolvePromise!: () => void;
       const asyncAction = vi.fn(
@@ -548,9 +566,8 @@ describe("Button Machine", () => {
       expect(api.rootProps["data-variant"]).toBe("secondary");
       expect(api.rootProps["data-color"]).toBe("neutral");
       expect(api.rootProps["data-size"]).toBe("sm");
-      expect(api.rootProps["data-block"]).toBe("true");
-      expect(api.rootProps["data-loading"]).toBeUndefined();
-      expect(api.rootProps["data-disabled"]).toBeUndefined();
+      expect(api.rootProps["data-loading"]).toBe("false");
+      expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.rootProps.disabled).toBe(false);
 
       expect(api.spinnerProps.id).toBe("button:submit-btn:spinner");

@@ -10,6 +10,7 @@
     "clean": "pnpm -r run clean",
     "test": "vitest run",
     "test:watch": "vitest",
+    "bench": "vitest bench --run",
     "lint": "oxlint packages",
     "lint:fix": "oxlint --fix packages",
     "format": "oxfmt packages",

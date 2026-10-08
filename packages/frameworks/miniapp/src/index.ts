@@ -13,10 +13,12 @@ export { createMachineBehavior, createProperties } from "./behavior";
 export type { CreateMachineBehaviorOptions } from "./behavior";
 export { wxButtonBehavior } from "./behaviors/button";
 export { bindable } from "./bindable";
+export { batch } from "./batch";
 export {
   computedBehavior,
   createComponentOptions,
   createPageOptions,
+  setupComputed,
 } from "./behaviors/computed-behavior";
 export type {
   ComputedDefs,

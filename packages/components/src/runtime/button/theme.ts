@@ -52,12 +52,12 @@ export const buttonTheme = tv({
     },
     disabled: {
       true: {
-        root: "opacity-50 pointer-events-none cursor-not-allowed",
+        root: "opacity-50 cursor-not-allowed",
       },
     },
     loading: {
       true: {
-        root: "pointer-events-none",
+        root: "",
       },
     },
   },

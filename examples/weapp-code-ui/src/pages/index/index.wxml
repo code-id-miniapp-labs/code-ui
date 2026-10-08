@@ -60,6 +60,5 @@
       </view>
       <view class="flex flex-col gap-2.5"></view>
     </view>
-    <c-drawer>asd</c-drawer>
   </view>
 </view>

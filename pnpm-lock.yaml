@@ -26,6 +26,9 @@ importers:
       '@code-ui/components':
         specifier: workspace:*
         version: link:../../packages/components
+      '@code-ui/miniapp':
+        specifier: workspace:*
+        version: link:../../packages/frameworks/miniapp
       '@code-ui/plugin-vite':
         specifier: workspace:*
         version: link:../../packages/plugin-vite
