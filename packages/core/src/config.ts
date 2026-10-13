@@ -45,19 +45,45 @@ export interface ComponentConfig<TSlots extends string = string> {
   defaultProps?: Record<string, any>;
 }
 
+export type TailwindColorPalette =
+  | "slate"
+  | "gray"
+  | "zinc"
+  | "neutral"
+  | "stone"
+  | "red"
+  | "orange"
+  | "amber"
+  | "yellow"
+  | "lime"
+  | "green"
+  | "emerald"
+  | "teal"
+  | "cyan"
+  | "sky"
+  | "blue"
+  | "indigo"
+  | "violet"
+  | "purple"
+  | "fuchsia"
+  | "pink"
+  | "rose";
+
+export type ColorValue = TailwindColorPalette | (string & {});
+
 export interface UIColorsConfig {
-  /** Primary brand color */
-  primary?: string;
-  /** Neutral/gray color */
-  neutral?: string;
-  /** Success color */
-  success?: string;
-  /** Warning color */
-  warning?: string;
-  /** Danger/destructive color */
-  danger?: string;
-  /** Info color */
-  info?: string;
+  /** Primary brand color (Tailwind palette name or hex/rgb) */
+  primary?: ColorValue;
+  /** Neutral/gray color (Tailwind palette name or hex/rgb) */
+  neutral?: ColorValue;
+  /** Success color (Tailwind palette name or hex/rgb) */
+  success?: ColorValue;
+  /** Warning color (Tailwind palette name or hex/rgb) */
+  warning?: ColorValue;
+  /** Danger/destructive color (Tailwind palette name or hex/rgb) */
+  danger?: ColorValue;
+  /** Info color (Tailwind palette name or hex/rgb) */
+  info?: ColorValue;
   /** Background color */
   background?: string;
   /** Foreground/text color */
@@ -67,20 +93,29 @@ export interface UIColorsConfig {
   /** Border color */
   border?: string;
   /** Allow custom color keys */
-  [colorName: string]: string | undefined;
+  [colorName: string]: ColorValue | undefined;
 }
+
+export type UIRadiusConfig =
+  | string
+  | {
+      base?: string;
+      xs?: string;
+      sm?: string;
+      md?: string;
+      lg?: string;
+      xl?: string;
+      "2xl"?: string;
+      "3xl"?: string;
+      full?: string;
+      [key: string]: string | undefined;
+    };
 
 export interface UIConfig {
   /** Design token colors */
   colors?: UIColorsConfig;
-  /** Border radius tokens */
-  radius?: {
-    sm?: string;
-    md?: string;
-    lg?: string;
-    full?: string;
-    [key: string]: string | undefined;
-  };
+  /** Border radius tokens (base radius string or object with custom overrides) */
+  radius?: UIRadiusConfig;
   /** Transition duration tokens */
   transition?: {
     fast?: string;

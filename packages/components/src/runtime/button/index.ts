@@ -32,7 +32,12 @@ Component(
     },
 
     data: {},
-    properties: createProperties(defaultButtonProps),
+    properties: createProperties(defaultButtonProps, {
+      class: {
+        type: String,
+        value: "",
+      },
+    }),
 
     computed: {
       loading() {
@@ -63,7 +68,7 @@ Component(
           loading,
         });
 
-        return resolveSlots(themeFns, ui);
+        return resolveSlots(themeFns, ui, this.data.class);
       },
     },
 

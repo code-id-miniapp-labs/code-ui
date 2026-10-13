@@ -1,7 +1,9 @@
-import { tv } from "tailwind-variants/lite";
-import { getComponentConfig } from "@code-ui/core";
+import { getComponentConfig, getConfig } from "@code-ui/core";
+import { dedupeClasses, escapeClass, tv } from "./variants";
 
 const themeCache = new Map<string, any>();
+/** `components` config the cache was built from; replaced on config reload (HMR). */
+let cachedSource: unknown;
 
 /**
  * Clear the resolved theme cache (useful for tests or dynamic config updates).
@@ -18,7 +20,13 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
   componentName: string,
   baseTheme: T,
 ): T {
-  let cached = themeCache.get(componentName);
+  const source = getConfig()?.components;
+  if (source !== cachedSource) {
+    themeCache.clear();
+    cachedSource = source;
+  }
+
+  const cached = themeCache.get(componentName);
   if (cached) return cached;
 
   const globalConfig = getComponentConfig(componentName);
@@ -34,16 +42,39 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
     return baseTheme;
   }
 
-  cached = tv({
+  const extendedTV = tv({
     extend: baseTheme as any,
-    slots: globalConfig.slots as any,
     variants: globalConfig.variants as any,
     compoundVariants: globalConfig.compoundVariants as any,
     defaultVariants: globalConfig.defaultVariants as any,
   });
 
-  themeCache.set(componentName, cached);
-  return cached as T;
+  const globalSlots = globalConfig.slots;
+
+  // Wrap so globalConfig.slots is applied with override priority over default variant classes
+  const resolvedThemeFn = ((props?: any) => {
+    const slotFns = extendedTV(props) as any;
+    if (!globalSlots || typeof slotFns !== "object" || slotFns === null) {
+      return slotFns;
+    }
+    const wrappedSlots: any = {};
+    for (const key of Object.keys(slotFns)) {
+      const origFn = slotFns[key];
+      if (typeof origFn === "function") {
+        wrappedSlots[key] = (slotProps?: any) => {
+          const baseOut = origFn(slotProps);
+          const override = globalSlots[key];
+          return override ? dedupeClasses(baseOut, override) : baseOut;
+        };
+      } else {
+        wrappedSlots[key] = origFn;
+      }
+    }
+    return wrappedSlots;
+  }) as unknown as T;
+
+  themeCache.set(componentName, resolvedThemeFn);
+  return resolvedThemeFn;
 }
 
 /**
@@ -61,12 +92,13 @@ export function resolveSlots<
   for (const slot in themeFns) {
     const fn = themeFns[slot];
     if (typeof fn === "function") {
-      result[slot] = fn({
+      const slotClass = fn({
         class: [
           localUI?.[slot],
           slot === "root" ? localClass : undefined,
         ].filter(Boolean),
       });
+      result[slot] = escapeClass(dedupeClasses(slotClass));
     } else {
       result[slot] = "";
     }

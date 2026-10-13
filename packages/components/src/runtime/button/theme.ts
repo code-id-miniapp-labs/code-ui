@@ -1,4 +1,4 @@
-import { tv } from "tailwind-variants/lite";
+import { tv } from "../utils/variants";
 
 export const buttonTheme = tv({
   slots: {
@@ -67,21 +67,21 @@ export const buttonTheme = tv({
       variant: "solid",
       color: "primary",
       class: {
-        root: "bg-emerald-600 text-white active:bg-emerald-700",
+        root: "bg-primary text-white active:opacity-90",
       },
     },
     {
       variant: "solid",
       color: "danger",
       class: {
-        root: "bg-rose-600 text-white active:bg-rose-700",
+        root: "bg-danger text-white active:opacity-90",
       },
     },
     {
       variant: "solid",
       color: "neutral",
       class: {
-        root: "bg-neutral-900 text-white active:bg-neutral-800",
+        root: "bg-neutral text-white active:opacity-90",
       },
     },
     // outline
@@ -89,21 +89,21 @@ export const buttonTheme = tv({
       variant: "outline",
       color: "primary",
       class: {
-        root: "border border-emerald-600 text-emerald-600 active:bg-emerald-50",
+        root: "border border-primary text-primary active:opacity-80",
       },
     },
     {
       variant: "outline",
       color: "danger",
       class: {
-        root: "border border-rose-600 text-rose-600 active:bg-rose-50",
+        root: "border border-danger text-danger active:opacity-80",
       },
     },
     {
       variant: "outline",
       color: "neutral",
       class: {
-        root: "border border-neutral-300 text-neutral-700 active:bg-neutral-100",
+        root: "border border-neutral text-neutral active:opacity-80",
       },
     },
     // ghost
@@ -111,21 +111,21 @@ export const buttonTheme = tv({
       variant: "ghost",
       color: "primary",
       class: {
-        root: "text-emerald-600 active:bg-emerald-50",
+        root: "text-primary active:opacity-80",
       },
     },
     {
       variant: "ghost",
       color: "danger",
       class: {
-        root: "text-rose-600 active:bg-rose-50",
+        root: "text-danger active:opacity-80",
       },
     },
     {
       variant: "ghost",
       color: "neutral",
       class: {
-        root: "text-neutral-700 active:bg-neutral-100",
+        root: "text-neutral active:opacity-80",
       },
     },
   ],

@@ -1,1 +1,8 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--ui-primary);
+  --color-neutral: var(--ui-neutral);
+  --color-danger: var(--ui-danger);
+  --color-success: var(--ui-success);
+}

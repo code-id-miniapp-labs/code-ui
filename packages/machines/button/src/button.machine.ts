@@ -49,9 +49,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     isLoading: ({ context, state }) =>
       state.matches("loading") ||
       Boolean(context.get("loading") || context.get("internalLoading")),
-    isDisabled: ({ context, computed, state }) =>
-      state.matches("loading") ||
-      Boolean(context.get("disabled") || computed("isLoading")),
+    isDisabled: ({ context }) => Boolean(context.get("disabled")),
     isInteractive: ({ context, state, computed }) =>
       !state.matches("loading") &&
       !context.get("disabled") &&
@@ -220,7 +218,10 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
         let capturedPromise: Promise<any> | undefined =
           (rawEvent as any)?.promise ?? (rawEvent as any)?.detail?.promise;
-        console.log("[code-ui debug] executeAsyncHandler START. capturedPromise pre-wrap:", !!capturedPromise);
+        console.log(
+          "[code-ui debug] executeAsyncHandler START. capturedPromise pre-wrap:",
+          !!capturedPromise,
+        );
         if (rawEvent && typeof rawEvent === "object") {
           const detail = (rawEvent as any).detail ?? rawEvent;
           if (detail && typeof detail === "object") {
@@ -235,7 +236,14 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
         const promise = isPromise(result) ? result : capturedPromise;
 
-        console.log("[code-ui debug] executeAsyncHandler result isPromise:", isPromise(result), "captured:", !!capturedPromise, "final promise:", !!promise);
+        console.log(
+          "[code-ui debug] executeAsyncHandler result isPromise:",
+          isPromise(result),
+          "captured:",
+          !!capturedPromise,
+          "final promise:",
+          !!promise,
+        );
 
         if (isPromise(promise)) {
           console.log("[code-ui debug] attaching .then() to promise");
@@ -245,11 +253,16 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
               send({ type: "RESOLVE" });
             })
             .catch((err) => {
-              console.log("[code-ui debug] promise rejected! sending REJECT", err);
+              console.log(
+                "[code-ui debug] promise rejected! sending REJECT",
+                err,
+              );
               send({ type: "REJECT", error: err });
             });
         } else {
-          console.log("[code-ui debug] promise NOT found! sending RESOLVE sync");
+          console.log(
+            "[code-ui debug] promise NOT found! sending RESOLVE sync",
+          );
           send({ type: "RESOLVE" });
         }
       },

@@ -45,7 +45,6 @@ describe("Button Machine", () => {
 
       expect(machine.state.get()).toBe("loading");
       expect(machine.computed("isLoading")).toBe(true);
-      expect(machine.computed("isDisabled")).toBe(true);
       expect(machine.computed("isInteractive")).toBe(false);
 
       const api = connectButton(machine.service);
@@ -269,7 +268,6 @@ describe("Button Machine", () => {
       expect(asyncAction).toHaveBeenCalledTimes(1);
       expect(machine.state.get()).toBe("loading");
       expect(machine.computed("isLoading")).toBe(true);
-      expect(machine.computed("isDisabled")).toBe(true);
       expect(machine.computed("isInteractive")).toBe(false);
 
       // Subsequent tap while still loading must NOT invoke tap handler!
@@ -452,12 +450,10 @@ describe("Button Machine", () => {
 
       expect(machine.state.get()).toBe("loading");
       expect(machine.computed("isLoading")).toBe(true);
-      expect(machine.computed("isDisabled")).toBe(true);
       expect(machine.computed("isInteractive")).toBe(false);
 
       const api = connectButton(machine.service);
       expect(api.loading).toBe(true);
-      expect(api.disabled).toBe(true);
 
       machine.stop();
     });

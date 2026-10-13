@@ -55,6 +55,7 @@
     "@code-ui/drawer": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/utils": "workspace:*",
+    "@weapp-tailwindcss/escape": "^0.0.2",
     "tailwind-variants": "^3.3.1"
   },
   "devDependencies": {

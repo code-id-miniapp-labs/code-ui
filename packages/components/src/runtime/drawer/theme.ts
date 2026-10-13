@@ -1,4 +1,4 @@
-import { tv } from "tailwind-variants/lite";
+import { tv } from "../utils/variants";
 
 export const drawerTheme = tv({
   slots: {

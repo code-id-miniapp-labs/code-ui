@@ -31,7 +31,7 @@ Component(
     },
 
     computed: {
-      classes(this: any) {
+      classes() {
         const placement = this.data.placement;
         const ui = this.data.ui;
         const isOpen = this.data.drawer?.open ?? false;
@@ -42,12 +42,12 @@ Component(
           open: isOpen,
         });
 
-        return resolveSlots(themeFns, ui);
+        return resolveSlots(themeFns, ui, this.data.class);
       },
     },
 
     lifetimes: {
-      attached(this: any) {
+      attached() {
         const handler: WechatMiniprogram.OnKeyboardHeightChangeCallback = (
           res,
         ) => {
@@ -70,7 +70,12 @@ Component(
       },
     },
 
-    properties: createProperties(defaultDrawerProps),
+    properties: createProperties(defaultDrawerProps, {
+      class: {
+        type: String,
+        value: "",
+      },
+    }),
 
     methods: {
       noop() {},
