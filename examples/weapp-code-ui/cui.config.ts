@@ -4,13 +4,9 @@ export default defineConfig({
   prefix: "cui",
   ui: {
     colors: {
-      primary: "#10b981",
-      neutral: "#737373",
-      danger: "#ef4444",
-    },
-    radius: {
-      md: "12rpx",
-      lg: "16rpx",
+      primary: "fuchsia",
+      neutral: "amber",
+      danger: "rose",
     },
   },
   components: {

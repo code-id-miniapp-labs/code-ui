@@ -19,7 +19,7 @@
     </view>
     <!-- Section 2: Button Colors -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Button Colors</view>
+      <view class="text-base font-bold text-neutral-500">Button Colors</view>
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">primary, danger, neutral</view>
       <view class="flex flex-wrap gap-2.5 items-center"></view>
     </view>
@@ -49,7 +49,9 @@
         Custom slot override via Nuxt UI v4-style local ui prop.
       </view>
       <view class="flex flex-wrap gap-3 items-center">
-        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}">Mabar king 123</c-button>
+        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" variant="outline">
+          Mabar king 123
+        </c-button>
       </view>
     </view>
     <!-- Section 6: Drawer Component -->
@@ -58,7 +60,9 @@
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">
         Gesture-driven bottom sheet with backdrop & smooth animations.
       </view>
-      <view class="flex flex-col gap-2.5"></view>
+      <view class="flex flex-col gap-2.5">
+        <c-drawer>test hmr</c-drawer>
+      </view>
     </view>
   </view>
 </view>

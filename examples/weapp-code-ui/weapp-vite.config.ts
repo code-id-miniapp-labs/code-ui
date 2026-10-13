@@ -5,7 +5,15 @@ export default defineConfig(({ mode }) => {
   console.log("[mode]:", mode);
   return {
     weapp: {
+      tailwindcss: {
+        rem2rpx: true,
+      },
+      hmr: {
+        runtime: "classic",
+      },
       srcRoot: "src",
+      platform: "weapp",
+      buildScope: ["wechat"],
       web: {
         pluginOptions: {
           runtime: {
@@ -23,13 +31,6 @@ export default defineConfig(({ mode }) => {
         dirs: {
           component: "src/components",
           page: "src/pages",
-        },
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          silenceDeprecations: ["legacy-js-api", "import"],
         },
       },
     },
