@@ -1,26 +1,32 @@
+import type { AnatomyPartName, ComponentUI } from "@code-ui/anatomy";
 import type {
-  AnatomyPartName,
-  ComponentUI,
-  ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
+  Machine,
+  MachineSchema,
+  Params,
+  Service,
+} from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./button.anatomy";
-
 export type ButtonVariant =
   | "solid"
-  | "secondary"
   | "outline"
   | "ghost"
+  | "soft"
+  | "secondary"
+  | (string & {});
+export type ButtonColor =
   | "primary"
-  | "danger";
-export type ButtonColor = "primary" | "neutral" | "danger" | "success";
-export type ButtonSize = "sm" | "md" | "lg";
+  | "neutral"
+  | "danger"
+  | "success"
+  | "warning"
+  | "info"
+  | (string & {});
+export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl" | (string & {});
 export type ButtonState = "idle" | "loading" | "success" | "error";
 
 export type ButtonAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type ButtonUI = ComponentUI<typeof anatomy>;
-export type ButtonResolvedUI = ResolvedUI<typeof anatomy>;
 
 export interface ButtonProps {
   /** The unique id of the component */

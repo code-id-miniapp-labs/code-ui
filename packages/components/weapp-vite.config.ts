@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin } from "weapp-vite";
+import { codeUI } from "@code-ui/plugin-vite";
 
 function minifyWxss(): Plugin {
   return {
@@ -211,7 +212,12 @@ function syncWxsFiles(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [minifyWxss(), wxmlPathPatchPlugin(), syncWxsFiles()],
+  plugins: [
+    codeUI({ autoImport: false }),
+    minifyWxss(),
+    wxmlPathPatchPlugin(),
+    syncWxsFiles(),
+  ],
   build: {
     outDir: "dist",
     emptyOutDir: false,

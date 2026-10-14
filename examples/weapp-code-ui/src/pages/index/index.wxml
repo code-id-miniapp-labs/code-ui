@@ -11,17 +11,34 @@
     </view>
   </view>
   <view class="px-5 py-6 flex flex-col gap-8">
-    <!-- Section 1: drawer Variants -->
+    <!-- Section 1: Button Variants -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-base font-bold text-neutral-900">Button Variants</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">solid, outline, ghost, secondary</view>
-      <view class="flex flex-wrap gap-2.5 items-center"></view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+        solid, outline, ghost, soft, secondary
+      </view>
+      <view class="flex flex-wrap gap-2.5 items-center">
+        <c-button variant="solid">Solid</c-button>
+        <c-button variant="outline">Outline</c-button>
+        <c-button variant="ghost">Ghost</c-button>
+        <c-button variant="soft">Soft</c-button>
+        <c-button variant="secondary">Secondary</c-button>
+      </view>
     </view>
     <!-- Section 2: Button Colors -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-500">Button Colors</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">primary, danger, neutral</view>
-      <view class="flex flex-wrap gap-2.5 items-center"></view>
+      <view class="text-base font-bold text-neutral-900">Button Colors</view>
+      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+        primary, neutral, success, warning, danger, info
+      </view>
+      <view class="flex flex-wrap gap-2.5 items-center">
+        <c-button color="primary">Primary</c-button>
+        <c-button color="neutral">Neutral</c-button>
+        <c-button color="success">Success</c-button>
+        <c-button color="warning">Warning</c-button>
+        <c-button color="danger">Danger</c-button>
+        <c-button color="info">Info</c-button>
+      </view>
     </view>
     <!-- Section 3: Button Sizes -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -60,9 +77,7 @@
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">
         Gesture-driven bottom sheet with backdrop & smooth animations.
       </view>
-      <view class="flex flex-col gap-2.5">
-        <c-drawer>test hmr</c-drawer>
-      </view>
+      <view class="flex flex-col gap-2.5"></view>
     </view>
   </view>
 </view>

@@ -4,6 +4,7 @@ export { buttonMachine } from "./button.machine";
 export { defaultButtonProps } from "./button.props";
 export type {
   ButtonApi,
+  ButtonColor,
   ButtonComputed,
   ButtonContext,
   ButtonEvent,

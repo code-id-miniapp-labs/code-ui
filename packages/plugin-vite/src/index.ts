@@ -1,13 +1,15 @@
 import type { Plugin, ViteDevServer } from "vite";
 import { loadConfig } from "c12";
-import type { CodeUIConfig } from "@code-ui/core";
+import { componentThemes, type CodeUIConfig } from "@code-ui/core";
 import path from "node:path";
-
+import { createRequire } from "node:module";
 import {
   transformAutoImport,
   generateBundleAutoImport,
 } from "./core/auto-import";
 import { handleTreeShake } from "./core/tree-shake";
+
+const require = createRequire(import.meta.url);
 
 export { defineConfig } from "@code-ui/core";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
@@ -36,6 +38,8 @@ export interface CodeUIVitePluginOptions {
   autoSource?: boolean;
   autoImport?: boolean | AutoImportOptions;
   treeShake?: boolean | TreeShakeOptions;
+  ui?: CodeUIConfig["ui"];
+  components?: CodeUIConfig["components"];
 }
 
 /** App stylesheet entry (relative to project root), e.g. `src/app.scss`. */
@@ -48,10 +52,19 @@ const VIRTUAL_MODULE_SHORT = "virtual:cui-config";
 const RESOLVED_VIRTUAL_MODULE_SHORT = "\0" + VIRTUAL_MODULE_SHORT;
 
 import { generateThemeCSS, THEME_TAG } from "./core/theme";
+import {
+  compileComponentTheme,
+  extractClassesFromThemeConfig,
+  mergeConfig,
+  serializeConfig,
+} from "./core/utils";
 export { generateThemeCSS, TAILWIND_PALETTES, SHADES } from "./core/theme";
 
 export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
-  let resolvedConfig: CodeUIConfig = { prefix: "cui" };
+  let resolvedConfig: CodeUIConfig = mergeConfig(
+    { prefix: "cui" },
+    { ui: options.ui, components: options.components },
+  );
   let configPath: string | null = null;
   let server: ViteDevServer | null = null;
   let viteConfigObj: any = null;
@@ -81,13 +94,25 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       });
 
       if (config) {
-        resolvedConfig = config;
+        resolvedConfig = mergeConfig(config, {
+          ui: options.ui,
+          components: options.components,
+        });
+      } else {
+        resolvedConfig = mergeConfig(
+          { prefix: "cui" },
+          { ui: options.ui, components: options.components },
+        );
       }
       if (configFile) {
         configPath = configFile;
       }
     } catch (err) {
       console.warn("[code-ui] Failed to load cui.config.ts:", err);
+      resolvedConfig = mergeConfig(
+        { prefix: "cui" },
+        { ui: options.ui, components: options.components },
+      );
     }
   }
 
@@ -119,16 +144,22 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
             const mod2 = server?.moduleGraph.getModuleById(
               RESOLVED_VIRTUAL_MODULE_SHORT,
             );
+            const modTheme = server?.moduleGraph.getModuleById(
+              "\0virtual:cui/theme",
+            );
             if (mod1) server?.moduleGraph.invalidateModule(mod1);
             if (mod2) server?.moduleGraph.invalidateModule(mod2);
+            if (modTheme) server?.moduleGraph.invalidateModule(modTheme);
 
             if (server?.moduleGraph?.idToModuleMap) {
-              for (const [, mod] of server.moduleGraph.idToModuleMap) {
-                if (
+              for (const [modId, mod] of server.moduleGraph.idToModuleMap) {
+                if (modId && modId.startsWith("\0virtual:cui/theme/")) {
+                  server.moduleGraph.invalidateModule(mod);
+                } else if (
                   mod.id &&
                   APP_STYLE_RE.test(
                     path
-                      .relative(projectRoot, mod.id.split("?")[0])
+                      .relative(projectRoot, mod.id.split("?")[0]!)
                       .replace(/\\/g, "/"),
                   )
                 ) {
@@ -152,12 +183,16 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       if (id === VIRTUAL_MODULE_SHORT) {
         return RESOLVED_VIRTUAL_MODULE_SHORT;
       }
+      if (id === "virtual:cui/theme") {
+        return "\0virtual:cui/theme";
+      }
+      if (id.startsWith("virtual:cui/theme/")) {
+        return "\0" + id;
+      }
       return null;
     },
 
     async watchChange(id) {
-      // Miniapp builds run through Rollup watch (no Vite dev-server watcher),
-      // so reload the config here before the rebuild starts.
       if (configPath && path.resolve(id) === path.resolve(configPath)) {
         await reloadConfig(projectRoot);
       }
@@ -168,11 +203,9 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         id === RESOLVED_VIRTUAL_MODULE_ID ||
         id === RESOLVED_VIRTUAL_MODULE_SHORT
       ) {
-        // Invalidate the virtual module (and trigger a rebuild) when the
-        // config file changes.
         if (configPath) this.addWatchFile(configPath);
         return `
-const config = ${JSON.stringify(resolvedConfig, null, 2)};
+const config = ${serializeConfig(resolvedConfig)};
 const g = typeof globalThis !== "undefined"
   ? globalThis
   : typeof window !== "undefined"
@@ -190,6 +223,37 @@ if (import.meta.hot) {
 }
 `;
       }
+
+      if (id.startsWith("\0virtual:cui/theme/")) {
+        if (configPath) this.addWatchFile(configPath);
+        const componentName = id.replace("\0virtual:cui/theme/", "");
+        const factory = (componentThemes as Record<string, any>)[componentName];
+        if (!factory) {
+          throw new Error(
+            `[code-ui] Unknown component theme: "${componentName}". Available themes: ${Object.keys(componentThemes).join(", ")}`,
+          );
+        }
+        const themeConfig = compileComponentTheme(
+          componentName,
+          factory,
+          resolvedConfig,
+        );
+        return `export default ${serializeConfig(themeConfig)};`;
+      }
+
+      if (id === "\0virtual:cui/theme") {
+        if (configPath) this.addWatchFile(configPath);
+        const allThemes: Record<string, any> = {};
+        for (const [name, factory] of Object.entries(componentThemes)) {
+          allThemes[name] = compileComponentTheme(
+            name,
+            factory,
+            resolvedConfig,
+          );
+        }
+        return `export default ${serializeConfig(allThemes)};`;
+      }
+
       return null;
     },
 
@@ -197,9 +261,11 @@ if (import.meta.hot) {
       const cleanId = id.split("?")[0];
       if (!cleanId) return null;
 
+      const isRawOrUrl = /[?&](?:raw|url|worker)\b/.test(id);
+
       if (
         autoSource &&
-        cleanId === id &&
+        !isRawOrUrl &&
         !cleanId.includes("node_modules") &&
         !code.trimStart().startsWith("export ")
       ) {
@@ -223,6 +289,74 @@ if (import.meta.hot) {
           if (!code.includes(".wxml")) {
             injection += `\n@source "./**/*.wxml";\n`;
           }
+
+          // Scan @code-ui/components and @code-ui/core for Tailwind utility extraction
+          let compDir: string | undefined;
+          try {
+            const compPkg = require.resolve(
+              "@code-ui/components/package.json",
+              {
+                paths: [projectRoot, path.dirname(cleanId)],
+              },
+            );
+            compDir = path.dirname(compPkg);
+            const relComp = path
+              .relative(path.dirname(cleanId), compDir)
+              .replace(/\\/g, "/");
+            const compSource = `${relComp.startsWith(".") ? relComp : `./${relComp}`}/**/*.{ts,js,wxml}`;
+            if (!code.includes(relComp)) {
+              injection += `\n@source "${compSource}";\n`;
+            }
+          } catch {}
+
+          try {
+            const corePkg = require.resolve("@code-ui/core/package.json", {
+              paths: [compDir, projectRoot, path.dirname(cleanId)].filter(
+                (p): p is string => Boolean(p),
+              ),
+            });
+            const coreDir = path.dirname(corePkg);
+            const relCore = path
+              .relative(path.dirname(cleanId), coreDir)
+              .replace(/\\/g, "/");
+            const coreSource = `${relCore.startsWith(".") ? relCore : `./${relCore}`}/**/*.{ts,js}`;
+            if (!code.includes(relCore)) {
+              injection += `\n@source "${coreSource}";\n`;
+            }
+          } catch {
+            try {
+              const coreEntry = require.resolve("@code-ui/core", {
+                paths: [projectRoot, path.dirname(cleanId)],
+              });
+              const coreDir = path.resolve(path.dirname(coreEntry), "..");
+              const relCore = path
+                .relative(path.dirname(cleanId), coreDir)
+                .replace(/\\/g, "/");
+              const coreSource = `${relCore.startsWith(".") ? relCore : `./${relCore}`}/**/*.{ts,js}`;
+              if (!code.includes(relCore)) {
+                injection += `\n@source "${coreSource}";\n`;
+              }
+            } catch {}
+          }
+
+          const allThemeClasses = new Set<string>();
+          for (const [name, factory] of Object.entries(componentThemes)) {
+            const themeConfig = compileComponentTheme(
+              name,
+              factory,
+              resolvedConfig,
+            );
+            for (const c of extractClassesFromThemeConfig(themeConfig)) {
+              allThemeClasses.add(c);
+            }
+          }
+          if (allThemeClasses.size > 0) {
+            const inlineClasses = Array.from(allThemeClasses)
+              .join(" ")
+              .replace(/\\/g, "\\\\")
+              .replace(/"/g, '\\"');
+            injection += `\n@source inline("${inlineClasses}");\n`;
+          }
           if (!code.includes(THEME_TAG)) {
             const themeCSS = generateThemeCSS(resolvedConfig.ui);
             if (themeCSS) {
@@ -244,7 +378,11 @@ if (import.meta.hot) {
           /^(?:src\/)?app\.(?:ts|js|tsx|jsx)$/.test(relPath) &&
           !cleanId.includes("node_modules");
 
-        if (isAppEntry && !code.includes(VIRTUAL_MODULE_ID)) {
+        if (
+          isAppEntry &&
+          !code.includes(VIRTUAL_MODULE_ID) &&
+          !code.includes(VIRTUAL_MODULE_SHORT)
+        ) {
           return {
             code: `import "${VIRTUAL_MODULE_ID}";\n` + code,
             map: null,

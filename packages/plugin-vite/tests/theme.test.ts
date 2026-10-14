@@ -14,7 +14,7 @@ describe("generateThemeCSS", () => {
         `--color-primary-${shade}: var(--ui-color-primary-${shade});`,
       );
       expect(css).toContain(
-        `--ui-color-primary-${shade}: var(--color-emerald-${shade}`,
+        `--ui-color-primary-${shade}: var(--color-red-${shade}`,
       );
     }
     expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
@@ -102,5 +102,88 @@ describe("generateThemeCSS", () => {
     expect(css).not.toContain("--ui-radius:");
     expect(css).toContain("--radius-md: 12rpx;");
     expect(css).toContain("--radius-lg: 16rpx;");
+  });
+
+  it("generates warning and info palette tokens by default", () => {
+    const css = generateThemeCSS();
+
+    expect(css).toContain("--color-warning-500: var(--ui-color-warning-500);");
+    expect(css).toContain("--ui-color-warning-500: var(--color-amber-500");
+    expect(css).toContain("--color-info-500: var(--ui-color-info-500);");
+    expect(css).toContain("--ui-color-info-500: var(--color-blue-500");
+  });
+});
+
+import { codeUI, compileComponentTheme } from "../src/index";
+import { buttonTheme, drawerTheme } from "@code-ui/core";
+
+describe("codeUI virtual themes", () => {
+  it("compiles button theme with active colors and overrides", () => {
+    const config = {
+      prefix: "cui",
+      ui: {
+        colors: {
+          brand: "#3b82f6",
+        },
+      },
+      components: {
+        button: {
+          defaultVariants: {
+            size: "lg" as any,
+          },
+        },
+      },
+    };
+
+    const compiled = compileComponentTheme("button", buttonTheme, config);
+    expect(compiled.variants.color).toHaveProperty("brand");
+    expect(compiled.defaultVariants.size).toBe("lg");
+
+    const brandCompound = compiled.compoundVariants?.find(
+      (cv: any) => cv.color === "brand" && cv.variant === "solid",
+    );
+    expect(brandCompound?.class?.root).toContain("bg-brand");
+  });
+
+  it("compiles drawer theme dynamically", () => {
+    const config = {
+      prefix: "cui",
+      components: {
+        drawer: {
+          defaultVariants: {
+            placement: "top" as any,
+          },
+        },
+      },
+    };
+
+    const compiled = compileComponentTheme("drawer", drawerTheme, config);
+    expect(compiled.slots).toHaveProperty("content");
+    expect(compiled.defaultVariants.placement).toBe("top");
+  });
+
+  it("resolves virtual:cui/theme/<component> and loads pure theme object", () => {
+    const plugin = codeUI({
+      autoImport: false,
+    });
+
+    const resolvedButton = (plugin as any).resolveId(
+      "virtual:cui/theme/button",
+    );
+    expect(resolvedButton).toBe("\0virtual:cui/theme/button");
+
+    const loadedButton = (plugin as any).load("\0virtual:cui/theme/button");
+    expect(loadedButton).toContain("export default {");
+    expect(loadedButton).toContain('"solid"');
+    expect(loadedButton).toContain('"primary"');
+
+    const resolvedDrawer = (plugin as any).resolveId(
+      "virtual:cui/theme/drawer",
+    );
+    expect(resolvedDrawer).toBe("\0virtual:cui/theme/drawer");
+
+    const loadedDrawer = (plugin as any).load("\0virtual:cui/theme/drawer");
+    expect(loadedDrawer).toContain("export default {");
+    expect(loadedDrawer).toContain('"placement"');
   });
 });

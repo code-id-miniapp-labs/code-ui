@@ -25,15 +25,15 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     })),
     variant: bindable<any>(() => ({
       value: prop("variant"),
-      defaultValue: "solid",
+      defaultValue: defaultButtonProps.variant,
     })),
     color: bindable<any>(() => ({
       value: prop("color"),
-      defaultValue: "primary",
+      defaultValue: defaultButtonProps.color,
     })),
     size: bindable<any>(() => ({
       value: prop("size"),
-      defaultValue: "md",
+      defaultValue: defaultButtonProps.size,
     })),
     block: bindable<any>(() => ({
       value: prop("block"),
@@ -218,10 +218,6 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
         let capturedPromise: Promise<any> | undefined =
           (rawEvent as any)?.promise ?? (rawEvent as any)?.detail?.promise;
-        console.log(
-          "[code-ui debug] executeAsyncHandler START. capturedPromise pre-wrap:",
-          !!capturedPromise,
-        );
         if (rawEvent && typeof rawEvent === "object") {
           const detail = (rawEvent as any).detail ?? rawEvent;
           if (detail && typeof detail === "object") {
@@ -236,33 +232,15 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         const result = prop("onTap")?.(rawEvent) ?? prop("onClick")?.(rawEvent);
         const promise = isPromise(result) ? result : capturedPromise;
 
-        console.log(
-          "[code-ui debug] executeAsyncHandler result isPromise:",
-          isPromise(result),
-          "captured:",
-          !!capturedPromise,
-          "final promise:",
-          !!promise,
-        );
-
         if (isPromise(promise)) {
-          console.log("[code-ui debug] attaching .then() to promise");
           Promise.resolve(promise)
             .then(() => {
-              console.log("[code-ui debug] promise resolved! sending RESOLVE");
               send({ type: "RESOLVE" });
             })
             .catch((err) => {
-              console.log(
-                "[code-ui debug] promise rejected! sending REJECT",
-                err,
-              );
               send({ type: "REJECT", error: err });
             });
         } else {
-          console.log(
-            "[code-ui debug] promise NOT found! sending RESOLVE sync",
-          );
           send({ type: "RESOLVE" });
         }
       },

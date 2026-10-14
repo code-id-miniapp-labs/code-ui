@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { resetConfig, setConfig } from "@code-ui/core";
-import { buttonTheme } from "../src/runtime/button/theme";
-import { cn, dedupeClasses, escapeClass } from "../src/runtime/utils/variants";
+import {
+  buttonTheme as createButtonTheme,
+  resetConfig,
+  setConfig,
+} from "@code-ui/core";
+import {
+  cn,
+  dedupeClasses,
+  escapeClass,
+  tv,
+} from "../src/runtime/utils/variants";
+
+const buttonTheme = tv(createButtonTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -86,6 +96,33 @@ describe("resolveSlots + buttonTheme", () => {
     expect(slotsWithRoundedSm.root).toContain("rounded-sm");
     expect(slotsWithRoundedSm.root).not.toContain("rounded-lg");
   });
+
+  it("supports all standard semantic colors out of the box", () => {
+    for (const color of [
+      "primary",
+      "neutral",
+      "danger",
+      "success",
+      "warning",
+      "info",
+    ] as const) {
+      const solid = resolveSlots(
+        buttonTheme({ variant: "solid", color }) as any,
+      );
+      expect(solid.root).toContain(`bg-${color}`);
+      expect(solid.root).toContain("text-white");
+
+      const outline = resolveSlots(
+        buttonTheme({ variant: "outline", color }) as any,
+      );
+      expect(outline.root).toContain(`border-${color}`);
+      expect(outline.root).toContain(`text-${color}`);
+
+      const soft = resolveSlots(buttonTheme({ variant: "soft", color }) as any);
+      expect(soft.root).toContain(escapeClass(`bg-${color}/10`));
+      expect(soft.root).toContain(`text-${color}`);
+    }
+  });
 });
 
 describe("getResolvedTheme", () => {
@@ -96,11 +133,15 @@ describe("getResolvedTheme", () => {
         getResolvedTheme("button", buttonTheme)({ variant: "solid" }) as any,
       ).root;
 
-    setConfig({ components: { button: { slots: { root: "first-override" } } } });
+    setConfig({
+      components: { button: { slots: { root: "first-override" } } },
+    });
     expect(rootOf()).toContain("first-override");
 
     // Simulates the virtual config module re-executing after an HMR update.
-    setConfig({ components: { button: { slots: { root: "second-override" } } } });
+    setConfig({
+      components: { button: { slots: { root: "second-override" } } },
+    });
     const next = rootOf();
     expect(next).toContain("second-override");
     expect(next).not.toContain("first-override");
@@ -122,12 +163,101 @@ describe("getResolvedTheme", () => {
     });
 
     const theme = getResolvedTheme("button", buttonTheme);
-    const resolved = resolveSlots(theme({ variant: "solid", color: "primary" }) as any);
+    const resolved = resolveSlots(
+      theme({ variant: "solid", color: "primary" }) as any,
+    );
 
     // text-red-500 must replace text-white!
     expect(resolved.root).toContain("text-red-500");
     expect(resolved.root).not.toContain("text-white");
     expect(resolved.root).toContain("bg-primary");
+
+    resetConfig();
+    clearThemeCache();
+  });
+
+  it("supports function replacers in cui.config.ts slots to augment defaults", () => {
+    clearThemeCache();
+    setConfig({
+      components: {
+        button: {
+          slots: {
+            root: (defaults) => `${defaults} custom-augmented-class`,
+          },
+        },
+      },
+    });
+
+    const theme = getResolvedTheme("button", buttonTheme);
+    const resolved = resolveSlots(
+      theme({ variant: "solid", color: "primary" }) as any,
+    );
+
+    expect(resolved.root).toContain("custom-augmented-class");
+    expect(resolved.root).toContain("bg-primary");
+
+    resetConfig();
+    clearThemeCache();
+  });
+
+  it("supports function replacers in cui.config.ts slots to completely replace defaults", () => {
+    clearThemeCache();
+    setConfig({
+      components: {
+        button: {
+          slots: {
+            label: () => "only-my-custom-label",
+          },
+        },
+      },
+    });
+
+    const theme = getResolvedTheme("button", buttonTheme);
+    const resolved = resolveSlots(
+      theme({ variant: "solid", color: "primary" }) as any,
+    );
+
+    expect(resolved.label).toBe("only-my-custom-label");
+
+    resetConfig();
+    clearThemeCache();
+  });
+
+  it("dynamically generates solid, outline, ghost, soft compound variants for custom colors in cui.config.ts", () => {
+    clearThemeCache();
+    setConfig({
+      ui: {
+        colors: {
+          brand: "#3b82f6",
+        },
+      },
+    });
+
+    const theme = getResolvedTheme("button", buttonTheme);
+
+    const solidBrand = resolveSlots(
+      theme({ variant: "solid", color: "brand" }) as any,
+    );
+    expect(solidBrand.root.split(" ")).toContain("bg-brand");
+    expect(solidBrand.root.split(" ")).toContain("text-white");
+
+    const outlineBrand = resolveSlots(
+      theme({ variant: "outline", color: "brand" }) as any,
+    );
+    expect(outlineBrand.root.split(" ")).toContain("border-brand");
+    expect(outlineBrand.root.split(" ")).toContain("text-brand");
+
+    const ghostBrand = resolveSlots(
+      theme({ variant: "ghost", color: "brand" }) as any,
+    );
+    expect(ghostBrand.root.split(" ")).toContain("text-brand");
+    expect(ghostBrand.root.split(" ")).not.toContain("bg-brand");
+
+    const softBrand = resolveSlots(
+      theme({ variant: "soft", color: "brand" }) as any,
+    );
+    expect(softBrand.root).toContain(escapeClass("bg-brand/10"));
+    expect(softBrand.root.split(" ")).toContain("text-brand");
 
     resetConfig();
     clearThemeCache();
@@ -139,9 +269,9 @@ describe("dedupeClasses", () => {
     expect(dedupeClasses("bg-emerald-600 text-white", "text-red-500")).toBe(
       "bg-emerald-600 text-red-500",
     );
-    expect(dedupeClasses("bg-emerald-600 text-white", "bg-black text-red-500")).toBe(
-      "bg-black text-red-500",
-    );
+    expect(
+      dedupeClasses("bg-emerald-600 text-white", "bg-black text-red-500"),
+    ).toBe("bg-black text-red-500");
   });
 
   it("drops earlier padding and margin classes", () => {
@@ -150,9 +280,9 @@ describe("dedupeClasses", () => {
   });
 
   it("drops earlier rounded and shadow classes", () => {
-    expect(dedupeClasses("rounded-md shadow-sm", "rounded-full shadow-2xl")).toBe(
-      "rounded-full shadow-2xl",
-    );
+    expect(
+      dedupeClasses("rounded-md shadow-sm", "rounded-full shadow-2xl"),
+    ).toBe("rounded-full shadow-2xl");
     expect(dedupeClasses("rounded-lg", "rounded-full")).toBe("rounded-full");
     expect(dedupeClasses("rounded-md", "rounded-sm")).toBe("rounded-sm");
     expect(dedupeClasses("rounded-none", "rounded-xl")).toBe("rounded-xl");
@@ -160,9 +290,40 @@ describe("dedupeClasses", () => {
   });
 
   it("handles modifier variants independently", () => {
-    expect(dedupeClasses("active:bg-emerald-700 bg-emerald-600", "bg-black active:bg-neutral-800")).toBe(
-      "bg-black active:bg-neutral-800",
-    );
+    expect(
+      dedupeClasses(
+        "active:bg-emerald-700 bg-emerald-600",
+        "bg-black active:bg-neutral-800",
+      ),
+    ).toBe("bg-black active:bg-neutral-800");
   });
 });
 
+describe("tv type safety & variant inference", () => {
+  it("infers slots and variant props correctly", () => {
+    const custom = tv({
+      slots: {
+        root: "base-root",
+        icon: "base-icon",
+      },
+      variants: {
+        size: {
+          sm: { root: "h-8" },
+          lg: { root: "h-12" },
+        },
+        active: {
+          true: { root: "is-active" },
+          false: { root: "not-active" },
+        },
+      },
+      defaultVariants: {
+        size: "sm",
+      },
+    });
+
+    const res = custom({ size: "lg", active: true });
+    expect(res.root()).toContain("h-12");
+    expect(res.root()).toContain("is-active");
+    expect(res.icon()).toBe("base-icon");
+  });
+});

@@ -2,8 +2,8 @@ import { getComponentConfig, getConfig } from "@code-ui/core";
 import { dedupeClasses, escapeClass, tv } from "./variants";
 
 const themeCache = new Map<string, any>();
-/** `components` config the cache was built from; replaced on config reload (HMR). */
 let cachedSource: unknown;
+let cachedColorsSource: unknown;
 
 /**
  * Clear the resolved theme cache (useful for tests or dynamic config updates).
@@ -11,6 +11,15 @@ let cachedSource: unknown;
 export function clearThemeCache(): void {
   themeCache.clear();
 }
+
+const DEFAULT_SEMANTIC_COLORS = new Set([
+  "primary",
+  "neutral",
+  "danger",
+  "success",
+  "warning",
+  "info",
+]);
 
 /**
  * Returns the component's TV theme extended with cui.config.ts overrides.
@@ -20,36 +29,75 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
   componentName: string,
   baseTheme: T,
 ): T {
-  const source = getConfig()?.components;
-  if (source !== cachedSource) {
+  const currentConfig = getConfig();
+  const source = currentConfig?.components;
+  const colorsSource = currentConfig?.ui?.colors;
+  if (source !== cachedSource || colorsSource !== cachedColorsSource) {
     themeCache.clear();
     cachedSource = source;
+    cachedColorsSource = colorsSource;
   }
 
   const cached = themeCache.get(componentName);
   if (cached) return cached;
 
   const globalConfig = getComponentConfig(componentName);
+  const userColors = colorsSource ? Object.keys(colorsSource) : [];
+  const customColors = userColors.filter(
+    (c) => !DEFAULT_SEMANTIC_COLORS.has(c),
+  );
+
   const hasOverrides =
-    globalConfig &&
-    (globalConfig.slots ||
-      globalConfig.variants ||
-      globalConfig.compoundVariants ||
-      globalConfig.defaultVariants);
+    (globalConfig &&
+      (globalConfig.slots ||
+        globalConfig.variants ||
+        globalConfig.compoundVariants ||
+        globalConfig.defaultVariants)) ||
+    customColors.length > 0;
 
   if (!hasOverrides) {
     themeCache.set(componentName, baseTheme);
     return baseTheme;
   }
 
+  const compoundVariants = [
+    ...customColors.flatMap((color) => [
+      {
+        variant: "solid",
+        color,
+        class: { root: `bg-${color} text-white active:bg-${color}/90` },
+      },
+      {
+        variant: "outline",
+        color,
+        class: {
+          root: `border border-${color} text-${color} active:bg-${color}/10`,
+        },
+      },
+      {
+        variant: "ghost",
+        color,
+        class: { root: `text-${color} active:bg-${color}/10` },
+      },
+      {
+        variant: "soft",
+        color,
+        class: {
+          root: `bg-${color}/10 text-${color} active:bg-${color}/20`,
+        },
+      },
+    ]),
+    ...((globalConfig?.compoundVariants as any[]) || []),
+  ];
+
   const extendedTV = tv({
     extend: baseTheme as any,
-    variants: globalConfig.variants as any,
-    compoundVariants: globalConfig.compoundVariants as any,
-    defaultVariants: globalConfig.defaultVariants as any,
+    variants: globalConfig?.variants as any,
+    compoundVariants,
+    defaultVariants: globalConfig?.defaultVariants as any,
   });
 
-  const globalSlots = globalConfig.slots;
+  const globalSlots = globalConfig?.slots;
 
   // Wrap so globalConfig.slots is applied with override priority over default variant classes
   const resolvedThemeFn = ((props?: any) => {
@@ -64,7 +112,10 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
         wrappedSlots[key] = (slotProps?: any) => {
           const baseOut = origFn(slotProps);
           const override = globalSlots[key];
-          return override ? dedupeClasses(baseOut, override) : baseOut;
+          if (!override) return baseOut;
+          return typeof override === "function"
+            ? override(baseOut)
+            : dedupeClasses(baseOut, override);
         };
       } else {
         wrappedSlots[key] = origFn;

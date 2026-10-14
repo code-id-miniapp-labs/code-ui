@@ -1,7 +1,10 @@
 import { defu } from "@code-ui/utils";
 
+export type SlotClassReplacer = (defaults: string) => string;
+export type SlotClass = string | SlotClassReplacer;
+
 export type SlotRecord<TSlots extends string = string> = Partial<
-  Record<TSlots, string>
+  Record<TSlots, SlotClass>
 >;
 
 export interface ComponentVariantsConfig<TSlots extends string = string> {
@@ -31,6 +34,8 @@ export type KnownComponentSlots<TName extends string> =
   TName extends keyof ComponentRegistry ? ComponentRegistry[TName] : string;
 
 export interface ComponentConfig<TSlots extends string = string> {
+  /** Base classes for component (or root slot) */
+  base?: string | string[];
   /** Global default slot classes for this component */
   slots?: SlotRecord<TSlots>;
   /** Alias for slots */
@@ -230,10 +235,9 @@ export function getComponentConfig<TSlots extends string = string>(
     .replace(new RegExp(`^(?:${prefix}|cui|c)-`, "i"), "")
     .toLowerCase();
 
-  const raw =
-    (config.components?.[componentName] ||
-      config.components?.[normalizedName] ||
-      {}) as ComponentConfig<TSlots>;
+  const raw = (config.components?.[componentName] ||
+    config.components?.[normalizedName] ||
+    {}) as ComponentConfig<TSlots>;
 
   const slots = defu(raw.slots || {}, raw.ui || {}) as SlotRecord<TSlots>;
   const defaultVariants = defu(

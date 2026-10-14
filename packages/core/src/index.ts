@@ -73,3 +73,25 @@ export type {
   KnownComponentSlots,
   SlotRecord,
 } from "./config";
+
+export {
+  defineTheme,
+  DEFAULT_THEME_COLORS,
+  createColorVariants,
+  createColorCompoundVariants,
+} from "./theme";
+export type {
+  ComponentTheme,
+  ThemeDefinition,
+  ThemeSlots,
+  ThemeVariants,
+  CompoundVariant,
+  DefaultVariants,
+  DefaultThemeColor,
+  ThemeColor,
+  ThemeOptions,
+  ColorVariantRule,
+} from "./theme";
+export * as componentThemes from "./theme/definitions";
+export { default as buttonTheme } from "./theme/definitions/button";
+export { default as drawerTheme } from "./theme/definitions/drawer";

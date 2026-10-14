@@ -42,6 +42,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "prebuild": "rm -rf dist",
     "build": "weapp-vite build",
     "dev": "weapp-vite",
     "analyze": "weapp-vite analyze",
@@ -59,6 +60,7 @@
     "tailwind-variants": "^3.3.1"
   },
   "devDependencies": {
+    "@code-ui/plugin-vite": "workspace:*",
     "@types/node": "^26.2.0",
     "alien-signals": "^1.0.4",
     "miniprogram-api-typings": "^5.2.3",

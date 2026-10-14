@@ -1,0 +1,95 @@
+import { describe, expect, it } from "vitest";
+import {
+  DEFAULT_THEME_COLORS,
+  createColorVariants,
+  createColorCompoundVariants,
+  defineTheme,
+  type ComponentTheme,
+} from "../src";
+
+describe("@code-ui/core color generation", () => {
+  it("includes all standard semantic colors in DEFAULT_THEME_COLORS", () => {
+    expect(DEFAULT_THEME_COLORS).toEqual([
+      "primary",
+      "neutral",
+      "danger",
+      "success",
+      "warning",
+      "info",
+    ]);
+  });
+
+  it("createColorVariants generates an empty map for default colors", () => {
+    const variants = createColorVariants();
+    expect(Object.keys(variants)).toEqual([
+      "primary",
+      "neutral",
+      "danger",
+      "success",
+      "warning",
+      "info",
+    ]);
+    expect(variants.primary).toEqual({});
+    expect(variants.success).toEqual({});
+  });
+
+  it("createColorVariants generates an empty map for custom colors", () => {
+    const customColors = ["brand", "accent"] as const;
+    const variants = createColorVariants(customColors);
+    expect(Object.keys(variants)).toEqual(["brand", "accent"]);
+    expect(variants.brand).toEqual({});
+    expect(variants.accent).toEqual({});
+  });
+
+  it("createColorCompoundVariants generates compound rules across all colors", () => {
+    const compounds = createColorCompoundVariants(DEFAULT_THEME_COLORS, {
+      solid: (color) => ({ root: `bg-${color} text-white` }),
+      outline: (color) => ({ root: `border border-${color} text-${color}` }),
+    });
+
+    expect(compounds).toHaveLength(12);
+
+    const solidPrimary = compounds.find(
+      (c) => c.variant === "solid" && c.color === "primary",
+    );
+    expect(solidPrimary?.class.root).toBe("bg-primary text-white");
+
+    const outlineSuccess = compounds.find(
+      (c) => c.variant === "outline" && c.color === "success",
+    );
+    expect(outlineSuccess?.class.root).toBe("border border-success text-success");
+  });
+
+  it("defineTheme works seamlessly with createColorVariants and createColorCompoundVariants", () => {
+    const theme = defineTheme({
+      slots: {
+        root: "base-class",
+      },
+      variants: {
+        variant: {
+          solid: { root: "shadow" },
+          outline: { root: "border" },
+        },
+        color: createColorVariants(),
+      },
+      compoundVariants: [
+        ...createColorCompoundVariants(DEFAULT_THEME_COLORS, {
+          solid: (color) => ({ root: `bg-${color}` }),
+        }),
+      ],
+      defaultVariants: {
+        variant: "solid",
+        color: "primary",
+      },
+    });
+
+    expect(theme.defaultVariants.variant).toBe("solid");
+    expect(theme.defaultVariants.color).toBe("primary");
+    expect(theme.compoundVariants).toHaveLength(6);
+
+    type InferredTheme = ComponentTheme<typeof theme>;
+    type InferredColor = InferredTheme["variants"]["color"];
+    const colorTest: InferredColor = "warning";
+    expect(colorTest).toBe("warning");
+  });
+});

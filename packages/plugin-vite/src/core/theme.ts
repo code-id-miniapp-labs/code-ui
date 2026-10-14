@@ -196,12 +196,6 @@ export function isRawColor(val: string): boolean {
   );
 }
 
-/**
- * Generates Tailwind CSS v4 @theme and :root/page tokens supporting:
- * 1. Tailwind named palettes (e.g. primary: "emerald") with 50-950 shade expansion and dark mode shift.
- * 2. Direct hex/rgb values (e.g. primary: "#000000").
- * 3. Proportional radius scaling from base token (e.g. radius: "8rpx") or custom overrides.
- */
 export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   const themeLines: string[] = [];
   const rootLines: string[] = [];
@@ -209,10 +203,12 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
 
   // 1. Process colors
   const defaultColors: Record<string, string> = {
-    primary: "emerald",
+    primary: "red",
     neutral: "zinc",
     danger: "red",
     success: "green",
+    warning: "amber",
+    info: "blue",
   };
 
   const configuredColors: Record<string, ColorValue | string | undefined> = {
@@ -224,7 +220,6 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
     if (!val || typeof val !== "string") continue;
 
     if (!isRawColor(val)) {
-      // Named Tailwind palette or custom theme palette (e.g. primary: "emerald", "gray", or "brand")
       for (const shade of SHADES) {
         themeLines.push(
           `  --color-${key}-${shade}: var(--ui-color-${key}-${shade});`,
@@ -246,14 +241,12 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
       darkLines.push(`  --ui-${key}: var(--ui-color-${key}-400);`);
       darkLines.push(`  --color-${key}: var(--ui-${key});`);
     } else {
-      // Direct custom color value (e.g. primary: "#000000")
       themeLines.push(`  --color-${key}: ${val};`);
       rootLines.push(`  --color-${key}: ${val};`);
       rootLines.push(`  --ui-${key}: ${val};`);
     }
   }
 
-  // 2. Process radius
   if (ui?.radius) {
     if (typeof ui.radius === "string") {
       const baseRadius = ui.radius;

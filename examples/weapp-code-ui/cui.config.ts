@@ -4,16 +4,12 @@ export default defineConfig({
   prefix: "cui",
   ui: {
     colors: {
-      primary: "fuchsia",
-      neutral: "amber",
-      danger: "rose",
+      primary: "brand",
     },
   },
   components: {
     button: {
-      slots: {
-        root: "shadow-sm",
-      },
+      slots: {},
     },
     drawer: {
       slots: {

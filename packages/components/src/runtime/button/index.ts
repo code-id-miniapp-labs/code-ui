@@ -5,13 +5,16 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { getResolvedTheme, resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../utils/ui";
 import {
   buttonMachine,
   connectButton,
   defaultButtonProps,
 } from "@code-ui/button";
-import { buttonTheme } from "./theme";
+import themeConfig from "virtual:cui/theme/button";
+import { tv } from "../utils/variants";
+
+const buttonTheme = tv(themeConfig);
 
 const buttonBehavior = createMachineBehavior({
   machine: buttonMachine,
@@ -58,8 +61,7 @@ Component(
 
         const ui = this.data.ui;
 
-        const theme = getResolvedTheme("button", buttonTheme);
-        const themeFns = theme({
+        const themeFns = buttonTheme({
           variant,
           size,
           color,

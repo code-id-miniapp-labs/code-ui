@@ -4,14 +4,17 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { getResolvedTheme, resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../utils/ui";
 
 import {
   drawerMachine,
   connectDrawer,
   defaultDrawerProps,
 } from "@code-ui/drawer";
-import { drawerTheme } from "./theme";
+import themeConfig from "virtual:cui/theme/drawer";
+import { tv } from "../utils/variants";
+
+const drawerTheme = tv(themeConfig);
 
 const drawerBehavior = createMachineBehavior({
   machine: drawerMachine,
@@ -36,8 +39,7 @@ Component(
         const ui = this.data.ui;
         const isOpen = this.data.drawer?.open ?? false;
 
-        const theme = getResolvedTheme("drawer", drawerTheme);
-        const themeFns = theme({
+        const themeFns = drawerTheme({
           placement,
           open: isOpen,
         });
