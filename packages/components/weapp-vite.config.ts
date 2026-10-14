@@ -3,43 +3,20 @@ import path from "node:path";
 import { defineConfig, type Plugin } from "weapp-vite";
 import { codeUI } from "@code-ui/plugin-vite";
 
-function minifyWxss(): Plugin {
+function cleanDist(): Plugin {
   return {
-    name: "cui:minify-wxss",
+    name: "cui:clean-dist",
     closeBundle() {
       const distDir = path.resolve(process.cwd(), "dist");
+
+      // Delete dist/app.wxss so the distributed npm package does not contain
+      // a redundant 20KB stylesheet. Custom components receive utility classes
+      // and dynamic theme tokens directly from the consuming app's stylesheet.
       const wxssPath = path.join(distDir, "app.wxss");
       if (fs.existsSync(wxssPath)) {
-        const content = fs.readFileSync(wxssPath, "utf8");
-        const minified = content
-          .replace(/@import\s+['"][^'"]*tailwindcss[^'"]*['"];?/g, "")
-          .replace(/\/\*[\s\S]*?\*\//g, "")
-          .replace(/\s*([{}:;,])\s*/g, "$1")
-          .replace(/\s+/g, " ")
-          .replace(/;}/g, "}")
-          .trim();
-        fs.writeFileSync(wxssPath, minified, "utf8");
+        fs.rmSync(wxssPath, { force: true });
       }
 
-      // Ensure each component in dist has @import "../../app.wxss";
-      const componentWxssFiles = [
-        path.join(distDir, "runtime/button/index.wxss"),
-        path.join(distDir, "runtime/drawer/index.wxss"),
-      ];
-      for (const compWxss of componentWxssFiles) {
-        if (fs.existsSync(compWxss)) {
-          const current = fs.readFileSync(compWxss, "utf8");
-          if (!current.includes("app.wxss")) {
-            fs.writeFileSync(
-              compWxss,
-              `@import "../../app.wxss";\n${current}`,
-              "utf8",
-            );
-          }
-        } else {
-          fs.writeFileSync(compWxss, '@import "../../app.wxss";\n', "utf8");
-        }
-      }
 
       // Clear usingComponents in dist/app.json so npm package dist does not register components globally
       const appJsonPath = path.join(distDir, "app.json");
@@ -214,7 +191,7 @@ function syncWxsFiles(): Plugin {
 export default defineConfig({
   plugins: [
     codeUI({ autoImport: false }),
-    minifyWxss(),
+    cleanDist(),
     wxmlPathPatchPlugin(),
     syncWxsFiles(),
   ],

@@ -62,12 +62,12 @@
     <!-- Section 5: Local UI Prop Override -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-base font-bold text-neutral-900">Local UI Prop Styling</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
+      <view class="text-xs mt-0.5 mb-4">
         Custom slot override via Nuxt UI v4-style local ui prop.
       </view>
       <view class="flex flex-wrap gap-3 items-center">
         <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" variant="outline">
-          Mabar king 123
+          Mabar king
         </c-button>
       </view>
     </view>

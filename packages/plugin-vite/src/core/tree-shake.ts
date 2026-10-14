@@ -263,6 +263,14 @@ export function handleTreeShake(
       purgeUnusedWxs(wxsDir);
     }
 
+    const deadAppWxss = path.join(miniprogramNpmPath, "app.wxss");
+    if (fs.existsSync(deadAppWxss)) {
+      try {
+        savedBytes += fs.statSync(deadAppWxss).size;
+        fs.rmSync(deadAppWxss, { force: true });
+      } catch {}
+    }
+
     if (removedComponents > 0 || removedWxs > 0) {
       const kb = (savedBytes / 1024).toFixed(2);
       console.log(

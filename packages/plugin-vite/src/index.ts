@@ -59,6 +59,12 @@ import {
   serializeConfig,
 } from "./core/utils";
 export { generateThemeCSS, TAILWIND_PALETTES, SHADES } from "./core/theme";
+export {
+  compileComponentTheme,
+  extractClassesFromThemeConfig,
+  mergeConfig,
+  serializeConfig,
+} from "./core/utils";
 
 export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
   let resolvedConfig: CodeUIConfig = mergeConfig(
