@@ -8,17 +8,17 @@ describe("generateThemeCSS", () => {
     expect(css).toContain("/* @code-ui:theme */");
     expect(css).toContain("@theme default inline");
 
-    // Primary (default: emerald)
+    // Primary (default: red)
     for (const shade of SHADES) {
       expect(css).toContain(
-        `--color-primary-${shade}: var(--ui-color-primary-${shade});`,
+        `--color-primary-${shade}: var(--color-red-${shade}`,
       );
       expect(css).toContain(
         `--ui-color-primary-${shade}: var(--color-red-${shade}`,
       );
     }
     expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
-    expect(css).toContain("--color-primary: var(--ui-primary);");
+    expect(css).toContain("--color-primary: var(--color-primary-500);");
 
     // Dark mode contrast shift
     expect(css).toContain("@media (prefers-color-scheme: dark)");
@@ -107,9 +107,9 @@ describe("generateThemeCSS", () => {
   it("generates warning and info palette tokens by default", () => {
     const css = generateThemeCSS();
 
-    expect(css).toContain("--color-warning-500: var(--ui-color-warning-500);");
+    expect(css).toContain("--color-warning-500: var(--color-amber-500");
     expect(css).toContain("--ui-color-warning-500: var(--color-amber-500");
-    expect(css).toContain("--color-info-500: var(--ui-color-info-500);");
+    expect(css).toContain("--color-info-500: var(--color-blue-500");
     expect(css).toContain("--ui-color-info-500: var(--color-blue-500");
   });
 });

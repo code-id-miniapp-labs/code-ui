@@ -22,7 +22,6 @@
         <c-button variant="outline">Outline</c-button>
         <c-button variant="ghost">Ghost</c-button>
         <c-button variant="soft">Soft</c-button>
-        <c-button variant="secondary">Secondary</c-button>
       </view>
     </view>
     <!-- Section 2: Button Colors -->
@@ -44,7 +43,12 @@
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-base font-bold text-neutral-900">Button Sizes</view>
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">sm, md, lg</view>
-      <view class="flex flex-wrap gap-3 items-center"></view>
+      <view class="flex flex-wrap gap-3 items-center">
+        <c-button color="neutral" size="sm">Neutral</c-button>
+        <c-button color="success" size="md">Success</c-button>
+        <c-button color="warning" size="lg">Warning</c-button>
+        <c-button color="danger" size="xl">Danger</c-button>
+      </view>
     </view>
     <!-- Section 4: Async Auto-Loading & FSM State -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -66,7 +70,7 @@
         Custom slot override via Nuxt UI v4-style local ui prop.
       </view>
       <view class="flex flex-wrap gap-3 items-center">
-        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" variant="outline">
+        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" variant="solid">
           Mabar king
         </c-button>
       </view>
@@ -76,6 +80,7 @@
       <view class="text-base font-bold text-neutral-900">Drawer Component</view>
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">
         Gesture-driven bottom sheet with backdrop & smooth animations.
+        <view class="size-6 bg-testing-500/10"></view>
       </view>
       <view class="flex flex-col gap-2.5">
         <c-drawer>aowkwao</c-drawer>

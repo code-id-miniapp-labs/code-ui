@@ -1,10 +1,5 @@
 import type { AnatomyPartName, ComponentUI } from "@code-ui/anatomy";
-import type {
-  Machine,
-  MachineSchema,
-  Params,
-  Service,
-} from "@code-ui/core";
+import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./button.anatomy";
 export type ButtonVariant =

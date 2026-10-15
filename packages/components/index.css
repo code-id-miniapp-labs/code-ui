@@ -1,5 +1,1 @@
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@import "./keyframes.wxss"

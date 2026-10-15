@@ -268,3 +268,66 @@ export function serializeConfig(val: unknown, depth = 0): string {
   }
   return JSON.stringify(val);
 }
+
+export function cleanKeyframes(css: string): string {
+  const seen = new Set<string>();
+  let result = "";
+  let i = 0;
+  while (i < css.length) {
+    const atKeyframesIdx = css.indexOf("@keyframes", i);
+    if (atKeyframesIdx === -1) {
+      result += css.slice(i);
+      break;
+    }
+    result += css.slice(i, atKeyframesIdx);
+
+    const openBraceIdx = css.indexOf("{", atKeyframesIdx);
+    if (openBraceIdx === -1) {
+      result += css.slice(atKeyframesIdx);
+      break;
+    }
+
+    const header = css.slice(atKeyframesIdx, openBraceIdx);
+    const nameMatch = header.match(/@keyframes\s+([a-zA-Z0-9_-]+)/);
+    const name = nameMatch ? nameMatch[1] : null;
+
+    let depth = 1;
+    let endIdx = openBraceIdx + 1;
+    while (depth > 0 && endIdx < css.length) {
+      if (css[endIdx] === "{") depth++;
+      else if (css[endIdx] === "}") depth--;
+      endIdx++;
+    }
+
+    const block = css.slice(atKeyframesIdx, endIdx);
+    if (name && seen.has(name)) {
+      // Skip duplicate keyframes block
+    } else {
+      if (name) seen.add(name);
+      result += block;
+    }
+    i = endIdx;
+  }
+  return result;
+}
+
+export function cleanKeyframesInDir(dir: string) {
+  if (!fs.existsSync(dir)) return;
+  const items = fs.readdirSync(dir);
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+    if (stat.isDirectory()) {
+      cleanKeyframesInDir(fullPath);
+    } else if (fullPath.endsWith(".wxss") || fullPath.endsWith(".css")) {
+      try {
+        const content = fs.readFileSync(fullPath, "utf8");
+        const cleaned = cleanKeyframes(content);
+        if (content !== cleaned) {
+          fs.writeFileSync(fullPath, cleaned, "utf8");
+        }
+      } catch {}
+    }
+  }
+}
+

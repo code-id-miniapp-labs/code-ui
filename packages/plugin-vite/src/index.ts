@@ -53,6 +53,8 @@ const RESOLVED_VIRTUAL_MODULE_SHORT = "\0" + VIRTUAL_MODULE_SHORT;
 
 import { generateThemeCSS, THEME_TAG } from "./core/theme";
 import {
+  cleanKeyframes,
+  cleanKeyframesInDir,
   compileComponentTheme,
   extractClassesFromThemeConfig,
   mergeConfig,
@@ -60,6 +62,7 @@ import {
 } from "./core/utils";
 export { generateThemeCSS, TAILWIND_PALETTES, SHADES } from "./core/theme";
 export {
+  cleanKeyframes,
   compileComponentTheme,
   extractClassesFromThemeConfig,
   mergeConfig,
@@ -407,6 +410,23 @@ if (import.meta.hot) {
     generateBundle(_options, bundle) {
       generateBundleAutoImport(bundle, autoImportOpts, projectRoot);
       handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, bundle);
+
+      for (const [fileName, item] of Object.entries(bundle)) {
+        if (fileName.endsWith(".wxss") || fileName.endsWith(".css")) {
+          if (
+            (item as any).type === "asset" &&
+            typeof (item as any).source === "string"
+          ) {
+            (item as any).source = cleanKeyframes((item as any).source);
+          }
+        }
+      }
+    },
+
+    closeBundle() {
+      const outDir = viteConfigObj?.build?.outDir || "dist";
+      const distRoot = path.resolve(projectRoot, outDir);
+      cleanKeyframesInDir(distRoot);
     },
 
     async writeBundle() {

@@ -93,7 +93,7 @@ export default function buttonTheme(options: ThemeOptions = {}) {
     compoundVariants: [
       ...createColorCompoundVariants(colors, {
         solid: (color) => ({
-          root: `bg-${color} text-white active:bg-${color}/90`,
+          root: `bg-${color} text-white border active:bg-${color}/90`,
         }),
         outline: (color) => ({
           root: `border border-${color} text-${color} active:bg-${color}/10`,
@@ -102,7 +102,7 @@ export default function buttonTheme(options: ThemeOptions = {}) {
           root: `text-${color} active:bg-${color}/10`,
         }),
         soft: (color) => ({
-          root: `bg-${color}/10 text-${color} active:bg-${color}/20`,
+          root: `bg-${color}/10 text-${color} border-transparent active:bg-${color}/20`,
         }),
       }),
     ],

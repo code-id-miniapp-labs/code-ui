@@ -221,11 +221,13 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
 
     if (!isRawColor(val)) {
       for (const shade of SHADES) {
+        const fallback = getPaletteColor(val, shade);
+        const fallbackStr = fallback ? `, ${fallback}` : "";
         themeLines.push(
-          `  --color-${key}-${shade}: var(--ui-color-${key}-${shade});`,
+          `  --color-${key}-${shade}: var(--color-${val}-${shade}${fallbackStr});`,
         );
       }
-      themeLines.push(`  --color-${key}: var(--ui-${key});`);
+      themeLines.push(`  --color-${key}: var(--color-${key}-500);`);
 
       for (const shade of SHADES) {
         const fallback = getPaletteColor(val, shade);
