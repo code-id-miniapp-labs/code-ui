@@ -63,7 +63,6 @@
     "@types/node": "^26.2.0",
     "alien-signals": "^1.0.4",
     "miniprogram-api-typings": "^5.2.3",
-    "tailwindcss": "^4.3.3",
     "typescript": "^5.5.4",
     "vite": "^5.4.21",
     "weapp-vite": "^7.3.0"

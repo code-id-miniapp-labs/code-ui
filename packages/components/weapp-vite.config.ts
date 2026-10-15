@@ -9,16 +9,6 @@ function cleanDist(): Plugin {
     closeBundle() {
       const distDir = path.resolve(process.cwd(), "dist");
 
-      // Delete dist/app.wxss so the distributed npm package does not contain
-      // a redundant 20KB stylesheet. Custom components receive utility classes
-      // and dynamic theme tokens directly from the consuming app's stylesheet.
-      const wxssPath = path.join(distDir, "app.wxss");
-      if (fs.existsSync(wxssPath)) {
-        fs.rmSync(wxssPath, { force: true });
-      }
-
-
-      // Clear usingComponents in dist/app.json so npm package dist does not register components globally
       const appJsonPath = path.join(distDir, "app.json");
       if (fs.existsSync(appJsonPath)) {
         try {
@@ -78,7 +68,6 @@ function wxmlPathPatchPlugin(): Plugin {
         createdSymlinks.push(utilsTarget);
       }
 
-      // Temporarily patch .wxml files on disk to resolve the alias to the hidden symlink
       const wxmlFiles = findFilesByExt(
         path.resolve(process.cwd(), "src"),
         ".wxml",
@@ -93,7 +82,6 @@ function wxmlPathPatchPlugin(): Plugin {
                 path.dirname(wxmlFile),
                 path.resolve(process.cwd(), "src/.wxs/machines/"),
               );
-              // Map @machines/drawer-gesture.wxs to drawer/src/wxs/drawer-gesture.wxs
               const filename = src.replace("@machines/", "");
 
               // Extract the prefix (e.g. "drawer" from "drawer-gesture.wxs")
@@ -221,6 +209,7 @@ export default defineConfig({
   },
   weapp: {
     srcRoot: "src",
+    tailwindcss: false,
     generate: {
       extensions: {
         js: "ts",
