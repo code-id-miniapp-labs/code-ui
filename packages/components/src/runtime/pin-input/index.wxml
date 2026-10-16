@@ -25,6 +25,7 @@
         bindinput="handleInput"
         bindfocus="handleFocus"
         bindblur="handleBlur"
+        bindtap="handleTap"
       />
       <text
         wx:if="{{item.hasSeparator}}"

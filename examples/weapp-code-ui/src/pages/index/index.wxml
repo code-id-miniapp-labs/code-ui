@@ -102,7 +102,7 @@
     <c-card title="PinInput Component" description="Zag.js FSM with per-index input elements, OTP auto-advance & separator.">
       <view class="flex flex-col gap-4">
         <c-pin-input label="Verification Code (4 digits)" length="{{4}}" placeholder="○" />
-        <c-pin-input label="With Separator (6 digits)" length="{{6}}" separator="{{3}}" variant="subtle" color="primary" />
+        <c-pin-input label="With Separator (6 digits)" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" color="neutral" />
       </view>
     </c-card>
     <!-- Section 9: Drawer Component -->

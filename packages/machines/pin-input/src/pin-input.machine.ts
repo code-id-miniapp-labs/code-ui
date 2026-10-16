@@ -110,6 +110,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       defaultValue: false,
     })),
 
+    selectOnFocus: bindable<boolean>(() => ({
+      value: prop("selectOnFocus"),
+      defaultValue: false,
+    })),
+
     name: bindable<string>(() => ({
       value: prop("name"),
       defaultValue: "",
@@ -174,10 +179,13 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         "INPUT.CHANGE": {
           actions: ["handleInputChange"],
         },
-        "INPUT.BLUR": {
-          target: "idle",
-          actions: ["resetFocusedIndex"],
-        },
+        "INPUT.BLUR": [
+          {
+            guard: "isBlurringActiveCell",
+            target: "idle",
+            actions: ["resetFocusedIndex"],
+          },
+        ],
         "INPUT.CLEAR": {
           actions: ["clearValue"],
         },
@@ -192,11 +200,28 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
   },
 
   implementations: {
+    guards: {
+      isBlurringActiveCell: ({ context, event }) => {
+        const currentFocused = context.get("focusedIndex");
+        const blurredIdx = (event as any)?.index;
+        if (
+          typeof blurredIdx === "number" &&
+          blurredIdx !== -1 &&
+          currentFocused !== -1 &&
+          blurredIdx !== currentFocused
+        ) {
+          return false;
+        }
+        return true;
+      },
+    },
+
     actions: {
-      setFocusedIndex: ({ context, event }) => {
+      setFocusedIndex: ({ context, event, flush, state }) => {
         if (context.get("disabled") || context.get("readOnly")) return;
         const len = context.get("length");
-        const idx = typeof (event as any).index === "number" ? (event as any).index : 0;
+        const idx =
+          typeof (event as any).index === "number" ? (event as any).index : 0;
         const currentValues = context.get("value");
         const firstEmptyIndex = currentValues.findIndex(
           (c) => !c || c.trim() === "",
@@ -205,19 +230,20 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           firstEmptyIndex !== -1
             ? firstEmptyIndex
             : Math.max(0, Math.min(len - 1, idx));
-        context.set("focusedIndex", targetIndex);
+
+        const force = Boolean((event as any)?.force);
+        if (idx !== targetIndex || force) {
+          context.set("focusedIndex", -1);
+          flush(() => {
+            state.set("focused");
+            context.set("focusedIndex", targetIndex);
+          });
+        } else {
+          context.set("focusedIndex", targetIndex);
+        }
       },
 
-      resetFocusedIndex: ({ context, event }) => {
-        const currentFocused = context.get("focusedIndex");
-        const blurredIdx = (event as any)?.index;
-        if (
-          typeof blurredIdx === "number" &&
-          blurredIdx !== -1 &&
-          blurredIdx !== currentFocused
-        ) {
-          return;
-        }
+      resetFocusedIndex: ({ context }) => {
         context.set("focusedIndex", -1);
       },
 
@@ -274,7 +300,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               currentValues[index] = newChar;
               context.set("value", currentValues);
 
-              if (computed("isValueComplete") && context.get("blurOnComplete")) {
+              if (
+                computed("isValueComplete") &&
+                context.get("blurOnComplete")
+              ) {
                 context.set("focusedIndex", -1);
               } else {
                 const nextIndex = Math.min(length - 1, index + 1);

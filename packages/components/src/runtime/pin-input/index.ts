@@ -86,6 +86,11 @@ Component(
         const api = this.data.pinInput;
         api?.handleBlur?.(e);
       },
+
+      handleTap(e: WechatMiniprogram.CustomEvent) {
+        const api = this.data.pinInput;
+        api?.handleTap?.(e);
+      },
     },
   }),
 );

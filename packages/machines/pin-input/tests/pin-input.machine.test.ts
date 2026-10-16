@@ -174,6 +174,34 @@ describe("Pin Input Machine", () => {
 
       machine.stop();
     });
+
+    it("cycles focusedIndex (-1 then target) via flush when clicking out-of-order slot while already focused", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        length: 4,
+        defaultValue: ["", "", "", ""],
+      });
+      machine.start();
+
+      // Initially focus slot 0
+      machine.send({ type: "INPUT.FOCUS", index: 0 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(0);
+
+      const focusHistory: number[] = [];
+      machine.subscribe(() => {
+        focusHistory.push(machine.context.get("focusedIndex"));
+      });
+
+      // User clicks slot 1 while slot 0 was already focused and empty
+      machine.send({ type: "INPUT.FOCUS", index: 1 });
+      await flush();
+
+      // Focus should cycle through -1 then back to 0, ensuring false -> true transition for WeChat input
+      expect(focusHistory).toContain(-1);
+      expect(machine.context.get("focusedIndex")).toBe(0);
+
+      machine.stop();
+    });
   });
 
   describe("Sequential Typing & Auto-Advance", () => {
@@ -517,7 +545,6 @@ describe("Pin Input Machine", () => {
       const api = connectPinInput(machine.service);
       expect(api.inputs[3]?.inputProps?.maxlength).toBe(2);
 
-      // User types '2' in the last box (same number as already there)
       const res1 = api.handleInput({
         currentTarget: { dataset: { index: 3 } },
         detail: { value: "22" },
@@ -527,7 +554,6 @@ describe("Pin Input Machine", () => {
       expect(res1).toBe("2");
       expect(machine.context.get("value")).toEqual(["2", "2", "2", "2"]);
 
-      // User types '2' again (e.g. native input had '22' and user typed '2')
       const res2 = api.handleInput({
         currentTarget: { dataset: { index: 3 } },
         detail: { value: "222" },
@@ -551,4 +577,5 @@ describe("Pin Input Machine", () => {
     });
   });
 });
+
 

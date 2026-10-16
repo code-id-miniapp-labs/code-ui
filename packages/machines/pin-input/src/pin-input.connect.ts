@@ -32,9 +32,10 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const { state, send, context, computed, scope } = service;
 
   const currentState = state.get();
+  const isMachineFocused = currentState === "focused";
   const value = context.get("value") ?? [];
   const length = context.get("length") ?? 4;
-  const focusedIndex = context.get("focusedIndex");
+  const focusedIndex = isMachineFocused ? context.get("focusedIndex") : -1;
   const disabled = context.get("disabled");
   const readOnly = context.get("readOnly");
   const mask = context.get("mask");
@@ -49,7 +50,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const valueAsString = computed("valueAsString");
 
   function getInputProps(index: number): Record<string, any> {
-    const isFocused = focusedIndex === index;
+    const isFocused = isMachineFocused && focusedIndex === index;
     const rawVal = value[index] ?? "";
     const displayVal = rawVal || (isFocused ? "\u200B" : "");
 
@@ -85,7 +86,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const inputs: PinInputCell[] = Array.from({ length }).map((_, index) => ({
     index,
     value: value[index] ?? "",
-    isFocused: focusedIndex === index,
+    isFocused: isMachineFocused && focusedIndex === index,
     hasSeparator: shouldShowSeparator(index, separator, length),
     separatorChar,
     inputProps: getInputProps(index),
@@ -110,7 +111,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     },
 
     focus(index?: number) {
-      send({ type: "INPUT.FOCUS", index: index ?? 0 });
+      send({ type: "INPUT.FOCUS", index: index ?? 0, force: true });
     },
 
     handleInput(event: any): string | void {
@@ -159,7 +160,16 @@ export function connectPinInput(service: PinInputService): PinInputApi {
           event?.target?.dataset?.index ??
           0,
       );
-      send({ type: "INPUT.FOCUS", index: idx });
+      send({ type: "INPUT.FOCUS", index: idx, force: true });
+    },
+
+    handleTap(event: any) {
+      const idx = Number(
+        event?.currentTarget?.dataset?.index ??
+          event?.target?.dataset?.index ??
+          0,
+      );
+      send({ type: "INPUT.FOCUS", index: idx, force: true });
     },
 
     handleBlur(event?: any) {
@@ -208,4 +218,3 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     getSeparatorProps,
   };
 }
-

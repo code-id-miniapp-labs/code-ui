@@ -107,6 +107,19 @@ export function createProperties<T extends Record<string, any>>(
  * });
  * ```
  */
+const instanceIds = new WeakMap<object, string>();
+let instanceCounter = 0;
+
+function getComponentId(instance: object, explicitId?: string): string {
+  if (explicitId) return explicitId;
+  let id = instanceIds.get(instance);
+  if (!id) {
+    id = `cui-${++instanceCounter}`;
+    instanceIds.set(instance, id);
+  }
+  return id;
+}
+
 export function createMachineBehavior<
   T extends MachineSchema,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -161,9 +174,10 @@ export function createMachineBehavior<
 
     lifetimes: {
       attached(this: any) {
+        const id = getComponentId(this, this.id || this.data?.id);
         const initialProps: Record<string, any> = {
           component: this,
-          id: this.id || this.data?.id,
+          id,
           ids: this.data?.ids,
         };
 
@@ -196,6 +210,7 @@ export function createMachineBehavior<
       },
 
       detached(this: any) {
+        instanceIds.delete(this);
         this.__codeUiDispose?.();
         this.__codeUiMachine?.stop();
         this.__codeUiMachine = null;

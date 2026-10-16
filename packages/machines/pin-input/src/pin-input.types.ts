@@ -96,7 +96,7 @@ export interface PinInputProps {
 
 export type PinInputEvent =
   | { type: "INPUT.CHANGE"; index: number; value: string }
-  | { type: "INPUT.FOCUS"; index: number }
+  | { type: "INPUT.FOCUS"; index: number; force?: boolean }
   | { type: "INPUT.BLUR"; index?: number }
   | { type: "INPUT.CLEAR" }
   | { type: "INPUT.PASTE"; index: number; value: string }
@@ -116,6 +116,7 @@ export interface PinInputContext {
   separator: PinInputSeparator;
   separatorChar: string;
   blurOnComplete: boolean;
+  selectOnFocus: boolean;
   name: string;
   ui: PinInputUI;
 }
@@ -184,6 +185,8 @@ export interface PinInputApi {
   handleFocus(e: any): void;
   /** MiniProgram bindblur handler */
   handleBlur(e?: any): void;
+  /** MiniProgram bindtap handler */
+  handleTap?(e: any): void;
   /** Get props for indexed input element */
   getInputProps(index: number): Record<string, any>;
   /** Get props for root container */
@@ -197,4 +200,3 @@ export interface PinInputApi {
   /** Get props for separator after index */
   getSeparatorProps(index: number): Record<string, any>;
 }
-

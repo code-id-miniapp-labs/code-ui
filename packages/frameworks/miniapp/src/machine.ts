@@ -58,13 +58,19 @@ type EventView<T extends MachineSchema> = Params<T>["event"];
 type Subscriber<T extends MachineSchema> = (service: Service<T>) => void;
 
 const EMPTY_EVENT = Object.freeze({ type: "" });
+const hasOwn = Object.prototype.hasOwnProperty;
 
-/** Removes `undefined` values so `machine.props` defaults can apply. */
+/**
+ * Removes `undefined` values so `machine.props` defaults can apply.
+ * Uses `for..in` to avoid intermediate `Object.keys` array allocation.
+ */
 function compact<T extends object>(obj: T): T {
   const result: Dict = {};
-  for (const key of Object.keys(obj)) {
-    const val = (obj as Dict)[key];
-    if (val !== undefined) result[key] = val;
+  for (const key in obj) {
+    if (hasOwn.call(obj, key)) {
+      const val = (obj as Dict)[key];
+      if (val !== undefined) result[key] = val;
+    }
   }
   return result as T;
 }
@@ -95,9 +101,15 @@ function normalizeUserProps<T extends MachineSchema>(
   return normalizeProps(evaluated) as Partial<T["props"]>;
 }
 
+/**
+ * Checks if `target` already matches all keys in `patch` without allocating
+ * an `Object.keys` array.
+ */
 function shallowContains(target: Dict, patch: Dict): boolean {
-  for (const key of Object.keys(patch)) {
-    if (!Object.is(target[key], patch[key])) return false;
+  for (const key in patch) {
+    if (hasOwn.call(patch, key) && !Object.is(target[key], patch[key])) {
+      return false;
+    }
   }
   return true;
 }
@@ -121,32 +133,78 @@ function resolveOwner(component: any): any {
   return undefined;
 }
 
+interface OwnerPatchState {
+  depth: number;
+  restored: Array<[string, AnyFn | undefined, AnyFn, boolean]>;
+  collectors: Array<(p: Promise<any>) => void>;
+}
+
+const ownerStates = new WeakMap<object, OwnerPatchState>();
 const interceptors = new WeakSet<AnyFn>();
+
+function restoreOwner(owner: any, state: OwnerPatchState): void {
+  for (let i = 0; i < state.restored.length; i++) {
+    const entry = state.restored[i];
+    if (!entry) continue;
+    const [name, original, wrapper, wasOwn] = entry;
+    if (owner[name] === wrapper) {
+      if (wasOwn) {
+        owner[name] = original;
+      } else {
+        delete owner[name];
+      }
+    }
+  }
+  ownerStates.delete(owner);
+}
 
 /**
  * Temporarily wraps the own, writable, data-property methods of `owner` so
  * that a promise returned by the handler that `triggerEvent` invokes
  * synchronously can be captured. Accessors, non-writable members and methods
  * that are already wrapped (re-entrant calls) are never touched. Restoration
- * only reverts members that still hold our wrapper.
+ * only reverts members that still hold our wrapper once the outermost call completes.
  */
 function interceptOwnerPromises(
   owner: any,
   onPromise: (promise: Promise<any>) => void,
 ): VoidFunction {
-  const restored: Array<[string, AnyFn, AnyFn, boolean]> = [];
+  let state = ownerStates.get(owner);
+  if (state) {
+    state.depth++;
+    state.collectors.push(onPromise);
+    return () => {
+      if (!state) return;
+      state.depth--;
+      state.collectors.pop();
+      if (state.depth === 0) {
+        restoreOwner(owner, state);
+      }
+    };
+  }
+
+  const restored: Array<[string, AnyFn | undefined, AnyFn, boolean]> = [];
   const seen = new Set<string>();
+  state = {
+    depth: 1,
+    restored,
+    collectors: [onPromise],
+  };
+  ownerStates.set(owner, state);
 
   let current = owner;
   while (current && current !== Object.prototype) {
-    for (const name of Object.getOwnPropertyNames(current)) {
+    const names = Object.getOwnPropertyNames(current);
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
       if (
+        !name ||
         seen.has(name) ||
         name.startsWith("__") ||
         name === "setData" ||
         name === "constructor"
       ) {
-        seen.add(name);
+        if (name) seen.add(name);
         continue;
       }
       seen.add(name);
@@ -158,9 +216,14 @@ function interceptOwnerPromises(
       const original = descriptor.value;
       if (interceptors.has(original)) continue;
 
+      const currentState = state;
       const wrapper = function (this: unknown, ...args: unknown[]) {
         const ret = original.apply(this, args);
-        if (isPromise(ret)) onPromise(ret);
+        if (isPromise(ret)) {
+          const collector =
+            currentState.collectors[currentState.collectors.length - 1];
+          collector?.(ret);
+        }
         return ret;
       };
       interceptors.add(wrapper);
@@ -179,14 +242,11 @@ function interceptOwnerPromises(
   }
 
   return () => {
-    for (const [name, original, wrapper, wasOwn] of restored) {
-      if (owner[name] === wrapper) {
-        if (wasOwn) {
-          owner[name] = original;
-        } else {
-          delete owner[name];
-        }
-      }
+    if (!state) return;
+    state.depth--;
+    state.collectors.pop();
+    if (state.depth === 0) {
+      restoreOwner(owner, state);
     }
   };
 }
@@ -217,7 +277,7 @@ function createEventBridge(component: any, eventName: string) {
         : undefined;
 
     try {
-      const ret = component.triggerEvent(eventName, detail);
+      const ret = component?.triggerEvent?.(eventName, detail);
       if (isPromise(ret)) return ret;
     } finally {
       restore?.();
@@ -245,6 +305,7 @@ export class MiniappMachine<T extends MachineSchema> {
   private event: T["event"] = EMPTY_EVENT as T["event"];
   private previousEvent: T["event"] = EMPTY_EVENT as T["event"];
   private readonly queue: T["event"][] = [];
+  private queueCursor = 0;
   private flushScheduled = false;
   private transition: Transition<T> | null = null;
 
@@ -255,6 +316,8 @@ export class MiniappMachine<T extends MachineSchema> {
   };
   /** Memoized `machine.props(...)` result; recomputes only when user props change. */
   private readonly resolvedProps: () => Dict;
+  /** Per-key computed signals to prevent cross-prop reactive invalidations. */
+  private readonly propCache = new Map<PropertyKey, () => unknown>();
   private readonly eventBridges = new Map<string, AnyFn>();
 
   private contextRefs: Array<{ get: () => unknown }> = [];
@@ -269,10 +332,19 @@ export class MiniappMachine<T extends MachineSchema> {
   private readonly subscriptions = new Set<Subscriber<T>>();
 
   private readonly stateView: StateView<T>;
-  /** Cached event view; reset whenever the event changes. */
-  private eventView: EventView<T> | null = null;
+  /** Stable proxy view over `this.event` — eliminates per-event object allocations. */
+  private readonly eventView: EventView<T>;
   private paramsCache: Params<T> | null = null;
   private serviceCache: Service<T> | null = null;
+  private readonly computedParams: {
+    state: StateView<T>;
+    context: BindableContext<T>;
+    event: EventView<T>;
+    prop: PropFn<T>;
+    refs: BindableRefs<T>;
+    scope: Scope;
+    computed: ComputedFn<T>;
+  };
 
   constructor(machine: Machine<T>, userProps: UserProps<T> = {}) {
     this.machine = machine;
@@ -290,18 +362,14 @@ export class MiniappMachine<T extends MachineSchema> {
     });
     this.prop = this.createPropFn();
 
+    this.eventView = this.createEventView();
     this.context = this.createContext();
-
     this.computed = this.createComputedFn();
 
     this.refs = createRefs<T>(
       machine.refs?.({ prop: this.prop, context: this.context }),
     );
 
-    /**
-     * Hoisted because `bindable` re-invokes its params factory on every
-     * get/set; this avoids re-resolving the initial state on each read.
-     */
     const stateParams: BindableParams<T["state"]> = {
       defaultValue: resolveStateValue(
         machine,
@@ -311,6 +379,16 @@ export class MiniappMachine<T extends MachineSchema> {
     };
     this.state = bindable<T["state"]>(() => stateParams);
     this.stateView = this.createStateView();
+
+    this.computedParams = {
+      state: this.stateView,
+      context: this.context,
+      event: this.eventView,
+      prop: this.prop,
+      refs: this.refs,
+      scope: this.scope,
+      computed: this.computed,
+    };
   }
 
   get service(): Service<T> {
@@ -322,7 +400,7 @@ export class MiniappMachine<T extends MachineSchema> {
       scope: this.scope,
       refs: this.refs,
       computed: this.computed,
-      event: this.getEvent(),
+      event: this.eventView,
       getStatus: this.getStatus,
     } as Service<T>);
   }
@@ -331,7 +409,7 @@ export class MiniappMachine<T extends MachineSchema> {
     (this.paramsCache ??= {
       state: this.stateView,
       context: this.context,
-      event: this.getEvent(),
+      event: this.eventView,
       prop: this.prop,
       send: this.send,
       action: this.action,
@@ -369,8 +447,10 @@ export class MiniappMachine<T extends MachineSchema> {
     if (shallowContains(this.rawProps as Dict, patch as Dict)) return;
 
     this.rawProps = { ...this.rawProps, ...patch };
-    this.userPropsSignal(this.rawProps);
-    this.notify();
+    this.batch(() => {
+      this.userPropsSignal(this.rawProps);
+      this.notify();
+    });
   }
 
   /**
@@ -385,10 +465,13 @@ export class MiniappMachine<T extends MachineSchema> {
     this.debug("starting...");
 
     let initialRun = true;
+    const refs = this.contextRefs;
+    const refsLen = refs.length;
+
     this.disposeScope = effectScope(() => {
       effect(() => {
         this.state.ref.get();
-        for (const ref of this.contextRefs) ref.get();
+        for (let i = 0; i < refsLen; i++) refs[i]?.get();
         if (!initialRun) this.notify();
       });
 
@@ -416,6 +499,7 @@ export class MiniappMachine<T extends MachineSchema> {
   stop() {
     if (this.status === MachineStatus.Started) {
       this.queue.length = 0;
+      this.queueCursor = 0;
 
       for (const cleanup of this.effects.values()) cleanup();
       this.effects.clear();
@@ -428,6 +512,9 @@ export class MiniappMachine<T extends MachineSchema> {
       for (const dispose of this.cleanups) dispose();
       this.cleanups.clear();
       this.computedCache.clear();
+      this.propCache.clear();
+      this.paramsCache = null;
+      this.serviceCache = null;
     }
 
     this.subscriptions.clear();
@@ -436,19 +523,31 @@ export class MiniappMachine<T extends MachineSchema> {
   }
 
   /**
-   * Processes queued events until the queue is empty or the machine stops.
-   * If a handler throws, remaining events are rescheduled so they keep flowing.
+   * Processes queued events inside a single outer batch using an index cursor
+   * (avoiding O(N) array `shift()` overhead and intermediate notifications).
+   * If a handler throws, remaining events are sliced and rescheduled.
    */
   private drain = () => {
+    startBatch();
     try {
-      while (this.status === MachineStatus.Started && this.queue.length) {
-        this.processEvent(this.queue.shift() as T["event"]);
+      while (
+        this.status === MachineStatus.Started &&
+        this.queueCursor < this.queue.length
+      ) {
+        const event = this.queue[this.queueCursor++];
+        this.processEvent(event);
       }
+      this.queue.length = 0;
+      this.queueCursor = 0;
     } finally {
+      endBatch();
       this.flushScheduled = false;
       if (this.status !== MachineStatus.Started) {
         this.queue.length = 0;
-      } else if (this.queue.length) {
+        this.queueCursor = 0;
+      } else if (this.queueCursor < this.queue.length) {
+        this.queue.splice(0, this.queueCursor);
+        this.queueCursor = 0;
         this.flushScheduled = true;
         queueMicrotask(this.drain);
       }
@@ -476,19 +575,17 @@ export class MiniappMachine<T extends MachineSchema> {
     this.debug("transition", transition);
 
     this.transition = transition;
-    this.batch(() => {
-      try {
-        if (target !== current) {
-          this.state.set(target);
-        } else if (transition.reenter) {
-          this.state.invoke(current, current);
-        } else {
-          this.action(transition.actions);
-        }
-      } finally {
-        this.transition = null;
+    try {
+      if (target !== current) {
+        this.state.set(target);
+      } else if (transition.reenter) {
+        this.state.invoke(current, current);
+      } else {
+        this.action(transition.actions);
       }
-    });
+    } finally {
+      this.transition = null;
+    }
   }
 
   /**
@@ -496,41 +593,52 @@ export class MiniappMachine<T extends MachineSchema> {
    * exit effects → exit actions → transition actions → entry effects →
    * (root entry/effects on init) → entry actions.
    *
-   * The active transition is consumed up front so nested `state.set` calls
-   * cannot replay its actions.
+   * Executed inside `untracked` so signal reads inside actions or effects
+   * never leak into any enclosing reactive subscriber.
    */
   private onStateChange(next: T["state"], prev: T["state"] | undefined): void {
-    const transition = this.transition;
-    this.transition = null;
+    untracked(() => {
+      const transition = this.transition;
+      this.transition = null;
 
-    const { exiting, entering } = getExitEnterStates(
-      this.machine,
-      prev,
-      next,
-      transition?.reenter,
-    );
+      const { exiting, entering } = getExitEnterStates(
+        this.machine,
+        prev,
+        next,
+        transition?.reenter,
+      );
 
-    for (const item of exiting) this.disposeEffects(item.path);
-    for (const item of exiting) this.action(item.state?.exit);
+      for (let i = 0; i < exiting.length; i++) {
+        const item = exiting[i];
+        if (item) this.disposeEffects(item.path);
+      }
+      for (let i = 0; i < exiting.length; i++) {
+        const item = exiting[i];
+        if (item) this.action(item.state?.exit);
+      }
 
-    this.action(transition?.actions);
+      this.action(transition?.actions);
 
-    for (const item of entering) {
-      this.addEffects(item.path, this.effect(item.state?.effects));
-    }
+      for (let i = 0; i < entering.length; i++) {
+        const item = entering[i];
+        if (item) this.addEffects(item.path, this.effect(item.state?.effects));
+      }
 
-    if (prev === INIT_STATE) {
-      this.action(this.machine.entry);
-      this.addEffects(INIT_STATE, this.effect(this.machine.effects));
-    }
+      if (prev === INIT_STATE) {
+        this.action(this.machine.entry);
+        this.addEffects(INIT_STATE, this.effect(this.machine.effects));
+      }
 
-    for (const item of entering) this.action(item.state?.entry);
+      for (let i = 0; i < entering.length; i++) {
+        const item = entering[i];
+        if (item) this.action(item.state?.entry);
+      }
+    });
   }
 
   private setEvent(event: T["event"]) {
     this.previousEvent = this.event;
     this.event = event;
-    this.eventView = null;
     this.paramsCache = null;
     this.serviceCache = null;
   }
@@ -538,7 +646,7 @@ export class MiniappMachine<T extends MachineSchema> {
   private action = (keys: ActionsOrFn<T> | undefined) => {
     if (!keys) return;
     const params = this.getParams();
-    const list = (isFunction(keys) ? keys(params) : keys) as
+    const list = (isFunction(keys) ? untracked(() => keys(params)) : keys) as
       | T["action"][]
       | undefined;
     if (!list || list.length === 0) return;
@@ -547,19 +655,23 @@ export class MiniappMachine<T extends MachineSchema> {
       | Record<string, AnyFn>
       | undefined;
 
-    for (const key of list) {
-      const fn = impls?.[key as string];
-      if (fn) fn(params);
-      else
-        warn(
-          `[code-ui] No implementation found for action "${JSON.stringify(key)}"`,
-        );
-    }
+    untracked(() => {
+      for (let i = 0; i < list.length; i++) {
+        const key = list[i];
+        if (key === undefined) continue;
+        const fn = impls?.[key as string];
+        if (fn) fn(params);
+        else
+          warn(
+            `[code-ui] No implementation found for action "${JSON.stringify(key)}"`,
+          );
+      }
+    });
   };
 
   private guard = (key: T["guard"] | GuardFn<T>) => {
     const params = this.getParams();
-    if (isFunction(key)) return key(params);
+    if (isFunction(key)) return untracked(() => key(params));
 
     const fn = (
       this.machine.implementations?.guards as Record<string, AnyFn> | undefined
@@ -570,7 +682,7 @@ export class MiniappMachine<T extends MachineSchema> {
       );
       return undefined;
     }
-    return fn(params) as boolean;
+    return untracked(() => fn(params)) as boolean;
   };
 
   /**
@@ -583,7 +695,7 @@ export class MiniappMachine<T extends MachineSchema> {
   ): VoidFunction | undefined => {
     if (!keys) return undefined;
     const params = this.getParams();
-    const list = (isFunction(keys) ? keys(params) : keys) as
+    const list = (isFunction(keys) ? untracked(() => keys(params)) : keys) as
       | T["effect"][]
       | undefined;
     if (!list || list.length === 0) return undefined;
@@ -596,7 +708,9 @@ export class MiniappMachine<T extends MachineSchema> {
     const prevSink = this.trackSink;
     this.trackSink = cleanups;
     try {
-      for (const key of list) {
+      for (let i = 0; i < list.length; i++) {
+        const key = list[i];
+        if (key === undefined) continue;
         const fn = impls?.[key as string];
         if (!fn) {
           warn(
@@ -604,7 +718,7 @@ export class MiniappMachine<T extends MachineSchema> {
           );
           continue;
         }
-        const cleanup = fn(params);
+        const cleanup = untracked(() => fn(params));
         if (typeof cleanup === "function") cleanups.push(cleanup);
       }
     } finally {
@@ -613,39 +727,43 @@ export class MiniappMachine<T extends MachineSchema> {
 
     if (cleanups.length === 0) return undefined;
     return () => {
-      for (const cleanup of cleanups) cleanup();
+      for (let i = 0; i < cleanups.length; i++) cleanups[i]?.();
     };
   };
 
   private choose: ChooseFn<T> = (transitions) => {
     if (!transitions) return undefined;
-    const list = Array.isArray(transitions) ? transitions : [transitions];
-    for (const t of list) {
-      if (this.isEnabled(t)) return t as Transition<T>;
+    if (Array.isArray(transitions)) {
+      for (let i = 0; i < transitions.length; i++) {
+        const t = transitions[i];
+        if (t && this.isEnabled(t)) return t as Transition<T>;
+      }
+      return undefined;
     }
-    return undefined;
+    return this.isEnabled(transitions)
+      ? (transitions as Transition<T>)
+      : undefined;
   };
 
   private isEnabled(transition: { guard?: unknown }): boolean {
     const guard = transition.guard;
     if (!guard) return true;
     if (isString(guard)) return !!this.guard(guard as T["guard"]);
-    if (isFunction(guard)) return !!(guard as GuardFn<T>)(this.getParams());
+    if (isFunction(guard)) {
+      return !!untracked(() => (guard as GuardFn<T>)(this.getParams()));
+    }
     return false;
   }
 
   /**
    * Re-runs `fn` whenever any of `deps` change (and once immediately).
    * Only `deps` are tracked; signals read inside `fn` are not.
-   *
-   * Created as a root effect so its lifetime is owned by the machine (the
-   * enclosing state effect, or `stop()`) rather than by whatever reactive
-   * context happens to be active.
    */
   private track = (deps: Array<() => unknown>, fn: VoidFunction) => {
+    const depsLen = deps.length;
     const dispose = untracked(() =>
       effect(() => {
-        for (const dep of deps) dep();
+        for (let i = 0; i < depsLen; i++) deps[i]?.();
         untracked(fn);
       }),
     );
@@ -667,9 +785,19 @@ export class MiniappMachine<T extends MachineSchema> {
     cleanup();
   }
 
+  /**
+   * Per-key `alienComputed` wrapper ensures that updating an unrelated prop
+   * does not trigger downstream `computed` or `watch` effects that only
+   * read a specific prop key.
+   */
   private createPropFn(): PropFn<T> {
     return ((key: PropertyKey) => {
-      const value = this.resolvedProps()[key as string];
+      let getter = this.propCache.get(key);
+      if (!getter) {
+        getter = alienComputed(() => this.resolvedProps()[key as string]);
+        this.propCache.set(key, getter);
+      }
+      const value = getter();
       if (value !== undefined) return value;
       return this.getEventBridge(key);
     }) as PropFn<T>;
@@ -739,17 +867,8 @@ export class MiniappMachine<T extends MachineSchema> {
 
       let getter = this.computedCache.get(key);
       if (!getter) {
-        getter = alienComputed(() =>
-          defs[key]?.({
-            state: this.stateView,
-            context: this.context,
-            event: this.getEvent(),
-            prop: this.prop,
-            refs: this.refs,
-            scope: this.scope,
-            computed: this.computed,
-          }),
-        );
+        const fn = defs[key];
+        getter = alienComputed(() => fn?.(this.computedParams));
         this.computedCache.set(key, getter);
       }
       return getter();
@@ -763,35 +882,76 @@ export class MiniappMachine<T extends MachineSchema> {
       ...state,
       matches: (...values: T["state"][]) => {
         const current = state.get() as string;
-        return values.some((value) => matchesState(current, value as string));
+        for (let i = 0; i < values.length; i++) {
+          if (matchesState(current, values[i] as string)) return true;
+        }
+        return false;
       },
       hasTag: (tag: T["tag"]) => hasTag(machine, state.get(), tag),
     };
   }
 
-  private getEvent = (): EventView<T> =>
-    (this.eventView ??= {
-      ...this.event,
+  /**
+   * Creates a single Proxy instance that forwards property accesses to
+   * `this.event` dynamically, avoiding object allocations on every event.
+   */
+  private createEventView(): EventView<T> {
+    const base = {
       current: this.getCurrentEvent,
       previous: this.getPreviousEvent,
-    } as EventView<T>);
+    };
 
+    return new Proxy(base, {
+      get: (target, prop, receiver) => {
+        if (prop in target) return Reflect.get(target, prop, receiver);
+        return (this.event as Dict)[prop as string];
+      },
+      has: (target, prop) => {
+        return prop in target || prop in (this.event as Dict);
+      },
+      ownKeys: () => {
+        return Reflect.ownKeys(this.event as object).concat([
+          "current",
+          "previous",
+        ]);
+      },
+      getOwnPropertyDescriptor: (target, prop) => {
+        if (prop in target) {
+          return Object.getOwnPropertyDescriptor(target, prop);
+        }
+        const desc = Object.getOwnPropertyDescriptor(
+          this.event as object,
+          prop,
+        );
+        return desc ? { ...desc, configurable: true } : undefined;
+      },
+    }) as unknown as EventView<T>;
+  }
+
+  private getEvent = (): EventView<T> => this.eventView;
   private getCurrentEvent = () => this.event;
   private getPreviousEvent = () => this.previousEvent;
   private getStatus = () => this.status;
 
   /**
-   * Calls every subscriber with the current service. Iterates a snapshot so
-   * (un)subscribing during notify is safe, and runs untracked so subscriber
-   * reads don't become dependencies of the notify effect.
+   * Fast-paths the common 1-subscriber case to avoid `Array.from` allocation,
+   * while remaining safe for multi-subscriber mutation during notification.
    */
   private notify = () => {
-    if (this.subscriptions.size === 0) return;
+    const size = this.subscriptions.size;
+    if (size === 0) return;
     const service = this.service;
-    const subscribers = Array.from(this.subscriptions);
+
     untracked(() => {
-      for (const fn of subscribers) {
-        if (this.subscriptions.has(fn)) fn(service);
+      if (size === 1) {
+        const fn = this.subscriptions.values().next().value;
+        if (fn) fn(service);
+        return;
+      }
+      const subscribers = Array.from(this.subscriptions);
+      for (let i = 0; i < subscribers.length; i++) {
+        const fn = subscribers[i];
+        if (fn && this.subscriptions.has(fn)) fn(service);
       }
     });
   };
