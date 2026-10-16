@@ -148,6 +148,32 @@ describe("Pin Input Machine", () => {
 
       machine.stop();
     });
+
+    it("focuses the first not filled slot when navigating or clicking any box input", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        length: 4,
+        defaultValue: ["1", "2", "", ""],
+      });
+      machine.start();
+
+      // User clicks slot 3, should focus first empty slot (slot 2)
+      machine.send({ type: "INPUT.FOCUS", index: 3 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(2);
+
+      // User clicks slot 0, should still focus first empty slot (slot 2)
+      machine.send({ type: "INPUT.FOCUS", index: 0 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(2);
+
+      // When all are filled, focusing specific slot is allowed
+      machine.context.set("value", ["1", "2", "3", "4"]);
+      machine.send({ type: "INPUT.FOCUS", index: 1 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(1);
+
+      machine.stop();
+    });
   });
 
   describe("Sequential Typing & Auto-Advance", () => {
@@ -246,6 +272,37 @@ describe("Pin Input Machine", () => {
 
       expect(machine.context.get("value")).toEqual(["", "", "", ""]);
       expect(machine.context.get("focusedIndex")).toBe(0); // Clamped at 0
+
+      machine.stop();
+    });
+
+    it("clears previous slot and retreats focus when backspace is pressed on an already-empty slot (u200B deletion)", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        length: 4,
+        defaultValue: ["1", "2", "", ""],
+      });
+      machine.start();
+
+      // Focus is at empty slot 2 (which displays "\u200B")
+      machine.send({ type: "INPUT.FOCUS", index: 2 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(2);
+
+      const apiBefore = connectPinInput(machine.service);
+      expect(apiBefore.inputs[2].inputProps.value).toBe("\u200B");
+      expect(apiBefore.inputs[1].inputProps.value).toBe("2");
+
+      // User presses backspace on slot 2: "\u200B" is deleted -> value becomes ""
+      machine.send({ type: "INPUT.CHANGE", index: 2, value: "" });
+      await flush();
+
+      // Slot 1 is now cleared and focus retreats to slot 1!
+      expect(machine.context.get("value")).toEqual(["1", "", "", ""]);
+      expect(machine.context.get("focusedIndex")).toBe(1);
+
+      const apiAfter = connectPinInput(machine.service);
+      expect(apiAfter.inputs[1].inputProps.value).toBe("\u200B"); // slot 1 is now focused & empty
+      expect(apiAfter.inputs[2].inputProps.value).toBe(""); // slot 2 is unfocused & empty
 
       machine.stop();
     });
@@ -405,7 +462,7 @@ describe("Pin Input Machine", () => {
           disabled: false,
           type: "number",
           password: false,
-          maxlength: i === 0 ? 5 : 1,
+          maxlength: 5,
           role: "textbox",
           "aria-label": `Digit ${i + 1}`,
         });

@@ -196,11 +196,28 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       setFocusedIndex: ({ context, event }) => {
         if (context.get("disabled") || context.get("readOnly")) return;
         const len = context.get("length");
-        const idx = typeof event.index === "number" ? event.index : 0;
-        context.set("focusedIndex", Math.max(0, Math.min(len - 1, idx)));
+        const idx = typeof (event as any).index === "number" ? (event as any).index : 0;
+        const currentValues = context.get("value");
+        const firstEmptyIndex = currentValues.findIndex(
+          (c) => !c || c.trim() === "",
+        );
+        const targetIndex =
+          firstEmptyIndex !== -1
+            ? firstEmptyIndex
+            : Math.max(0, Math.min(len - 1, idx));
+        context.set("focusedIndex", targetIndex);
       },
 
-      resetFocusedIndex: ({ context }) => {
+      resetFocusedIndex: ({ context, event }) => {
+        const currentFocused = context.get("focusedIndex");
+        const blurredIdx = (event as any)?.index;
+        if (
+          typeof blurredIdx === "number" &&
+          blurredIdx !== -1 &&
+          blurredIdx !== currentFocused
+        ) {
+          return;
+        }
         context.set("focusedIndex", -1);
       },
 
@@ -217,27 +234,62 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           currentValues.push("");
         }
 
-        // Case 1: Deletion / Backspace (value cleared)
-        if (rawVal === "" || rawVal === undefined) {
-          currentValues[index] = "";
-          context.set("value", currentValues);
+        // Clean out zero-width spaces (\u200B)
+        const cleanVal = (typeof rawVal === "string" ? rawVal : "").replace(
+          /\u200B/g,
+          "",
+        );
 
-          // Auto-retreat focus to previous slot
+        // Case 1: Deletion / Backspace (cleanVal is empty)
+        if (cleanVal === "") {
+          if (currentValues[index] !== "") {
+            // Current slot had a value; clear it and retreat focus to previous slot
+            currentValues[index] = "";
+            context.set("value", currentValues);
+            const prevIndex = Math.max(0, index - 1);
+            context.set("focusedIndex", prevIndex);
+            return;
+          }
+
+          // Current slot was already empty; clear previous slot and retreat focus
           const prevIndex = Math.max(0, index - 1);
+          currentValues[prevIndex] = "";
+          context.set("value", currentValues);
           context.set("focusedIndex", prevIndex);
           return;
         }
 
-        // Case 2: Pasted or Autofilled string (multi-character)
-        if (rawVal.length > 1) {
-          const validChars = rawVal
+        // Case 2: Pasted or multi-character input
+        if (cleanVal.length > 1) {
+          // If user typed a single character over an existing character in this slot:
+          if (
+            cleanVal.length === 2 &&
+            currentValues[index] &&
+            cleanVal.includes(currentValues[index])
+          ) {
+            const newChar = cleanVal.replace(currentValues[index], "").slice(-1);
+            if (isValidCharacter(newChar, inputType)) {
+              currentValues[index] = newChar;
+              context.set("value", currentValues);
+
+              if (computed("isValueComplete") && context.get("blurOnComplete")) {
+                context.set("focusedIndex", -1);
+              } else {
+                const nextIndex = Math.min(length - 1, index + 1);
+                context.set("focusedIndex", nextIndex);
+              }
+              return;
+            }
+          }
+
+          const validChars = cleanVal
             .split("")
             .filter((c: string) => isValidCharacter(c, inputType));
 
           if (validChars.length === 0) {
-            prop("onValueInvalid")?.({ value: rawVal, index });
+            prop("onValueInvalid")?.({ value: cleanVal, index });
             prop("component")?.triggerEvent?.("invalid", {
-              value: rawVal,
+              value: cleanVal,
               index,
             });
             return;
@@ -263,7 +315,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         }
 
         // Case 3: Single character input
-        const char = rawVal.slice(-1);
+        const char = cleanVal;
         if (!isValidCharacter(char, inputType)) {
           prop("onValueInvalid")?.({ value: char, index });
           prop("component")?.triggerEvent?.("invalid", { value: char, index });

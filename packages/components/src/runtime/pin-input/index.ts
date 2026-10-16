@@ -81,8 +81,38 @@ Component(
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
+        const idx = Number(
+          e?.currentTarget?.dataset?.index ??
+            e?.target?.dataset?.index ??
+            0,
+        );
         const api = this.data.pinInput;
-        api?.handleFocus?.(e);
+        if (!api) return;
+
+        const values = api.value ?? [];
+        const firstEmptyIndex = values.findIndex(
+          (c: string) => !c || c.trim() === "",
+        );
+        const targetIndex =
+          firstEmptyIndex !== -1
+            ? firstEmptyIndex
+            : Math.max(0, Math.min(api.inputs.length - 1, idx));
+
+        if (idx !== targetIndex) {
+          this.setData(
+            {
+              [`pinInput.inputs[${idx}].inputProps.focus`]: false,
+              [`pinInput.inputs[${targetIndex}].inputProps.focus`]: false,
+            },
+            () => {
+              this.setData({
+                [`pinInput.inputs[${targetIndex}].inputProps.focus`]: true,
+              });
+            },
+          );
+        }
+
+        api.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {

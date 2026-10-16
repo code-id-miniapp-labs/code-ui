@@ -49,6 +49,9 @@ export function connectPinInput(service: PinInputService): PinInputApi {
 
   function getInputProps(index: number): Record<string, any> {
     const isFocused = focusedIndex === index;
+    const rawVal = value[index] ?? "";
+    const displayVal = rawVal || (isFocused ? "\u200B" : "");
+
     return {
       id: dom.getInputId(scope, index),
       ...parts.input.attrs,
@@ -58,13 +61,13 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       "data-readonly": readOnly ? "true" : "false",
       "data-complete": isValueComplete ? "true" : "false",
       "data-state": isFocused ? "focused" : "idle",
-      value: value[index] ?? "",
+      value: displayVal,
       focus: isFocused,
       disabled: disabled || readOnly,
       type: type === "numeric" ? "number" : "text",
-      password: mask,
-      placeholder,
-      maxlength: index === 0 ? length : 1,
+      password: Boolean(mask && rawVal),
+      placeholder: rawVal ? "" : placeholder,
+      maxlength: Math.max(length, 2),
       role: "textbox",
       "aria-label": `Digit ${index + 1}`,
     };
@@ -128,8 +131,13 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({ type: "INPUT.FOCUS", index: idx });
     },
 
-    handleBlur() {
-      send({ type: "INPUT.BLUR" });
+    handleBlur(event?: any) {
+      const idx = Number(
+        event?.currentTarget?.dataset?.index ??
+          event?.target?.dataset?.index ??
+          -1,
+      );
+      send({ type: "INPUT.BLUR", index: idx });
     },
 
     getInputProps,
