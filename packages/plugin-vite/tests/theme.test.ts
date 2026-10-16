@@ -185,5 +185,20 @@ describe("codeUI virtual themes", () => {
     const loadedDrawer = (plugin as any).load("\0virtual:cui/theme/drawer");
     expect(loadedDrawer).toContain("export default {");
     expect(loadedDrawer).toContain('"placement"');
+
+    const loadedCard = (plugin as any).load("\0virtual:cui/theme/card");
+    expect(loadedCard).toContain("export default {");
+    expect(loadedCard).toContain('"header"');
+
+    const loadedChip = (plugin as any).load("\0virtual:cui/theme/chip");
+    expect(loadedChip).toContain("export default {");
+    expect(loadedChip).toContain('"top-right"');
+
+    const loadedPinInput = (plugin as any).load(
+      "\0virtual:cui/theme/pin-input",
+    );
+    expect(loadedPinInput).toContain("export default {");
+    expect(loadedPinInput).toContain('"separator"');
   });
 });
+

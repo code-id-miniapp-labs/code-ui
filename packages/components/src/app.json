@@ -5,6 +5,9 @@
   "componentFramework": "glass-easel",
   "usingComponents": {
     "cui-button": "runtime/button/index",
-    "cui-drawer": "runtime/drawer/index"
+    "cui-card": "runtime/card/index",
+    "cui-chip": "runtime/chip/index",
+    "cui-drawer": "runtime/drawer/index",
+    "cui-pin-input": "runtime/pin-input/index"
   }
 }

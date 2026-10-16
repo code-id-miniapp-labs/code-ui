@@ -4,11 +4,30 @@ declare module "virtual:cui/theme/button" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/card" {
+  import type { default as cardTheme } from "@code-ui/core/src/theme/definitions/card";
+  const theme: ReturnType<typeof cardTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/chip" {
+  import type { default as chipTheme } from "@code-ui/core/src/theme/definitions/chip";
+  const theme: ReturnType<typeof chipTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/drawer" {
   import type { default as drawerTheme } from "@code-ui/core/src/theme/definitions/drawer";
   const theme: ReturnType<typeof drawerTheme>;
   export default theme;
 }
+
+declare module "virtual:cui/theme/pin-input" {
+  import type { default as pinInputTheme } from "@code-ui/core/src/theme/definitions/pin-input";
+  const theme: ReturnType<typeof pinInputTheme>;
+  export default theme;
+}
+
 
 declare module "virtual:cui/theme/*" {
   const theme: any;

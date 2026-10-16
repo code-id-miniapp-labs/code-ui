@@ -42,12 +42,20 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         onChange: (nextVal) => {
           const valueAsString = nextVal.join("");
           prop("onValueChange")?.({ value: nextVal, valueAsString });
+          prop("component")?.triggerEvent?.("change", {
+            value: nextVal,
+            valueAsString,
+          });
 
           const isComplete =
             nextVal.length === (prop("length") ?? 4) &&
             nextVal.every((c) => Boolean(c && c.trim() !== ""));
           if (isComplete) {
             prop("onValueComplete")?.({ value: nextVal, valueAsString });
+            prop("component")?.triggerEvent?.("complete", {
+              value: nextVal,
+              valueAsString,
+            });
           }
         },
       };
@@ -100,6 +108,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     blurOnComplete: bindable<boolean>(() => ({
       value: prop("blurOnComplete"),
       defaultValue: false,
+    })),
+
+    name: bindable<string>(() => ({
+      value: prop("name"),
+      defaultValue: "",
     })),
 
     ui: bindable<any>(() => ({
@@ -223,6 +236,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
           if (validChars.length === 0) {
             prop("onValueInvalid")?.({ value: rawVal, index });
+            prop("component")?.triggerEvent?.("invalid", {
+              value: rawVal,
+              index,
+            });
             return;
           }
 
@@ -249,6 +266,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         const char = rawVal.slice(-1);
         if (!isValidCharacter(char, inputType)) {
           prop("onValueInvalid")?.({ value: char, index });
+          prop("component")?.triggerEvent?.("invalid", { value: char, index });
           return;
         }
 

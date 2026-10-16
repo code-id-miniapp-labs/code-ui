@@ -15,3 +15,7 @@ export const getLabelId = (scope: Scope) =>
 export const getSeparatorId = (scope: Scope, index: number) =>
   scope.ids?.separator?.(index) ??
   `pin-input:${scope.id ?? "default"}:separator:${index}`;
+
+export const getHiddenInputId = (scope: Scope) =>
+  scope.ids?.hiddenInput ?? `pin-input:${scope.id ?? "default"}:hidden-input`;
+

@@ -368,4 +368,87 @@ describe("Pin Input Machine", () => {
       machine.stop();
     });
   });
+
+  describe("Zag.js Per-Cell Input Props & Hidden Input", () => {
+    it("embeds Zag.js-compatible inputProps and separatorProps on every cell in inputs for each length", async () => {
+      const triggerEvent = vi.fn();
+      const machine = new MiniappMachine(pinInputMachine, {
+        id: "otp-1",
+        length: 5,
+        name: "verificationCode",
+        separator: 3,
+        component: {
+          setData: vi.fn(),
+          triggerEvent,
+        },
+      });
+      machine.start();
+
+      const api = connectPinInput(machine.service);
+      expect(api.inputs).toHaveLength(5);
+
+      for (let i = 0; i < 5; i++) {
+        const cell = api.inputs[i];
+        expect(cell?.index).toBe(i);
+        expect(cell?.inputProps).toMatchObject({
+          id: `pin-input:otp-1:input:${i}`,
+          "data-scope": "pin-input",
+          "data-part": "input",
+          "data-index": i,
+          "data-focused": "false",
+          "data-disabled": "false",
+          "data-readonly": "false",
+          "data-complete": "false",
+          "data-state": "idle",
+          value: "",
+          focus: false,
+          disabled: false,
+          type: "number",
+          password: false,
+          maxlength: i === 0 ? 5 : 1,
+          role: "textbox",
+          "aria-label": `Digit ${i + 1}`,
+        });
+        expect(cell?.separatorProps).toMatchObject({
+          id: `pin-input:otp-1:separator:${i}`,
+          "data-scope": "pin-input",
+          "data-part": "separator",
+          "aria-hidden": "true",
+        });
+      }
+
+      expect(api.hiddenInputProps).toMatchObject({
+        id: "pin-input:otp-1:hidden-input",
+        type: "text",
+        tabIndex: -1,
+        name: "verificationCode",
+        value: "",
+        disabled: false,
+        "aria-hidden": "true",
+      });
+
+      // Paste full 5-digit OTP and verify component.triggerEvent + data-complete on each input
+      machine.send({ type: "INPUT.CHANGE", index: 0, value: "12345" });
+      await flush();
+
+      expect(triggerEvent).toHaveBeenCalledWith("change", {
+        value: ["1", "2", "3", "4", "5"],
+        valueAsString: "12345",
+      });
+      expect(triggerEvent).toHaveBeenCalledWith("complete", {
+        value: ["1", "2", "3", "4", "5"],
+        valueAsString: "12345",
+      });
+
+      const updatedApi = connectPinInput(machine.service);
+      expect(updatedApi.hiddenInputProps.value).toBe("12345");
+      for (let i = 0; i < 5; i++) {
+        expect(updatedApi.inputs[i]?.inputProps["data-complete"]).toBe("true");
+        expect(updatedApi.inputs[i]?.inputProps.value).toBe(String(i + 1));
+      }
+
+      machine.stop();
+    });
+  });
 });
+

@@ -14,6 +14,10 @@ export default defineConfig({
       ),
       "@code-ui/button": resolve(import.meta.dirname, "packages/machines/button/src"),
       "@code-ui/drawer": resolve(import.meta.dirname, "packages/machines/drawer/src"),
+      "@code-ui/pin-input": resolve(
+        import.meta.dirname,
+        "packages/machines/pin-input/src",
+      ),
     },
   },
   test: {

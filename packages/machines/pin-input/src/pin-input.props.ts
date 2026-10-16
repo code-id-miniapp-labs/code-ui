@@ -3,6 +3,11 @@ import type { PinInputProps } from "./pin-input.types";
 export const defaultPinInputProps: PinInputProps = {
   length: 4,
   type: "numeric",
+  variant: "outline",
+  color: "primary",
+  size: "md",
+  highlight: false,
+  name: "",
   mask: false,
   placeholder: "",
   disabled: false,
@@ -15,3 +20,4 @@ export const defaultPinInputProps: PinInputProps = {
   separatorChar: "-",
   ui: {},
 };
+

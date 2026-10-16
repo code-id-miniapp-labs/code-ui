@@ -10,6 +10,15 @@ import type { anatomy } from "./pin-input.anatomy";
 export type PinInputType = "numeric" | "alphanumeric" | "alphabetic";
 export type PinInputSeparator = number | number[] | boolean;
 export type PinInputState = "idle" | "focused";
+export type PinInputVariant = "outline" | "soft" | "subtle" | "ghost" | "none";
+export type PinInputColor =
+  | "primary"
+  | "neutral"
+  | "danger"
+  | "success"
+  | "warning"
+  | "info";
+export type PinInputSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 export type PinInputAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type PinInputUI = ComponentUI<typeof anatomy>;
@@ -34,6 +43,16 @@ export interface PinInputProps {
   component?: MiniAppComponent;
   /** Custom UI slot classes */
   ui?: PinInputUI;
+  /** Form field name for hidden input */
+  name?: string;
+  /** Visual variant */
+  variant?: PinInputVariant;
+  /** Semantic color */
+  color?: PinInputColor;
+  /** Size variant */
+  size?: PinInputSize;
+  /** Highlight all inputs with color ring */
+  highlight?: boolean;
   /** Number of inputs (PIN length) */
   length?: number;
   /** Controlled value array */
@@ -97,6 +116,7 @@ export interface PinInputContext {
   separator: PinInputSeparator;
   separatorChar: string;
   blurOnComplete: boolean;
+  name: string;
   ui: PinInputUI;
 }
 
@@ -133,6 +153,8 @@ export interface PinInputCell {
   isFocused: boolean;
   hasSeparator: boolean;
   separatorChar: string;
+  inputProps: Record<string, any>;
+  separatorProps: Record<string, any>;
 }
 
 export interface PinInputApi {
@@ -170,6 +192,9 @@ export interface PinInputApi {
   controlProps: Record<string, any>;
   /** Get props for label */
   labelProps: Record<string, any>;
+  /** Get props for hidden form input */
+  hiddenInputProps: Record<string, any>;
   /** Get props for separator after index */
   getSeparatorProps(index: number): Record<string, any>;
 }
+

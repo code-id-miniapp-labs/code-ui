@@ -14,7 +14,9 @@ export interface ComponentVariantsConfig<TSlots extends string = string> {
 }
 
 export interface ComponentRegistry {
-  button: "root" | "label" | "icon" | "spinner";
+  button: "root" | "label" | "icon" | "spinner" | "leadingIcon" | "trailingIcon";
+  card: "root" | "header" | "title" | "description" | "body" | "footer";
+  chip: "root" | "base";
   drawer:
     | "root"
     | "backdrop"
@@ -27,6 +29,8 @@ export interface ComponentRegistry {
     | "closeTrigger"
     | "body"
     | "footer";
+  pinInput: "root" | "label" | "control" | "input" | "separator";
+  "pin-input": "root" | "label" | "control" | "input" | "separator";
   [componentName: string]: string;
 }
 

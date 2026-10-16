@@ -92,4 +92,38 @@ describe("@code-ui/core color generation", () => {
     const colorTest: InferredColor = "warning";
     expect(colorTest).toBe("warning");
   });
+
+  it("provides Nuxt UI v4 theme definitions for card, chip, and pinInput", async () => {
+    const { cardTheme, chipTheme, pinInputTheme } = await import("../src");
+
+    const card = cardTheme();
+    expect(card.slots).toHaveProperty("root");
+    expect(card.slots).toHaveProperty("header");
+    expect(card.slots).toHaveProperty("body");
+    expect(card.slots).toHaveProperty("footer");
+    expect(card.defaultVariants).toEqual({ variant: "outline", size: "md" });
+
+    const chip = chipTheme();
+    expect(chip.slots).toHaveProperty("root");
+    expect(chip.slots).toHaveProperty("base");
+    expect(chip.defaultVariants).toEqual({
+      size: "md",
+      color: "primary",
+      position: "top-right",
+      inset: false,
+      standalone: false,
+    });
+
+    const pinInput = pinInputTheme();
+    expect(pinInput.slots).toHaveProperty("root");
+    expect(pinInput.slots).toHaveProperty("control");
+    expect(pinInput.slots).toHaveProperty("input");
+    expect(pinInput.slots).toHaveProperty("separator");
+    expect(pinInput.defaultVariants).toMatchObject({
+      variant: "outline",
+      color: "primary",
+      size: "md",
+    });
+  });
 });
+

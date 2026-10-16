@@ -75,7 +75,37 @@
         </c-button>
       </view>
     </view>
-    <!-- Section 6: Drawer Component -->
+    <!-- Section 6: Card Component -->
+    <c-card title="Card Component" description="Nuxt UI v4-style container with outline, solid, soft, and subtle variants.">
+      <view class="flex flex-col gap-3">
+        <c-card variant="subtle" size="sm" title="Subtle Card">
+          <text>Compact subtle card content inside an outline card.</text>
+        </c-card>
+        <c-card variant="solid" size="sm" title="Solid Card" description="Dark high-contrast surface">
+          <text>Solid card body text.</text>
+        </c-card>
+      </view>
+    </c-card>
+    <!-- Section 7: Chip Component -->
+    <c-card title="Chip Component" description="Corner badge indicators & standalone chips.">
+      <view class="flex flex-wrap gap-6 items-center pt-2">
+        <c-chip text="3" color="danger" size="2xl">
+          <c-button variant="outline" color="neutral">Inbox</c-button>
+        </c-chip>
+        <c-chip color="success" size="md">
+          <c-button variant="soft" color="neutral">Online</c-button>
+        </c-chip>
+        <c-chip text="99+" color="primary" size="3xl" standalone="{{true}}" />
+      </view>
+    </c-card>
+    <!-- Section 8: PinInput Component -->
+    <c-card title="PinInput Component" description="Zag.js FSM with per-index input elements, OTP auto-advance & separator.">
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="Verification Code (4 digits)" length="{{4}}" placeholder="○" />
+        <c-pin-input label="With Separator (6 digits)" length="{{6}}" separator="{{3}}" variant="subtle" color="primary" />
+      </view>
+    </c-card>
+    <!-- Section 9: Drawer Component -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-base font-bold text-neutral-900">Drawer Component</view>
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">

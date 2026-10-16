@@ -30,12 +30,30 @@
       "require": "./dist/runtime/button/index.js"
     },
     "./button/*": "./dist/runtime/button/*",
+    "./card": {
+      "types": "./dist/runtime/card/index.d.ts",
+      "import": "./dist/runtime/card/index.js",
+      "require": "./dist/runtime/card/index.js"
+    },
+    "./card/*": "./dist/runtime/card/*",
+    "./chip": {
+      "types": "./dist/runtime/chip/index.d.ts",
+      "import": "./dist/runtime/chip/index.js",
+      "require": "./dist/runtime/chip/index.js"
+    },
+    "./chip/*": "./dist/runtime/chip/*",
     "./drawer": {
       "types": "./dist/runtime/drawer/index.d.ts",
       "import": "./dist/runtime/drawer/index.js",
       "require": "./dist/runtime/drawer/index.js"
     },
     "./drawer/*": "./dist/runtime/drawer/*",
+    "./pin-input": {
+      "types": "./dist/runtime/pin-input/index.d.ts",
+      "import": "./dist/runtime/pin-input/index.js",
+      "require": "./dist/runtime/pin-input/index.js"
+    },
+    "./pin-input/*": "./dist/runtime/pin-input/*",
     "./runtime/*": "./dist/runtime/*",
     "./dist/*": "./dist/*",
     "./themes/*": "./dist/themes/*",
@@ -55,6 +73,7 @@
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
+    "@code-ui/pin-input": "workspace:*",
     "@code-ui/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"
   },

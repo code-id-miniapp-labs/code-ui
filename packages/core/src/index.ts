@@ -94,4 +94,8 @@ export type {
 } from "./theme";
 export * as componentThemes from "./theme/definitions";
 export { default as buttonTheme } from "./theme/definitions/button";
+export { default as cardTheme } from "./theme/definitions/card";
+export { default as chipTheme } from "./theme/definitions/chip";
 export { default as drawerTheme } from "./theme/definitions/drawer";
+export { default as pinInputTheme } from "./theme/definitions/pin-input";
+

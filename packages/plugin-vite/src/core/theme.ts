@@ -394,7 +394,14 @@ export function compileComponentTheme(
 
   const isFactoryFn = typeof factory === "function";
   const rawTheme = isFactoryFn ? factory({ colors: allColors }) : factory;
-  const overrides = resolvedConfig.components?.[componentName];
+  const camelName = componentName.replace(/-([a-z])/g, (_, c: string) =>
+    c.toUpperCase(),
+  );
+  const kebabName = componentName.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  const overrides =
+    resolvedConfig.components?.[componentName] ??
+    resolvedConfig.components?.[camelName] ??
+    resolvedConfig.components?.[kebabName];
 
   if (!overrides) {
     return isFactoryFn ? rawTheme : structuredClone(rawTheme);

@@ -204,7 +204,11 @@ if (import.meta.hot) {
       return cached;
     }
 
-    const factory = (componentThemes as Record<string, any>)[componentName];
+    const camelName = componentName.replace(/-([a-z])/g, (_, c: string) =>
+      c.toUpperCase(),
+    );
+    const themesMap = componentThemes as Record<string, any>;
+    const factory = themesMap[componentName] ?? themesMap[camelName];
     if (!factory) {
       throw new Error(
         `[code-ui] Unknown component theme: "${componentName}". Available themes: ${Object.keys(componentThemes).join(", ")}`,

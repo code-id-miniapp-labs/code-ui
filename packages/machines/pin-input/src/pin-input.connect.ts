@@ -41,10 +41,42 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const placeholder = context.get("placeholder");
   const separator = context.get("separator");
   const separatorChar = context.get("separatorChar") ?? "-";
+  const name = context.get("name") ?? "";
 
   const isValueComplete = computed("isValueComplete");
   const isFilled = computed("isFilled");
   const valueAsString = computed("valueAsString");
+
+  function getInputProps(index: number): Record<string, any> {
+    const isFocused = focusedIndex === index;
+    return {
+      id: dom.getInputId(scope, index),
+      ...parts.input.attrs,
+      "data-index": index,
+      "data-focused": isFocused ? "true" : "false",
+      "data-disabled": disabled ? "true" : "false",
+      "data-readonly": readOnly ? "true" : "false",
+      "data-complete": isValueComplete ? "true" : "false",
+      "data-state": isFocused ? "focused" : "idle",
+      value: value[index] ?? "",
+      focus: isFocused,
+      disabled: disabled || readOnly,
+      type: type === "numeric" ? "number" : "text",
+      password: mask,
+      placeholder,
+      maxlength: index === 0 ? length : 1,
+      role: "textbox",
+      "aria-label": `Digit ${index + 1}`,
+    };
+  }
+
+  function getSeparatorProps(index: number): Record<string, any> {
+    return {
+      id: dom.getSeparatorId(scope, index),
+      ...parts.separator.attrs,
+      "aria-hidden": "true",
+    };
+  }
 
   const inputs: PinInputCell[] = Array.from({ length }).map((_, index) => ({
     index,
@@ -52,6 +84,8 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     isFocused: focusedIndex === index,
     hasSeparator: shouldShowSeparator(index, separator, length),
     separatorChar,
+    inputProps: getInputProps(index),
+    separatorProps: getSeparatorProps(index),
   }));
 
   return {
@@ -98,26 +132,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({ type: "INPUT.BLUR" });
     },
 
-    getInputProps(index: number) {
-      return {
-        id: dom.getInputId(scope, index),
-        ...parts.input.attrs,
-        "data-index": index,
-        "data-focused": focusedIndex === index ? "true" : "false",
-        "data-disabled": disabled ? "true" : "false",
-        "data-readonly": readOnly ? "true" : "false",
-        "data-state": focusedIndex === index ? "focused" : "idle",
-        value: value[index] ?? "",
-        focus: focusedIndex === index,
-        disabled: disabled || readOnly,
-        type: type === "numeric" ? "number" : "text",
-        password: mask,
-        placeholder,
-        maxlength: index === 0 ? length : 1,
-        role: "textbox",
-        "aria-label": `Digit ${index + 1}`,
-      };
-    },
+    getInputProps,
 
     rootProps: {
       id: dom.getRootId(scope),
@@ -141,12 +156,17 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       ...parts.label.attrs,
     },
 
-    getSeparatorProps(index: number) {
-      return {
-        id: dom.getSeparatorId(scope, index),
-        ...parts.separator.attrs,
-        "aria-hidden": "true",
-      };
+    hiddenInputProps: {
+      id: dom.getHiddenInputId(scope),
+      type: "text",
+      tabIndex: -1,
+      name: name || undefined,
+      value: valueAsString,
+      disabled: disabled || readOnly,
+      "aria-hidden": "true",
     },
+
+    getSeparatorProps,
   };
 }
+
