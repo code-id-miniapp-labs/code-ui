@@ -112,9 +112,7 @@
         Gesture-driven bottom sheet with backdrop & smooth animations.
         <view class="size-6 bg-testing-500/10"></view>
       </view>
-      <view class="flex flex-col gap-2.5">
-        <c-drawer>aowkwao</c-drawer>
-      </view>
+      <view class="flex flex-col gap-2.5"></view>
     </view>
   </view>
 </view>

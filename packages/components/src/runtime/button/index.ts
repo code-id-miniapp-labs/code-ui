@@ -54,9 +54,7 @@ Component(
         const color = this.data.color;
         const size = this.data.size;
         const block = this.data.block;
-        const disabled = Boolean(
-          this.data.button?.disabled ?? this.data.disabled,
-        );
+        const disabled = this.data.disabled;
         const loading = this.loading;
 
         const ui = this.data.ui;

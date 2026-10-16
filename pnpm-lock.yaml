@@ -121,6 +121,9 @@ importers:
       '@code-ui/miniapp':
         specifier: workspace:*
         version: link:../frameworks/miniapp
+      '@code-ui/pin-input':
+        specifier: workspace:*
+        version: link:../machines/pin-input
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../utils
