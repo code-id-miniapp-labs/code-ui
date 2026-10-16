@@ -176,4 +176,65 @@ describe("tree-shake", () => {
       true,
     );
   });
+
+  it("syncs newly built components and updated root chunks when weapp-vite skips npm rebuild", () => {
+    // Initial run caches graph
+    handleTreeShake({ enable: false }, tmpRoot, { build: { outDir: "dist" } });
+
+    // Simulate building new components (card, chip, pin-input) and updating common.js in library dist
+    for (const name of ["card", "chip", "pin-input"]) {
+      const compDir = path.join(libDir, "runtime", name);
+      fs.mkdirSync(compDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(compDir, "index.json"),
+        JSON.stringify({ component: true, usingComponents: {} }),
+        "utf-8",
+      );
+      fs.writeFileSync(
+        path.join(compDir, "index.js"),
+        `Component({});`,
+        "utf-8",
+      );
+    }
+    fs.writeFileSync(
+      path.join(libDir, "common.js"),
+      `module.exports = { version: 2 };`,
+      "utf-8",
+    );
+
+    const bundle = {
+      "pages/index/index.json": {
+        type: "asset",
+        source: JSON.stringify({
+          usingComponents: {
+            "c-button": "@code-ui/components/runtime/button/index",
+            "c-card": "@code-ui/components/runtime/card/index",
+            "c-chip": "@code-ui/components/runtime/chip/index",
+            "c-pin-input": "@code-ui/components/runtime/pin-input/index",
+          },
+        }),
+      },
+    };
+
+    handleTreeShake(
+      { enable: true },
+      tmpRoot,
+      { build: { outDir: "dist" } },
+      bundle,
+    );
+
+    expect(
+      fs.existsSync(path.join(distLibDir, "runtime", "card", "index.js")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(distLibDir, "runtime", "chip", "index.js")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(distLibDir, "runtime", "pin-input", "index.js")),
+    ).toBe(true);
+    expect(fs.readFileSync(path.join(distLibDir, "common.js"), "utf-8")).toBe(
+      `module.exports = { version: 2 };`,
+    );
+  });
 });
+

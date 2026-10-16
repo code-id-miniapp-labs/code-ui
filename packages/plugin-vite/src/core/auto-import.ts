@@ -171,14 +171,18 @@ export function generateBundleAutoImport(
   bundle: OutputBundleLike,
   autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
   projectRoot: string,
-): void {
+): Set<string> {
+  const updatedFiles = new Set<string>();
   const resolved = toResolvedOptions(autoImportOpts);
-  if (!resolved.enable) return;
+  if (!resolved.enable) return updatedFiles;
 
   const srcRoot = path.resolve(projectRoot, "src");
 
   for (const [fileName, item] of Object.entries(bundle)) {
     if (!fileName.endsWith(".json") || !isBundleAsset(item)) continue;
+
+    const normalizedFileName = fileName.replace(/\\/g, "/");
+    updatedFiles.add(normalizedFileName);
 
     const source =
       typeof item.source === "string"
@@ -188,7 +192,7 @@ export function generateBundleAutoImport(
           : undefined;
     if (!source) continue;
 
-    const relWxml = fileName.slice(0, -5) + ".wxml";
+    const relWxml = normalizedFileName.slice(0, -5) + ".wxml";
     const candidateInSrc = path.resolve(srcRoot, relWxml);
     let uniqueTags = extractTagsFromWxml(candidateInSrc, resolved.tagRegex);
 
@@ -213,4 +217,73 @@ export function generateBundleAutoImport(
       );
     }
   }
+
+  return updatedFiles;
 }
+
+export function syncDiskAutoImport(
+  distRoot: string,
+  autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
+  projectRoot: string,
+  skipRelPaths?: ReadonlySet<string>,
+): void {
+  const resolved = toResolvedOptions(autoImportOpts);
+  if (!resolved.enable || !fs.existsSync(distRoot)) return;
+
+  const srcRoot = path.resolve(projectRoot, "src");
+
+  function scanDir(dir: string): void {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (entry.name === "miniprogram_npm" || entry.name === "node_modules") {
+        continue;
+      }
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanDir(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith(".json")) {
+        const relJson = path
+          .relative(distRoot, fullPath)
+          .replace(/\\/g, "/");
+        if (skipRelPaths?.has(relJson)) continue;
+
+        const relWxml = relJson.slice(0, -5) + ".wxml";
+        const candidateInSrc = path.resolve(srcRoot, relWxml);
+        let uniqueTags = extractTagsFromWxml(candidateInSrc, resolved.tagRegex);
+
+        if (uniqueTags === null) {
+          const candidateInRoot = path.resolve(projectRoot, relWxml);
+          uniqueTags = extractTagsFromWxml(candidateInRoot, resolved.tagRegex);
+        }
+
+        if (!uniqueTags || uniqueTags.length === 0) continue;
+
+        try {
+          const content = fs.readFileSync(fullPath, "utf-8");
+          const json = JSON.parse(content);
+          if (!json || typeof json !== "object" || Array.isArray(json)) {
+            continue;
+          }
+
+          if (injectUsingComponents(json, uniqueTags, resolved)) {
+            fs.writeFileSync(fullPath, JSON.stringify(json, null, 2), "utf-8");
+          }
+        } catch (err) {
+          console.warn(
+            `[code-ui:auto-import] Failed to sync disk JSON ${relJson}:`,
+            err,
+          );
+        }
+      }
+    }
+  }
+
+  scanDir(distRoot);
+}
+

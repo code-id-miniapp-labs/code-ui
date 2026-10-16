@@ -38,7 +38,6 @@ function getLibraryDependencyGraph(
 ): LibraryDependencyGraph {
   const cacheKey = `${treeLibrary}\0${librarySourceDir}`;
   const cached = libraryGraphCache.get(cacheKey);
-  if (cached) return cached;
 
   const allComponentDirs: string[] = [];
   const allWxsFiles: string[] = [];
@@ -77,6 +76,16 @@ function getLibraryDependencyGraph(
     }
   }
   collectAllWxs(srcWxsDir);
+
+  if (
+    cached &&
+    cached.allComponentDirs.length === allComponentDirs.length &&
+    cached.allWxsFiles.length === allWxsFiles.length &&
+    cached.allComponentDirs.every((d, i) => d === allComponentDirs[i]) &&
+    cached.allWxsFiles.every((w, i) => w === allWxsFiles[i])
+  ) {
+    return cached;
+  }
 
   const graph: LibraryDependencyGraph = {
     sourceDir: librarySourceDir,
@@ -206,17 +215,78 @@ function getWxsDirectDeps(
   return deps;
 }
 
-function hasMissingLibraryFiles(
+function isFileOutdated(srcFile: string, destFile: string): boolean {
+  const srcStat = fs.statSync(srcFile, { throwIfNoEntry: false });
+  if (!srcStat || !srcStat.isFile()) return false;
+  const destStat = fs.statSync(destFile, { throwIfNoEntry: false });
+  if (!destStat || !destStat.isFile()) return true;
+  return (
+    srcStat.size !== destStat.size || srcStat.mtimeMs > destStat.mtimeMs + 1
+  );
+}
+
+function isComponentDirOutdated(srcDir: string, destDir: string): boolean {
+  if (!fs.existsSync(destDir)) return true;
+  try {
+    const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const srcPath = path.join(srcDir, entry.name);
+      const destPath = path.join(destDir, entry.name);
+      if (entry.isDirectory()) {
+        if (isComponentDirOutdated(srcPath, destPath)) return true;
+      } else if (entry.isFile()) {
+        if (isFileOutdated(srcPath, destPath)) return true;
+      }
+    }
+  } catch {
+    return true;
+  }
+  return false;
+}
+
+function syncLibraryRootFiles(
+  librarySourceDir: string,
   miniprogramNpmPath: string,
+  treeShakeEnabled: boolean,
+): void {
+  try {
+    const entries = fs.readdirSync(librarySourceDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      if (treeShakeEnabled && entry.name === "app.wxss") continue;
+      const srcFile = path.join(librarySourceDir, entry.name);
+      const destFile = path.join(miniprogramNpmPath, entry.name);
+      if (isFileOutdated(srcFile, destFile)) {
+        fs.copyFileSync(srcFile, destFile);
+      }
+    }
+  } catch {
+    // ignore error
+  }
+}
+
+function hasMissingOrOutdatedLibraryFiles(
+  miniprogramNpmPath: string,
+  librarySourceDir: string,
   graph: LibraryDependencyGraph,
 ): boolean {
   for (const relDir of graph.allComponentDirs) {
-    if (!fs.existsSync(path.join(miniprogramNpmPath, relDir))) {
+    if (
+      isComponentDirOutdated(
+        path.join(librarySourceDir, relDir),
+        path.join(miniprogramNpmPath, relDir),
+      )
+    ) {
       return true;
     }
   }
   for (const relWxs of graph.allWxsFiles) {
-    if (!fs.existsSync(path.join(miniprogramNpmPath, relWxs))) {
+    if (
+      isFileOutdated(
+        path.join(librarySourceDir, relWxs),
+        path.join(miniprogramNpmPath, relWxs),
+      )
+    ) {
       return true;
     }
   }
@@ -253,12 +323,22 @@ export function handleTreeShake(
     fs.rmSync(legacyTrashDir, { recursive: true, force: true });
   }
 
+  syncLibraryRootFiles(
+    librarySourceDir,
+    miniprogramNpmPath,
+    Boolean(treeShakeOpts.enable),
+  );
+
   const graph = getLibraryDependencyGraph(treeLibrary, librarySourceDir);
 
-  // Fast exit in dev mode (`treeShake: false`) when all library components/WXS are intact
+  // Fast exit in dev mode (`treeShake: false`) when all library components/WXS are intact and up-to-date
   if (
     !treeShakeOpts.enable &&
-    !hasMissingLibraryFiles(miniprogramNpmPath, graph)
+    !hasMissingOrOutdatedLibraryFiles(
+      miniprogramNpmPath,
+      librarySourceDir,
+      graph,
+    )
   ) {
     return;
   }
@@ -373,10 +453,26 @@ export function handleTreeShake(
   let removedWxs = 0;
   let savedBytes = 0;
 
-  for (const relDir of usedComponentDirs) {
+  const targetComponentDirs = treeShakeOpts.enable
+    ? usedComponentDirs
+    : new Set<string>([...graph.allComponentDirs, ...usedComponentDirs]);
+
+  const targetWxsFiles = treeShakeOpts.enable
+    ? usedWxs
+    : new Set<string>([...graph.allWxsFiles, ...usedWxs]);
+
+  for (const relDir of targetComponentDirs) {
     const destDir = path.join(miniprogramNpmPath, relDir);
     const srcDir = path.join(librarySourceDir, relDir);
-    if (!fs.existsSync(destDir) && fs.existsSync(srcDir)) {
+    if (!fs.existsSync(srcDir)) {
+      if (usedComponentDirs.has(relDir)) {
+        console.warn(
+          `[code-ui:tree-shake] Used component "${relDir}" was not found in "${librarySourceDir}". Did you rebuild "${treeLibrary}"?`,
+        );
+      }
+      continue;
+    }
+    if (isComponentDirOutdated(srcDir, destDir)) {
       try {
         copyDirFresh(srcDir, destDir);
         restoredComponents++;
@@ -389,10 +485,10 @@ export function handleTreeShake(
     }
   }
 
-  for (const relWxs of usedWxs) {
+  for (const relWxs of targetWxsFiles) {
     const destFile = path.join(miniprogramNpmPath, relWxs);
     const srcFile = path.join(librarySourceDir, relWxs);
-    if (!fs.existsSync(destFile) && fs.existsSync(srcFile)) {
+    if (fs.existsSync(srcFile) && isFileOutdated(srcFile, destFile)) {
       try {
         fs.mkdirSync(path.dirname(destFile), { recursive: true });
         fs.copyFileSync(srcFile, destFile);

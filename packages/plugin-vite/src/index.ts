@@ -18,6 +18,7 @@ import {
 import {
   generateBundleAutoImport,
   invalidateWxmlTagCache,
+  syncDiskAutoImport,
   transformAutoImport,
 } from "./core/auto-import";
 import {
@@ -236,30 +237,45 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       return null;
     },
 
-    generateBundle(_options, bundle) {
-      cleanedBundleCssPaths.clear();
-      const outDir = viteConfigObj?.build?.outDir || "dist";
-      const distRoot = path.resolve(projectRoot, outDir);
-      const typedBundle = bundle as unknown as OutputBundleLike;
+    generateBundle: {
+      order: "post",
+      handler(_options, bundle) {
+        cleanedBundleCssPaths.clear();
+        const outDir = viteConfigObj?.build?.outDir || "dist";
+        const distRoot = path.resolve(projectRoot, outDir);
+        const typedBundle = bundle as unknown as OutputBundleLike;
 
-      generateBundleAutoImport(typedBundle, autoImportOpts, projectRoot);
-      handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, typedBundle);
+        const updatedInBundle = generateBundleAutoImport(
+          typedBundle,
+          autoImportOpts,
+          projectRoot,
+        );
+        syncDiskAutoImport(
+          distRoot,
+          autoImportOpts,
+          projectRoot,
+          updatedInBundle,
+        );
+        handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, typedBundle);
 
-      for (const [fileName, item] of Object.entries(typedBundle)) {
-        if (
-          (fileName.endsWith(".wxss") || fileName.endsWith(".css")) &&
-          isBundleAsset(item) &&
-          typeof item.source === "string"
-        ) {
-          item.source = cleanKeyframes(item.source);
-          cleanedBundleCssPaths.add(path.resolve(distRoot, fileName));
+        for (const [fileName, item] of Object.entries(typedBundle)) {
+          if (
+            (fileName.endsWith(".wxss") || fileName.endsWith(".css")) &&
+            isBundleAsset(item) &&
+            typeof item.source === "string"
+          ) {
+            item.source = cleanKeyframes(item.source);
+            cleanedBundleCssPaths.add(path.resolve(distRoot, fileName));
+          }
         }
-      }
+      },
     },
 
     closeBundle() {
       const outDir = viteConfigObj?.build?.outDir || "dist";
       const distRoot = path.resolve(projectRoot, outDir);
+      syncDiskAutoImport(distRoot, autoImportOpts, projectRoot);
+      handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
       cleanKeyframesInDir(distRoot, cleanedBundleCssPaths);
       cleanedBundleCssPaths.clear();
     },

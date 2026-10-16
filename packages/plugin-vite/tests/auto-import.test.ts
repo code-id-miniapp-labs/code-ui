@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   generateBundleAutoImport,
   invalidateWxmlTagCache,
+  syncDiskAutoImport,
   transformAutoImport,
 } from "../src/core/auto-import";
 
@@ -114,4 +115,39 @@ describe("auto-import", () => {
       "c-drawer": "@code-ui/components/runtime/drawer/index",
     });
   });
+
+  it("syncs disk JSON files when WXML changes without JSON being re-emitted in watch mode", () => {
+    const srcPageDir = path.join(tmpDir, "src", "pages", "index");
+    const distPageDir = path.join(tmpDir, "dist", "pages", "index");
+    fs.mkdirSync(srcPageDir, { recursive: true });
+    fs.mkdirSync(distPageDir, { recursive: true });
+
+    fs.writeFileSync(
+      path.join(srcPageDir, "index.wxml"),
+      `<view><c-button /><c-card /><c-chip /><c-pin-input /></view>`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(distPageDir, "index.json"),
+      JSON.stringify({
+        usingComponents: {
+          "c-button": "@code-ui/components/runtime/button/index",
+        },
+      }),
+      "utf-8",
+    );
+
+    syncDiskAutoImport(path.join(tmpDir, "dist"), { enable: true }, tmpDir);
+
+    const updated = JSON.parse(
+      fs.readFileSync(path.join(distPageDir, "index.json"), "utf-8"),
+    );
+    expect(updated.usingComponents).toEqual({
+      "c-button": "@code-ui/components/runtime/button/index",
+      "c-card": "@code-ui/components/runtime/card/index",
+      "c-chip": "@code-ui/components/runtime/chip/index",
+      "c-pin-input": "@code-ui/components/runtime/pin-input/index",
+    });
+  });
 });
+
