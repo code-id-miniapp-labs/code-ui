@@ -6,6 +6,7 @@ import type {
 } from "./pin-input.types";
 import { parts } from "./pin-input.anatomy";
 import * as dom from "./pin-input.dom";
+import { isValidCharacter } from "./pin-input.machine";
 
 function shouldShowSeparator(
   index: number,
@@ -67,7 +68,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       type: type === "numeric" ? "number" : "text",
       password: Boolean(mask && rawVal),
       placeholder: rawVal ? "" : placeholder,
-      maxlength: Math.max(length, 2),
+      maxlength: index === 0 ? Math.max(length, 2) : 2,
       role: "textbox",
       "aria-label": `Digit ${index + 1}`,
     };
@@ -112,7 +113,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({ type: "INPUT.FOCUS", index: index ?? 0 });
     },
 
-    handleInput(event: any) {
+    handleInput(event: any): string | void {
       const idx = Number(
         event?.currentTarget?.dataset?.index ??
           event?.target?.dataset?.index ??
@@ -120,6 +121,36 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       );
       const val = event?.detail?.value ?? event?.target?.value ?? "";
       send({ type: "INPUT.CHANGE", index: idx, value: val });
+
+      const cleanVal = (typeof val === "string" ? val : "").replace(
+        /\u200B/g,
+        "",
+      );
+
+      if (cleanVal === "") {
+        return "";
+      }
+
+      const currentVal = value[idx] ?? "";
+      if (cleanVal.length === 1) {
+        return isValidCharacter(cleanVal, type) ? cleanVal : currentVal;
+      }
+
+      if (
+        currentVal &&
+        cleanVal.includes(currentVal) &&
+        (cleanVal.length === 2 || idx === length - 1)
+      ) {
+        const newChar =
+          cleanVal.replace(currentVal, "").slice(-1) || cleanVal.slice(-1);
+        return isValidCharacter(newChar, type) ? newChar : currentVal;
+      }
+
+      const validChar = cleanVal
+        .split("")
+        .find((c: string) => isValidCharacter(c, type));
+
+      return validChar ?? currentVal;
     },
 
     handleFocus(event: any) {

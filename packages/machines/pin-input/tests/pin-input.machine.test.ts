@@ -462,7 +462,7 @@ describe("Pin Input Machine", () => {
           disabled: false,
           type: "number",
           password: false,
-          maxlength: 5,
+          maxlength: i === 0 ? 5 : 2,
           role: "textbox",
           "aria-label": `Digit ${i + 1}`,
         });
@@ -503,6 +503,49 @@ describe("Pin Input Machine", () => {
         expect(updatedApi.inputs[i]?.inputProps["data-complete"]).toBe("true");
         expect(updatedApi.inputs[i]?.inputProps.value).toBe(String(i + 1));
       }
+
+      machine.stop();
+    });
+
+    it("handles typing the same number into the last input box without accumulating extra digits", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        length: 4,
+        defaultValue: ["2", "2", "2", "2"],
+      });
+      machine.start();
+
+      const api = connectPinInput(machine.service);
+      expect(api.inputs[3]?.inputProps?.maxlength).toBe(2);
+
+      // User types '2' in the last box (same number as already there)
+      const res1 = api.handleInput({
+        currentTarget: { dataset: { index: 3 } },
+        detail: { value: "22" },
+      });
+      await flush();
+
+      expect(res1).toBe("2");
+      expect(machine.context.get("value")).toEqual(["2", "2", "2", "2"]);
+
+      // User types '2' again (e.g. native input had '22' and user typed '2')
+      const res2 = api.handleInput({
+        currentTarget: { dataset: { index: 3 } },
+        detail: { value: "222" },
+      });
+      await flush();
+
+      expect(res2).toBe("2");
+      expect(machine.context.get("value")).toEqual(["2", "2", "2", "2"]);
+
+      // User types a different number '5' in the last box
+      const res3 = api.handleInput({
+        currentTarget: { dataset: { index: 3 } },
+        detail: { value: "25" },
+      });
+      await flush();
+
+      expect(res3).toBe("5");
+      expect(machine.context.get("value")).toEqual(["2", "2", "2", "5"]);
 
       machine.stop();
     });

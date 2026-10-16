@@ -6,7 +6,7 @@ import type {
 } from "./pin-input.types";
 import { defaultPinInputProps } from "./pin-input.props";
 
-function isValidCharacter(char: string, type: PinInputType): boolean {
+export function isValidCharacter(char: string, type: PinInputType): boolean {
   if (type === "numeric") {
     return /^[0-9]$/.test(char);
   }
@@ -263,11 +263,13 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         if (cleanVal.length > 1) {
           // If user typed a single character over an existing character in this slot:
           if (
-            cleanVal.length === 2 &&
             currentValues[index] &&
-            cleanVal.includes(currentValues[index])
+            cleanVal.includes(currentValues[index]) &&
+            (cleanVal.length === 2 || index === length - 1)
           ) {
-            const newChar = cleanVal.replace(currentValues[index], "").slice(-1);
+            const newChar =
+              cleanVal.replace(currentValues[index], "").slice(-1) ||
+              cleanVal.slice(-1);
             if (isValidCharacter(newChar, inputType)) {
               currentValues[index] = newChar;
               context.set("value", currentValues);

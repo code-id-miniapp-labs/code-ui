@@ -171,7 +171,7 @@ function interceptOwnerPromises(
       try {
         owner[name] = wrapper;
         restored.push([name, ownOriginal, wrapper, wasOwn]);
-      } catch (e) {
+      } catch {
         // Ignore read-only properties
       }
     }
@@ -352,14 +352,8 @@ export class MiniappMachine<T extends MachineSchema> {
   send = (event: T["event"]) => {
     if (this.status !== MachineStatus.Started || !event) return;
     this.queue.push(event);
-    console.log(
-      `[code-ui debug] MiniappMachine.send(${event.type}), queue length: ${this.queue.length}, flushScheduled: ${this.flushScheduled}`,
-    );
     if (this.flushScheduled) return;
     this.flushScheduled = true;
-    console.log(
-      `[code-ui debug] MiniappMachine.send scheduling drain via queueMicrotask`,
-    );
     queueMicrotask(this.drain);
   };
 
@@ -446,9 +440,6 @@ export class MiniappMachine<T extends MachineSchema> {
    * If a handler throws, remaining events are rescheduled so they keep flowing.
    */
   private drain = () => {
-    console.log(
-      `[code-ui debug] MiniappMachine.drain START, queue length: ${this.queue.length}`,
-    );
     try {
       while (this.status === MachineStatus.Started && this.queue.length) {
         this.processEvent(this.queue.shift() as T["event"]);
@@ -459,15 +450,9 @@ export class MiniappMachine<T extends MachineSchema> {
         this.queue.length = 0;
       } else if (this.queue.length) {
         this.flushScheduled = true;
-        console.log(
-          `[code-ui debug] MiniappMachine.drain scheduling via queueMicrotask`,
-        );
         queueMicrotask(this.drain);
       }
     }
-    console.log(
-      `[code-ui debug] MiniappMachine.drain END, new state: ${this.state.get()}`,
-    );
   };
 
   private processEvent(event: T["event"]) {
@@ -491,9 +476,6 @@ export class MiniappMachine<T extends MachineSchema> {
     this.debug("transition", transition);
 
     this.transition = transition;
-    console.log(
-      `[code-ui debug] processEvent(${event?.type}): transitioning from ${current} to ${target}`,
-    );
     this.batch(() => {
       try {
         if (target !== current) {

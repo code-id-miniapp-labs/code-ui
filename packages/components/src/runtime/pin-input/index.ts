@@ -56,10 +56,7 @@ Component(
         const color = this.data.color;
         const size = this.data.size;
         const highlight = Boolean(this.data.highlight);
-        const disabled = Boolean(
-          this.data.pinInput?.rootProps?.["data-disabled"] === "true" ||
-            this.data.disabled,
-        );
+        const disabled = Boolean(this.data.disabled);
         const ui = this.data.ui;
 
         const themeFns = pinInputTheme({
@@ -77,42 +74,12 @@ Component(
     methods: {
       handleInput(e: WechatMiniprogram.CustomEvent) {
         const api = this.data.pinInput;
-        api?.handleInput?.(e);
+        return api?.handleInput?.(e);
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
-        const idx = Number(
-          e?.currentTarget?.dataset?.index ??
-            e?.target?.dataset?.index ??
-            0,
-        );
         const api = this.data.pinInput;
-        if (!api) return;
-
-        const values = api.value ?? [];
-        const firstEmptyIndex = values.findIndex(
-          (c: string) => !c || c.trim() === "",
-        );
-        const targetIndex =
-          firstEmptyIndex !== -1
-            ? firstEmptyIndex
-            : Math.max(0, Math.min(api.inputs.length - 1, idx));
-
-        if (idx !== targetIndex) {
-          this.setData(
-            {
-              [`pinInput.inputs[${idx}].inputProps.focus`]: false,
-              [`pinInput.inputs[${targetIndex}].inputProps.focus`]: false,
-            },
-            () => {
-              this.setData({
-                [`pinInput.inputs[${targetIndex}].inputProps.focus`]: true,
-              });
-            },
-          );
-        }
-
-        api.handleFocus?.(e);
+        api?.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {

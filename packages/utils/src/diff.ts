@@ -20,7 +20,27 @@ export function diffSnapshot(
 
     if (isEqual(pVal, nVal)) continue;
 
-    if (isPlainObject(pVal) && isPlainObject(nVal)) {
+    if (Array.isArray(pVal) && Array.isArray(nVal)) {
+      if (pVal.length !== nVal.length) {
+        delta[path] = nVal;
+        hasDiff = true;
+      } else {
+        for (let i = 0; i < nVal.length; i++) {
+          if (isEqual(pVal[i], nVal[i])) continue;
+          const subPath = `${path}[${i}]`;
+          if (isPlainObject(pVal[i]) && isPlainObject(nVal[i])) {
+            const sub = diffSnapshot(pVal[i], nVal[i], subPath);
+            if (sub) {
+              Object.assign(delta, sub);
+              hasDiff = true;
+            }
+          } else {
+            delta[subPath] = nVal[i];
+            hasDiff = true;
+          }
+        }
+      }
+    } else if (isPlainObject(pVal) && isPlainObject(nVal)) {
       const sub = diffSnapshot(pVal, nVal, path);
       if (sub) {
         Object.assign(delta, sub);

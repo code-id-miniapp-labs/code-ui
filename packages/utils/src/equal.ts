@@ -1,12 +1,13 @@
-const isArrayLike = (value: unknown): boolean =>
+const isArrayLike = (value: unknown): value is ArrayLike<unknown> =>
   Boolean(value) &&
-  (value as Record<string, unknown>).constructor?.name === "Array";
+  typeof value === "object" &&
+  "length" in (value as Record<string, unknown>);
 
-const isArrayEqual = (a: unknown[], b: unknown[]): boolean => {
+const isArrayEqual = (a: ArrayLike<unknown>, b: ArrayLike<unknown>): boolean => {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
-    const aItem = a[i];
-    const bItem = b[i];
+    const aItem = (a as Record<number, unknown>)[i];
+    const bItem = (b as Record<number, unknown>)[i];
     if (!isEqual(aItem, bItem)) return false;
   }
   return true;
@@ -34,23 +35,23 @@ export const isEqual = (a: unknown, b: unknown): boolean => {
     return a.toString() === b.toString();
   }
 
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return isArrayEqual(a, b);
+  }
+
   if (isArrayLike(a) && isArrayLike(b)) {
-    return isArrayEqual(
-      Array.from(a as ArrayLike<unknown>),
-      Array.from(b as ArrayLike<unknown>),
-    );
+    return isArrayEqual(a, b);
   }
 
   if (typeof a !== "object" || typeof b !== "object") return false;
 
-  const keys = Object.keys(bObj ?? Object.create(null));
+  const aKeys = Object.keys(aObj);
+  const bKeys = Object.keys(bObj);
+  if (aKeys.length !== bKeys.length) return false;
 
-  for (const key of keys) {
-    const hasKey = Reflect.has(aObj, key);
-    if (!hasKey) return false;
-  }
-
-  for (const key of keys) {
+  for (let i = 0; i < bKeys.length; i++) {
+    const key = bKeys[i];
+    if (key === undefined || !Reflect.has(aObj, key)) return false;
     if (!isEqual(aObj[key], bObj[key])) return false;
   }
 

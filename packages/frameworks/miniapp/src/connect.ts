@@ -25,18 +25,10 @@ export function connectToPage<
 
   function flushSetData() {
     isBatchScheduled = false;
-    console.log(
-      `[code-ui connect debug] flushSetData START, pendingDelta:`,
-      pendingDelta,
-    );
     if (Object.keys(pendingDelta).length > 0 && instance && instance.setData) {
       const payload = pendingDelta;
       pendingDelta = {};
       instance.setData(payload);
-      console.log(
-        `[code-ui connect debug] flushSetData DONE, payload sent to setData:`,
-        payload,
-      );
     }
   }
 
@@ -51,19 +43,13 @@ export function connectToPage<
       return;
     }
 
-    console.log(`[code-ui connect debug] Snapshot delta:`, delta);
-
     if (!isMounted) {
       isMounted = true;
-      console.log(`[code-ui connect debug] First mount, sync setData`);
       instance.setData(delta);
     } else {
       Object.assign(pendingDelta, delta);
       if (!isBatchScheduled) {
         isBatchScheduled = true;
-        console.log(
-          `[code-ui connect debug] Scheduling flushSetData via nextTick`,
-        );
         nextTick(flushSetData);
       }
     }

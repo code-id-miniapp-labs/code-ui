@@ -179,7 +179,7 @@ export interface PinInputApi {
   /** Focus specific input cell */
   focus(index?: number): void;
   /** MiniProgram bindinput handler */
-  handleInput(e: any): void;
+  handleInput(e: any): string | void;
   /** MiniProgram bindfocus handler */
   handleFocus(e: any): void;
   /** MiniProgram bindblur handler */
