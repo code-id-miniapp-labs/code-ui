@@ -40,10 +40,14 @@ describe("serializeConfig", () => {
     const evaluated = eval(`(${code})`);
 
     expect(typeof evaluated.components.button.slots.root).toBe("function");
-    expect(evaluated.components.button.slots.root("base-btn")).toBe("base-btn shadow-xl");
+    expect(evaluated.components.button.slots.root("base-btn")).toBe(
+      "base-btn shadow-xl",
+    );
 
     expect(typeof evaluated.components.button.slots.label).toBe("function");
-    expect(evaluated.components.button.slots.label("default-label")).toBe("font-bold uppercase");
+    expect(evaluated.components.button.slots.label("default-label")).toBe(
+      "font-bold uppercase",
+    );
   });
 
   it("handles standard function declarations and object method shorthand", () => {

@@ -1,66 +1,46 @@
-import type { Plugin, ViteDevServer } from "vite";
-import { loadConfig } from "c12";
-import { componentThemes, type CodeUIConfig } from "@code-ui/core";
 import path from "node:path";
-import { createRequire } from "node:module";
+import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import {
-  transformAutoImport,
+  APP_ENTRY_RE,
+  APP_SCRIPT_SUFFIX_RE,
+  APP_STYLE_RE,
+  RAW_OR_URL_RE,
+  RESOLVED_VIRTUAL_MODULE_ID,
+  RESOLVED_VIRTUAL_MODULE_SHORT,
+  RESOLVED_VIRTUAL_THEME_ID,
+  RESOLVED_VIRTUAL_THEME_PREFIX,
+  STYLE_EXT_RE,
+  VIRTUAL_MODULE_ID,
+  VIRTUAL_MODULE_SHORT,
+  VIRTUAL_THEME_ID,
+  VIRTUAL_THEME_PREFIX,
+} from "./constants";
+import {
   generateBundleAutoImport,
+  invalidateWxmlTagCache,
+  transformAutoImport,
 } from "./core/auto-import";
+import {
+  PluginConfigManager,
+  resolveAutoImportOptions,
+  resolveTreeShakeOptions,
+} from "./core/config";
+import { cleanKeyframes, cleanKeyframesInDir } from "./core/keyframes";
+import { transformAppStyle } from "./core/style-inject";
 import { handleTreeShake } from "./core/tree-shake";
-
-const require = createRequire(import.meta.url);
+import {
+  isBundleAsset,
+  type AutoImportOptions,
+  type CodeUIVitePluginOptions,
+  type OutputBundleLike,
+  type TreeShakeOptions,
+} from "./types";
 
 export { defineConfig } from "@code-ui/core";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
+export type { AutoImportOptions, CodeUIVitePluginOptions, TreeShakeOptions };
 
-export interface AutoImportOptions {
-  enable?: boolean;
-  prefix?: string;
-  library?: string;
-  componentDir?: string;
-  componentSuffix?: string;
-}
-
-export interface TreeShakeOptions {
-  enable?: boolean;
-  library?: string;
-}
-
-export interface CodeUIVitePluginOptions {
-  cwd?: string;
-  configFile?: string;
-  autoInject?: boolean;
-  /**
-   * Append `@source "<cui.config path>"` to the app stylesheet so Tailwind
-   * generates CSS for classes written in cui.config.ts. Default: true.
-   */
-  autoSource?: boolean;
-  autoImport?: boolean | AutoImportOptions;
-  treeShake?: boolean | TreeShakeOptions;
-  ui?: CodeUIConfig["ui"];
-  components?: CodeUIConfig["components"];
-}
-
-/** App stylesheet entry (relative to project root), e.g. `src/app.scss`. */
-const APP_STYLE_RE = /^(?:src\/)?app\.(?:scss|sass|less|css|wxss)$/;
-
-const VIRTUAL_MODULE_ID = "virtual:cui/config";
-const RESOLVED_VIRTUAL_MODULE_ID = "\0" + VIRTUAL_MODULE_ID;
-
-const VIRTUAL_MODULE_SHORT = "virtual:cui-config";
-const RESOLVED_VIRTUAL_MODULE_SHORT = "\0" + VIRTUAL_MODULE_SHORT;
-
-import { generateThemeCSS, THEME_TAG } from "./core/theme";
-import {
-  cleanKeyframes,
-  cleanKeyframesInDir,
-  compileComponentTheme,
-  extractClassesFromThemeConfig,
-  mergeConfig,
-  serializeConfig,
-} from "./core/utils";
-export { generateThemeCSS, TAILWIND_PALETTES, SHADES } from "./core/theme";
+export { generateThemeCSS, SHADES, TAILWIND_PALETTES } from "./core/theme";
 export {
   cleanKeyframes,
   compileComponentTheme,
@@ -69,61 +49,53 @@ export {
   serializeConfig,
 } from "./core/utils";
 
-export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
-  let resolvedConfig: CodeUIConfig = mergeConfig(
-    { prefix: "cui" },
-    { ui: options.ui, components: options.components },
-  );
-  let configPath: string | null = null;
-  let server: ViteDevServer | null = null;
-  let viteConfigObj: any = null;
+function invalidateVirtualModules(
+  server: ViteDevServer,
+  projectRoot: string,
+): void {
+  const { moduleGraph } = server;
+  const staticIds = [
+    RESOLVED_VIRTUAL_MODULE_ID,
+    RESOLVED_VIRTUAL_MODULE_SHORT,
+    RESOLVED_VIRTUAL_THEME_ID,
+  ];
 
-  const autoInject = options.autoInject !== false;
-  const autoSource = options.autoSource !== false;
+  for (const id of staticIds) {
+    const mod = moduleGraph.getModuleById(id);
+    if (mod) moduleGraph.invalidateModule(mod);
+  }
 
-  const autoImportOpts: AutoImportOptions =
-    typeof options.autoImport === "boolean"
-      ? { enable: options.autoImport }
-      : options.autoImport || { enable: false };
+  if (!moduleGraph.idToModuleMap) return;
 
-  const treeShakeOpts: TreeShakeOptions =
-    typeof options.treeShake === "boolean"
-      ? { enable: options.treeShake }
-      : options.treeShake || { enable: false };
-
-  let projectRoot = process.cwd();
-
-  async function reloadConfig(root: string) {
-    try {
-      const { config, configFile } = await loadConfig<CodeUIConfig>({
-        name: "cui",
-        configFile: options.configFile || "cui.config",
-        cwd: options.cwd || root,
-        rcFile: false,
-      });
-
-      if (config) {
-        resolvedConfig = mergeConfig(config, {
-          ui: options.ui,
-          components: options.components,
-        });
-      } else {
-        resolvedConfig = mergeConfig(
-          { prefix: "cui" },
-          { ui: options.ui, components: options.components },
-        );
+  for (const [modId, mod] of moduleGraph.idToModuleMap) {
+    if (modId && modId.startsWith(RESOLVED_VIRTUAL_THEME_PREFIX)) {
+      moduleGraph.invalidateModule(mod);
+    } else if (mod.id) {
+      const qIdx = mod.id.indexOf("?");
+      const cleanModId = qIdx === -1 ? mod.id : mod.id.slice(0, qIdx);
+      if (
+        STYLE_EXT_RE.test(cleanModId) &&
+        APP_STYLE_RE.test(
+          path.relative(projectRoot, cleanModId).replace(/\\/g, "/"),
+        )
+      ) {
+        moduleGraph.invalidateModule(mod);
       }
-      if (configFile) {
-        configPath = configFile;
-      }
-    } catch (err) {
-      console.warn("[code-ui] Failed to load cui.config.ts:", err);
-      resolvedConfig = mergeConfig(
-        { prefix: "cui" },
-        { ui: options.ui, components: options.components },
-      );
     }
   }
+}
+
+export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
+  const configManager = new PluginConfigManager(options);
+  const autoInject = options.autoInject !== false;
+  const autoSource = options.autoSource !== false;
+  const autoImportOpts = resolveAutoImportOptions(options.autoImport);
+  const treeShakeOpts = resolveTreeShakeOptions(options.treeShake);
+
+  let server: ViteDevServer | null = null;
+  let viteConfigObj: ResolvedConfig | null = null;
+  let projectRoot = process.cwd();
+  const cleanedBundleCssPaths = new Set<string>();
 
   return {
     name: "code-ui:vite",
@@ -132,263 +104,125 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
     async configResolved(viteConfig) {
       projectRoot = viteConfig.root;
       viteConfigObj = viteConfig;
-
-      await reloadConfig(viteConfig.root);
+      await configManager.reload(viteConfig.root);
     },
 
     configureServer(devServer) {
       server = devServer;
 
-      if (configPath) {
-        devServer.watcher.add(configPath);
+      if (configManager.configPath) {
+        const resolvedConfigPath = path.resolve(configManager.configPath);
+        devServer.watcher.add(configManager.configPath);
         devServer.watcher.on("change", async (changedPath) => {
-          if (
-            configPath &&
-            path.resolve(changedPath) === path.resolve(configPath)
-          ) {
-            await reloadConfig(devServer.config.root);
-            const mod1 = server?.moduleGraph.getModuleById(
-              RESOLVED_VIRTUAL_MODULE_ID,
-            );
-            const mod2 = server?.moduleGraph.getModuleById(
-              RESOLVED_VIRTUAL_MODULE_SHORT,
-            );
-            const modTheme = server?.moduleGraph.getModuleById(
-              "\0virtual:cui/theme",
-            );
-            if (mod1) server?.moduleGraph.invalidateModule(mod1);
-            if (mod2) server?.moduleGraph.invalidateModule(mod2);
-            if (modTheme) server?.moduleGraph.invalidateModule(modTheme);
-
-            if (server?.moduleGraph?.idToModuleMap) {
-              for (const [modId, mod] of server.moduleGraph.idToModuleMap) {
-                if (modId && modId.startsWith("\0virtual:cui/theme/")) {
-                  server.moduleGraph.invalidateModule(mod);
-                } else if (
-                  mod.id &&
-                  APP_STYLE_RE.test(
-                    path
-                      .relative(projectRoot, mod.id.split("?")[0]!)
-                      .replace(/\\/g, "/"),
-                  )
-                ) {
-                  server.moduleGraph.invalidateModule(mod);
-                }
-              }
+          if (path.resolve(changedPath) === resolvedConfigPath) {
+            await configManager.reload(devServer.config.root);
+            if (server) {
+              invalidateVirtualModules(server, projectRoot);
+              server.ws.send({ type: "full-reload" });
             }
-
-            server?.ws.send({
-              type: "full-reload",
-            });
           }
         });
       }
     },
 
     resolveId(id) {
-      if (id === VIRTUAL_MODULE_ID) {
-        return RESOLVED_VIRTUAL_MODULE_ID;
-      }
-      if (id === VIRTUAL_MODULE_SHORT) {
-        return RESOLVED_VIRTUAL_MODULE_SHORT;
-      }
-      if (id === "virtual:cui/theme") {
-        return "\0virtual:cui/theme";
-      }
-      if (id.startsWith("virtual:cui/theme/")) {
-        return "\0" + id;
-      }
+      if (!id.startsWith("virtual:cui")) return null;
+      if (id === VIRTUAL_MODULE_ID) return RESOLVED_VIRTUAL_MODULE_ID;
+      if (id === VIRTUAL_MODULE_SHORT) return RESOLVED_VIRTUAL_MODULE_SHORT;
+      if (id === VIRTUAL_THEME_ID) return RESOLVED_VIRTUAL_THEME_ID;
+      if (id.startsWith(VIRTUAL_THEME_PREFIX)) return "\0" + id;
       return null;
     },
 
     async watchChange(id) {
-      if (configPath && path.resolve(id) === path.resolve(configPath)) {
-        await reloadConfig(projectRoot);
+      if (id.endsWith(".wxml")) {
+        invalidateWxmlTagCache(id);
+      }
+      if (
+        configManager.configPath &&
+        path.resolve(id) === path.resolve(configManager.configPath)
+      ) {
+        await configManager.reload(projectRoot);
       }
     },
 
     load(id) {
+      if (!id.startsWith("\0virtual:cui")) return null;
+
       if (
         id === RESOLVED_VIRTUAL_MODULE_ID ||
         id === RESOLVED_VIRTUAL_MODULE_SHORT
       ) {
-        if (configPath) this.addWatchFile(configPath);
-        return `
-const config = ${serializeConfig(resolvedConfig)};
-const g = typeof globalThis !== "undefined"
-  ? globalThis
-  : typeof window !== "undefined"
-    ? window
-    : typeof global !== "undefined"
-      ? global
-      : {};
-
-g.__CODE_UI_GLOBAL_CONFIG__ = Object.assign(g.__CODE_UI_GLOBAL_CONFIG__ || {}, config);
-
-export default config;
-
-if (import.meta.hot) {
-  import.meta.hot.accept();
-}
-`;
+        if (configManager.configPath) {
+          this?.addWatchFile?.(configManager.configPath);
+        }
+        return configManager.getVirtualConfigCode();
       }
 
-      if (id.startsWith("\0virtual:cui/theme/")) {
-        if (configPath) this.addWatchFile(configPath);
-        const componentName = id.replace("\0virtual:cui/theme/", "");
-        const factory = (componentThemes as Record<string, any>)[componentName];
-        if (!factory) {
-          throw new Error(
-            `[code-ui] Unknown component theme: "${componentName}". Available themes: ${Object.keys(componentThemes).join(", ")}`,
-          );
+      if (id.startsWith(RESOLVED_VIRTUAL_THEME_PREFIX)) {
+        if (configManager.configPath) {
+          this?.addWatchFile?.(configManager.configPath);
         }
-        const themeConfig = compileComponentTheme(
-          componentName,
-          factory,
-          resolvedConfig,
-        );
-        return `export default ${serializeConfig(themeConfig)};`;
+        const componentName = id.slice(RESOLVED_VIRTUAL_THEME_PREFIX.length);
+        return configManager.getVirtualComponentThemeCode(componentName);
       }
 
-      if (id === "\0virtual:cui/theme") {
-        if (configPath) this.addWatchFile(configPath);
-        const allThemes: Record<string, any> = {};
-        for (const [name, factory] of Object.entries(componentThemes)) {
-          allThemes[name] = compileComponentTheme(
-            name,
-            factory,
-            resolvedConfig,
-          );
+      if (id === RESOLVED_VIRTUAL_THEME_ID) {
+        if (configManager.configPath) {
+          this?.addWatchFile?.(configManager.configPath);
         }
-        return `export default ${serializeConfig(allThemes)};`;
+        return configManager.getVirtualAllThemesCode();
       }
 
       return null;
     },
 
     transform(code, id) {
-      const cleanId = id.split("?")[0];
+      if (id.startsWith("\0")) return null;
+
+      const qIdx = id.indexOf("?");
+      const cleanId = qIdx === -1 ? id : id.slice(0, qIdx);
       if (!cleanId) return null;
 
-      const isRawOrUrl = /[?&](?:raw|url|worker)\b/.test(id);
+      // 1. JSON usingComponents auto-import
+      if (cleanId.endsWith(".json")) {
+        if (!autoImportOpts.enable) return null;
+        const autoImportResult = transformAutoImport(code, id, autoImportOpts);
+        if (autoImportResult) {
+          const wxmlPath = cleanId.slice(0, -5) + ".wxml";
+          this?.addWatchFile?.(wxmlPath);
+        }
+        return autoImportResult;
+      }
 
+      if (cleanId.includes("node_modules")) return null;
+
+      // 2. App stylesheet @source & @theme CSS injection
       if (
         autoSource &&
-        !isRawOrUrl &&
-        !cleanId.includes("node_modules") &&
+        STYLE_EXT_RE.test(cleanId) &&
+        (qIdx === -1 || !RAW_OR_URL_RE.test(id)) &&
         !code.trimStart().startsWith("export ")
       ) {
         const relStyle = path
           .relative(projectRoot, cleanId)
           .replace(/\\/g, "/");
         if (APP_STYLE_RE.test(relStyle)) {
-          let injection = "";
-          if (configPath) {
-            this.addWatchFile(configPath);
-            const relConfig = path
-              .relative(path.dirname(cleanId), configPath)
-              .replace(/\\/g, "/");
-            const sourcePath = relConfig.startsWith(".")
-              ? relConfig
-              : `./${relConfig}`;
-            if (!code.includes(sourcePath)) {
-              injection += `\n@source "${sourcePath}";\n`;
-            }
-          }
-          if (!code.includes(".wxml")) {
-            injection += `\n@source "./**/*.wxml";\n`;
-          }
-
-          // Scan @code-ui/components and @code-ui/core for Tailwind utility extraction
-          let compDir: string | undefined;
-          try {
-            const compPkg = require.resolve(
-              "@code-ui/components/package.json",
-              {
-                paths: [projectRoot, path.dirname(cleanId)],
-              },
-            );
-            compDir = path.dirname(compPkg);
-            const relComp = path
-              .relative(path.dirname(cleanId), compDir)
-              .replace(/\\/g, "/");
-            const compSource = `${relComp.startsWith(".") ? relComp : `./${relComp}`}/**/*.{ts,js,wxml}`;
-            if (!code.includes(relComp)) {
-              injection += `\n@source "${compSource}";\n`;
-            }
-          } catch {}
-
-          try {
-            const corePkg = require.resolve("@code-ui/core/package.json", {
-              paths: [compDir, projectRoot, path.dirname(cleanId)].filter(
-                (p): p is string => Boolean(p),
-              ),
-            });
-            const coreDir = path.dirname(corePkg);
-            const relCore = path
-              .relative(path.dirname(cleanId), coreDir)
-              .replace(/\\/g, "/");
-            const coreSource = `${relCore.startsWith(".") ? relCore : `./${relCore}`}/**/*.{ts,js}`;
-            if (!code.includes(relCore)) {
-              injection += `\n@source "${coreSource}";\n`;
-            }
-          } catch {
-            try {
-              const coreEntry = require.resolve("@code-ui/core", {
-                paths: [projectRoot, path.dirname(cleanId)],
-              });
-              const coreDir = path.resolve(path.dirname(coreEntry), "..");
-              const relCore = path
-                .relative(path.dirname(cleanId), coreDir)
-                .replace(/\\/g, "/");
-              const coreSource = `${relCore.startsWith(".") ? relCore : `./${relCore}`}/**/*.{ts,js}`;
-              if (!code.includes(relCore)) {
-                injection += `\n@source "${coreSource}";\n`;
-              }
-            } catch {}
-          }
-
-          const allThemeClasses = new Set<string>();
-          for (const [name, factory] of Object.entries(componentThemes)) {
-            const themeConfig = compileComponentTheme(
-              name,
-              factory,
-              resolvedConfig,
-            );
-            for (const c of extractClassesFromThemeConfig(themeConfig)) {
-              allThemeClasses.add(c);
-            }
-          }
-          if (allThemeClasses.size > 0) {
-            const inlineClasses = Array.from(allThemeClasses)
-              .join(" ")
-              .replace(/\\/g, "\\\\")
-              .replace(/"/g, '\\"');
-            injection += `\n@source inline("${inlineClasses}");\n`;
-          }
-          if (!code.includes(THEME_TAG)) {
-            const themeCSS = generateThemeCSS(resolvedConfig.ui);
-            if (themeCSS) {
-              injection += `\n${themeCSS}\n`;
-            }
-          }
-          if (injection) {
-            return {
-              code: `${code}\n${injection}`,
-              map: null,
-            };
-          }
+          return transformAppStyle(
+            code,
+            cleanId,
+            projectRoot,
+            configManager,
+            (watchFile) => this?.addWatchFile?.(watchFile),
+          );
         }
       }
 
-      if (autoInject) {
+      // 3. App script entry virtual:cui/config auto-injection
+      if (autoInject && APP_SCRIPT_SUFFIX_RE.test(cleanId)) {
         const relPath = path.relative(projectRoot, cleanId).replace(/\\/g, "/");
-        const isAppEntry =
-          /^(?:src\/)?app\.(?:ts|js|tsx|jsx)$/.test(relPath) &&
-          !cleanId.includes("node_modules");
-
         if (
-          isAppEntry &&
+          APP_ENTRY_RE.test(relPath) &&
           !code.includes(VIRTUAL_MODULE_ID) &&
           !code.includes(VIRTUAL_MODULE_SHORT)
         ) {
@@ -399,26 +233,26 @@ if (import.meta.hot) {
         }
       }
 
-      const autoImportResult = transformAutoImport(code, id, autoImportOpts);
-      if (autoImportResult && cleanId.endsWith(".json")) {
-        const wxmlPath = cleanId.replace(/\.json$/, ".wxml");
-        this.addWatchFile(wxmlPath);
-      }
-      return autoImportResult;
+      return null;
     },
 
     generateBundle(_options, bundle) {
-      generateBundleAutoImport(bundle, autoImportOpts, projectRoot);
-      handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, bundle);
+      cleanedBundleCssPaths.clear();
+      const outDir = viteConfigObj?.build?.outDir || "dist";
+      const distRoot = path.resolve(projectRoot, outDir);
+      const typedBundle = bundle as unknown as OutputBundleLike;
 
-      for (const [fileName, item] of Object.entries(bundle)) {
-        if (fileName.endsWith(".wxss") || fileName.endsWith(".css")) {
-          if (
-            (item as any).type === "asset" &&
-            typeof (item as any).source === "string"
-          ) {
-            (item as any).source = cleanKeyframes((item as any).source);
-          }
+      generateBundleAutoImport(typedBundle, autoImportOpts, projectRoot);
+      handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, typedBundle);
+
+      for (const [fileName, item] of Object.entries(typedBundle)) {
+        if (
+          (fileName.endsWith(".wxss") || fileName.endsWith(".css")) &&
+          isBundleAsset(item) &&
+          typeof item.source === "string"
+        ) {
+          item.source = cleanKeyframes(item.source);
+          cleanedBundleCssPaths.add(path.resolve(distRoot, fileName));
         }
       }
     },
@@ -426,12 +260,8 @@ if (import.meta.hot) {
     closeBundle() {
       const outDir = viteConfigObj?.build?.outDir || "dist";
       const distRoot = path.resolve(projectRoot, outDir);
-      cleanKeyframesInDir(distRoot);
-    },
-
-    async writeBundle() {
-      // Tree-shaking is now handled in generateBundle to support dev mode HMR
-      // where writeBundle is not called.
+      cleanKeyframesInDir(distRoot, cleanedBundleCssPaths);
+      cleanedBundleCssPaths.clear();
     },
   };
 }

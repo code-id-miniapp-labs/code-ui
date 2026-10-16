@@ -49,6 +49,8 @@ describe("cleanKeyframes", () => {
     const output = cleanKeyframes(input);
     const matches = output.match(/@keyframes\s+([a-zA-Z0-9_-]+)/g);
     expect(matches).toEqual(["@keyframes bounce"]);
-    expect(output).toContain("animation-timing-function: cubic-bezier(.8,0,1,1)");
+    expect(output).toContain(
+      "animation-timing-function: cubic-bezier(.8,0,1,1)",
+    );
   });
 });

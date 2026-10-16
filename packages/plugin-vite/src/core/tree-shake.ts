@@ -1,18 +1,244 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { TreeShakeOptions } from "../index";
-import { resolveLibrarySourceDir, getDirSize, copyDirFresh } from "./utils";
+import type {
+  OutputBundleLike,
+  ResolvedTreeShakeOptions,
+  TreeShakeOptions,
+} from "../types";
+import { isBundleAsset } from "../types";
+import { copyDirFresh, getDirSize, resolveLibrarySourceDir } from "./utils";
+
+const utf8Decoder = new TextDecoder();
+const WXS_TAG_RE = /<wxs[^>]+src=["']([^"']+)["'][^>]*>/g;
+const WXS_REQUIRE_RE = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+
+interface LibraryDependencyGraph {
+  sourceDir: string;
+  /** component id (e.g. "@code-ui/components/runtime/drawer/index") -> direct component ids */
+  componentDeps: Map<string, string[]>;
+  /** component id -> direct WXS relative paths (e.g. "wxs/drawer-gesture.wxs") */
+  componentWxs: Map<string, string[]>;
+  /** WXS relative path -> direct required WXS relative paths */
+  wxsDeps: Map<string, string[]>;
+  /** All component directory paths relative to library root (e.g. "runtime/button") */
+  allComponentDirs: string[];
+  /** All WXS file paths relative to library root (e.g. "wxs/dom.wxs") */
+  allWxsFiles: string[];
+}
+
+const libraryGraphCache = new Map<string, LibraryDependencyGraph>();
+
+export function clearLibraryGraphCache(): void {
+  libraryGraphCache.clear();
+}
+
+function getLibraryDependencyGraph(
+  treeLibrary: string,
+  librarySourceDir: string,
+): LibraryDependencyGraph {
+  const cacheKey = `${treeLibrary}\0${librarySourceDir}`;
+  const cached = libraryGraphCache.get(cacheKey);
+  if (cached) return cached;
+
+  const allComponentDirs: string[] = [];
+  const allWxsFiles: string[] = [];
+
+  const srcRuntimeDir = path.join(librarySourceDir, "runtime");
+  if (fs.existsSync(srcRuntimeDir)) {
+    try {
+      const entries = fs.readdirSync(srcRuntimeDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          allComponentDirs.push(`runtime/${entry.name}`);
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+
+  const srcWxsDir = path.join(librarySourceDir, "wxs");
+  function collectAllWxs(dir: string) {
+    if (!fs.existsSync(dir)) return;
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          collectAllWxs(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith(".wxs")) {
+          allWxsFiles.push(
+            path.relative(librarySourceDir, fullPath).replace(/\\/g, "/"),
+          );
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+  collectAllWxs(srcWxsDir);
+
+  const graph: LibraryDependencyGraph = {
+    sourceDir: librarySourceDir,
+    componentDeps: new Map(),
+    componentWxs: new Map(),
+    wxsDeps: new Map(),
+    allComponentDirs,
+    allWxsFiles,
+  };
+
+  libraryGraphCache.set(cacheKey, graph);
+  return graph;
+}
+
+function getComponentDirectDeps(
+  graph: LibraryDependencyGraph,
+  treeLibrary: string,
+  componentId: string,
+): string[] {
+  const cached = graph.componentDeps.get(componentId);
+  if (cached !== undefined) return cached;
+
+  const relPath = componentId.slice(treeLibrary.length + 1);
+  const sourceJsonPath = path.resolve(graph.sourceDir, relPath + ".json");
+  const deps: string[] = [];
+
+  if (fs.existsSync(sourceJsonPath)) {
+    try {
+      const content = fs.readFileSync(sourceJsonPath, "utf-8");
+      const json = JSON.parse(content);
+      if (json?.usingComponents && typeof json.usingComponents === "object") {
+        const prefix = treeLibrary + "/";
+        for (const val of Object.values(json.usingComponents)) {
+          if (typeof val === "string" && val.startsWith(prefix)) {
+            deps.push(val);
+          }
+        }
+      }
+    } catch {
+      // ignore malformed json
+    }
+  }
+
+  graph.componentDeps.set(componentId, deps);
+  return deps;
+}
+
+function getComponentDirectWxs(
+  graph: LibraryDependencyGraph,
+  treeLibrary: string,
+  componentId: string,
+): string[] {
+  const cached = graph.componentWxs.get(componentId);
+  if (cached !== undefined) return cached;
+
+  const relPath = componentId.slice(treeLibrary.length + 1);
+  const sourceWxmlPath = path.resolve(graph.sourceDir, relPath + ".wxml");
+  const wxsList: string[] = [];
+
+  if (fs.existsSync(sourceWxmlPath)) {
+    try {
+      const wxmlContent = fs.readFileSync(sourceWxmlPath, "utf-8");
+      WXS_TAG_RE.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = WXS_TAG_RE.exec(wxmlContent)) !== null) {
+        const src = match[1];
+        if (src) {
+          const absoluteWxsPath = path.resolve(
+            path.dirname(sourceWxmlPath),
+            src,
+          );
+          const relWxs = path
+            .relative(graph.sourceDir, absoluteWxsPath)
+            .replace(/\\/g, "/");
+          wxsList.push(relWxs);
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+
+  graph.componentWxs.set(componentId, wxsList);
+  return wxsList;
+}
+
+function getWxsDirectDeps(
+  graph: LibraryDependencyGraph,
+  relWxs: string,
+): string[] {
+  const cached = graph.wxsDeps.get(relWxs);
+  if (cached !== undefined) return cached;
+
+  const absoluteWxsPath = path.resolve(graph.sourceDir, relWxs);
+  const deps: string[] = [];
+
+  if (fs.existsSync(absoluteWxsPath)) {
+    try {
+      const content = fs.readFileSync(absoluteWxsPath, "utf-8");
+      WXS_REQUIRE_RE.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = WXS_REQUIRE_RE.exec(content)) !== null) {
+        const reqPath = match[1];
+        if (reqPath) {
+          const normalizedReq = reqPath.endsWith(".wxs")
+            ? reqPath
+            : `${reqPath}.wxs`;
+          const importedAbsolute = path.resolve(
+            path.dirname(absoluteWxsPath),
+            normalizedReq,
+          );
+          const relImported = path
+            .relative(graph.sourceDir, importedAbsolute)
+            .replace(/\\/g, "/");
+
+          if (!relImported.startsWith("..") && !path.isAbsolute(relImported)) {
+            deps.push(relImported);
+          }
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+
+  graph.wxsDeps.set(relWxs, deps);
+  return deps;
+}
+
+function hasMissingLibraryFiles(
+  miniprogramNpmPath: string,
+  graph: LibraryDependencyGraph,
+): boolean {
+  for (const relDir of graph.allComponentDirs) {
+    if (!fs.existsSync(path.join(miniprogramNpmPath, relDir))) {
+      return true;
+    }
+  }
+  for (const relWxs of graph.allWxsFiles) {
+    if (!fs.existsSync(path.join(miniprogramNpmPath, relWxs))) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export function handleTreeShake(
-  treeShakeOpts: TreeShakeOptions,
+  treeShakeOpts: TreeShakeOptions | ResolvedTreeShakeOptions,
   projectRoot: string,
-  viteConfigObj: any,
-  bundle?: any,
-) {
+  viteConfigObj: { build?: { outDir?: string } } | null | undefined,
+  bundle?: OutputBundleLike,
+): void {
   const treeLibrary = treeShakeOpts.library || "@code-ui/components";
   const outDir = viteConfigObj?.build?.outDir || "dist";
   const distRoot = path.resolve(projectRoot, outDir);
-  const miniprogramNpmPath = path.resolve(distRoot, "miniprogram_npm", treeLibrary);
+  const miniprogramNpmPath = path.resolve(
+    distRoot,
+    "miniprogram_npm",
+    treeLibrary,
+  );
+
+  if (!fs.existsSync(miniprogramNpmPath)) return;
 
   const librarySourceDir = resolveLibrarySourceDir(treeLibrary, projectRoot);
   if (!librarySourceDir) {
@@ -22,25 +248,32 @@ export function handleTreeShake(
     return;
   }
 
-  if (!fs.existsSync(miniprogramNpmPath)) return;
-
-  const runtimeDir = path.join(miniprogramNpmPath, "runtime");
-  const wxsDir = path.join(miniprogramNpmPath, "wxs");
-
   const legacyTrashDir = path.join(miniprogramNpmPath, ".code-ui-trash");
   if (fs.existsSync(legacyTrashDir)) {
     fs.rmSync(legacyTrashDir, { recursive: true, force: true });
   }
 
+  const graph = getLibraryDependencyGraph(treeLibrary, librarySourceDir);
+
+  // Fast exit in dev mode (`treeShake: false`) when all library components/WXS are intact
+  if (
+    !treeShakeOpts.enable &&
+    !hasMissingLibraryFiles(miniprogramNpmPath, graph)
+  ) {
+    return;
+  }
+
   const usedComponents = new Set<string>();
   const usedWxs = new Set<string>();
+  const prefix = treeLibrary + "/";
 
   function processJsonContent(content: string) {
+    if (!content.includes(treeLibrary)) return;
     try {
       const json = JSON.parse(content);
-      if (json.usingComponents) {
+      if (json?.usingComponents && typeof json.usingComponents === "object") {
         for (const val of Object.values(json.usingComponents)) {
-          if (typeof val === "string" && val.startsWith(treeLibrary + "/")) {
+          if (typeof val === "string" && val.startsWith(prefix)) {
             usedComponents.add(val);
           }
         }
@@ -50,30 +283,41 @@ export function handleTreeShake(
     }
   }
 
+  const scannedBundleJsonPaths = new Set<string>();
+
   if (bundle) {
-    // Scan bundle
     for (const [fileName, item] of Object.entries(bundle)) {
-      if ((item as any).type === "asset" && fileName.endsWith(".json")) {
+      if (fileName.endsWith(".json") && isBundleAsset(item)) {
+        scannedBundleJsonPaths.add(path.resolve(distRoot, fileName));
         const source =
-          typeof (item as any).source === "string"
-            ? (item as any).source
-            : (item as any).source instanceof Uint8Array
-              ? new TextDecoder().decode((item as any).source)
+          typeof item.source === "string"
+            ? item.source
+            : item.source instanceof Uint8Array
+              ? utf8Decoder.decode(item.source)
               : undefined;
         if (source) processJsonContent(source);
       }
     }
   }
 
-  function scanJson(dir: string) {
+  function scanJsonDir(dir: string) {
     if (!fs.existsSync(dir)) return;
-    const items = fs.readdirSync(dir);
-    for (const item of items) {
-      if (item === "miniprogram_npm") continue;
-      const fullPath = path.join(dir, item);
-      if (fs.statSync(fullPath).isDirectory()) {
-        scanJson(fullPath);
-      } else if (item.endsWith(".json")) {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (entry.name === "miniprogram_npm" || entry.name === "node_modules") {
+        continue;
+      }
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanJsonDir(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith(".json")) {
+        if (scannedBundleJsonPaths.has(fullPath)) continue;
         try {
           const content = fs.readFileSync(fullPath, "utf-8");
           processJsonContent(content);
@@ -84,93 +328,41 @@ export function handleTreeShake(
     }
   }
 
-  scanJson(distRoot);
+  scanJsonDir(distRoot);
 
+  // Resolve transitive component dependencies using cached library graph
   const queue = Array.from(usedComponents);
   const visited = new Set<string>(queue);
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    const relPath = current.replace(treeLibrary + "/", "");
-    const sourceJsonPath = path.resolve(librarySourceDir, relPath + ".json");
-
-    if (fs.existsSync(sourceJsonPath)) {
-      try {
-        const content = fs.readFileSync(sourceJsonPath, "utf-8");
-        const json = JSON.parse(content);
-        if (json.usingComponents) {
-          for (const val of Object.values(json.usingComponents)) {
-            if (
-              typeof val === "string" &&
-              val.startsWith(treeLibrary + "/") &&
-              !visited.has(val)
-            ) {
-              visited.add(val);
-              usedComponents.add(val);
-              queue.push(val);
-            }
-          }
-        }
-      } catch {
-        // ignore malformed json
+  for (const current of queue) {
+    for (const dep of getComponentDirectDeps(graph, treeLibrary, current)) {
+      if (!visited.has(dep)) {
+        visited.add(dep);
+        usedComponents.add(dep);
+        queue.push(dep);
       }
     }
   }
 
   const usedComponentDirs = new Set<string>();
   for (const comp of usedComponents) {
-    const relPath = comp.replace(treeLibrary + "/", "");
+    const relPath = comp.slice(prefix.length);
     const dirName = path.dirname(relPath).replace(/\\/g, "/");
     usedComponentDirs.add(dirName);
 
-    const sourceWxmlPath = path.resolve(librarySourceDir, relPath + ".wxml");
-    if (fs.existsSync(sourceWxmlPath)) {
-      const wxmlContent = fs.readFileSync(sourceWxmlPath, "utf-8");
-      const wxsRegex = /<wxs[^>]+src=["']([^"']+)["'][^>]*>/g;
-      let match;
-      while ((match = wxsRegex.exec(wxmlContent)) !== null) {
-        const src = match[1];
-        if (src) {
-          const absoluteWxsPath = path.resolve(path.dirname(sourceWxmlPath), src);
-          const relWxs = path.relative(librarySourceDir, absoluteWxsPath).replace(/\\/g, "/");
-          usedWxs.add(relWxs);
-        }
-      }
+    for (const relWxs of getComponentDirectWxs(graph, treeLibrary, comp)) {
+      usedWxs.add(relWxs);
     }
   }
 
-  // Deep scan for nested WXS dependencies
+  // Resolve transitive WXS dependencies using cached library graph
   const wxsQueue = Array.from(usedWxs);
   const visitedWxs = new Set<string>(wxsQueue);
-  const wxsRequireRegex = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
-
-  while (wxsQueue.length > 0) {
-    const currentRelWxs = wxsQueue.shift()!;
-    const absoluteWxsPath = path.resolve(librarySourceDir, currentRelWxs);
-
-    if (fs.existsSync(absoluteWxsPath)) {
-      try {
-        const content = fs.readFileSync(absoluteWxsPath, "utf-8");
-        let match: RegExpExecArray | null;
-        while ((match = wxsRequireRegex.exec(content)) !== null) {
-          const reqPath = match[1];
-          if (reqPath) {
-            const normalizedReq = reqPath.endsWith(".wxs") ? reqPath : `${reqPath}.wxs`;
-            const importedAbsolute = path.resolve(path.dirname(absoluteWxsPath), normalizedReq);
-            const relImported = path
-              .relative(librarySourceDir, importedAbsolute)
-              .replace(/\\/g, "/");
-
-            if (!relImported.startsWith("..") && !path.isAbsolute(relImported)) {
-              if (!visitedWxs.has(relImported)) {
-                visitedWxs.add(relImported);
-                usedWxs.add(relImported);
-                wxsQueue.push(relImported);
-              }
-            }
-          }
-        }
-      } catch {
-        // ignore read error
+  for (const currentRelWxs of wxsQueue) {
+    for (const depWxs of getWxsDirectDeps(graph, currentRelWxs)) {
+      if (!visitedWxs.has(depWxs)) {
+        visitedWxs.add(depWxs);
+        usedWxs.add(depWxs);
+        wxsQueue.push(depWxs);
       }
     }
   }
@@ -189,7 +381,10 @@ export function handleTreeShake(
         copyDirFresh(srcDir, destDir);
         restoredComponents++;
       } catch (err) {
-        console.warn(`[code-ui:tree-shake] Failed to restore "${relDir}":`, err);
+        console.warn(
+          `[code-ui:tree-shake] Failed to restore "${relDir}":`,
+          err,
+        );
       }
     }
   }
@@ -203,7 +398,10 @@ export function handleTreeShake(
         fs.copyFileSync(srcFile, destFile);
         restoredWxs++;
       } catch (err) {
-        console.warn(`[code-ui:tree-shake] Failed to restore wxs "${relWxs}":`, err);
+        console.warn(
+          `[code-ui:tree-shake] Failed to restore wxs "${relWxs}":`,
+          err,
+        );
       }
     }
   }
@@ -215,19 +413,25 @@ export function handleTreeShake(
   }
 
   if (treeShakeOpts.enable) {
+    const runtimeDir = path.join(miniprogramNpmPath, "runtime");
+    const wxsDir = path.join(miniprogramNpmPath, "wxs");
+
     if (fs.existsSync(runtimeDir)) {
-      const components = fs.readdirSync(runtimeDir);
-      for (const comp of components) {
-        const compDir = path.join(runtimeDir, comp);
-        if (fs.statSync(compDir).isDirectory()) {
-          const relToLib = "runtime/" + comp;
+      const entries = fs.readdirSync(runtimeDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const relToLib = `runtime/${entry.name}`;
           if (!usedComponentDirs.has(relToLib)) {
+            const compDir = path.join(runtimeDir, entry.name);
             try {
               savedBytes += getDirSize(compDir);
               fs.rmSync(compDir, { recursive: true, force: true });
               removedComponents++;
             } catch (err) {
-              console.warn(`[code-ui:tree-shake] Failed to purge "${relToLib}":`, err);
+              console.warn(
+                `[code-ui:tree-shake] Failed to purge "${relToLib}":`,
+                err,
+              );
             }
           }
         }
@@ -235,30 +439,48 @@ export function handleTreeShake(
     }
 
     if (fs.existsSync(wxsDir)) {
-      function purgeUnusedWxs(dir: string) {
-        const items = fs.readdirSync(dir);
-        for (const item of items) {
-          const fullPath = path.join(dir, item);
-          if (fs.statSync(fullPath).isDirectory()) {
-            purgeUnusedWxs(fullPath);
-            if (fs.existsSync(fullPath) && fs.readdirSync(fullPath).length === 0) {
+      function purgeUnusedWxs(dir: string): boolean {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        let remainingEntries = 0;
+
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            const isEmpty = purgeUnusedWxs(fullPath);
+            if (isEmpty) {
               try {
                 fs.rmdirSync(fullPath);
-              } catch {}
+              } catch {
+                remainingEntries++;
+              }
+            } else {
+              remainingEntries++;
             }
-          } else if (item.endsWith(".wxs")) {
-            const relToLib = path.relative(miniprogramNpmPath, fullPath).replace(/\\/g, "/");
+          } else if (entry.isFile() && entry.name.endsWith(".wxs")) {
+            const relToLib = path
+              .relative(miniprogramNpmPath, fullPath)
+              .replace(/\\/g, "/");
             if (!usedWxs.has(relToLib)) {
               try {
                 savedBytes += fs.statSync(fullPath).size;
                 fs.rmSync(fullPath, { force: true });
                 removedWxs++;
               } catch (err) {
-                console.warn(`[code-ui:tree-shake] Failed to purge wxs "${relToLib}":`, err);
+                remainingEntries++;
+                console.warn(
+                  `[code-ui:tree-shake] Failed to purge wxs "${relToLib}":`,
+                  err,
+                );
               }
+            } else {
+              remainingEntries++;
             }
+          } else {
+            remainingEntries++;
           }
         }
+
+        return remainingEntries === 0;
       }
       purgeUnusedWxs(wxsDir);
     }
@@ -268,7 +490,9 @@ export function handleTreeShake(
       try {
         savedBytes += fs.statSync(deadAppWxss).size;
         fs.rmSync(deadAppWxss, { force: true });
-      } catch {}
+      } catch {
+        // ignore error
+      }
     }
 
     if (removedComponents > 0 || removedWxs > 0) {

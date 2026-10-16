@@ -1,52 +1,130 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { AutoImportOptions } from "../index";
+import type {
+  AutoImportOptions,
+  OutputBundleLike,
+  ResolvedAutoImportOptions,
+} from "../types";
+import { isBundleAsset } from "../types";
+import { resolveAutoImportOptions } from "./config";
+
+const utf8Decoder = new TextDecoder();
+
+const EXPORT_DEFAULT_PREFIX_RE = /^export\s+default\s+/;
+const TRAILING_SEMI_RE = /;?\s*$/;
+
+interface WxmlCacheEntry {
+  mtimeMs: number;
+  tags: string[];
+}
+
+const wxmlTagCache = new Map<string, WxmlCacheEntry>();
+
+export function invalidateWxmlTagCache(wxmlPath?: string): void {
+  if (wxmlPath) {
+    wxmlTagCache.delete(wxmlPath);
+  } else {
+    wxmlTagCache.clear();
+  }
+}
+
+function toResolvedOptions(
+  opts: AutoImportOptions | ResolvedAutoImportOptions,
+): ResolvedAutoImportOptions {
+  if ("tagRegex" in opts && "prefixRegex" in opts) {
+    return opts;
+  }
+  return resolveAutoImportOptions(opts);
+}
+
+function extractTagsFromWxml(
+  wxmlPath: string,
+  tagRegex: RegExp,
+): string[] | null {
+  const stat = fs.statSync(wxmlPath, { throwIfNoEntry: false });
+  if (!stat || !stat.isFile()) return null;
+
+  const cacheKey = `${wxmlPath}\0${tagRegex.source}`;
+  const cached = wxmlTagCache.get(cacheKey);
+  if (cached && cached.mtimeMs === stat.mtimeMs) {
+    return cached.tags;
+  }
+
+  const wxmlContent = fs.readFileSync(wxmlPath, "utf-8");
+  tagRegex.lastIndex = 0;
+
+  const uniqueSet = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = tagRegex.exec(wxmlContent)) !== null) {
+    if (match[1]) {
+      uniqueSet.add(match[1]);
+    }
+  }
+
+  const tags = Array.from(uniqueSet);
+  wxmlTagCache.set(cacheKey, { mtimeMs: stat.mtimeMs, tags });
+  return tags;
+}
+
+function injectUsingComponents(
+  json: Record<string, any>,
+  uniqueTags: readonly string[],
+  resolved: ResolvedAutoImportOptions,
+): boolean {
+  let modified = false;
+  if (!json.usingComponents || typeof json.usingComponents !== "object") {
+    json.usingComponents = {};
+  }
+
+  const { library, dirPrefix, suffix, prefixRegex } = resolved;
+
+  for (const tag of uniqueTags) {
+    if (!json.usingComponents[tag]) {
+      const componentName = tag.replace(prefixRegex, "");
+      json.usingComponents[tag] =
+        `${library}/${dirPrefix}${componentName}${suffix}`;
+      modified = true;
+    }
+  }
+
+  return modified;
+}
 
 export function transformAutoImport(
   code: string,
   id: string,
-  autoImportOpts: AutoImportOptions,
+  autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
 ): { code: string; map: null } | null {
-  const cleanId = id.split("?")[0];
-  if (!cleanId || !autoImportOpts.enable || !cleanId.endsWith(".json")) {
+  const resolved = toResolvedOptions(autoImportOpts);
+  if (!resolved.enable) return null;
+
+  const qIdx = id.indexOf("?");
+  const cleanId = qIdx === -1 ? id : id.slice(0, qIdx);
+  if (!cleanId || !cleanId.endsWith(".json")) {
     return null;
   }
 
-  const wxmlPath = cleanId.replace(/\.json$/, ".wxml");
-  if (!fs.existsSync(wxmlPath)) return null;
-
-  const prefix = autoImportOpts.prefix || "c";
-  const library = autoImportOpts.library || "@code-ui/components";
-  const tagRegex = new RegExp(`<(${prefix}-[a-zA-Z0-9-]+)[\\s>\\/]`, "g");
+  const wxmlPath = cleanId.slice(0, -5) + ".wxml";
 
   try {
-    const wxmlContent = fs.readFileSync(wxmlPath, "utf-8");
-    const matches = Array.from(wxmlContent.matchAll(tagRegex));
+    const uniqueTags = extractTagsFromWxml(wxmlPath, resolved.tagRegex);
+    if (!uniqueTags || uniqueTags.length === 0) return null;
 
-    if (matches.length === 0) return null;
-
-    const uniqueTags = [
-      ...new Set(matches.map((m) => m[1]).filter(Boolean)),
-    ] as string[];
     let isExportDefault = false;
     let isStringExport = false;
     let jsonStr = code.trim();
     if (jsonStr.startsWith("export default")) {
       isExportDefault = true;
       jsonStr = jsonStr
-        .replace(/^export\s+default\s+/, "")
-        .replace(/;?\s*$/, "");
+        .replace(EXPORT_DEFAULT_PREFIX_RE, "")
+        .replace(TRAILING_SEMI_RE, "");
     }
 
-    let json: any;
+    let json: unknown;
     try {
       json = JSON.parse(jsonStr);
     } catch {
-      try {
-        json = new Function(`return (${jsonStr})`)();
-      } catch {
-        return null;
-      }
+      return null;
     }
 
     if (typeof json === "string") {
@@ -67,42 +145,19 @@ export function transformAutoImport(
       return null;
     }
 
-    let modified = false;
-    json.usingComponents = json.usingComponents || {};
-
-    const compDir =
-      autoImportOpts.componentDir !== undefined
-        ? autoImportOpts.componentDir
-        : library === "@code-ui/components"
-          ? "runtime"
-          : "";
-    const dirPrefix = compDir ? `${compDir}/` : "";
-
-    for (const tag of uniqueTags) {
-      if (!json.usingComponents[tag]) {
-        const componentName = tag.replace(new RegExp(`^${prefix}-`), "");
-        const suffix =
-          autoImportOpts.componentSuffix !== undefined
-            ? autoImportOpts.componentSuffix
-            : "/index";
-        json.usingComponents[tag] =
-          `${library}/${dirPrefix}${componentName}${suffix}`;
-        modified = true;
-      }
-    }
+    const modified = injectUsingComponents(
+      json as Record<string, any>,
+      uniqueTags,
+      resolved,
+    );
 
     if (modified) {
       const resultStr = JSON.stringify(json, null, 2);
-      let finalCode: string;
-      if (isExportDefault) {
-        if (isStringExport) {
-          finalCode = `export default ${JSON.stringify(resultStr)};`;
-        } else {
-          finalCode = `export default ${resultStr};`;
-        }
-      } else {
-        finalCode = resultStr;
-      }
+      const finalCode = isExportDefault
+        ? isStringExport
+          ? `export default ${JSON.stringify(resultStr)};`
+          : `export default ${resultStr};`
+        : resultStr;
       return { code: finalCode, map: null };
     }
   } catch (err) {
@@ -113,84 +168,42 @@ export function transformAutoImport(
 }
 
 export function generateBundleAutoImport(
-  bundle: any,
-  autoImportOpts: AutoImportOptions,
+  bundle: OutputBundleLike,
+  autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
   projectRoot: string,
-) {
-  if (!autoImportOpts.enable) return;
+): void {
+  const resolved = toResolvedOptions(autoImportOpts);
+  if (!resolved.enable) return;
 
-  const prefix = autoImportOpts.prefix || "c";
-  const library = autoImportOpts.library || "@code-ui/components";
-  const compDir =
-    autoImportOpts.componentDir !== undefined
-      ? autoImportOpts.componentDir
-      : library === "@code-ui/components"
-        ? "runtime"
-        : "";
-  const dirPrefix = compDir ? `${compDir}/` : "";
-  const suffix =
-    autoImportOpts.componentSuffix !== undefined
-      ? autoImportOpts.componentSuffix
-      : "/index";
+  const srcRoot = path.resolve(projectRoot, "src");
 
   for (const [fileName, item] of Object.entries(bundle)) {
-    // @ts-ignore
-    if (item.type !== "asset" || !fileName.endsWith(".json")) continue;
-    // @ts-ignore
+    if (!fileName.endsWith(".json") || !isBundleAsset(item)) continue;
+
     const source =
-      // @ts-ignore
       typeof item.source === "string"
-        ? // @ts-ignore
-          item.source
-        : // @ts-ignore
-          item.source instanceof Uint8Array
-          ? // @ts-ignore
-            new TextDecoder().decode(item.source)
+        ? item.source
+        : item.source instanceof Uint8Array
+          ? utf8Decoder.decode(item.source)
           : undefined;
     if (!source) continue;
 
-    const candidates = [
-      path.resolve(projectRoot, "src", fileName.replace(/\.json$/, ".wxml")),
-      path.resolve(projectRoot, fileName.replace(/\.json$/, ".wxml")),
-    ];
+    const relWxml = fileName.slice(0, -5) + ".wxml";
+    const candidateInSrc = path.resolve(srcRoot, relWxml);
+    let uniqueTags = extractTagsFromWxml(candidateInSrc, resolved.tagRegex);
 
-    let wxmlPath: string | null = null;
-    for (const p of candidates) {
-      if (fs.existsSync(p)) {
-        wxmlPath = p;
-        break;
-      }
+    if (uniqueTags === null) {
+      const candidateInRoot = path.resolve(projectRoot, relWxml);
+      uniqueTags = extractTagsFromWxml(candidateInRoot, resolved.tagRegex);
     }
 
-    if (!wxmlPath) continue;
+    if (!uniqueTags || uniqueTags.length === 0) continue;
 
     try {
-      const wxmlContent = fs.readFileSync(wxmlPath, "utf-8");
-      const matches = Array.from(
-        wxmlContent.matchAll(
-          new RegExp(`<(${prefix}-[a-zA-Z0-9-]+)[\\s>\\/]`, "g"),
-        ),
-      );
-      if (matches.length === 0) continue;
-
-      const uniqueTags = [
-        ...new Set(matches.map((m) => m[1]).filter(Boolean)),
-      ] as string[];
       const json = JSON.parse(source);
-      json.usingComponents = json.usingComponents || {};
+      if (!json || typeof json !== "object" || Array.isArray(json)) continue;
 
-      let modified = false;
-      for (const tag of uniqueTags) {
-        if (!json.usingComponents[tag]) {
-          const componentName = tag.replace(new RegExp(`^${prefix}-`), "");
-          json.usingComponents[tag] =
-            `${library}/${dirPrefix}${componentName}${suffix}`;
-          modified = true;
-        }
-      }
-
-      if (modified) {
-        // @ts-ignore
+      if (injectUsingComponents(json, uniqueTags, resolved)) {
         item.source = JSON.stringify(json, null, 2);
       }
     } catch (err) {

@@ -8,7 +8,10 @@ export default defineConfig({
   clean: true,
   target: "node18",
   fixedExtension: false,
+  outputOptions: {
+    exports: "named",
+  },
   deps: {
-    neverBundle: ["vite", "c12"],
+    neverBundle: ["vite", "c12", "@code-ui/core"],
   },
 });

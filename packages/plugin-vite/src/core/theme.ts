@@ -1,4 +1,8 @@
-import type { CodeUIConfig, ColorValue } from "@code-ui/core";
+import {
+  DEFAULT_THEME_COLORS,
+  type CodeUIConfig,
+  type ColorValue,
+} from "@code-ui/core";
 
 export const THEME_TAG = "/* @code-ui:theme */";
 
@@ -180,6 +184,18 @@ export const RADIUS_FACTORS: Array<[string, number]> = [
   ["3xl", 6],
 ];
 
+const RAW_COLOR_FN_RE = /^(?:rgb|rgba|hsl|hsla|oklch|color)\(/i;
+const WHITESPACE_RE = /\s+/;
+
+const DEFAULT_COLORS: Record<string, string> = {
+  primary: "red",
+  neutral: "zinc",
+  danger: "red",
+  success: "green",
+  warning: "amber",
+  info: "blue",
+};
+
 export function getPaletteColor(
   palette: string,
   shade: number,
@@ -190,10 +206,7 @@ export function getPaletteColor(
 export function isRawColor(val: string): boolean {
   if (typeof val !== "string") return false;
   const trimmed = val.trim();
-  return (
-    trimmed.startsWith("#") ||
-    /^(?:rgb|rgba|hsl|hsla|oklch|color)\(/i.test(trimmed)
-  );
+  return trimmed.startsWith("#") || RAW_COLOR_FN_RE.test(trimmed);
 }
 
 export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
@@ -201,18 +214,8 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   const rootLines: string[] = [];
   const darkLines: string[] = [];
 
-  // 1. Process colors
-  const defaultColors: Record<string, string> = {
-    primary: "red",
-    neutral: "zinc",
-    danger: "red",
-    success: "green",
-    warning: "amber",
-    info: "blue",
-  };
-
   const configuredColors: Record<string, ColorValue | string | undefined> = {
-    ...defaultColors,
+    ...DEFAULT_COLORS,
     ...ui?.colors,
   };
 
@@ -226,16 +229,12 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
         themeLines.push(
           `  --color-${key}-${shade}: var(--color-${val}-${shade}${fallbackStr});`,
         );
-      }
-      themeLines.push(`  --color-${key}: var(--color-${key}-500);`);
-
-      for (const shade of SHADES) {
-        const fallback = getPaletteColor(val, shade);
-        const fallbackStr = fallback ? `, ${fallback}` : "";
         rootLines.push(
           `  --ui-color-${key}-${shade}: var(--color-${val}-${shade}${fallbackStr});`,
         );
       }
+      themeLines.push(`  --color-${key}: var(--color-${key}-500);`);
+
       rootLines.push(`  --ui-${key}: var(--ui-color-${key}-500);`);
       rootLines.push(`  --color-${key}: var(--ui-${key});`);
       rootLines.push(`  --color-${val}: var(--color-${val}-500);`);
@@ -299,4 +298,139 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   }
 
   return css;
+}
+
+export function isPlainObject(val: unknown): val is Record<string, any> {
+  return Boolean(val) && typeof val === "object" && !Array.isArray(val);
+}
+
+export function mergeComponentConfig(
+  base: Record<string, any> = {},
+  overrides?: Record<string, any>,
+): Record<string, any> {
+  if (!overrides) return base;
+
+  const result: Record<string, any> = {
+    ...base,
+    ...overrides,
+  };
+
+  if (base.base && overrides.base) {
+    result.base = [base.base, overrides.base];
+  }
+
+  if (base.slots || overrides.slots) {
+    result.slots = { ...base.slots };
+    if (isPlainObject(overrides.slots)) {
+      for (const [slotKey, slotVal] of Object.entries(overrides.slots)) {
+        if (slotVal === undefined) continue;
+        result.slots[slotKey] = base.slots?.[slotKey]
+          ? [base.slots[slotKey], slotVal]
+          : slotVal;
+      }
+    }
+  }
+
+  if (base.variants || overrides.variants) {
+    result.variants = { ...base.variants };
+    if (isPlainObject(overrides.variants)) {
+      for (const [vGroup, vOptions] of Object.entries(overrides.variants)) {
+        if (!isPlainObject(vOptions)) continue;
+        const baseGroup = isPlainObject(base.variants?.[vGroup])
+          ? base.variants[vGroup]
+          : {};
+        result.variants[vGroup] = { ...baseGroup };
+
+        for (const [vKey, vVal] of Object.entries(vOptions)) {
+          if (vVal === undefined) continue;
+          const baseVal = baseGroup[vKey];
+
+          if (isPlainObject(baseVal) && isPlainObject(vVal)) {
+            const mergedSlots: Record<string, any> = { ...baseVal };
+            for (const [sKey, sVal] of Object.entries(vVal)) {
+              if (sVal === undefined) continue;
+              mergedSlots[sKey] = baseVal[sKey] ? [baseVal[sKey], sVal] : sVal;
+            }
+            result.variants[vGroup][vKey] = mergedSlots;
+          } else {
+            result.variants[vGroup][vKey] = baseVal ? [baseVal, vVal] : vVal;
+          }
+        }
+      }
+    }
+  }
+
+  if (base.compoundVariants || overrides.compoundVariants) {
+    result.compoundVariants = [
+      ...(Array.isArray(base.compoundVariants) ? base.compoundVariants : []),
+      ...(Array.isArray(overrides.compoundVariants)
+        ? overrides.compoundVariants
+        : []),
+    ];
+  }
+
+  if (base.defaultVariants || overrides.defaultVariants) {
+    result.defaultVariants = {
+      ...base.defaultVariants,
+      ...overrides.defaultVariants,
+    };
+  }
+
+  return result;
+}
+
+export function compileComponentTheme(
+  componentName: string,
+  factory: any,
+  resolvedConfig: CodeUIConfig,
+) {
+  const userColors = resolvedConfig.ui?.colors
+    ? Object.keys(resolvedConfig.ui.colors)
+    : [];
+  const allColors =
+    userColors.length > 0
+      ? Array.from(new Set([...DEFAULT_THEME_COLORS, ...userColors]))
+      : DEFAULT_THEME_COLORS;
+
+  const isFactoryFn = typeof factory === "function";
+  const rawTheme = isFactoryFn ? factory({ colors: allColors }) : factory;
+  const overrides = resolvedConfig.components?.[componentName];
+
+  if (!overrides) {
+    return isFactoryFn ? rawTheme : structuredClone(rawTheme);
+  }
+
+  const baseTheme = isFactoryFn ? rawTheme : structuredClone(rawTheme);
+  return mergeComponentConfig(baseTheme, overrides);
+}
+
+export function extractClassesFromThemeConfig(themeConfig: any): string[] {
+  const classes = new Set<string>();
+
+  function collect(val: any) {
+    if (!val) return;
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (!trimmed) return;
+      for (const token of trimmed.split(WHITESPACE_RE)) {
+        if (token) classes.add(token);
+      }
+    } else if (Array.isArray(val)) {
+      for (const item of val) collect(item);
+    } else if (typeof val === "object") {
+      for (const v of Object.values(val)) collect(v);
+    }
+  }
+
+  if (themeConfig.base) collect(themeConfig.base);
+  if (themeConfig.slots) collect(themeConfig.slots);
+  if (themeConfig.variants) collect(themeConfig.variants);
+  if (themeConfig.compoundVariants) {
+    for (const cv of themeConfig.compoundVariants) {
+      if (cv.class) collect(cv.class);
+      if (cv.className) collect(cv.className);
+    }
+  }
+
+  return Array.from(classes);
 }
