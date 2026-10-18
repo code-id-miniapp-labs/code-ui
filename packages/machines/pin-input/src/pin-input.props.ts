@@ -20,4 +20,3 @@ export const defaultPinInputProps: PinInputProps = {
   separatorChar: "-",
   ui: {},
 };
-

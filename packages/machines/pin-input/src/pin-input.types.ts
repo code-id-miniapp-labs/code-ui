@@ -4,7 +4,12 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type {
+  BoundFormField,
+  FormBusEvents,
+  FormValidateOn,
+} from "@code-ui/form";
+import type { EventBus, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./pin-input.anatomy";
 
 export type PinInputType = "numeric" | "alphanumeric" | "alphabetic";
@@ -36,72 +41,85 @@ export interface PinInputValueInvalidDetails {
 
 export interface PinInputProps {
   /** The unique id of the component */
-  id?: string;
+  id?: string | undefined;
   /** Sub-element ids */
-  ids?: Record<string, any>;
+  ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
-  component?: MiniAppComponent;
+  component?: MiniAppComponent | undefined;
+  /** Optional explicit Form EventBus (defaults to inject(component, FormBusKey)) */
+  formBus?: EventBus<FormBusEvents> | undefined;
   /** Custom UI slot classes */
-  ui?: PinInputUI;
-  /** Form field name for hidden input */
-  name?: string;
+  ui?: PinInputUI | undefined;
+  /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
+  form?: string | undefined;
+  /** Form field name for hidden input and Form registration */
+  name?: string | undefined;
+  /** Field-level override for Form validation triggers */
+  validateOn?: FormValidateOn | undefined;
+  /** Whether the input is currently invalid */
+  invalid?: boolean | undefined;
   /** Visual variant */
-  variant?: PinInputVariant;
+  variant?: PinInputVariant | undefined;
   /** Semantic color */
-  color?: PinInputColor;
+  color?: PinInputColor | undefined;
   /** Size variant */
-  size?: PinInputSize;
+  size?: PinInputSize | undefined;
+  /** Form field wrapper disabled state */
+  fieldDisabled?: boolean | undefined;
+  /** Form field wrapper size override */
+  fieldSize?: PinInputSize | undefined;
   /** Highlight all inputs with color ring */
-  highlight?: boolean;
+  highlight?: boolean | undefined;
   /** Number of inputs (PIN length) */
-  length?: number;
+  length?: number | undefined;
   /** Controlled value array */
-  value?: string[];
+  value?: string[] | undefined;
   /** Default value array */
-  defaultValue?: string[];
+  defaultValue?: string[] | undefined;
   /** Type of input accepted */
-  type?: PinInputType;
+  type?: PinInputType | undefined;
   /** Whether the inputs are masked (password mode) */
-  mask?: boolean;
+  mask?: boolean | undefined;
   /** Placeholder character for empty cells */
-  placeholder?: string;
+  placeholder?: string | undefined;
   /** Whether the component is disabled */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Whether the component is read-only */
-  readOnly?: boolean;
+  readOnly?: boolean | undefined;
   /** Whether one-time-code auto-fill is supported */
-  otp?: boolean;
+  otp?: boolean | undefined;
   /** Whether to focus the first input on mount */
-  autoFocus?: boolean;
+  autoFocus?: boolean | undefined;
   /** Whether to blur the active input when all fields are filled */
-  blurOnComplete?: boolean;
+  blurOnComplete?: boolean | undefined;
   /** Whether to select text on focus */
-  selectOnFocus?: boolean;
+  selectOnFocus?: boolean | undefined;
   /**
    * Nuxt UI-style separator configuration:
    * - number: Insert separator after every Nth input (e.g. 3 for 123-456)
    * - number[]: Insert separator after specific input counts (e.g. [3])
    * - boolean: If true, defaults to inserting after length / 2
    */
-  separator?: PinInputSeparator;
+  separator?: PinInputSeparator | undefined;
   /** The separator character (defaults to "-") */
-  separatorChar?: string;
+  separatorChar?: string | undefined;
   /** Callback fired when value changes */
-  onValueChange?: (details: PinInputValueChangeDetails) => void;
+  onValueChange?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when all inputs are filled */
-  onValueComplete?: (details: PinInputValueChangeDetails) => void;
+  onValueComplete?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when an invalid character is entered */
-  onValueInvalid?: (details: PinInputValueInvalidDetails) => void;
+  onValueInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
 }
 
 export type PinInputEvent =
   | { type: "INPUT.CHANGE"; index: number; value: string }
-  | { type: "INPUT.FOCUS"; index: number; force?: boolean }
-  | { type: "INPUT.BLUR"; index?: number }
+  | { type: "INPUT.FOCUS"; index: number; force?: boolean | undefined }
+  | { type: "INPUT.BLUR"; index?: number | undefined }
   | { type: "INPUT.CLEAR" }
   | { type: "INPUT.PASTE"; index: number; value: string }
   | { type: "SET_VALUE"; value: string[] | string }
-  | { type: "CLEAR_VALUE" };
+  | { type: "CLEAR_VALUE" }
+  | { type: "RESET_VALUE" };
 
 export interface PinInputContext {
   length: number;
@@ -109,6 +127,11 @@ export interface PinInputContext {
   focusedIndex: number;
   disabled: boolean;
   readOnly: boolean;
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: PinInputSize | "";
+  invalid: boolean;
   mask: boolean;
   otp: boolean;
   type: PinInputType;
@@ -117,6 +140,7 @@ export interface PinInputContext {
   separatorChar: string;
   blurOnComplete: boolean;
   selectOnFocus: boolean;
+  form: string;
   name: string;
   ui: PinInputUI;
 }
@@ -128,7 +152,11 @@ export interface PinInputComputed {
 }
 
 export interface PinInputRefs {
-  prevValue?: string[];
+  prevValue?: string[] | undefined;
+  initialValue?: string[] | undefined;
+  formField?: BoundFormField | undefined;
+  currentFormBus?: EventBus<FormBusEvents> | undefined;
+  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface PinInputSchema extends MachineSchema {
@@ -169,14 +197,24 @@ export interface PinInputApi {
   isValueComplete: boolean;
   /** Whether at least one input has a value */
   isFilled: boolean;
+  /** Whether the field is invalid (via Form validation or `invalid` prop) */
+  invalid: boolean;
+  /** Whether the field is disabled (via Form or direct prop) */
+  disabled: boolean;
+  /** Whether the field is read-only (via Form or direct prop) */
+  readOnly: boolean;
+  /** Effective size variant */
+  size: PinInputSize;
   /** Index of currently focused input (-1 if none) */
   focusedIndex: number;
   /** List of cell descriptors ready for wx:for loop */
   inputs: PinInputCell[];
   /** Set value programmatically */
   setValue(value: string[] | string): void;
-  /** Clear all values */
+  /** Clear all values and focus first slot */
   clearValue(): void;
+  /** Reset value back to initial/default value without focusing */
+  resetValue(): void;
   /** Focus specific input cell */
   focus(index?: number): void;
   /** MiniProgram bindinput handler */

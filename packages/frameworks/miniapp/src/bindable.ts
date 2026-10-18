@@ -15,7 +15,8 @@ export const bindable: BindableFn = Object.assign(
 
     const _signal = signal<T>(initial as T) as SignalFn<T>;
 
-    const controlled = () => props().value !== undefined;
+    const controlled = () =>
+      props().value !== undefined && props().value !== null;
 
     return {
       initial,

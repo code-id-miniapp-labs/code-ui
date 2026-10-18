@@ -1,6 +1,6 @@
-<view id="{{pinInput.rootProps.id}}" class="{{classes.root}}" data-scope="pin-input" data-part="root" data-state="{{pinInput.state}}" data-disabled="{{pinInput.rootProps['data-disabled']}}" data-readonly="{{pinInput.rootProps['data-readonly']}}" data-complete="{{pinInput.rootProps['data-complete']}}" role="group" aria-disabled="{{pinInput.rootProps['aria-disabled']}}">
+<view id="{{pinInput.rootProps.id}}" class="{{classes.root}}" data-scope="pin-input" data-part="root" data-state="{{pinInput.state}}" data-disabled="{{pinInput.rootProps['data-disabled']}}" data-readonly="{{pinInput.rootProps['data-readonly']}}" data-invalid="{{pinInput.rootProps['data-invalid']}}" data-complete="{{pinInput.rootProps['data-complete']}}" role="group" aria-disabled="{{pinInput.rootProps['aria-disabled']}}" aria-invalid="{{pinInput.rootProps['aria-invalid']}}">
   <text wx:if="{{label}}" id="{{pinInput.labelProps.id}}" class="{{classes.label}}" data-scope="pin-input" data-part="label">{{label}}</text>
-  <view id="{{pinInput.controlProps.id}}" class="{{classes.control}}" data-scope="pin-input" data-part="control" data-disabled="{{pinInput.controlProps['data-disabled']}}">
+  <view id="{{pinInput.controlProps.id}}" class="{{classes.control}}" data-scope="pin-input" data-part="control" data-disabled="{{pinInput.controlProps['data-disabled']}}" data-invalid="{{pinInput.controlProps['data-invalid']}}">
     <block wx:for="{{pinInput.inputs}}" wx:key="index">
       <input
         id="{{item.inputProps.id}}"
@@ -12,6 +12,7 @@
         data-focused="{{item.inputProps['data-focused']}}"
         data-disabled="{{item.inputProps['data-disabled']}}"
         data-readonly="{{item.inputProps['data-readonly']}}"
+        data-invalid="{{item.inputProps['data-invalid']}}"
         data-complete="{{item.inputProps['data-complete']}}"
         value="{{item.inputProps.value}}"
         focus="{{item.inputProps.focus}}"
@@ -22,6 +23,7 @@
         maxlength="{{item.inputProps.maxlength}}"
         role="{{item.inputProps.role}}"
         aria-label="{{item.inputProps['aria-label']}}"
+        aria-invalid="{{item.inputProps['aria-invalid']}}"
         bindinput="handleInput"
         bindfocus="handleFocus"
         bindblur="handleBlur"

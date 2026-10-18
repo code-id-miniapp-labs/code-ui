@@ -69,7 +69,7 @@ function mergeEffectsOrFn(
   };
 }
 
-const mergeStates = createDefu((target, key, value) => {
+const mergeStates = /*#__PURE__*/ createDefu((target, key, value) => {
   if (key === "tags" && Array.isArray(value)) {
     target.tags = Array.from(new Set([...value, ...(target.tags || [])]));
     return true;

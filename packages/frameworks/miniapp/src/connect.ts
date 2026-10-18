@@ -35,6 +35,7 @@ export function connectToPage<
   const update = () => {
     const snapshot = connect(machine.service);
     (instance as any).__codeUiApi = snapshot;
+    (instance as any).__codeUiOnSnapshot?.(snapshot);
 
     const delta = diffSnapshot(prevSnapshot, snapshot, key);
     prevSnapshot = snapshot;

@@ -1,0 +1,8 @@
+<form id="{{form.rootProps.id}}" class="{{classes.root}}" data-scope="form" data-part="root" data-state="{{form.state}}" data-valid="{{form.rootProps['data-valid']}}" data-invalid="{{form.rootProps['data-invalid']}}" data-dirty="{{form.rootProps['data-dirty']}}" data-touched="{{form.rootProps['data-touched']}}" data-validating="{{form.rootProps['data-validating']}}" data-submitting="{{form.rootProps['data-submitting']}}" data-disabled="{{form.rootProps['data-disabled']}}" data-readonly="{{form.rootProps['data-readonly']}}" aria-disabled="{{form.rootProps['aria-disabled']}}" aria-invalid="{{form.rootProps['aria-invalid']}}" bindsubmit="handleSubmit" bindreset="handleReset">
+  <slot />
+  <view wx:if="{{showErrors && form.hasErrors}}" id="{{form.errorsProps.id}}" class="{{classes.errors}}" data-scope="form" data-part="errors" data-invalid="{{form.errorsProps['data-invalid']}}" role="alert" aria-live="polite">
+    <text wx:for="{{form.errorItems}}" wx:key="name" id="{{item.errorProps.id}}" class="{{classes.error}}" data-scope="form" data-part="error" data-field="{{item.name}}" role="alert">
+      {{item.message}}
+    </text>
+  </view>
+</form>

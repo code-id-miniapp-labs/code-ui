@@ -22,6 +22,18 @@ declare module "virtual:cui/theme/drawer" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/form" {
+  import type { default as formTheme } from "@code-ui/core/src/theme/definitions/form";
+  const theme: ReturnType<typeof formTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/form-field" {
+  import type { default as formFieldTheme } from "@code-ui/core/src/theme/definitions/form-field";
+  const theme: ReturnType<typeof formFieldTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/pin-input" {
   import type { default as pinInputTheme } from "@code-ui/core/src/theme/definitions/pin-input";
   const theme: ReturnType<typeof pinInputTheme>;
