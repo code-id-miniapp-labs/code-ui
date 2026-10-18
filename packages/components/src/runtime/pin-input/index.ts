@@ -52,11 +52,16 @@ Component(
 
     computed: {
       classes() {
+        const isInvalid = Boolean(
+          this.data.pinInput?.invalid || this.data.invalid,
+        );
         const variant = this.data.variant;
-        const color = this.data.color;
-        const size = this.data.size;
-        const highlight = Boolean(this.data.highlight);
-        const disabled = Boolean(this.data.disabled);
+        const color = isInvalid ? "danger" : this.data.color;
+        const size = this.data.pinInput?.size || this.data.size || "md";
+        const highlight = isInvalid || Boolean(this.data.highlight);
+        const disabled = Boolean(
+          this.data.pinInput?.disabled || this.data.disabled,
+        );
         const ui = this.data.ui;
 
         const themeFns = pinInputTheme({
@@ -73,22 +78,22 @@ Component(
 
     methods: {
       handleInput(e: WechatMiniprogram.CustomEvent) {
-        const api = this.data.pinInput;
+        const api = (this as any).__codeUiApi ?? this.data.pinInput;
         return api?.handleInput?.(e);
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
-        const api = this.data.pinInput;
+        const api = (this as any).__codeUiApi ?? this.data.pinInput;
         api?.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {
-        const api = this.data.pinInput;
+        const api = (this as any).__codeUiApi ?? this.data.pinInput;
         api?.handleBlur?.(e);
       },
 
       handleTap(e: WechatMiniprogram.CustomEvent) {
-        const api = this.data.pinInput;
+        const api = (this as any).__codeUiApi ?? this.data.pinInput;
         api?.handleTap?.(e);
       },
     },

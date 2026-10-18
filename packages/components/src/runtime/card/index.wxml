@@ -1,9 +1,8 @@
 <view class="{{ classes.root }}" data-scope="card" data-part="root" data-variant="{{ variant || 'outline' }}" data-size="{{ size || 'md' }}">
   <view wx:if="{{ title || description || showHeader }}" class="{{ classes.header }}" data-scope="card" data-part="header">
-    <slot name="header">
-      <text wx:if="{{ title }}" class="{{ classes.title }}" data-scope="card" data-part="title">{{ title }}</text>
-      <text wx:if="{{ description }}" class="{{ classes.description }}" data-scope="card" data-part="description">{{ description }}</text>
-    </slot>
+    <slot name="header" />
+    <text wx:if="{{ title }}" class="{{ classes.title }}" data-scope="card" data-part="title">{{ title }}</text>
+    <text wx:if="{{ description }}" class="{{ classes.description }}" data-scope="card" data-part="description">{{ description }}</text>
   </view>
   <view class="{{ classes.body }}" data-scope="card" data-part="body">
     <slot />

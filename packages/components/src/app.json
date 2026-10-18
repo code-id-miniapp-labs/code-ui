@@ -8,6 +8,8 @@
     "cui-card": "runtime/card/index",
     "cui-chip": "runtime/chip/index",
     "cui-drawer": "runtime/drawer/index",
+    "cui-form": "runtime/form/index",
+    "cui-form-field": "runtime/form-field/index",
     "cui-pin-input": "runtime/pin-input/index"
   }
 }

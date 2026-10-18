@@ -94,17 +94,19 @@ export function createDefu(merger?: DefuCustomMerger): DefuFn {
   } as DefuFn;
 }
 
-export const defu: DefuFn = createDefu();
+export const defu: DefuFn = /*#__PURE__*/ createDefu();
 
-export const defuReplace: DefuFn = createDefu((target, key, value) => {
-  if (isArray(target[key]) || isArray(value)) {
-    if (target[key] !== undefined) return true;
-    target[key] = isArray(value) ? [...value] : value;
-    return true;
-  }
-});
+export const defuReplace: DefuFn = /*#__PURE__*/ createDefu(
+  (target, key, value) => {
+    if (isArray(target[key]) || isArray(value)) {
+      if (target[key] !== undefined) return true;
+      target[key] = isArray(value) ? [...value] : value;
+      return true;
+    }
+  },
+);
 
-export const defuFn: DefuFn = createDefu((target, key, value) => {
+export const defuFn: DefuFn = /*#__PURE__*/ createDefu((target, key, value) => {
   if (isFunction(target[key])) {
     target[key] = target[key](value);
     return true;

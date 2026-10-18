@@ -35,7 +35,19 @@ export interface ComponentRegistry {
     | "closeTrigger"
     | "body"
     | "footer";
-  pinInput: "root" | "label" | "control" | "input" | "separator";
+  form: "root" | "errors" | "error";
+  formField:
+    | "root"
+    | "wrapper"
+    | "labelWrapper"
+    | "label"
+    | "container"
+    | "description"
+    | "error"
+    | "hint"
+    | "help"
+    | "required";
+  pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
   [componentName: string]: string;
 }
 

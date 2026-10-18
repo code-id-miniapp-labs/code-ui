@@ -1,0 +1,1274 @@
+import { createMachine } from "@code-ui/core";
+import {
+  createEventBus,
+  isEqual,
+  isPromise,
+  queryRect,
+  queryViewportScrollOffset,
+} from "@code-ui/utils";
+import { provideFormBus } from "./form.context";
+import { defaultFormProps } from "./form.props";
+import { evaluateRules, shouldValidateOnTrigger } from "./form.rules";
+import type {
+  FormBusEvents,
+  FormErrorBag,
+  FormFieldError,
+  FormFieldRegistration,
+  FormFieldState,
+  FormFieldValidationState,
+  FormMachine,
+  FormRule,
+  FormSchema,
+  FormService,
+  FormValidateOn,
+  FormValidateTrigger,
+  FormValidationResult,
+} from "./form.types";
+
+type ServiceLike = Pick<
+  FormService,
+  "state" | "context" | "prop" | "refs" | "scope" | "computed"
+>;
+
+function cloneFieldValue<T>(val: T): T {
+  if (Array.isArray(val)) return [...val] as unknown as T;
+  if (val !== null && typeof val === "object") {
+    return { ...(val as Record<string, any>) } as unknown as T;
+  }
+  return val;
+}
+
+function normalizeTargetNames(
+  target: string | string[] | undefined,
+  allNames: Iterable<string>,
+): string[] {
+  if (target === undefined) return Array.from(new Set(allNames));
+  return Array.isArray(target) ? target : [target];
+}
+
+function buildErrorsList(
+  errorBag: FormErrorBag,
+  fields: Map<string, FormFieldRegistration>,
+): FormFieldError[] {
+  const list: FormFieldError[] = [];
+  for (const [name, messages] of Object.entries(errorBag)) {
+    if (!messages || messages.length === 0) continue;
+    const reg = fields.get(name);
+    list.push({
+      name,
+      id: reg?.id,
+      message: messages[0] ?? "Invalid value",
+      messages: [...messages],
+    });
+  }
+  return list;
+}
+
+function notifyFieldValidation(
+  field: FormFieldRegistration | undefined,
+  state: FormFieldState,
+) {
+  if (!field?.onValidationChange) return;
+  const payload: FormFieldValidationState = {
+    name: state.name,
+    id: state.id,
+    errors: state.errors,
+    errorMessage: state.errorMessage,
+    isValid: state.isValid,
+    isDirty: state.isDirty,
+    isTouched: state.isTouched,
+    isFocused: state.isFocused,
+    isValidating: state.isValidating,
+  };
+  field.onValidationChange(payload);
+}
+
+export function collectFormValues(service: ServiceLike): Record<string, any> {
+  const prevValues = service.context.get("values") ?? {};
+  const current = { ...prevValues };
+  const fields = service.refs.get("fields");
+  for (const [name, reg] of fields.entries()) {
+    try {
+      const val = reg.getValue();
+      if (val !== undefined) {
+        current[name] = val;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return current;
+}
+
+function getEffectiveRules(service: ServiceLike, name: string): FormRule[] {
+  if (service.context.get("disabled")) return [];
+  const field = service.refs.get("fields").get(name);
+  if (field?.isDisabled?.()) return [];
+
+  const fieldRulesFn = service.refs.get("fieldRules")?.get(name);
+  const fieldRules = fieldRulesFn ? fieldRulesFn() : [];
+  const formRulesMap = service.prop("rules") ?? {};
+  const formLevelRules = formRulesMap[name] ?? [];
+
+  if (fieldRules.length === 0 && formLevelRules.length === 0) {
+    return [];
+  }
+  return [...fieldRules, ...formLevelRules];
+}
+
+function getEffectiveValidateOn(
+  service: ServiceLike,
+  name: string,
+): FormValidateOn {
+  const field = service.refs.get("fields").get(name);
+  const fieldValidateOn = field?.getValidateOn?.();
+  return fieldValidateOn ?? service.context.get("validateOn");
+}
+
+function applyFieldErrors(
+  service: ServiceLike,
+  name: string,
+  messages: string[],
+  isValidating = false,
+) {
+  const fields = service.refs.get("fields");
+  const field = fields.get(name);
+  const prevErrorBag = service.context.get("errorBag") ?? {};
+  const nextErrorBag: FormErrorBag = { ...prevErrorBag };
+
+  if (messages.length > 0) {
+    nextErrorBag[name] = [...messages];
+  } else {
+    delete nextErrorBag[name];
+  }
+
+  const nextErrors = buildErrorsList(nextErrorBag, fields);
+  const prevFieldStates = service.context.get("fieldStates") ?? {};
+  const existingState = prevFieldStates[name];
+  const currentValue = field
+    ? field.getValue()
+    : (service.context.get("values") ?? {})[name];
+  const initialValue =
+    existingState?.initialValue ??
+    (service.context.get("initialValues") ?? {})[name] ??
+    currentValue;
+
+  const updatedFieldState: FormFieldState = {
+    name,
+    id: field?.id ?? existingState?.id ?? name,
+    value: currentValue,
+    initialValue,
+    errors: [...messages],
+    errorMessage: messages[0] ?? "",
+    isValid: messages.length === 0,
+    isDirty: existingState?.isDirty ?? !isEqual(currentValue, initialValue),
+    isTouched: existingState?.isTouched ?? false,
+    isFocused: existingState?.isFocused ?? false,
+    isValidating,
+  };
+
+  service.context.set("errorBag", nextErrorBag);
+  service.context.set("errors", nextErrors);
+  service.context.set("fieldStates", {
+    ...prevFieldStates,
+    [name]: updatedFieldState,
+  });
+
+  notifyFieldValidation(field, updatedFieldState);
+  service.refs.get("bus").emit("field:error", {
+    name,
+    errors: [...messages],
+    isValid: messages.length === 0,
+  });
+}
+
+export function validateSingleField(
+  service: ServiceLike,
+  name: string,
+): string[] | Promise<string[]> {
+  const tokens = service.refs.get("validationTokens");
+  const token = (tokens.get(name) ?? 0) + 1;
+  tokens.set(name, token);
+
+  const rules = getEffectiveRules(service, name);
+  if (rules.length === 0) {
+    applyFieldErrors(service, name, [], false);
+    return [];
+  }
+
+  const fields = service.refs.get("fields");
+  const field = fields.get(name);
+  const allValues = collectFormValues(service);
+  const value = field ? field.getValue() : allValues[name];
+
+  const outcome = evaluateRules(value, rules, allValues);
+
+  if (Array.isArray(outcome)) {
+    const validating = service.context
+      .get("validatingFields")
+      .filter((n) => n !== name);
+    service.context.set("validatingFields", validating);
+    applyFieldErrors(service, name, outcome, false);
+    return outcome;
+  }
+
+  // Mark field as validating
+  const currentValidating = service.context.get("validatingFields");
+  if (!currentValidating.includes(name)) {
+    service.context.set("validatingFields", [...currentValidating, name]);
+  }
+
+  const prevStates = service.context.get("fieldStates");
+  const existing = prevStates[name];
+  if (existing) {
+    const nextState: FormFieldState = { ...existing, isValidating: true };
+    service.context.set("fieldStates", { ...prevStates, [name]: nextState });
+    notifyFieldValidation(field, nextState);
+  }
+
+  if (service.state.get() === "idle") {
+    service.state.set("validating");
+  }
+
+  return outcome.then((asyncMessages: string[]) => {
+    if (tokens.get(name) !== token) {
+      return service.context.get("errorBag")[name] ?? [];
+    }
+
+    const remainingValidating = service.context
+      .get("validatingFields")
+      .filter((n) => n !== name);
+    service.context.set("validatingFields", remainingValidating);
+
+    applyFieldErrors(service, name, asyncMessages, false);
+
+    if (
+      remainingValidating.length === 0 &&
+      service.state.get() === "validating"
+    ) {
+      const hasAnyError = service.context.get("errors").length > 0;
+      service.state.set(hasAnyError ? "error" : "idle");
+    }
+
+    return asyncMessages;
+  });
+}
+
+export async function validateFormFields(
+  service: ServiceLike,
+  target?: string | string[],
+): Promise<FormValidationResult> {
+  const fields = service.refs.get("fields");
+  const formRulesMap = service.prop("rules") ?? {};
+  const allKnownNames = new Set<string>([
+    ...fields.keys(),
+    ...Object.keys(formRulesMap),
+  ]);
+  const namesToValidate = normalizeTargetNames(target, allKnownNames);
+
+  const pending: Array<Promise<string[]>> = [];
+  for (let i = 0; i < namesToValidate.length; i++) {
+    const name = namesToValidate[i];
+    if (!name) continue;
+    const res = validateSingleField(service, name);
+    if (!Array.isArray(res)) {
+      pending.push(res);
+    }
+  }
+
+  if (pending.length > 0) {
+    await Promise.all(pending);
+  }
+
+  const errorBag = service.context.get("errorBag");
+  const errors = service.context.get("errors");
+  const values = collectFormValues(service);
+  const valid = errors.length === 0;
+
+  if (service.state.get() !== "submitting") {
+    service.state.set(valid ? "idle" : "error");
+  }
+
+  const result: FormValidationResult = {
+    valid,
+    errors,
+    errorBag,
+    values,
+  };
+
+  service.refs.get("bus").emit("validate", {
+    name: typeof target === "string" ? target : undefined,
+    result,
+  });
+  service.prop("onValidate")?.({ ...result });
+
+  return result;
+}
+
+export function registerFormField(
+  service: ServiceLike,
+  registration: FormFieldRegistration,
+) {
+  const { name, id } = registration;
+  if (!name) return;
+
+  const fields = service.refs.get("fields");
+  fields.set(name, registration);
+
+  const controlledValues = service.prop("value");
+  const defaultValues = service.prop("defaultValue");
+  const existingValues = service.context.get("values") ?? {};
+  const existingInitials = service.context.get("initialValues") ?? {};
+
+  let fieldValue = registration.getValue();
+  const presetVal =
+    controlledValues?.[name] ??
+    existingValues[name] ??
+    defaultValues?.[name];
+
+  if (
+    presetVal !== undefined &&
+    (fieldValue === undefined ||
+      fieldValue === "" ||
+      (Array.isArray(fieldValue) && fieldValue.every((c) => c === "")))
+  ) {
+    registration.setValue?.(presetVal);
+    fieldValue = registration.getValue() ?? presetVal;
+  }
+
+  const initialVal =
+    existingInitials[name] !== undefined
+      ? existingInitials[name]
+      : cloneFieldValue(fieldValue);
+
+  service.context.set("values", {
+    ...existingValues,
+    [name]: fieldValue,
+  });
+  service.context.set("initialValues", {
+    ...existingInitials,
+    [name]: initialVal,
+  });
+
+  const existingErrors = (service.context.get("errorBag") ?? {})[name] ?? [];
+  const fieldState: FormFieldState = {
+    name,
+    id: id || name,
+    value: fieldValue,
+    initialValue: initialVal,
+    errors: existingErrors,
+    errorMessage: existingErrors[0] ?? "",
+    isValid: existingErrors.length === 0,
+    isDirty: !isEqual(fieldValue, initialVal),
+    isTouched: (service.context.get("touchedFields") ?? []).includes(name),
+    isFocused: service.context.get("focusedField") === name,
+    isValidating: (service.context.get("validatingFields") ?? []).includes(name),
+  };
+
+  const prevFieldStates = service.context.get("fieldStates") ?? {};
+  service.context.set("fieldStates", {
+    ...prevFieldStates,
+    [name]: fieldState,
+  });
+
+  registration.onFormStateChange?.({
+    disabled: service.context.get("disabled"),
+    readOnly: service.context.get("readOnly"),
+  });
+  notifyFieldValidation(registration, fieldState);
+}
+
+export function unregisterFormField(
+  service: ServiceLike,
+  name: string,
+  id?: string,
+) {
+  const fields = service.refs.get("fields");
+  const existing = fields.get(name);
+  if (existing && id && existing.id !== id) return;
+
+  fields.delete(name);
+  service.refs.get("validationTokens").delete(name);
+
+  const controlledValues = service.prop("value");
+  if (controlledValues?.[name] === undefined) {
+    const prevValues = service.context.get("values") ?? {};
+    if (name in prevValues) {
+      const nextValues = { ...prevValues };
+      delete nextValues[name];
+      service.context.set("values", nextValues);
+    }
+    const prevInitials = service.context.get("initialValues") ?? {};
+    if (name in prevInitials) {
+      const nextInitials = { ...prevInitials };
+      delete nextInitials[name];
+      service.context.set("initialValues", nextInitials);
+    }
+  }
+
+  const nextErrorBag = { ...service.context.get("errorBag") };
+  delete nextErrorBag[name];
+  const nextErrors = buildErrorsList(nextErrorBag, fields);
+  service.context.set("errorBag", nextErrorBag);
+  service.context.set("errors", nextErrors);
+
+  const nextFieldStates = { ...service.context.get("fieldStates") };
+  delete nextFieldStates[name];
+  service.context.set("fieldStates", nextFieldStates);
+
+  service.context.set(
+    "dirtyFields",
+    service.context.get("dirtyFields").filter((n) => n !== name),
+  );
+  service.context.set(
+    "touchedFields",
+    service.context.get("touchedFields").filter((n) => n !== name),
+  );
+  const nextValidating = service.context
+    .get("validatingFields")
+    .filter((n) => n !== name);
+  service.context.set("validatingFields", nextValidating);
+
+  if (service.context.get("focusedField") === name) {
+    service.context.set("focusedField", null);
+  }
+
+  const currentState = service.state.get();
+  if (
+    nextErrors.length === 0 &&
+    nextValidating.length === 0 &&
+    (currentState === "error" || currentState === "validating")
+  ) {
+    service.state.set("idle");
+  }
+}
+
+export function handleFieldInteraction(
+  service: ServiceLike,
+  trigger: FormValidateTrigger,
+  payload: { name: string; value?: any; id?: string | undefined },
+) {
+  const { name } = payload;
+  if (!name) return;
+
+  const fields = service.refs.get("fields");
+  const field = fields.get(name);
+  const prevValues = service.context.get("values") ?? {};
+  const initialValues = service.context.get("initialValues") ?? {};
+  const prevStates = service.context.get("fieldStates") ?? {};
+  const prevState = prevStates[name];
+
+  const nextValue =
+    payload.value !== undefined
+      ? payload.value
+      : field
+        ? field.getValue()
+        : prevValues[name];
+
+  const initialValue =
+    initialValues[name] !== undefined
+      ? initialValues[name]
+      : prevState?.initialValue;
+
+  let isDirty = prevState?.isDirty ?? false;
+  let isTouched = prevState?.isTouched ?? false;
+  let isFocused = prevState?.isFocused ?? false;
+
+  if (trigger === "input" || trigger === "change") {
+    const nextValues = { ...prevValues, [name]: nextValue };
+    service.context.set("values", nextValues);
+
+    isDirty = !isEqual(nextValue, initialValue);
+    const dirtyFields = service.context.get("dirtyFields") ?? [];
+    if (isDirty && !dirtyFields.includes(name)) {
+      service.context.set("dirtyFields", [...dirtyFields, name]);
+    } else if (!isDirty && dirtyFields.includes(name)) {
+      service.context.set(
+        "dirtyFields",
+        dirtyFields.filter((n) => n !== name),
+      );
+    }
+
+    if (trigger === "change") {
+      service.prop("onValueChange")?.({ ...nextValues });
+    }
+  } else if (trigger === "focus") {
+    isFocused = true;
+    service.context.set("focusedField", name);
+  } else if (trigger === "blur") {
+    isFocused = false;
+    isTouched = true;
+    if (service.context.get("focusedField") === name) {
+      service.context.set("focusedField", null);
+    }
+    const touchedFields = service.context.get("touchedFields") ?? [];
+    if (!touchedFields.includes(name)) {
+      service.context.set("touchedFields", [...touchedFields, name]);
+    }
+    if (payload.value !== undefined) {
+      service.context.set("values", { ...prevValues, [name]: nextValue });
+    }
+  }
+
+  const existingErrors = (service.context.get("errorBag") ?? {})[name] ?? [];
+  const updatedState: FormFieldState = {
+    name,
+    id: field?.id ?? prevState?.id ?? name,
+    value: nextValue,
+    initialValue,
+    errors: existingErrors,
+    errorMessage: existingErrors[0] ?? "",
+    isValid: existingErrors.length === 0,
+    isDirty,
+    isTouched,
+    isFocused,
+    isValidating: prevState?.isValidating ?? false,
+  };
+
+  service.context.set("fieldStates", {
+    ...prevStates,
+    [name]: updatedState,
+  });
+
+  const validateOn = getEffectiveValidateOn(service, name);
+  const shouldRun = shouldValidateOnTrigger(trigger, validateOn, {
+    validateLazy: service.context.get("validateLazy"),
+    isTouched,
+    hasErrors: existingErrors.length > 0,
+    submitCount: service.context.get("submitCount"),
+  });
+
+  if (shouldRun) {
+    validateSingleField(service, name);
+  } else {
+    notifyFieldValidation(field, updatedState);
+  }
+}
+
+export function focusFirstInvalidField(service: ServiceLike): boolean {
+  const errorBag = service.context.get("errorBag");
+  const fields = service.refs.get("fields");
+
+  // Prioritize fields in registration order
+  for (const [name, reg] of fields.entries()) {
+    const errs = errorBag[name];
+    if (errs && errs.length > 0 && typeof reg.focus === "function") {
+      reg.focus();
+      return true;
+    }
+  }
+
+  // Fallback to errorBag keys order
+  for (const name of Object.keys(errorBag)) {
+    const errs = errorBag[name];
+    const reg = fields.get(name);
+    if (errs && errs.length > 0 && typeof reg?.focus === "function") {
+      reg.focus();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export async function scrollToFirstInvalidField(
+  service: ServiceLike,
+): Promise<boolean> {
+  const errorBag = service.context.get("errorBag");
+  const fields = service.refs.get("fields");
+  const scrollOffset = service.context.get("scrollOffset") ?? 24;
+
+  let targetReg: FormFieldRegistration | undefined;
+  for (const [name, reg] of fields.entries()) {
+    const errs = errorBag[name];
+    if (errs && errs.length > 0) {
+      targetReg = reg;
+      break;
+    }
+  }
+
+  if (!targetReg) return false;
+
+  try {
+    const selector = `#${targetReg.id}`;
+    const [rect, viewport] = await Promise.all([
+      queryRect(selector, targetReg.component ?? service.scope.component),
+      queryViewportScrollOffset(),
+    ]);
+
+    if (rect && viewport) {
+      const scrollTop = Math.max(0, viewport.scrollTop + rect.top - scrollOffset);
+      const wxGlobal = (globalThis as Record<string, any>).wx;
+      if (wxGlobal && typeof wxGlobal.pageScrollTo === "function") {
+        wxGlobal.pageScrollTo({ scrollTop, duration: 250 });
+        return true;
+      }
+    }
+  } catch {
+    // Ignore in non-MiniApp test environments
+  }
+
+  return false;
+}
+
+export function resetFormValidation(
+  service: ServiceLike,
+  target?: string | string[],
+) {
+  const fields = service.refs.get("fields");
+  const prevErrorBag = service.context.get("errorBag");
+  const prevFieldStates = service.context.get("fieldStates");
+  const allNames = new Set<string>([
+    ...fields.keys(),
+    ...Object.keys(prevErrorBag),
+    ...Object.keys(prevFieldStates),
+  ]);
+  const targetNames = normalizeTargetNames(target, allNames);
+  const tokens = service.refs.get("validationTokens");
+
+  const nextErrorBag: FormErrorBag = { ...prevErrorBag };
+  const nextFieldStates: Record<string, FormFieldState> = {
+    ...prevFieldStates,
+  };
+  let nextValidating = [...service.context.get("validatingFields")];
+
+  for (let i = 0; i < targetNames.length; i++) {
+    const name = targetNames[i];
+    if (!name) continue;
+    tokens.set(name, (tokens.get(name) ?? 0) + 1);
+    delete nextErrorBag[name];
+    nextValidating = nextValidating.filter((n) => n !== name);
+
+    const existing = nextFieldStates[name];
+    if (existing) {
+      const cleared: FormFieldState = {
+        ...existing,
+        errors: [],
+        errorMessage: "",
+        isValid: true,
+        isValidating: false,
+      };
+      nextFieldStates[name] = cleared;
+      notifyFieldValidation(fields.get(name), cleared);
+    }
+  }
+
+  const nextErrors = buildErrorsList(nextErrorBag, fields);
+  service.context.set("errorBag", nextErrorBag);
+  service.context.set("errors", nextErrors);
+  service.context.set("fieldStates", nextFieldStates);
+  service.context.set("validatingFields", nextValidating);
+
+  if (nextErrors.length === 0 && service.state.get() === "error") {
+    service.state.set("idle");
+  }
+
+  service.refs.get("bus").emit("clear-errors", { name: target });
+}
+
+export function resetFormFields(
+  service: ServiceLike,
+  target?: string | string[],
+) {
+  const fields = service.refs.get("fields");
+  const initialValues = service.context.get("initialValues") ?? {};
+  const prevValues = service.context.get("values") ?? {};
+  const prevErrorBag = service.context.get("errorBag") ?? {};
+  const prevFieldStates = service.context.get("fieldStates") ?? {};
+
+  const allNames = new Set<string>([
+    ...fields.keys(),
+    ...Object.keys(initialValues),
+    ...Object.keys(prevValues),
+  ]);
+  const targetNames = normalizeTargetNames(target, allNames);
+  const tokens = service.refs.get("validationTokens");
+
+  const nextValues = { ...prevValues };
+  const nextErrorBag = { ...prevErrorBag };
+  const nextFieldStates = { ...prevFieldStates };
+  let nextDirty = [...(service.context.get("dirtyFields") ?? [])];
+  let nextTouched = [...(service.context.get("touchedFields") ?? [])];
+  let nextValidating = [...(service.context.get("validatingFields") ?? [])];
+
+  for (let i = 0; i < targetNames.length; i++) {
+    const name = targetNames[i];
+    if (!name) continue;
+    tokens.set(name, (tokens.get(name) ?? 0) + 1);
+
+    const reg = fields.get(name);
+    reg?.resetValue?.();
+
+    const restoredVal =
+      initialValues[name] !== undefined
+        ? cloneFieldValue(initialValues[name])
+        : reg?.getValue();
+
+    nextValues[name] = restoredVal;
+    delete nextErrorBag[name];
+    nextDirty = nextDirty.filter((n) => n !== name);
+    nextTouched = nextTouched.filter((n) => n !== name);
+    nextValidating = nextValidating.filter((n) => n !== name);
+
+    const resetState: FormFieldState = {
+      name,
+      id: reg?.id ?? prevFieldStates[name]?.id ?? name,
+      value: restoredVal,
+      initialValue: cloneFieldValue(restoredVal),
+      errors: [],
+      errorMessage: "",
+      isValid: true,
+      isDirty: false,
+      isTouched: false,
+      isFocused: false,
+      isValidating: false,
+    };
+    nextFieldStates[name] = resetState;
+    notifyFieldValidation(reg, resetState);
+  }
+
+  const nextErrors = buildErrorsList(nextErrorBag, fields);
+  service.context.set("values", nextValues);
+  service.context.set("errorBag", nextErrorBag);
+  service.context.set("errors", nextErrors);
+  service.context.set("fieldStates", nextFieldStates);
+  service.context.set("dirtyFields", nextDirty);
+  service.context.set("touchedFields", nextTouched);
+  service.context.set("validatingFields", nextValidating);
+
+  if (target === undefined) {
+    service.context.set("submitCount", 0);
+    service.context.set("focusedField", null);
+    service.state.set("idle");
+    service.refs.get("bus").emit("reset", { name: undefined });
+    service.prop("onReset")?.();
+  } else {
+    if (nextErrors.length === 0 && service.state.get() === "error") {
+      service.state.set("idle");
+    }
+    service.refs.get("bus").emit("reset", { name: target });
+  }
+}
+
+export function setFormErrors(
+  service: ServiceLike,
+  input: FormErrorBag | Record<string, string | string[]> | FormFieldError[],
+) {
+  const fields = service.refs.get("fields");
+  const normalizedBag: FormErrorBag = {};
+
+  if (Array.isArray(input)) {
+    for (let i = 0; i < input.length; i++) {
+      const item = input[i];
+      if (!item || !item.name) continue;
+      const msgs =
+        item.messages && item.messages.length > 0
+          ? item.messages
+          : item.message
+            ? [item.message]
+            : [];
+      if (msgs.length > 0) {
+        normalizedBag[item.name] = [...msgs];
+      }
+    }
+  } else if (input && typeof input === "object") {
+    for (const [name, raw] of Object.entries(input)) {
+      const msgs = Array.isArray(raw)
+        ? raw.filter((m) => Boolean(m && m.trim()))
+        : typeof raw === "string" && raw.trim()
+          ? [raw]
+          : [];
+      if (msgs.length > 0) {
+        normalizedBag[name] = msgs;
+      }
+    }
+  }
+
+  // Clear previously errored fields that are not in the new errorBag
+  const prevErrorBag = service.context.get("errorBag");
+  const allAffectedNames = new Set<string>([
+    ...Object.keys(prevErrorBag),
+    ...Object.keys(normalizedBag),
+  ]);
+
+  for (const name of allAffectedNames) {
+    const msgs = normalizedBag[name] ?? [];
+    applyFieldErrors(service, name, msgs, false);
+  }
+
+  const hasAnyError = Object.keys(normalizedBag).length > 0;
+  service.state.set(hasAnyError ? "error" : "idle");
+
+  // Ensure error list reflects normalizedBag
+  service.context.set("errors", buildErrorsList(normalizedBag, fields));
+}
+
+export function setFormValues(
+  service: ServiceLike,
+  values: Record<string, any>,
+  shouldValidate = false,
+) {
+  if (!values || typeof values !== "object") return;
+  const fields = service.refs.get("fields");
+  const prevValues = { ...service.context.get("values") };
+  const initialValues = service.context.get("initialValues");
+  let nextDirty = [...service.context.get("dirtyFields")];
+
+  for (const [name, val] of Object.entries(values)) {
+    prevValues[name] = val;
+    const reg = fields.get(name);
+    reg?.setValue?.(val);
+
+    const isDirty = !isEqual(val, initialValues[name]);
+    if (isDirty && !nextDirty.includes(name)) {
+      nextDirty.push(name);
+    } else if (!isDirty && nextDirty.includes(name)) {
+      nextDirty = nextDirty.filter((n) => n !== name);
+    }
+  }
+
+  service.context.set("values", prevValues);
+  service.context.set("dirtyFields", nextDirty);
+  service.prop("onValueChange")?.({ ...prevValues });
+
+  if (shouldValidate) {
+    void validateFormFields(service, Object.keys(values));
+  }
+}
+
+export async function submitForm(
+  service: ServiceLike,
+): Promise<FormValidationResult> {
+  if (service.context.get("disabled")) {
+    return {
+      valid: service.context.get("errors").length === 0,
+      errors: service.context.get("errors"),
+      errorBag: service.context.get("errorBag"),
+      values: collectFormValues(service),
+    };
+  }
+
+  const nextSubmitCount = service.context.get("submitCount") + 1;
+  service.context.set("submitCount", nextSubmitCount);
+
+  // Mark all registered fields as touched
+  const fields = service.refs.get("fields");
+  const allFieldNames = Array.from(fields.keys());
+  service.context.set("touchedFields", allFieldNames);
+
+  const result = await validateFormFields(service);
+
+  if (!result.valid) {
+    service.state.set("error");
+
+    if (service.context.get("focusOnError")) {
+      focusFirstInvalidField(service);
+    }
+    if (service.context.get("scrollToError")) {
+      void scrollToFirstInvalidField(service);
+    }
+
+    const errorDetails = {
+      errors: result.errors,
+      errorBag: result.errorBag,
+      values: result.values,
+    };
+    service.refs.get("bus").emit("error", errorDetails);
+    service.prop("onError")?.(errorDetails);
+    return result;
+  }
+
+  service.state.set("submitting");
+  const submitDetails = {
+    values: result.values,
+    valid: true,
+    errors: [],
+    errorBag: {},
+  };
+
+  service.refs.get("bus").emit("submit", submitDetails);
+  const submitRet = service.prop("onSubmit")?.(submitDetails);
+
+  if (isPromise(submitRet)) {
+    try {
+      await submitRet;
+      service.state.set("submitted");
+    } catch (err) {
+      const msg =
+        err instanceof Error && err.message ? err.message : "Submit failed";
+      setFormErrors(service, { _form: [msg] });
+      service.state.set("error");
+    }
+  } else {
+    service.state.set("submitted");
+  }
+
+  return result;
+}
+
+export const formMachine: FormMachine = createMachine<FormSchema>({
+  props: ({ props }) => ({
+    ...defaultFormProps,
+    ...props,
+  }),
+
+  initialState: () => "idle",
+
+  refs: ({ prop }) => {
+    const existingBus = prop("bus");
+    const bus = existingBus ?? createEventBus<FormBusEvents>();
+
+    return {
+      bus,
+      fields: new Map<string, FormFieldRegistration>(),
+      fieldRules: new Map<string, () => FormRule[]>(),
+      validationTokens: new Map<string, number>(),
+      busDisposers: [],
+    };
+  },
+
+  context: ({ prop, bindable }) => {
+    const initialVals = cloneFieldValue(
+      prop("value") ?? prop("defaultValue") ?? {},
+    );
+    return {
+      values: bindable<Record<string, any>>(() => ({
+        value: prop("value") ?? undefined,
+        defaultValue: initialVals,
+      })),
+
+      initialValues: bindable<Record<string, any>>(() => ({
+        defaultValue: cloneFieldValue(initialVals),
+      })),
+
+      errorBag: bindable<FormErrorBag>(() => ({
+        defaultValue: {},
+      })),
+
+      errors: bindable<FormFieldError[]>(() => ({
+        defaultValue: [],
+      })),
+
+      fieldStates: bindable<Record<string, FormFieldState>>(() => ({
+        defaultValue: {},
+      })),
+
+      dirtyFields: bindable<string[]>(() => ({
+        defaultValue: [],
+      })),
+
+      touchedFields: bindable<string[]>(() => ({
+        defaultValue: [],
+      })),
+
+      validatingFields: bindable<string[]>(() => ({
+        defaultValue: [],
+      })),
+
+      focusedField: bindable<string | null>(() => ({
+        defaultValue: null,
+      })),
+
+      submitCount: bindable<number>(() => ({
+        defaultValue: 0,
+      })),
+
+      disabled: bindable<boolean>(() => ({
+        value: prop("disabled"),
+        defaultValue: false,
+      })),
+
+      readOnly: bindable<boolean>(() => ({
+        value: prop("readOnly"),
+        defaultValue: false,
+      })),
+
+      focusOnError: bindable<boolean>(() => ({
+        value: prop("focusOnError"),
+        defaultValue: true,
+      })),
+
+      scrollToError: bindable<boolean>(() => ({
+        value: prop("scrollToError"),
+        defaultValue: false,
+      })),
+
+      scrollOffset: bindable<number>(() => ({
+        value: prop("scrollOffset"),
+        defaultValue: 24,
+      })),
+
+      validateOn: bindable<FormValidateOn>(() => ({
+        value: prop("validateOn"),
+        defaultValue: ["input", "change", "blur"],
+      })),
+
+      validateLazy: bindable<boolean>(() => ({
+        value: prop("validateLazy"),
+        defaultValue: false,
+      })),
+
+      showErrors: bindable<boolean>(() => ({
+        value: prop("showErrors"),
+        defaultValue: false,
+      })),
+
+      ui: bindable<any>(() => ({
+        value: prop("ui") ?? {},
+        defaultValue: {},
+      })),
+    };
+  },
+
+  computed: {
+    hasErrors: ({ context }) => context.get("errors").length > 0,
+    errorCount: ({ context }) => context.get("errors").length,
+    isValid: ({ context }) => context.get("errors").length === 0,
+    isDirty: ({ context }) => context.get("dirtyFields").length > 0,
+    isTouched: ({ context }) => context.get("touchedFields").length > 0,
+    isValidating: ({ context }) => context.get("validatingFields").length > 0,
+    isSubmitting: ({ state }) => state.get() === "submitting",
+  },
+
+  watch: ({ prop, context, refs }) => {
+    const disabled = Boolean(prop("disabled"));
+    const readOnly = Boolean(prop("readOnly"));
+    context.set("disabled", disabled);
+    context.set("readOnly", readOnly);
+
+    const fields = refs.get("fields");
+    for (const reg of fields.values()) {
+      reg.onFormStateChange?.({ disabled, readOnly });
+    }
+
+    const bus = refs.get("bus");
+    bus?.emit("form:state", { disabled, readOnly });
+  },
+
+  entry: ["setupEventBus"],
+  exit: ["cleanupEventBus"],
+
+  on: {
+    "FIELD.REGISTER": {
+      actions: ["handleFieldRegister"],
+    },
+    "FIELD.UNREGISTER": {
+      actions: ["handleFieldUnregister"],
+    },
+    "FIELD.INPUT": {
+      actions: ["handleFieldInput"],
+    },
+    "FIELD.CHANGE": {
+      actions: ["handleFieldChange"],
+    },
+    "FIELD.BLUR": {
+      actions: ["handleFieldBlur"],
+    },
+    "FIELD.FOCUS": {
+      actions: ["handleFieldFocus"],
+    },
+    VALIDATE: {
+      actions: ["handleValidate"],
+    },
+    SUBMIT: {
+      actions: ["handleSubmit"],
+    },
+    RESET: {
+      actions: ["handleReset"],
+    },
+    RESET_VALIDATION: {
+      actions: ["handleResetValidation"],
+    },
+    SET_ERRORS: {
+      actions: ["handleSetErrors"],
+    },
+    SET_VALUES: {
+      actions: ["handleSetValues"],
+    },
+    SET_FIELD_VALUE: {
+      actions: ["handleSetFieldValue"],
+    },
+  },
+
+  states: {
+    idle: {
+      tags: ["idle"],
+    },
+    validating: {
+      tags: ["validating"],
+    },
+    submitting: {
+      tags: ["submitting"],
+    },
+    submitted: {
+      tags: ["submitted"],
+    },
+    error: {
+      tags: ["error"],
+    },
+  },
+
+  implementations: {
+    actions: {
+      setupEventBus: (params) => {
+        const bus = params.refs.get("bus");
+        const existingDisposers = params.refs.get("busDisposers");
+        for (let i = 0; i < existingDisposers.length; i++) {
+          existingDisposers[i]?.();
+        }
+
+        const disposers = [
+          bus.on("register", (reg) => registerFormField(params, reg)),
+          bus.on("unregister", ({ name, id }) =>
+            unregisterFormField(params, name, id),
+          ),
+          bus.on("input", (payload) =>
+            handleFieldInteraction(params, "input", payload),
+          ),
+          bus.on("change", (payload) =>
+            handleFieldInteraction(params, "change", payload),
+          ),
+          bus.on("blur", (payload) =>
+            handleFieldInteraction(params, "blur", payload),
+          ),
+          bus.on("focus", (payload) =>
+            handleFieldInteraction(params, "focus", payload),
+          ),
+          bus.on("field:rules", ({ name, getRules }) => {
+            params.refs.get("fieldRules").set(name, getRules);
+            bus.emit("form:state", {
+              disabled: Boolean(params.context.get("disabled")),
+              readOnly: Boolean(params.context.get("readOnly")),
+            });
+          }),
+        ];
+
+        params.refs.set("busDisposers", disposers);
+
+        const component = params.prop("component");
+        if (component) {
+          const formId =
+            params.prop("name") ||
+            (component as Record<string, any>)?.id ||
+            params.prop("id") ||
+            params.scope.id;
+          provideFormBus(component, bus, formId);
+        }
+      },
+
+      cleanupEventBus: (params) => {
+        const disposers = params.refs.get("busDisposers");
+        for (let i = 0; i < disposers.length; i++) {
+          disposers[i]?.();
+        }
+        params.refs.set("busDisposers", []);
+      },
+
+      handleFieldRegister: (params) => {
+        const event = params.event as { field: FormFieldRegistration };
+        if (event.field) registerFormField(params, event.field);
+      },
+
+      handleFieldUnregister: (params) => {
+        const event = params.event as { name: string; id?: string };
+        unregisterFormField(params, event.name, event.id);
+      },
+
+      handleFieldInput: (params) => {
+        const event = params.event as {
+          name: string;
+          value: any;
+          id?: string;
+        };
+        handleFieldInteraction(params, "input", event);
+      },
+
+      handleFieldChange: (params) => {
+        const event = params.event as {
+          name: string;
+          value: any;
+          id?: string;
+        };
+        handleFieldInteraction(params, "change", event);
+      },
+
+      handleFieldBlur: (params) => {
+        const event = params.event as {
+          name: string;
+          value?: any;
+          id?: string;
+        };
+        handleFieldInteraction(params, "blur", event);
+      },
+
+      handleFieldFocus: (params) => {
+        const event = params.event as {
+          name: string;
+          value?: any;
+          id?: string;
+        };
+        handleFieldInteraction(params, "focus", event);
+      },
+
+      handleValidate: (params) => {
+        const event = params.event as {
+          name?: string | string[];
+          resolve?: (res: FormValidationResult) => void;
+        };
+        void validateFormFields(params, event.name).then((res) => {
+          event.resolve?.(res);
+        });
+      },
+
+      handleSubmit: (params) => {
+        const event = params.event as {
+          resolve?: (res: FormValidationResult) => void;
+        };
+        void submitForm(params).then((res) => {
+          event.resolve?.(res);
+        });
+      },
+
+      handleReset: (params) => {
+        const event = params.event as { name?: string | string[] };
+        resetFormFields(params, event.name);
+      },
+
+      handleResetValidation: (params) => {
+        const event = params.event as { name?: string | string[] };
+        resetFormValidation(params, event.name);
+      },
+
+      handleSetErrors: (params) => {
+        const event = params.event as {
+          errors:
+            | FormErrorBag
+            | Record<string, string | string[]>
+            | FormFieldError[];
+        };
+        setFormErrors(params, event.errors);
+      },
+
+      handleSetValues: (params) => {
+        const event = params.event as {
+          values: Record<string, any>;
+          validate?: boolean;
+        };
+        setFormValues(params, event.values, Boolean(event.validate));
+      },
+
+      handleSetFieldValue: (params) => {
+        const event = params.event as {
+          name: string;
+          value: any;
+          validate?: boolean;
+        };
+        setFormValues(
+          params,
+          { [event.name]: event.value },
+          Boolean(event.validate),
+        );
+      },
+    },
+  },
+});

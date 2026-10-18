@@ -1,4 +1,5 @@
 import { createMachine } from "@code-ui/core";
+import { bindFormField } from "@code-ui/form/context";
 import type {
   PinInputMachine,
   PinInputSchema,
@@ -16,6 +17,15 @@ export function isValidCharacter(char: string, type: PinInputType): boolean {
   return /^[a-zA-Z0-9]$/.test(char);
 }
 
+function normalizePinValue(raw: string[] | string, length: number): string[] {
+  const chars = Array.isArray(raw) ? raw : String(raw ?? "").split("");
+  const nextValues = Array(length).fill("");
+  for (let i = 0; i < length; i++) {
+    nextValues[i] = chars[i] ?? "";
+  }
+  return nextValues;
+}
+
 export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
   props: ({ props }) => ({
     ...defaultPinInputProps,
@@ -26,7 +36,18 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     return prop("autoFocus") ? "focused" : "idle";
   },
 
-  context: ({ prop, bindable }) => ({
+  refs: ({ prop }) => {
+    const len = prop("length") ?? 4;
+    const initial =
+      prop("value") ?? prop("defaultValue") ?? Array(len).fill("");
+    return {
+      initialValue: [...initial],
+      formField: undefined,
+      busDisposers: [],
+    };
+  },
+
+  context: ({ prop, bindable, getRefs }) => ({
     length: bindable<number>(() => ({
       value: prop("length"),
       defaultValue: 4,
@@ -46,6 +67,13 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             value: nextVal,
             valueAsString,
           });
+
+          const formField = getRefs().get("formField");
+
+          if (formField) {
+            formField.emitInput(valueAsString);
+            formField.emitChange(valueAsString);
+          }
 
           const isComplete =
             nextVal.length === (prop("length") ?? 4) &&
@@ -72,6 +100,29 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
     readOnly: bindable<boolean>(() => ({
       value: prop("readOnly"),
+      defaultValue: false,
+    })),
+
+    formDisabled: bindable<boolean>(() => ({
+      defaultValue: false,
+    })),
+
+    formReadOnly: bindable<boolean>(() => ({
+      defaultValue: false,
+    })),
+
+    fieldDisabled: bindable<boolean>(() => ({
+      value: prop("fieldDisabled"),
+      defaultValue: false,
+    })),
+
+    fieldSize: bindable<any>(() => ({
+      value: prop("fieldSize"),
+      defaultValue: "",
+    })),
+
+    invalid: bindable<boolean>(() => ({
+      value: prop("invalid"),
       defaultValue: false,
     })),
 
@@ -115,6 +166,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       defaultValue: false,
     })),
 
+    form: bindable<string>(() => ({
+      value: prop("form"),
+      defaultValue: "",
+    })),
+
     name: bindable<string>(() => ({
       value: prop("name"),
       defaultValue: "",
@@ -142,11 +198,46 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     },
   },
 
-  watch: ({ prop, context }) => {
+  watch: ({ prop, context, refs }) => {
     const controlledVal = prop("value");
     if (controlledVal !== undefined) {
       context.set("value", controlledVal);
     }
+    const controlledInvalid = prop("invalid");
+    if (controlledInvalid !== undefined) {
+      context.set("invalid", controlledInvalid);
+    }
+    const controlledFieldDisabled = prop("fieldDisabled");
+    if (controlledFieldDisabled !== undefined) {
+      context.set("fieldDisabled", controlledFieldDisabled);
+    }
+    const controlledFieldSize = prop("fieldSize");
+    if (controlledFieldSize !== undefined) {
+      context.set("fieldSize", controlledFieldSize);
+    }
+    const nextForm = prop("form") ?? "";
+    const nextName = prop("name") ?? "";
+    if (nextForm !== context.get("form") || nextName !== context.get("name")) {
+      context.set("form", nextForm);
+      context.set("name", nextName);
+      refs.get("formField")?.rebind();
+    }
+    const nextFormBus = prop("formBus");
+    const prevFormBus = refs.get("currentFormBus");
+    if (nextFormBus !== prevFormBus) {
+      refs.set("currentFormBus", nextFormBus);
+      refs.get("formField")?.rebind(nextFormBus ?? null);
+    }
+  },
+
+  entry: ["setupFormField"],
+  exit: ["cleanupFormField"],
+
+  on: {
+    RESET_VALUE: {
+      target: "idle",
+      actions: ["resetValue"],
+    },
   },
 
   states: {
@@ -160,6 +251,9 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         "INPUT.CHANGE": {
           target: "focused",
           actions: ["handleInputChange"],
+        },
+        "INPUT.BLUR": {
+          actions: ["resetFocusedIndex"],
         },
         SET_VALUE: {
           actions: ["setValue"],
@@ -217,8 +311,151 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     },
 
     actions: {
-      setFocusedIndex: ({ context, event, flush, state }) => {
-        if (context.get("disabled") || context.get("readOnly")) return;
+      setupFormField: ({ context, prop, computed, refs, scope, state }) => {
+        refs.get("formField")?.dispose();
+
+        refs.set("currentFormBus", prop("formBus"));
+
+        let suppressEmit = false;
+
+        const bound = bindFormField({
+          component: prop("component"),
+          bus: prop("formBus"),
+          id: scope.id ?? "pin-input",
+          getFormId: () => context.get("form") || prop("form") || "",
+          getName: () => context.get("name") || prop("name") || "",
+          getValue: () => computed("valueAsString"),
+          setValue: (rawVal: any) => {
+            suppressEmit = true;
+            try {
+              const len = context.get("length");
+              context.set("value", normalizePinValue(rawVal, len));
+            } finally {
+              suppressEmit = false;
+            }
+          },
+          resetValue: () => {
+            suppressEmit = true;
+            try {
+              const len = context.get("length");
+              const initial =
+                refs.get("initialValue") ??
+                prop("defaultValue") ??
+                Array(len).fill("");
+              context.set("value", normalizePinValue(initial, len));
+              context.set("focusedIndex", -1);
+              context.set("invalid", false);
+              state.set("idle");
+            } finally {
+              suppressEmit = false;
+            }
+          },
+          focus: () => {
+            if (
+              context.get("disabled") ||
+              context.get("formDisabled") ||
+              context.get("fieldDisabled") ||
+              context.get("readOnly") ||
+              context.get("formReadOnly")
+            ) {
+              return;
+            }
+            const currentValues = context.get("value");
+            const firstEmptyIndex = currentValues.findIndex(
+              (c) => !c || c.trim() === "",
+            );
+            const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
+            state.set("focused");
+            context.set("focusedIndex", targetIdx);
+          },
+          getValidateOn: () => prop("validateOn"),
+          isDisabled: () =>
+            Boolean(
+              context.get("disabled") ||
+                context.get("formDisabled") ||
+                context.get("fieldDisabled"),
+            ),
+          onValidationChange: (valState) => {
+            context.set("invalid", !valState.isValid);
+          },
+          onFormStateChange: ({ disabled, readOnly }) => {
+            context.set("formDisabled", disabled);
+            context.set("formReadOnly", readOnly);
+          },
+        });
+
+        const bus = bound.bus;
+        const disposers: Array<() => void> = [];
+        if (bus) {
+          disposers.push(
+            bus.on("field:state", (payload: any) => {
+              const currentName = context.get("name") || prop("name");
+              if (!payload?.name || payload.name === currentName) {
+                if (payload.disabled !== undefined) {
+                  context.set("fieldDisabled", Boolean(payload.disabled));
+                }
+                if (payload.size !== undefined) {
+                  context.set("fieldSize", payload.size);
+                }
+              }
+            }),
+          );
+
+          disposers.push(
+            bus.on("form:state", (payload: any) => {
+              if (payload?.disabled !== undefined) {
+                context.set("formDisabled", Boolean(payload.disabled));
+              }
+              if (payload?.readOnly !== undefined) {
+                context.set("formReadOnly", Boolean(payload.readOnly));
+              }
+            }),
+          );
+        }
+        refs.set("busDisposers", disposers);
+
+        // Wrap emitInput and emitChange to respect suppressEmit during Form-driven setValue/resetValue
+        const origEmitInput = bound.emitInput.bind(bound);
+        const origEmitChange = bound.emitChange.bind(bound);
+        bound.emitInput = (val: any) => {
+          if (!suppressEmit) origEmitInput(val);
+        };
+        bound.emitChange = (val: any) => {
+          if (!suppressEmit) origEmitChange(val);
+        };
+
+        refs.set("formField", bound);
+      },
+
+      cleanupFormField: ({ refs }) => {
+        refs.get("formField")?.dispose();
+        refs.set("formField", undefined);
+        refs.set("currentFormBus", undefined);
+        const disposers = refs.get("busDisposers") ?? [];
+        for (let i = 0; i < disposers.length; i++) {
+          disposers[i]?.();
+        }
+        refs.set("busDisposers", []);
+      },
+
+      setFocusedIndex: ({
+        context,
+        event,
+        flush,
+        state,
+        refs,
+        computed,
+        prop,
+      }) => {
+        if (
+          context.get("disabled") ||
+          context.get("formDisabled") ||
+          context.get("fieldDisabled") ||
+          context.get("readOnly") ||
+          context.get("formReadOnly")
+        ) {
+          return;
+        }
         const len = context.get("length");
         const idx =
           typeof (event as any).index === "number" ? (event as any).index : 0;
@@ -241,14 +478,46 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         } else {
           context.set("focusedIndex", targetIndex);
         }
+
+        const valueAsString = computed("valueAsString");
+
+        const formField = refs.get("formField");
+
+        if (formField) {
+          formField.emitFocus(valueAsString);
+        }
+
+        prop("component")?.triggerEvent?.("focus", {
+          value: currentValues,
+          valueAsString,
+          index: targetIndex,
+        });
       },
 
-      resetFocusedIndex: ({ context }) => {
+      resetFocusedIndex: ({ context, refs, computed, prop }) => {
         context.set("focusedIndex", -1);
+        const valueAsString = computed("valueAsString");
+        const formField = refs.get("formField");
+
+        if (formField) {
+          formField.emitBlur(valueAsString);
+        }
+        prop("component")?.triggerEvent?.("blur", {
+          value: context.get("value"),
+          valueAsString,
+        });
       },
 
-      handleInputChange: ({ context, prop, computed, event }) => {
-        if (context.get("disabled") || context.get("readOnly")) return;
+      handleInputChange: ({ context, prop, computed, event, refs }) => {
+        if (
+          context.get("disabled") ||
+          context.get("formDisabled") ||
+          context.get("fieldDisabled") ||
+          context.get("readOnly") ||
+          context.get("formReadOnly")
+        ) {
+          return;
+        }
 
         const { index, value: rawVal } = event as any;
         const length = context.get("length");
@@ -269,7 +538,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         // Case 1: Deletion / Backspace (cleanVal is empty)
         if (cleanVal === "") {
           if (currentValues[index] !== "") {
-            // Current slot had a value; clear it and retreat focus to previous slot
             currentValues[index] = "";
             context.set("value", currentValues);
             const prevIndex = Math.max(0, index - 1);
@@ -277,7 +545,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             return;
           }
 
-          // Current slot was already empty; clear previous slot and retreat focus
           const prevIndex = Math.max(0, index - 1);
           currentValues[prevIndex] = "";
           context.set("value", currentValues);
@@ -285,9 +552,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           return;
         }
 
-        // Case 2: Pasted or multi-character input
         if (cleanVal.length > 1) {
-          // If user typed a single character over an existing character in this slot:
           if (
             currentValues[index] &&
             cleanVal.includes(currentValues[index]) &&
@@ -305,6 +570,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
                 context.get("blurOnComplete")
               ) {
                 context.set("focusedIndex", -1);
+                const formField = refs.get("formField");
+
+                if (formField) {
+                  formField.emitBlur(computed("valueAsString"));
+                }
               } else {
                 const nextIndex = Math.min(length - 1, index + 1);
                 context.set("focusedIndex", nextIndex);
@@ -338,6 +608,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
           if (computed("isValueComplete") && context.get("blurOnComplete")) {
             context.set("focusedIndex", -1);
+            const formField = refs.get("formField");
+
+            if (formField) {
+              formField.emitBlur(computed("valueAsString"));
+            }
           } else {
             const nextFocus = Math.min(length - 1, writeIdx);
             context.set("focusedIndex", nextFocus);
@@ -345,7 +620,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           return;
         }
 
-        // Case 3: Single character input
         const char = cleanVal;
         if (!isValidCharacter(char, inputType)) {
           prop("onValueInvalid")?.({ value: char, index });
@@ -356,13 +630,17 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         currentValues[index] = char;
         context.set("value", currentValues);
 
-        // Advance focus to next slot
         const isComplete =
           currentValues.length === length &&
           currentValues.every((c) => Boolean(c && c.trim() !== ""));
 
         if (isComplete && context.get("blurOnComplete")) {
           context.set("focusedIndex", -1);
+          const formField = refs.get("formField");
+
+          if (formField) {
+            formField.emitBlur(computed("valueAsString"));
+          }
         } else {
           const nextIndex = Math.min(length - 1, index + 1);
           context.set("focusedIndex", nextIndex);
@@ -372,18 +650,24 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       setValue: ({ context, event }) => {
         const length = context.get("length");
         const raw = (event as any).value;
-        const chars = Array.isArray(raw) ? raw : String(raw).split("");
-        const nextValues = Array(length).fill("");
-        for (let i = 0; i < length; i++) {
-          nextValues[i] = chars[i] ?? "";
-        }
-        context.set("value", nextValues);
+        context.set("value", normalizePinValue(raw, length));
       },
 
       clearValue: ({ context }) => {
         const length = context.get("length");
         context.set("value", Array(length).fill(""));
         context.set("focusedIndex", 0);
+      },
+
+      resetValue: ({ context, refs, prop }) => {
+        const length = context.get("length");
+        const initial =
+          refs.get("initialValue") ??
+          prop("defaultValue") ??
+          Array(length).fill("");
+        context.set("value", normalizePinValue(initial, length));
+        context.set("focusedIndex", -1);
+        context.set("invalid", false);
       },
     },
   },

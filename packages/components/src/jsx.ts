@@ -1,6 +1,14 @@
 import type { ButtonProps } from "@code-ui/button";
 import type { DrawerProps } from "@code-ui/drawer";
 import type {
+  FormErrorDetails,
+  FormProps,
+  FormRule,
+  FormSubmitDetails,
+  FormValidateOn,
+  FormValidationResult,
+} from "@code-ui/form";
+import type {
   PinInputProps,
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
@@ -75,10 +83,37 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   onDragEnd?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
+export interface CuiFormElementProps extends CuiCommonElementProps {
+  ui?: FormProps["ui"];
+  value?: Record<string, any>;
+  defaultValue?: Record<string, any>;
+  rules?: Record<string, FormRule[]>;
+  validateOn?: FormValidateOn;
+  validateLazy?: boolean;
+  focusOnError?: boolean;
+  scrollToError?: boolean;
+  scrollOffset?: number;
+  disabled?: boolean;
+  readOnly?: boolean;
+  showErrors?: boolean;
+  onSubmit?: (
+    event: WechatMiniprogram.CustomEvent<FormSubmitDetails>,
+  ) => void;
+  onError?: (
+    event: WechatMiniprogram.CustomEvent<FormErrorDetails>,
+  ) => void;
+  onValidate?: (
+    event: WechatMiniprogram.CustomEvent<FormValidationResult>,
+  ) => void;
+  onReset?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
 export interface CuiPinInputElementProps extends CuiCommonElementProps {
   ui?: PinInputProps["ui"];
   label?: string;
   name?: string;
+  validateOn?: FormValidateOn;
+  invalid?: boolean;
   variant?: PinInputProps["variant"];
   color?: PinInputProps["color"];
   size?: PinInputProps["size"];
@@ -106,5 +141,34 @@ export interface CuiPinInputElementProps extends CuiCommonElementProps {
   onInvalid?: (
     event: WechatMiniprogram.CustomEvent<PinInputValueInvalidDetails>,
   ) => void;
+}
+
+export interface CuiFormFieldElementProps extends CuiCommonElementProps {
+  ui?: Partial<
+    Record<
+      | "root"
+      | "wrapper"
+      | "labelWrapper"
+      | "label"
+      | "container"
+      | "description"
+      | "error"
+      | "hint"
+      | "help"
+      | "required",
+      string
+    >
+  >;
+  name?: string;
+  label?: string;
+  description?: string;
+  help?: string;
+  helperText?: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  rules?: FormRule[];
+  disabled?: boolean;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 

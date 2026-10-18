@@ -36,8 +36,21 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const value = context.get("value") ?? [];
   const length = context.get("length") ?? 4;
   const focusedIndex = isMachineFocused ? context.get("focusedIndex") : -1;
-  const disabled = context.get("disabled");
-  const readOnly = context.get("readOnly");
+  const disabled = Boolean(
+    context.get("disabled") ||
+      context.get("formDisabled") ||
+      context.get("fieldDisabled"),
+  );
+  const readOnly = Boolean(
+    context.get("readOnly") || context.get("formReadOnly"),
+  );
+  const rawSize = service.prop("size");
+  const fieldSize = context.get("fieldSize");
+  const size =
+    rawSize && rawSize !== "md"
+      ? rawSize
+      : ((fieldSize || rawSize || "md") as any);
+  const invalid = Boolean(context.get("invalid"));
   const mask = context.get("mask");
   const type = context.get("type");
   const placeholder = context.get("placeholder");
@@ -61,6 +74,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       "data-focused": isFocused ? "true" : "false",
       "data-disabled": disabled ? "true" : "false",
       "data-readonly": readOnly ? "true" : "false",
+      "data-invalid": invalid ? "true" : "false",
       "data-complete": isValueComplete ? "true" : "false",
       "data-state": isFocused ? "focused" : "idle",
       value: displayVal,
@@ -72,6 +86,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       maxlength: index === 0 ? Math.max(length, 2) : 2,
       role: "textbox",
       "aria-label": `Digit ${index + 1}`,
+      "aria-invalid": invalid ? "true" : "false",
     };
   }
 
@@ -99,6 +114,10 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     valueAsString,
     isValueComplete,
     isFilled,
+    invalid,
+    disabled,
+    readOnly,
+    size,
     focusedIndex,
     inputs,
 
@@ -108,6 +127,10 @@ export function connectPinInput(service: PinInputService): PinInputApi {
 
     clearValue() {
       send({ type: "CLEAR_VALUE" });
+    },
+
+    resetValue() {
+      send({ type: "RESET_VALUE" });
     },
 
     focus(index?: number) {
@@ -189,15 +212,18 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       "data-state": currentState,
       "data-disabled": disabled ? "true" : "false",
       "data-readonly": readOnly ? "true" : "false",
+      "data-invalid": invalid ? "true" : "false",
       "data-complete": isValueComplete ? "true" : "false",
       role: "group",
       "aria-disabled": disabled ? "true" : "false",
+      "aria-invalid": invalid ? "true" : "false",
     },
 
     controlProps: {
       id: dom.getControlId(scope),
       ...parts.control.attrs,
       "data-disabled": disabled ? "true" : "false",
+      "data-invalid": invalid ? "true" : "false",
     },
 
     labelProps: {

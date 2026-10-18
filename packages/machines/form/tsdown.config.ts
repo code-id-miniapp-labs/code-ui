@@ -1,0 +1,15 @@
+import { defineConfig } from "tsdown";
+
+export default defineConfig({
+  entry: {
+    index: "src/index.ts",
+    context: "src/form.context.ts",
+    rules: "src/form.rules.ts",
+  },
+  format: ["esm", "cjs"],
+  dts: true,
+  sourcemap: false,
+  clean: true,
+  target: "es2020",
+  fixedExtension: false,
+});

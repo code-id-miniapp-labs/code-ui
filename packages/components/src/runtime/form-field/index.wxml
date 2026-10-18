@@ -1,0 +1,24 @@
+<view class="{{classes.root}}" id="{{formField.rootProps.id}}" data-scope="form-field" data-part="root" data-name="{{name}}" data-disabled="{{formField.disabled}}" data-invalid="{{formField.invalid}}">
+  <view wx:if="{{label || formField.label || description || formField.description || hint || formField.hint}}" class="{{classes.wrapper}}" data-scope="form-field" data-part="wrapper">
+    <view wx:if="{{label || formField.label || hint || formField.hint}}" class="{{classes.labelWrapper}}" id="{{formField.labelWrapperProps.id}}" data-scope="form-field" data-part="label-wrapper">
+      <view class="flex items-center gap-1">
+        <slot name="label" />
+        <text wx:if="{{label || formField.label}}" class="{{classes.label}}" id="{{formField.labelProps.id}}" data-scope="form-field" data-part="label">{{label || formField.label}}</text>
+        <text wx:if="{{formField.required || required}}" class="{{classes.required}}" id="{{formField.requiredProps.id}}" data-scope="form-field" data-part="required" aria-hidden="true">*</text>
+      </view>
+      <slot name="hint" />
+      <text wx:if="{{hint || formField.hint}}" class="{{classes.hint}}" id="{{formField.hintProps.id}}" data-scope="form-field" data-part="hint">{{hint || formField.hint}}</text>
+    </view>
+    <slot name="description" />
+    <text wx:if="{{description || formField.description}}" class="{{classes.description}}" id="{{formField.descriptionProps.id}}" data-scope="form-field" data-part="description">{{description || formField.description}}</text>
+  </view>
+
+  <view class="{{classes.container}}" id="{{formField.containerProps.id}}" data-scope="form-field" data-part="container" data-invalid="{{formField.invalid}}">
+    <slot />
+  </view>
+
+  <slot name="error" />
+  <slot name="help" />
+  <text wx:if="{{formField.displayError || displayError}}" class="{{classes.error}}" id="{{formField.errorProps.id}}" data-scope="form-field" data-part="error" role="alert" aria-live="polite">{{formField.displayError || displayError}}</text>
+  <text wx:elif="{{formField.displayHelp || displayHelp}}" class="{{classes.help}}" id="{{formField.helpProps.id}}" data-scope="form-field" data-part="help">{{formField.displayHelp || displayHelp}}</text>
+</view>

@@ -199,11 +199,10 @@ export default defineConfig({
         comments: false,
       },
     },
-    rollupOptions: {
+    rolldownOptions: {
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
       },
     },
   },

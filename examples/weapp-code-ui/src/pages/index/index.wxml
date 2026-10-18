@@ -101,11 +101,78 @@
     <!-- Section 8: PinInput Component -->
     <c-card title="PinInput Component" description="Zag.js FSM with per-index input elements, OTP auto-advance & separator.">
       <view class="flex flex-col gap-4">
-        <c-pin-input label="Verification Code (4 digits)" length="{{4}}" placeholder="○" />
+        <c-pin-input label="Verification Code (4 digits)" length="{{4}}" placeholder="○" mask="{{true}}" />
         <c-pin-input label="With Separator (6 digits)" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" color="neutral" />
       </view>
     </c-card>
-    <!-- Section 9: Drawer Component -->
+    <!-- Section 9: Form & Validation Component -->
+    <c-card title="Form & Validation" description="EventBus context injection, Vuetify-style rules, errorBag, reset & focusOnError.">
+      <!-- Form 1: Security PIN -->
+      <view class="text-sm font-semibold text-neutral-800 mb-2">
+        Form 1: Security PIN (4 digits)
+      </view>
+      <c-form id="demo-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleFormSubmit" bind:error="handleFormError" bind:reset="handleFormReset">
+        <view class="flex flex-col gap-4">
+          <c-form-field name="pin" label="Security PIN" description="Enter your 4-digit security code" helperText="We will never share your PIN with anyone" rules="{{pinRules}}" required="{{true}}">
+            <c-pin-input name="pin" length="{{4}}" placeholder="○" />
+          </c-form-field>
+          <view class="flex items-center justify-between py-1 px-0.5">
+            <text class="text-xs text-neutral-600">Require PIN confirmation</text>
+            <switch checked="{{ requirePin }}" bindchange="onTogglePin" />
+          </view>
+          <c-form-field disabled="{{requirePin}}" name="confirmPin" size="md" label="Confirm Security PIN" helperText="Re-enter your 4 digits to verify" rules="{{confirmPinRules}}" required="{{true}}">
+            <c-pin-input name="confirmPin" length="{{4}}" placeholder="○" />
+          </c-form-field>
+          <view class="flex flex-wrap gap-2 pt-2">
+            <c-button variant="solid" color="primary" size="sm" bind:tap="submitDemoForm">
+              Submit Form 1
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetDemoForm">
+              Reset Form 1
+            </c-button>
+            <c-button variant="soft" color="warning" size="sm" bind:tap="clearDemoFormErrors">
+              Clear Errors
+            </c-button>
+            <c-button variant="soft" color="danger" size="sm" bind:tap="simulateServerError">
+              Server Error
+            </c-button>
+          </view>
+          <view wx:if="{{formStatus}}" class="mt-1 px-3 py-2 rounded-lg text-xs bg-neutral-100 text-neutral-700 border border-neutral-200">
+            <text class="font-semibold">{{formStatus}}:</text>
+            <text>{{formMessage}}</text>
+          </view>
+        </view>
+      </c-form>
+      <!-- Form 2: Quick Transfer (Independent form on same Page, no form='...' needed!) -->
+      <view class="mt-8 pt-6 border-t border-neutral-200">
+        <view class="text-sm font-semibold text-neutral-800 mb-2">
+          Form 2: Quick Transfer ($250.00)
+        </view>
+        <view class="text-xs text-neutral-500 mb-3">
+          Coexists on the same Page with zero cross-talk. No form="..." prop needed on child inputs!
+        </view>
+        <c-form id="transfer-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleTransferSubmit" bind:error="handleTransferError">
+          <view class="flex flex-col gap-4">
+            <c-form-field name="pin" label="Transfer PIN" description="6-digit authorization code for instant transfer" helperText="Split by 3-digit separator" required="{{true}}">
+              <c-pin-input name="pin" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" />
+            </c-form-field>
+            <view class="flex flex-wrap gap-2 pt-2">
+              <c-button variant="solid" color="success" size="sm" bind:tap="submitTransferForm">
+                Authorize Transfer ($250)
+              </c-button>
+              <c-button variant="outline" color="neutral" size="sm" bind:tap="resetTransferForm">
+                Reset Form 2
+              </c-button>
+            </view>
+            <view wx:if="{{transferStatus}}" class="mt-1 px-3 py-2 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <text class="font-semibold">{{transferStatus}}:</text>
+              <text>{{transferMessage}}</text>
+            </view>
+          </view>
+        </c-form>
+      </view>
+    </c-card>
+    <!-- Section 10: Drawer Component -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-base font-bold text-neutral-900">Drawer Component</view>
       <view class="text-xs text-neutral-400 mt-0.5 mb-4">

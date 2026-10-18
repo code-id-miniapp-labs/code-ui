@@ -1,5 +1,3 @@
-import { escape } from "@weapp-tailwindcss/escape";
-
 export type ClassValue =
   | string
   | number
@@ -95,6 +93,85 @@ export function cx(...args: ClassValue[]): string {
 const SAFE_CLASS = /^[A-Za-z_][\w-]*$/;
 const WHITESPACE = /\s+/;
 
+const ESCAPE_MAP: Record<string, string> = {
+  "[": "_b",
+  "]": "_B",
+  "(": "_p",
+  ")": "_P",
+  "#": "_h",
+  "!": "_e",
+  "/": "_f",
+  "\\": "_r",
+  ".": "_d",
+  ":": "_c",
+  "%": "_v",
+  ",": "_m",
+  "'": "_a",
+  '"': "_q",
+  "*": "_x",
+  "&": "_n",
+  "@": "_t",
+  "{": "_k",
+  "}": "_K",
+  "+": "_u",
+  ";": "_j",
+  "<": "_l",
+  "~": "_w",
+  "=": "_z",
+  ">": "_g",
+  "?": "_Q",
+  "^": "_y",
+  "`": "_i",
+  "|": "_o",
+  $: "_s",
+};
+
+function isAsciiDigit(code: number | undefined): boolean {
+  return code !== undefined && code >= 48 && code <= 57;
+}
+
+function escapeSelector(token: string): string {
+  const len = token.length;
+  if (len === 0) return "";
+  let out = "";
+  let last = 0;
+  for (let i = 0; i < len; ) {
+    const c1 = token.charCodeAt(i);
+    let code = c1;
+    let size = 1;
+    if (c1 >= 0xd800 && c1 <= 0xdbff && i + 1 < len) {
+      const c2 = token.charCodeAt(i + 1);
+      if (c2 >= 0xdc00 && c2 <= 0xdfff) {
+        code = ((c1 - 0xd800) << 10) + (c2 - 0xdc00) + 0x10000;
+        size = 2;
+      }
+    }
+    let rep: string | undefined;
+    if (code > 127) {
+      rep = `u_x${code.toString(16)}_`;
+    } else {
+      const ch = token[i] as string;
+      rep = ESCAPE_MAP[ch];
+      if (rep === undefined && i === 0) {
+        if (
+          isAsciiDigit(c1) ||
+          (ch === "-" && (len === 1 || isAsciiDigit(token.charCodeAt(1))))
+        ) {
+          rep = `_${ch}`;
+        }
+      }
+    }
+    if (rep !== undefined) {
+      if (last !== i) out += token.slice(last, i);
+      out += rep;
+      last = i + size;
+    }
+    i += size;
+  }
+  if (last === 0) return token;
+  return last < len ? out + token.slice(last) : out;
+}
+
 const TOKEN_CACHE_LIMIT = 512;
 const tokenCache = new Map<string, string>();
 
@@ -107,7 +184,7 @@ function escapeToken(token: string): string {
     tokenCache.set(token, escaped);
     return escaped;
   }
-  escaped = escape(token);
+  escaped = escapeSelector(token);
   if (tokenCache.size >= TOKEN_CACHE_LIMIT) {
     const oldest = tokenCache.keys().next();
     if (!oldest.done) tokenCache.delete(oldest.value);

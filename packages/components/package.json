@@ -48,6 +48,18 @@
       "require": "./dist/runtime/drawer/index.js"
     },
     "./drawer/*": "./dist/runtime/drawer/*",
+    "./form": {
+      "types": "./dist/runtime/form/index.d.ts",
+      "import": "./dist/runtime/form/index.js",
+      "require": "./dist/runtime/form/index.js"
+    },
+    "./form/*": "./dist/runtime/form/*",
+    "./form-field": {
+      "types": "./dist/runtime/form-field/index.d.ts",
+      "import": "./dist/runtime/form-field/index.js",
+      "require": "./dist/runtime/form-field/index.js"
+    },
+    "./form-field/*": "./dist/runtime/form-field/*",
     "./pin-input": {
       "types": "./dist/runtime/pin-input/index.d.ts",
       "import": "./dist/runtime/pin-input/index.js",
@@ -70,8 +82,11 @@
   "dependencies": {
     "@code-ui/anatomy": "workspace:*",
     "@code-ui/button": "workspace:*",
+    "@code-ui/context": "workspace:*",
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
+    "@code-ui/form": "workspace:*",
+    "@code-ui/form-field": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
     "@code-ui/utils": "workspace:*",

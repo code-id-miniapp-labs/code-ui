@@ -1,0 +1,52 @@
+{
+  "name": "@code-ui/form",
+  "version": "0.0.1",
+  "description": "Form state machine, validation rules, and EventBus context for code-ui",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "import": "./dist/context.js",
+      "require": "./dist/context.cjs"
+    },
+    "./rules": {
+      "types": "./dist/rules.d.ts",
+      "import": "./dist/rules.js",
+      "require": "./dist/rules.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config ../../../vitest.config.mts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@code-ui/anatomy": "workspace:*",
+    "@code-ui/context": "workspace:*",
+    "@code-ui/core": "workspace:*",
+    "@code-ui/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "alien-signals": "^1.0.4",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.5.4"
+  },
+  "peerDependencies": {
+    "alien-signals": ">=1.0.0"
+  }
+}

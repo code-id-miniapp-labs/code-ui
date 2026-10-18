@@ -6,6 +6,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@code-ui/anatomy": resolve(import.meta.dirname, "packages/anatomy/src"),
+      "@code-ui/context": resolve(import.meta.dirname, "packages/context/src"),
       "@code-ui/core": resolve(import.meta.dirname, "packages/core/src"),
       "@code-ui/utils": resolve(import.meta.dirname, "packages/utils/src"),
       "@code-ui/miniapp": resolve(
@@ -14,6 +15,15 @@ export default defineConfig({
       ),
       "@code-ui/button": resolve(import.meta.dirname, "packages/machines/button/src"),
       "@code-ui/drawer": resolve(import.meta.dirname, "packages/machines/drawer/src"),
+      "@code-ui/form/context": resolve(
+        import.meta.dirname,
+        "packages/machines/form/src/form.context.ts",
+      ),
+      "@code-ui/form": resolve(import.meta.dirname, "packages/machines/form/src"),
+      "@code-ui/form-field": resolve(
+        import.meta.dirname,
+        "packages/machines/form-field/src",
+      ),
       "@code-ui/pin-input": resolve(
         import.meta.dirname,
         "packages/machines/pin-input/src",

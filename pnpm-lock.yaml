@@ -112,12 +112,21 @@ importers:
       '@code-ui/button':
         specifier: workspace:*
         version: link:../machines/button
+      '@code-ui/context':
+        specifier: workspace:*
+        version: link:../context
       '@code-ui/core':
         specifier: workspace:*
         version: link:../core
       '@code-ui/drawer':
         specifier: workspace:*
         version: link:../machines/drawer
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../machines/form
+      '@code-ui/form-field':
+        specifier: workspace:*
+        version: link:../machines/form-field
       '@code-ui/miniapp':
         specifier: workspace:*
         version: link:../frameworks/miniapp
@@ -266,6 +275,65 @@ importers:
         specifier: ^5.5.4
         version: 5.9.3
 
+  packages/machines/form:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/context':
+        specifier: workspace:*
+        version: link:../../context
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.11)(typescript@5.9.3)(vue-tsc@3.3.11(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/form-field:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/context':
+        specifier: workspace:*
+        version: link:../../context
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.11)(typescript@5.9.3)(vue-tsc@3.3.11(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
   packages/machines/pin-input:
     dependencies:
       '@code-ui/anatomy':
@@ -274,6 +342,9 @@ importers:
       '@code-ui/core':
         specifier: workspace:*
         version: link:../../core
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../form
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../../utils
