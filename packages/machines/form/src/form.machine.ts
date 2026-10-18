@@ -1136,10 +1136,6 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
           ),
           bus.on("field:rules", ({ name, getRules }) => {
             params.refs.get("fieldRules").set(name, getRules);
-            bus.emit("form:state", {
-              disabled: Boolean(params.context.get("disabled")),
-              readOnly: Boolean(params.context.get("readOnly")),
-            });
           }),
         ];
 
