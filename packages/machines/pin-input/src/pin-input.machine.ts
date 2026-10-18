@@ -540,6 +540,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           if (currentValues[index] !== "") {
             currentValues[index] = "";
             context.set("value", currentValues);
+            if (index === length - 1) {
+              context.set("focusedIndex", index);
+              return;
+            }
             const prevIndex = Math.max(0, index - 1);
             context.set("focusedIndex", prevIndex);
             return;
