@@ -47,6 +47,14 @@ export interface ComponentRegistry {
     | "hint"
     | "help"
     | "required";
+  input:
+    | "root"
+    | "base"
+    | "leading"
+    | "leadingIcon"
+    | "trailing"
+    | "trailingIcon"
+    | "clear";
   pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
   [componentName: string]: string;
 }

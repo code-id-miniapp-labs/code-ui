@@ -1,0 +1,88 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">PinInput</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Zag.js OTP cells with per-index input elements, auto-advance, separators, and password masking.
+    </view>
+  </view>
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Controlled Component -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Controlled PinInput</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Syncs digit array with page state and fires onComplete event.
+      </view>
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="Verification Code (4 digits)" length="{{4}}" value="{{controlledPin}}" bind:change="onPinChange" bind:complete="onPinComplete" />
+        <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
+          <text class="text-neutral-500">Value:</text>
+          <text class="font-bold text-neutral-900">
+            {{controlledPin[0] || '·'}} {{controlledPin[1] || '·'}} {{controlledPin[2] || '·'}} {{controlledPin[3] || '·'}}
+          </text>
+        </view>
+        <view wx:if="{{pinCompleteValue}}" class="p-2.5 rounded-xl text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
+          PIN Complete:
+          <text class="font-bold">{{pinCompleteValue}}</text>
+        </view>
+        <view class="flex gap-2">
+          <c-button size="sm" variant="outline" color="primary" bind:tap="fillPin">
+            Fill "9876"
+          </c-button>
+          <c-button size="sm" variant="outline" color="neutral" bind:tap="clearPin">
+            Clear PIN
+          </c-button>
+        </view>
+      </view>
+    </view>
+    <!-- 2. Separators & Lengths -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Separators & 6-Digit PIN</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Split inputs by separator character at specified intervals.
+      </view>
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="6-Digit Authorization Code" length="{{6}}" separator="{{3}}" placeholder="○" color="primary" />
+      </view>
+    </view>
+    <!-- 3. Masked / Password Mode -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Password Masking</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Masks entered digits for private security PINs.
+      </view>
+      <c-pin-input label="Security PIN" length="{{4}}" mask="{{true}}" placeholder="•" color="neutral" />
+    </view>
+    <!-- 4. Variants -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Variants</view>
+      <view class="text-xs text-neutral-400 mb-4">outline, soft, subtle, ghost</view>
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="Outline" variant="outline" length="{{4}}" placeholder="-" />
+        <c-pin-input label="Soft" variant="soft" length="{{4}}" placeholder="-" />
+        <c-pin-input label="Subtle" variant="subtle" length="{{4}}" placeholder="-" />
+        <c-pin-input label="Ghost" variant="ghost" length="{{4}}" placeholder="-" />
+      </view>
+    </view>
+    <!-- 5. Sizes -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
+      <view class="text-xs text-neutral-400 mb-4">xs, sm, md, lg, xl</view>
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="Small (sm)" size="sm" length="{{4}}" />
+        <c-pin-input label="Medium (md)" size="md" length="{{4}}" />
+        <c-pin-input label="Large (lg)" size="lg" length="{{4}}" />
+        <c-pin-input label="Large XL" size="xl" length="{{4}}" />
+      </view>
+    </view>
+    <!-- 6. Disabled & ReadOnly -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Disabled & ReadOnly</view>
+      <view class="text-xs text-neutral-400 mb-4">State locks on pin inputs.</view>
+      <view class="flex flex-col gap-4">
+        <c-pin-input label="Disabled" disabled="{{true}}" defaultValue="{{['1','2','3','4']}}" length="{{4}}" />
+        <c-pin-input label="ReadOnly" readOnly="{{true}}" defaultValue="{{['5','6','7','8']}}" length="{{4}}" />
+      </view>
+    </view>
+  </view>
+</view>

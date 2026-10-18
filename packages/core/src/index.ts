@@ -99,5 +99,6 @@ export { default as chipTheme } from "./theme/definitions/chip";
 export { default as drawerTheme } from "./theme/definitions/drawer";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
+export { default as inputTheme } from "./theme/definitions/input";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
 

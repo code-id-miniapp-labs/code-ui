@@ -1,0 +1,95 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Button</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Trigger actions with Zag.js finite state machine, async auto-loading, and Nuxt UI v4 variants.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- Variants -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Variants</view>
+      <view class="text-xs text-neutral-400 mb-4">solid, outline, ghost, soft, secondary</view>
+      <view class="flex flex-wrap gap-2.5 items-center">
+        <c-button variant="solid">Solid</c-button>
+        <c-button variant="outline">Outline</c-button>
+        <c-button variant="ghost">Ghost</c-button>
+        <c-button variant="soft">Soft</c-button>
+        <c-button variant="secondary">Secondary</c-button>
+      </view>
+    </view>
+
+    <!-- Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
+      <view class="text-xs text-neutral-400 mb-4">primary, neutral, success, warning, danger, info</view>
+      <view class="flex flex-wrap gap-2.5 items-center">
+        <c-button color="primary">Primary</c-button>
+        <c-button color="neutral">Neutral</c-button>
+        <c-button color="success">Success</c-button>
+        <c-button color="warning">Warning</c-button>
+        <c-button color="danger">Danger</c-button>
+        <c-button color="info">Info</c-button>
+      </view>
+    </view>
+
+    <!-- Sizes -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
+      <view class="text-xs text-neutral-400 mb-4">xs, sm, md, lg, xl</view>
+      <view class="flex flex-wrap gap-3 items-center">
+        <c-button size="xs">Extra Small</c-button>
+        <c-button size="sm">Small</c-button>
+        <c-button size="md">Medium</c-button>
+        <c-button size="lg">Large</c-button>
+        <c-button size="xl">Extra Large</c-button>
+      </view>
+    </view>
+
+    <!-- Async Auto-Loading -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">FSM Async Auto-Loading</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Returns a promise in tap handler; machine transitions to 'loading' state with built-in spinner.
+      </view>
+      <view class="flex flex-col gap-3">
+        <view class="flex items-center justify-between text-xs text-neutral-500">
+          <text>Clicks completed:</text>
+          <text class="font-bold text-neutral-800">{{count}}</text>
+        </view>
+        <view class="flex flex-wrap gap-2.5">
+          <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" color="primary">
+            Async Action (1.5s)
+          </c-button>
+          <c-button loading="{{true}}" color="neutral">
+            Always Loading
+          </c-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- Block & Disabled -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Block & Disabled States</view>
+      <view class="text-xs text-neutral-400 mb-4">Full-width block buttons and disabled state.</view>
+      <view class="flex flex-col gap-3">
+        <c-button block="{{true}}" color="primary">Full Width Button</c-button>
+        <view class="flex gap-2.5">
+          <c-button disabled="{{true}}" variant="solid">Disabled Solid</c-button>
+          <c-button disabled="{{true}}" variant="outline">Disabled Outline</c-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- Custom UI Slot Overrides -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Custom UI Prop Override</view>
+      <view class="text-xs text-neutral-400 mb-4">Custom slot override via Nuxt UI v4-style local ui prop.</view>
+      <c-button ui="{{customButtonUI}}" color="primary" variant="solid">
+        Ring Highlight Button
+      </c-button>
+    </view>
+  </view>
+</view>

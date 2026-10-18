@@ -72,10 +72,10 @@ export interface PinInputProps {
   highlight?: boolean | undefined;
   /** Number of inputs (PIN length) */
   length?: number | undefined;
-  /** Controlled value array */
-  value?: string[] | undefined;
-  /** Default value array */
-  defaultValue?: string[] | undefined;
+  /** Controlled value array or string */
+  value?: string[] | string | null | undefined;
+  /** Default value array or string */
+  defaultValue?: string[] | string | null | undefined;
   /** Type of input accepted */
   type?: PinInputType | undefined;
   /** Whether the inputs are masked (password mode) */

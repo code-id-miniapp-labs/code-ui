@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createMachine } from "@code-ui/core";
 import {
   createMachineBehavior,
+  createProperties,
   cuiFormParentBehavior,
   cuiFormFieldBehavior,
 } from "../src/behavior";
@@ -191,6 +192,50 @@ describe("createMachineBehavior - formParent & formField relations", () => {
     expect(updatePropsChild).toHaveBeenLastCalledWith({
       fieldDisabled: false,
       fieldSize: "md",
+    });
+  });
+
+  describe("createProperties and observer sync", () => {
+    it("handles null value in defaultProps as type: null in createProperties", () => {
+      const props = createProperties({
+        value: null,
+        count: 0,
+        text: "hello",
+        flag: false,
+      });
+
+      expect(props.value).toEqual({ type: null, value: null });
+      expect(props.count).toEqual({ type: Number, value: 0 });
+      expect(props.text).toEqual({ type: String, value: "hello" });
+      expect(props.flag).toEqual({ type: Boolean, value: false });
+    });
+
+    it("automatically sets up observers for null-defaulted properties like value", () => {
+      const testMachine = createMachine({
+        props: () => ({ value: null, size: "md" }),
+        initialState: () => "idle",
+        states: { idle: {} },
+      });
+
+      const behavior = createMachineBehavior({
+        machine: testMachine,
+      });
+
+      expect(behavior.observers).toBeDefined();
+      expect(behavior.observers.value).toBeDefined();
+      expect(behavior.observers.size).toBeDefined();
+
+      const mockMachine = {
+        updateProps: vi.fn(),
+      };
+      const compInstance = {
+        __codeUiMachine: mockMachine,
+      };
+
+      behavior.observers.value.call(compInstance, "Antigravity UI");
+      expect(mockMachine.updateProps).toHaveBeenCalledWith({
+        value: "Antigravity UI",
+      });
     });
   });
 });

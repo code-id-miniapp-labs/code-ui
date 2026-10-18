@@ -10,6 +10,7 @@
     "cui-drawer": "runtime/drawer/index",
     "cui-form": "runtime/form/index",
     "cui-form-field": "runtime/form-field/index",
+    "cui-input": "runtime/input/index",
     "cui-pin-input": "runtime/pin-input/index"
   }
 }

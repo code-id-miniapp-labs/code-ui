@@ -38,8 +38,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
   refs: ({ prop }) => {
     const len = prop("length") ?? 4;
+    const raw = prop("value") ?? prop("defaultValue");
     const initial =
-      prop("value") ?? prop("defaultValue") ?? Array(len).fill("");
+      raw !== undefined && raw !== null
+        ? normalizePinValue(raw, len)
+        : Array(len).fill("");
     return {
       initialValue: [...initial],
       formField: undefined,
@@ -55,11 +58,31 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
     value: bindable<string[]>(() => {
       const len = prop("length") ?? 4;
-      const initial =
-        prop("value") ?? prop("defaultValue") ?? Array(len).fill("");
+      const rawVal = prop("value");
+      const isControlled = rawVal !== undefined && rawVal !== null;
+      const controlledVal = isControlled
+        ? normalizePinValue(rawVal, len)
+        : undefined;
+
+      const rawDefault = prop("defaultValue");
+      const initial = isControlled
+        ? (controlledVal as string[])
+        : rawDefault !== undefined && rawDefault !== null
+          ? normalizePinValue(rawDefault, len)
+          : Array(len).fill("");
+
       return {
-        value: prop("value"),
+        value: controlledVal,
         defaultValue: initial,
+        isEqual: (a, b) => {
+          if (a === b) return true;
+          if (!Array.isArray(a) || !Array.isArray(b)) return false;
+          if (a.length !== b.length) return false;
+          for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false;
+          }
+          return true;
+        },
         onChange: (nextVal) => {
           const valueAsString = nextVal.join("");
           prop("onValueChange")?.({ value: nextVal, valueAsString });
@@ -67,6 +90,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             value: nextVal,
             valueAsString,
           });
+          prop("component")?.setData?.({ value: nextVal });
 
           const formField = getRefs().get("formField");
 
@@ -200,8 +224,17 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
   watch: ({ prop, context, refs }) => {
     const controlledVal = prop("value");
-    if (controlledVal !== undefined) {
-      context.set("value", controlledVal);
+    if (controlledVal !== undefined && controlledVal !== null) {
+      const len = context.get("length") ?? prop("length") ?? 4;
+      const normalized = normalizePinValue(controlledVal, len);
+      const current = context.get("value");
+      const isSame =
+        Array.isArray(current) &&
+        current.length === normalized.length &&
+        current.every((c, i) => c === normalized[i]);
+      if (!isSame) {
+        context.set("value", normalized);
+      }
     }
     const controlledInvalid = prop("invalid");
     if (controlledInvalid !== undefined) {

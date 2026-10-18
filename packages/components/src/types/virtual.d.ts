@@ -34,6 +34,12 @@ declare module "virtual:cui/theme/form-field" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/input" {
+  import type { default as inputTheme } from "@code-ui/core/src/theme/definitions/input";
+  const theme: ReturnType<typeof inputTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/pin-input" {
   import type { default as pinInputTheme } from "@code-ui/core/src/theme/definitions/pin-input";
   const theme: ReturnType<typeof pinInputTheme>;

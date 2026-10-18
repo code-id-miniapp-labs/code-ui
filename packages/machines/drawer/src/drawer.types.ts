@@ -27,7 +27,7 @@ export interface DrawerProps {
   /** Placement direction of the drawer sheet */
   placement?: Placement;
   /** Whether the drawer is open (controlled) */
-  open?: boolean;
+  open?: boolean | null | undefined;
   /** Initial open state when uncontrolled */
   defaultOpen?: boolean;
   /** Callback fired when open state changes */

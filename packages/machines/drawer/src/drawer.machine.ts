@@ -10,20 +10,29 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   }),
 
   initialState: ({ prop }) => {
-    const isOpen = prop("open") ?? prop("defaultOpen") ?? false;
+    const rawOpen = prop("open");
+    const isOpen =
+      rawOpen !== undefined && rawOpen !== null
+        ? Boolean(rawOpen)
+        : Boolean(prop("defaultOpen") ?? false);
     return isOpen ? "open" : "closed";
   },
 
   context: ({ prop, bindable }) => ({
-    open: bindable<boolean>(() => ({
-      value: prop("open"),
-      defaultValue: prop("defaultOpen") ?? false,
-      onChange: (open) => {
-        if (!open) {
-          prop("onClose")?.();
-        }
-      },
-    })),
+    open: bindable<boolean>(() => {
+      const rawOpen = prop("open");
+      const isControlled = rawOpen !== undefined && rawOpen !== null;
+      return {
+        value: isControlled ? Boolean(rawOpen) : undefined,
+        defaultValue: Boolean(prop("defaultOpen") ?? false),
+        onChange: (open) => {
+          prop("component")?.setData?.({ open });
+          if (!open) {
+            prop("onClose")?.();
+          }
+        },
+      };
+    }),
     keyboardHeight: bindable<number>(() => ({
       defaultValue: 0,
     })),
@@ -39,8 +48,9 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   },
 
   watch: ({ prop, state, send }) => {
-    const controlledOpen = prop("open");
-    if (controlledOpen !== undefined) {
+    const rawOpen = prop("open");
+    if (rawOpen !== undefined && rawOpen !== null) {
+      const controlledOpen = Boolean(rawOpen);
       if (controlledOpen && !state.matches("open", "dragging")) {
         send({ type: "OPEN" });
       } else if (!controlledOpen && state.matches("open", "dragging")) {

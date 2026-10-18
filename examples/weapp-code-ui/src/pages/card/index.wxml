@@ -1,0 +1,70 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Card</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Surface containers with Nuxt UI v4-style header, body, and footer slots.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- Variants -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        Variants
+      </view>
+
+      <c-card variant="outline" title="Outline Card" description="Default surface with neutral border.">
+        <text class="text-xs text-neutral-600">This is the body content of the outline card.</text>
+      </c-card>
+
+      <c-card variant="soft" title="Soft Card" description="Tinted background with subtle contrast.">
+        <text class="text-xs text-neutral-600">Soft card surface body content.</text>
+      </c-card>
+
+      <c-card variant="subtle" title="Subtle Card" description="Muted surface with light border.">
+        <text class="text-xs text-neutral-600">Subtle card surface body content.</text>
+      </c-card>
+
+      <c-card variant="solid" title="Solid Card" description="High-contrast dark card surface.">
+        <text class="text-xs text-neutral-300">Solid card surface body content.</text>
+      </c-card>
+    </view>
+
+    <!-- Sizes -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        Sizes (sm, md, lg)
+      </view>
+
+      <c-card size="sm" title="Small Card" description="Compact padding and typography.">
+        <text class="text-xs text-neutral-600">Compact content</text>
+      </c-card>
+
+      <c-card size="md" title="Medium Card" description="Standard comfortable padding.">
+        <text class="text-xs text-neutral-600">Standard content</text>
+      </c-card>
+
+      <c-card size="lg" title="Large Card" description="Spacious padding and larger title.">
+        <text class="text-xs text-neutral-600">Spacious content</text>
+      </c-card>
+    </view>
+
+    <!-- Header & Footer Slots -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        Header & Footer Slots
+      </view>
+
+      <c-card title="Interactive Card" description="Card with action buttons in the footer slot.">
+        <text class="text-xs text-neutral-600">
+          This card demonstrates custom footer slot actions like Confirm and Cancel buttons.
+        </text>
+        <view slot="footer" class="flex justify-end gap-2">
+          <c-button variant="outline" color="neutral" size="sm">Cancel</c-button>
+          <c-button variant="solid" color="primary" size="sm">Save</c-button>
+        </view>
+      </c-card>
+    </view>
+  </view>
+</view>
