@@ -4,7 +4,7 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 
 import {
   drawerMachine,
@@ -12,7 +12,7 @@ import {
   defaultDrawerProps,
 } from "@code-ui/drawer";
 import themeConfig from "virtual:cui/theme/drawer";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 
 const drawerTheme = tv(themeConfig);
 

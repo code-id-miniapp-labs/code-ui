@@ -1,7 +1,7 @@
 import { computedBehavior, createComponentOptions } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/chip";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 
 const chipTheme = tv(themeConfig);
 

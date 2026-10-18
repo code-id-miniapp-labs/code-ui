@@ -4,14 +4,14 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 import {
   pinInputMachine,
   connectPinInput,
   defaultPinInputProps,
 } from "@code-ui/pin-input";
 import themeConfig from "virtual:cui/theme/pin-input";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 
 const pinInputTheme = tv(themeConfig);
 
