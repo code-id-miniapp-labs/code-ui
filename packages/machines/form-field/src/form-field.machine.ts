@@ -56,6 +56,21 @@ function getEffectiveFieldRules(
   return list;
 }
 
+function emitFieldState(params: any) {
+  const bus = params.refs.get("currentFormBus") ?? params.prop("formBus");
+  if (!bus) return;
+  const name = params.context.get("name") || params.prop("name");
+  const effectiveDisabled = Boolean(
+    params.context.get("disabled") || params.context.get("formDisabled"),
+  );
+  const size = params.context.get("size");
+  bus.emit("field:state", {
+    name: name || undefined,
+    disabled: effectiveDisabled,
+    size,
+  });
+}
+
 function emitFieldRules(params: any) {
   const bus = params.refs.get("currentFormBus") ?? params.prop("formBus");
   if (!bus) return;
@@ -69,15 +84,7 @@ function emitFieldRules(params: any) {
     });
   }
 
-  const effectiveDisabled = Boolean(
-    params.context.get("disabled") || params.context.get("formDisabled"),
-  );
-  const size = params.context.get("size");
-  bus.emit("field:state", {
-    name: name || undefined,
-    disabled: effectiveDisabled,
-    size,
-  });
+  emitFieldState(params);
 }
 
 function teardownBus(params: any) {
@@ -155,9 +162,18 @@ function bindBus(params: any) {
 
   disposers.push(
     bus.on("form:state", (payload: any) => {
-      params.context.set("formDisabled", Boolean(payload?.disabled));
-      params.context.set("formReadOnly", Boolean(payload?.readOnly));
-      emitFieldRules(params);
+      const nextDisabled = Boolean(payload?.disabled);
+      const nextReadOnly = Boolean(payload?.readOnly);
+      const prevDisabled = Boolean(params.context.get("formDisabled"));
+      const prevReadOnly = Boolean(params.context.get("formReadOnly"));
+
+      if (prevDisabled === nextDisabled && prevReadOnly === nextReadOnly) {
+        return;
+      }
+
+      params.context.set("formDisabled", nextDisabled);
+      params.context.set("formReadOnly", nextReadOnly);
+      emitFieldState(params);
     }),
   );
 
