@@ -5,14 +5,14 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 import {
   buttonMachine,
   connectButton,
   defaultButtonProps,
 } from "@code-ui/button";
 import themeConfig from "virtual:cui/theme/button";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 
 const buttonTheme = tv(themeConfig);
 

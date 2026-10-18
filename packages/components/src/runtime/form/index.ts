@@ -4,7 +4,7 @@ import {
   computedBehavior,
   createComponentOptions,
 } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 import {
   formMachine,
   connectForm,
@@ -13,7 +13,7 @@ import {
   type FormFieldError,
 } from "@code-ui/form";
 import themeConfig from "virtual:cui/theme/form";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 
 const formTheme = tv(themeConfig);
 
@@ -121,10 +121,7 @@ Component(
         return api?.getFieldValue?.(name);
       },
 
-      setValues(
-        values: Record<string, any>,
-        options?: { validate?: boolean },
-      ) {
+      setValues(values: Record<string, any>, options?: { validate?: boolean }) {
         const api = (this as any).__codeUiApi ?? this.data.form;
         api?.setValues?.(values, options);
       },

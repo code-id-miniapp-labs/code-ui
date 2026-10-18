@@ -4,9 +4,9 @@ import {
   createMachineBehavior,
   createProperties,
 } from "../_shared";
-import { resolveSlots } from "../utils/ui";
+import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/form-field";
-import { tv } from "../utils/variants";
+import { tv } from "../../utils/variants";
 import {
   connectFormField,
   defaultFormFieldProps,
