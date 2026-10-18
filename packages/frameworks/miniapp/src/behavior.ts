@@ -86,15 +86,17 @@ export function createProperties<T extends Record<string, any>>(
   for (const [propKey, val] of Object.entries(defaultProps)) {
     if (val === undefined) continue;
     const type =
-      typeof val === "boolean"
-        ? Boolean
-        : typeof val === "number"
-          ? Number
-          : typeof val === "string"
-            ? String
-            : Array.isArray(val)
-              ? Array
-              : Object;
+      val === null
+        ? null
+        : typeof val === "boolean"
+          ? Boolean
+          : typeof val === "number"
+            ? Number
+            : typeof val === "string"
+              ? String
+              : Array.isArray(val)
+                ? Array
+                : Object;
     properties[propKey] = {
       type,
       value: val,
@@ -357,10 +359,9 @@ export function createMachineBehavior<
     }
   } catch {}
 
-  const syncProps =
-    explicitSyncProps && explicitSyncProps.length > 0
-      ? explicitSyncProps
-      : (discoveredProps as Array<keyof T["props"]>);
+  const syncProps = Array.from(
+    new Set([...discoveredProps, ...(explicitSyncProps ?? [])]),
+  ) as Array<keyof T["props"]>;
 
   const behaviors: any[] = [];
   if (formField) {

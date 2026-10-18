@@ -729,6 +729,53 @@ describe("Pin Input Machine", () => {
 
       machine.stop();
     });
+
+    it("syncs state when controlled value prop is dynamically updated via updateProps", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        value: ["1", "2", "", ""],
+      });
+      machine.start();
+
+      let api = connectPinInput(machine.service);
+      expect(api.value).toEqual(["1", "2", "", ""]);
+      expect(api.valueAsString).toBe("12");
+      expect(api.inputs[0].value).toBe("1");
+      expect(api.inputs[1].value).toBe("2");
+      expect(api.inputs[2].value).toBe("");
+
+      // Parent programmatically fills PIN "9876" as array
+      machine.updateProps({ value: ["9", "8", "7", "6"] });
+      await flush();
+
+      api = connectPinInput(machine.service);
+      expect(api.value).toEqual(["9", "8", "7", "6"]);
+      expect(api.valueAsString).toBe("9876");
+      expect(api.isValueComplete).toBe(true);
+      expect(api.inputs[0].value).toBe("9");
+      expect(api.inputs[1].value).toBe("8");
+      expect(api.inputs[2].value).toBe("7");
+      expect(api.inputs[3].value).toBe("6");
+
+      // Parent programmatically updates value as string "4321"
+      machine.updateProps({ value: "4321" });
+      await flush();
+
+      api = connectPinInput(machine.service);
+      expect(api.value).toEqual(["4", "3", "2", "1"]);
+      expect(api.valueAsString).toBe("4321");
+      expect(api.isValueComplete).toBe(true);
+
+      // Parent programmatically clears PIN
+      machine.updateProps({ value: ["", "", "", ""] });
+      await flush();
+
+      api = connectPinInput(machine.service);
+      expect(api.value).toEqual(["", "", "", ""]);
+      expect(api.valueAsString).toBe("");
+      expect(api.isValueComplete).toBe(false);
+
+      machine.stop();
+    });
   });
 });
 

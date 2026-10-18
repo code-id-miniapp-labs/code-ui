@@ -9,14 +9,14 @@ import {
   dedupeClasses,
   escapeClass,
   tv,
-} from "../src/runtime/utils/variants";
+} from "../src/utils/variants";
 
 const buttonTheme = tv(createButtonTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
   resolveSlots,
-} from "../src/runtime/utils/ui";
+} from "../src/utils/ui";
 
 describe("escapeClass", () => {
   it("leaves safe classes untouched", () => {

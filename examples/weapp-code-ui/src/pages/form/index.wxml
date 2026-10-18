@@ -1,0 +1,139 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Form & Validation</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      EventBus context injection, validation rules, errorBag, focusOnError, and multi-form isolation.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-8">
+    <!-- Form 1: User Registration -->
+    <c-card title="Registration Form" description="Form integrating c-input and c-pin-input with Vuetify/Nuxt-style validation rules.">
+      <c-form
+        id="registration-form"
+        focusOnError="{{true}}"
+        showErrors="{{true}}"
+        bind:submit="handleRegistrationSubmit"
+        bind:error="handleRegistrationError"
+      >
+        <view class="flex flex-col gap-4">
+          <!-- Field 1: Username (c-input) -->
+          <c-form-field
+            name="username"
+            label="Username"
+            description="Your public display handle"
+            helperText="Minimum 3 characters"
+            rules="{{usernameRules}}"
+            required="{{true}}"
+          >
+            <c-input
+              name="username"
+              placeholder="e.g. alice_w"
+              clearable="{{true}}"
+            />
+          </c-form-field>
+
+          <!-- Field 2: Email (c-input) -->
+          <c-form-field
+            name="email"
+            label="Email Address"
+            description="Account recovery and notifications"
+            rules="{{emailRules}}"
+            required="{{true}}"
+          >
+            <c-input
+              name="email"
+              type="text"
+              placeholder="name@example.com"
+              clearable="{{true}}"
+            />
+          </c-form-field>
+
+          <!-- Field 3: Security PIN (c-pin-input) -->
+          <c-form-field
+            name="pin"
+            label="4-Digit Security PIN"
+            description="Required for authorization and payout requests"
+            rules="{{pinRules}}"
+            required="{{true}}"
+          >
+            <c-pin-input
+              name="pin"
+              length="{{4}}"
+              mask="{{true}}"
+              placeholder="○"
+            />
+          </c-form-field>
+
+          <!-- Action Buttons -->
+          <view class="flex flex-wrap gap-2 pt-2">
+            <c-button variant="solid" color="primary" size="sm" bind:tap="submitRegistration">
+              Submit Form
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetRegistration">
+              Reset Form
+            </c-button>
+            <c-button variant="soft" color="success" size="sm" bind:tap="setPredefined">
+              Pre-fill Valid Data
+            </c-button>
+            <c-button variant="soft" color="warning" size="sm" bind:tap="clearRegistrationErrors">
+              Clear Errors
+            </c-button>
+            <c-button variant="soft" color="danger" size="sm" bind:tap="simulateServerError">
+              Simulate Server Error
+            </c-button>
+          </view>
+
+          <!-- Feedback Status Card -->
+          <view wx:if="{{formStatus}}" class="mt-2 px-3 py-2.5 rounded-xl text-xs bg-neutral-100 text-neutral-800 border border-neutral-200">
+            <text class="font-bold text-neutral-950">{{formStatus}}:</text>
+            <text class="ml-1">{{formMessage}}</text>
+          </view>
+        </view>
+      </c-form>
+    </c-card>
+
+    <!-- Form 2: Quick Transfer (Coexisting Form) -->
+    <c-card title="Independent Form 2: Quick Transfer" description="Coexists on the same Page with zero cross-talk between form buses.">
+      <c-form
+        id="transfer-form"
+        focusOnError="{{true}}"
+        showErrors="{{true}}"
+        bind:submit="handleTransferSubmit"
+        bind:error="handleTransferError"
+      >
+        <view class="flex flex-col gap-4">
+          <c-form-field
+            name="transferPin"
+            label="6-Digit Transfer PIN"
+            description="Instant transfer authorization ($250.00)"
+            required="{{true}}"
+          >
+            <c-pin-input
+              name="transferPin"
+              length="{{6}}"
+              separator="{{3}}"
+              variant="subtle"
+              placeholder="○"
+            />
+          </c-form-field>
+
+          <view class="flex flex-wrap gap-2 pt-1">
+            <c-button variant="solid" color="success" size="sm" bind:tap="submitTransfer">
+              Authorize Transfer ($250)
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetTransfer">
+              Reset Transfer
+            </c-button>
+          </view>
+
+          <view wx:if="{{transferStatus}}" class="mt-1 px-3 py-2 rounded-xl text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <text class="font-bold">{{transferStatus}}:</text>
+            <text class="ml-1">{{transferMessage}}</text>
+          </view>
+        </view>
+      </c-form>
+    </c-card>
+  </view>
+</view>

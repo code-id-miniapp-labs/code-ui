@@ -1,0 +1,74 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Chip</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Corner notification badges, status indicators, and standalone notification counters.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- Corner Badges on Buttons -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Attached Badges</view>
+      <view class="text-xs text-neutral-400 mb-5">Number badge or dot attached to components.</view>
+      <view class="flex flex-wrap gap-6 items-center">
+        <c-chip text="3" color="danger" size="2xl">
+          <c-button variant="outline" color="neutral">Notifications</c-button>
+        </c-chip>
+        <c-chip text="99+" color="primary" size="2xl">
+          <c-button variant="soft" color="neutral">Messages</c-button>
+        </c-chip>
+        <c-chip color="success" size="md">
+          <c-button variant="soft" color="neutral">Online Status</c-button>
+        </c-chip>
+      </view>
+    </view>
+
+    <!-- Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
+      <view class="text-xs text-neutral-400 mb-4">Semantic badge colors.</view>
+      <view class="flex flex-wrap gap-4 items-center">
+        <c-chip text="Primary" color="primary" standalone="{{true}}" size="2xl" />
+        <c-chip text="Success" color="success" standalone="{{true}}" size="2xl" />
+        <c-chip text="Warning" color="warning" standalone="{{true}}" size="2xl" />
+        <c-chip text="Danger" color="danger" standalone="{{true}}" size="2xl" />
+        <c-chip text="Info" color="info" standalone="{{true}}" size="2xl" />
+        <c-chip text="Neutral" color="neutral" standalone="{{true}}" size="2xl" />
+      </view>
+    </view>
+
+    <!-- Positions -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Corner Positions</view>
+      <view class="text-xs text-neutral-400 mb-5">top-right, bottom-right, top-left, bottom-left.</view>
+      <view class="flex flex-wrap gap-6 items-center">
+        <c-chip position="top-right" color="danger" size="md">
+          <c-button size="sm" variant="outline">Top Right</c-button>
+        </c-chip>
+        <c-chip position="bottom-right" color="primary" size="md">
+          <c-button size="sm" variant="outline">Bottom Right</c-button>
+        </c-chip>
+        <c-chip position="top-left" color="warning" size="md">
+          <c-button size="sm" variant="outline">Top Left</c-button>
+        </c-chip>
+        <c-chip position="bottom-left" color="success" size="md">
+          <c-button size="sm" variant="outline">Bottom Left</c-button>
+        </c-chip>
+      </view>
+    </view>
+
+    <!-- Standalone Badges -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Standalone Pills</view>
+      <view class="text-xs text-neutral-400 mb-4">Standalone badge counters and tags.</view>
+      <view class="flex flex-wrap gap-3 items-center">
+        <c-chip text="New" color="primary" size="xl" standalone="{{true}}" />
+        <c-chip text="Beta" color="warning" size="xl" standalone="{{true}}" />
+        <c-chip text="v0.4.0" color="success" size="xl" standalone="{{true}}" />
+        <c-chip text="999+ items" color="neutral" size="2xl" standalone="{{true}}" />
+      </view>
+    </view>
+  </view>
+</view>

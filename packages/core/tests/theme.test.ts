@@ -124,6 +124,19 @@ describe("@code-ui/core color generation", () => {
       color: "primary",
       size: "md",
     });
+
+    const { inputTheme } = await import("../src");
+    const input = inputTheme();
+    expect(input.slots).toHaveProperty("root");
+    expect(input.slots).toHaveProperty("base");
+    expect(input.slots).toHaveProperty("leading");
+    expect(input.slots).toHaveProperty("trailing");
+    expect(input.slots).toHaveProperty("clear");
+    expect(input.defaultVariants).toMatchObject({
+      variant: "outline",
+      color: "primary",
+      size: "md",
+    });
   });
 });
 

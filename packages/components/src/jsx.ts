@@ -9,6 +9,10 @@ import type {
   FormValidationResult,
 } from "@code-ui/form";
 import type {
+  InputProps,
+  InputValueChangeDetails,
+} from "@code-ui/input";
+import type {
   PinInputProps,
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
@@ -106,6 +110,56 @@ export interface CuiFormElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<FormValidationResult>,
   ) => void;
   onReset?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
+export interface CuiInputElementProps extends CuiCommonElementProps {
+  ui?: InputProps["ui"];
+  name?: string;
+  validateOn?: FormValidateOn;
+  invalid?: boolean;
+  variant?: InputProps["variant"];
+  color?: InputProps["color"];
+  size?: InputProps["size"];
+  highlight?: boolean;
+  value?: string | number;
+  defaultValue?: string | number;
+  type?: InputProps["type"];
+  password?: boolean;
+  placeholder?: string;
+  placeholderClass?: string;
+  placeholderStyle?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  clearable?: boolean;
+  clearIcon?: string;
+  loading?: boolean;
+  leading?: boolean;
+  trailing?: boolean;
+  leadingIcon?: string;
+  trailingIcon?: string;
+  autoFocus?: boolean;
+  maxlength?: number;
+  cursorSpacing?: number;
+  confirmType?: InputProps["confirmType"];
+  confirmHold?: boolean;
+  cursor?: number;
+  selectionStart?: number;
+  selectionEnd?: number;
+  adjustPosition?: boolean;
+  holdKeyboard?: boolean;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<InputValueChangeDetails>,
+  ) => void;
+  onFocus?: (
+    event: WechatMiniprogram.CustomEvent<{ value: string }>,
+  ) => void;
+  onBlur?: (
+    event: WechatMiniprogram.CustomEvent<{ value: string }>,
+  ) => void;
+  onConfirm?: (
+    event: WechatMiniprogram.CustomEvent<{ value: string }>,
+  ) => void;
+  onClear?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
 export interface CuiPinInputElementProps extends CuiCommonElementProps {

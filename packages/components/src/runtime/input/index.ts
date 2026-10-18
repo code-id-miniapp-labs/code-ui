@@ -1,0 +1,112 @@
+import {
+  createMachineBehavior,
+  createProperties,
+  computedBehavior,
+  createComponentOptions,
+} from "../_shared";
+import { resolveSlots } from "../../utils/ui";
+import {
+  inputMachine,
+  connectInput,
+  defaultInputProps,
+} from "@code-ui/input";
+import themeConfig from "virtual:cui/theme/input";
+import { tv } from "../../utils/variants";
+
+const inputTheme = tv(themeConfig);
+
+const inputBehavior = createMachineBehavior({
+  machine: inputMachine,
+  connect: connectInput,
+  key: "input",
+  formField: true,
+  exportApi: true,
+});
+
+Component(
+  createComponentOptions({
+    behaviors: [inputBehavior, computedBehavior],
+
+    options: {
+      multipleSlots: true,
+      addGlobalClass: true,
+      styleIsolation: "apply-shared",
+      virtualHost: true,
+    },
+
+    properties: createProperties(defaultInputProps, {
+      class: {
+        type: String,
+        value: "",
+      },
+    }),
+
+    computed: {
+      classes() {
+        const isInvalid = Boolean(
+          this.data.input?.invalid || this.data.invalid,
+        );
+        const variant = this.data.variant;
+        const color = isInvalid ? "danger" : this.data.color;
+        const size = this.data.input?.size || this.data.size || "md";
+        const highlight = isInvalid || Boolean(this.data.highlight);
+        const disabled = Boolean(
+          this.data.input?.disabled || this.data.disabled,
+        );
+        const hasLeading = Boolean(
+          this.data.leading || this.data.leadingIcon,
+        );
+        const hasTrailing = Boolean(
+          this.data.trailing ||
+            this.data.trailingIcon ||
+            this.data.clearable ||
+            this.data.loading,
+        );
+        const ui = this.data.ui;
+
+        const themeFns = inputTheme({
+          variant,
+          color,
+          size,
+          highlight,
+          disabled,
+          leading: hasLeading,
+          trailing: hasTrailing,
+        });
+
+        return resolveSlots(themeFns, ui, this.data.class);
+      },
+    },
+
+    methods: {
+      handleInput(e: WechatMiniprogram.CustomEvent) {
+        const api = (this as any).__codeUiApi ?? this.data.input;
+        return api?.handleInput?.(e);
+      },
+
+      handleFocus(e: WechatMiniprogram.CustomEvent) {
+        const api = (this as any).__codeUiApi ?? this.data.input;
+        api?.handleFocus?.(e);
+      },
+
+      handleBlur(e: WechatMiniprogram.CustomEvent) {
+        const api = (this as any).__codeUiApi ?? this.data.input;
+        api?.handleBlur?.(e);
+      },
+
+      handleConfirm(e: WechatMiniprogram.CustomEvent) {
+        const api = (this as any).__codeUiApi ?? this.data.input;
+        api?.handleConfirm?.(e);
+      },
+
+      handleClear(e: WechatMiniprogram.CustomEvent) {
+        const api = (this as any).__codeUiApi ?? this.data.input;
+        api?.handleClear?.(e);
+      },
+
+      handleKeyboardHeightChange(e: WechatMiniprogram.CustomEvent) {
+        this.triggerEvent("keyboardheightchange", e.detail);
+      },
+    },
+  }),
+);

@@ -24,6 +24,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/form-field/src",
       ),
+      "@code-ui/input": resolve(
+        import.meta.dirname,
+        "packages/machines/input/src",
+      ),
       "@code-ui/pin-input": resolve(
         import.meta.dirname,
         "packages/machines/pin-input/src",

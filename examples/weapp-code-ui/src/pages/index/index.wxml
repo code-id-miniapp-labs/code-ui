@@ -1,185 +1,25 @@
 <view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Header / Hero -->
   <view class="px-6 pt-10 pb-6 bg-white border-b border-neutral-200">
-    <view class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
-      <text class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></text>
-      <text>cui.config.ts Active</text>
-    </view>
     <view class="text-2xl font-extrabold tracking-tight text-neutral-950">Code UI</view>
-    <view class="text-sm text-neutral-500 mt-1 leading-relaxed">
-      Prebuilt native MiniProgram UI components powered by Zag FSM, alien-signals & Tailwind CSS.
-    </view>
+    <view class="text-sm text-neutral-500 mt-1 leading-relaxed">Preview Code-ui</view>
   </view>
-  <view class="px-5 py-6 flex flex-col gap-8">
-    <!-- Section 1: Button Variants -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Button Variants</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
-        solid, outline, ghost, soft, secondary
-      </view>
-      <view class="flex flex-wrap gap-2.5 items-center">
-        <c-button variant="solid">Solid</c-button>
-        <c-button variant="outline">Outline</c-button>
-        <c-button variant="ghost">Ghost</c-button>
-        <c-button variant="soft">Soft</c-button>
-      </view>
-    </view>
-    <!-- Section 2: Button Colors -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Button Colors</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
-        primary, neutral, success, warning, danger, info
-      </view>
-      <view class="flex flex-wrap gap-2.5 items-center">
-        <c-button color="primary">Primary</c-button>
-        <c-button color="neutral">Neutral</c-button>
-        <c-button color="success">Success</c-button>
-        <c-button color="warning">Warning</c-button>
-        <c-button color="danger">Danger</c-button>
-        <c-button color="info">Info</c-button>
-      </view>
-    </view>
-    <!-- Section 3: Button Sizes -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Button Sizes</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">sm, md, lg</view>
-      <view class="flex flex-wrap gap-3 items-center">
-        <c-button color="neutral" size="sm">Neutral</c-button>
-        <c-button color="success" size="md">Success</c-button>
-        <c-button color="warning" size="lg">Warning</c-button>
-        <c-button color="danger" size="xl">Danger</c-button>
-      </view>
-    </view>
-    <!-- Section 4: Async Auto-Loading & FSM State -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">FSM State & Auto-Loading</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
-        Managed by finite state machine with automatic async spinner handling.
-      </view>
-      <view class="flex flex-col gap-3">
-        <view class="flex items-center justify-between text-xs text-neutral-500 px-1">
-          <text>Clicks completed:</text>
-          <text class="font-bold text-neutral-800">{{count}}</text>
-        </view>
-      </view>
-    </view>
-    <!-- Section 5: Local UI Prop Override -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Local UI Prop Styling</view>
-      <view class="text-xs mt-0.5 mb-4">
-        Custom slot override via Nuxt UI v4-style local ui prop.
-      </view>
-      <view class="flex flex-wrap gap-3 items-center">
-        <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" variant="solid">
-          Mabar king
-        </c-button>
-      </view>
-    </view>
-    <!-- Section 6: Card Component -->
-    <c-card title="Card Component" description="Nuxt UI v4-style container with outline, solid, soft, and subtle variants.">
-      <view class="flex flex-col gap-3">
-        <c-card variant="subtle" size="sm" title="Subtle Card">
-          <text>Compact subtle card content inside an outline card.</text>
-        </c-card>
-        <c-card variant="solid" size="sm" title="Solid Card" description="Dark high-contrast surface">
-          <text>Solid card body text.</text>
-        </c-card>
-      </view>
-    </c-card>
-    <!-- Section 7: Chip Component -->
-    <c-card title="Chip Component" description="Corner badge indicators & standalone chips.">
-      <view class="flex flex-wrap gap-6 items-center pt-2">
-        <c-chip text="3" color="danger" size="2xl">
-          <c-button variant="outline" color="neutral">Inbox</c-button>
-        </c-chip>
-        <c-chip color="success" size="md">
-          <c-button variant="soft" color="neutral">Online</c-button>
-        </c-chip>
-        <c-chip text="99+" color="primary" size="3xl" standalone="{{true}}" />
-      </view>
-    </c-card>
-    <!-- Section 8: PinInput Component -->
-    <c-card title="PinInput Component" description="Zag.js FSM with per-index input elements, OTP auto-advance & separator.">
-      <view class="flex flex-col gap-4">
-        <c-pin-input label="Verification Code (4 digits)" length="{{4}}" placeholder="○" mask="{{true}}" />
-        <c-pin-input label="With Separator (6 digits)" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" color="neutral" />
-      </view>
-    </c-card>
-    <!-- Section 9: Form & Validation Component -->
-    <c-card title="Form & Validation" description="EventBus context injection, Vuetify-style rules, errorBag, reset & focusOnError.">
-      <!-- Form 1: Security PIN -->
-      <view class="text-sm font-semibold text-neutral-800 mb-2">
-        Form 1: Security PIN (4 digits)
-      </view>
-      <c-form id="demo-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleFormSubmit" bind:error="handleFormError" bind:reset="handleFormReset">
-        <view class="flex flex-col gap-4">
-          <c-form-field name="pin" label="Security PIN" description="Enter your 4-digit security code" helperText="We will never share your PIN with anyone" rules="{{pinRules}}" required="{{true}}">
-            <c-pin-input name="pin" length="{{4}}" placeholder="○" />
-          </c-form-field>
-          <view class="flex items-center justify-between py-1 px-0.5">
-            <text class="text-xs text-neutral-600">Require PIN confirmation</text>
-            <switch checked="{{ requirePin }}" bindchange="onTogglePin" />
-          </view>
-          <c-form-field disabled="{{requirePin}}" name="confirmPin" size="md" label="Confirm Security PIN" helperText="Re-enter your 4 digits to verify" rules="{{confirmPinRules}}" required="{{true}}">
-            <c-pin-input name="confirmPin" length="{{4}}" placeholder="○" />
-          </c-form-field>
-          <view class="flex flex-wrap gap-2 pt-2">
-            <c-button variant="solid" color="primary" size="sm" bind:tap="submitDemoForm">
-              Submit Form 1
-            </c-button>
-            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetDemoForm">
-              Reset Form 1
-            </c-button>
-            <c-button variant="soft" color="warning" size="sm" bind:tap="clearDemoFormErrors">
-              Clear Errors
-            </c-button>
-            <c-button variant="soft" color="danger" size="sm" bind:tap="simulateServerError">
-              Server Error
-            </c-button>
-          </view>
-          <view wx:if="{{formStatus}}" class="mt-1 px-3 py-2 rounded-lg text-xs bg-neutral-100 text-neutral-700 border border-neutral-200">
-            <text class="font-semibold">{{formStatus}}:</text>
-            <text>{{formMessage}}</text>
+  <!-- Component Navigation Grid -->
+  <view class="px-5 py-6 flex flex-col gap-4">
+    <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">Components</view>
+    <block wx:for="{{components}}" wx:key="id">
+      <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs hover:border-neutral-300 transition-all active:scale-[0.99] active:bg-neutral-50" data-path="{{item.path}}" bindtap="navigateToComponent">
+        <view class="flex items-center justify-between mb-1.5">
+          <view class="text-base font-bold text-neutral-900">{{item.name}}</view>
+          <view class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
+            {{item.badge}}
           </view>
         </view>
-      </c-form>
-      <!-- Form 2: Quick Transfer (Independent form on same Page, no form='...' needed!) -->
-      <view class="mt-8 pt-6 border-t border-neutral-200">
-        <view class="text-sm font-semibold text-neutral-800 mb-2">
-          Form 2: Quick Transfer ($250.00)
+        <view class="text-xs text-neutral-500 leading-relaxed">{{item.desc}}</view>
+        <view class="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-600">
+          <text>View Examples</text>
+          <text class="text-sm">›</text>
         </view>
-        <view class="text-xs text-neutral-500 mb-3">
-          Coexists on the same Page with zero cross-talk. No form="..." prop needed on child inputs!
-        </view>
-        <c-form id="transfer-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleTransferSubmit" bind:error="handleTransferError">
-          <view class="flex flex-col gap-4">
-            <c-form-field name="pin" label="Transfer PIN" description="6-digit authorization code for instant transfer" helperText="Split by 3-digit separator" required="{{true}}">
-              <c-pin-input name="pin" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" />
-            </c-form-field>
-            <view class="flex flex-wrap gap-2 pt-2">
-              <c-button variant="solid" color="success" size="sm" bind:tap="submitTransferForm">
-                Authorize Transfer ($250)
-              </c-button>
-              <c-button variant="outline" color="neutral" size="sm" bind:tap="resetTransferForm">
-                Reset Form 2
-              </c-button>
-            </view>
-            <view wx:if="{{transferStatus}}" class="mt-1 px-3 py-2 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
-              <text class="font-semibold">{{transferStatus}}:</text>
-              <text>{{transferMessage}}</text>
-            </view>
-          </view>
-        </c-form>
       </view>
-    </c-card>
-    <!-- Section 10: Drawer Component -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-base font-bold text-neutral-900">Drawer Component</view>
-      <view class="text-xs text-neutral-400 mt-0.5 mb-4">
-        Gesture-driven bottom sheet with backdrop & smooth animations.
-        <view class="size-6 bg-testing-500/10"></view>
-      </view>
-      <view class="flex flex-col gap-2.5"></view>
-    </view>
+    </block>
   </view>
 </view>
