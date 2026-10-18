@@ -336,6 +336,41 @@ describe("Pin Input Machine", () => {
 
       machine.stop();
     });
+
+    it("remains focused on the last slot when clearing value from the last slot without blipping to previous slot", async () => {
+      const machine = new MiniappMachine(pinInputMachine, {
+        length: 4,
+        defaultValue: ["1", "2", "3", "4"],
+      });
+      machine.start();
+
+      // Focus last slot
+      machine.send({ type: "INPUT.FOCUS", index: 3 });
+      await flush();
+      expect(machine.context.get("focusedIndex")).toBe(3);
+
+      // Clear slot 3 (user presses backspace once)
+      machine.send({ type: "INPUT.CHANGE", index: 3, value: "" });
+      await flush();
+
+      // Value in last slot cleared, but focus stays on last slot (no blip to slot 2)
+      expect(machine.context.get("value")).toEqual(["1", "2", "3", ""]);
+      expect(machine.context.get("focusedIndex")).toBe(3);
+
+      const api = connectPinInput(machine.service);
+      expect(api.inputs[3].isFocused).toBe(true);
+      expect(api.inputs[2].isFocused).toBe(false);
+      expect(api.inputs[3].inputProps.value).toBe("\u200B");
+
+      // Press backspace again on now-empty slot 3: retreats to slot 2 and clears slot 2
+      machine.send({ type: "INPUT.CHANGE", index: 3, value: "" });
+      await flush();
+
+      expect(machine.context.get("value")).toEqual(["1", "2", "", ""]);
+      expect(machine.context.get("focusedIndex")).toBe(2);
+
+      machine.stop();
+    });
   });
 
   describe("Pasting & SMS OTP Autofill", () => {
