@@ -59,6 +59,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const name = context.get("name") ?? "";
 
   const isValueComplete = computed("isValueComplete");
+  const isEmptyVal = computed("isEmpty");
   const isFilled = computed("isFilled");
   const valueAsString = computed("valueAsString");
 
@@ -113,6 +114,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     value,
     valueAsString,
     isValueComplete,
+    isEmpty: isEmptyVal,
     isFilled,
     invalid,
     disabled,
@@ -210,6 +212,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       id: dom.getRootId(scope),
       ...parts.root.attrs,
       "data-state": currentState,
+      "data-empty": isEmptyVal ? "true" : "false",
       "data-disabled": disabled ? "true" : "false",
       "data-readonly": readOnly ? "true" : "false",
       "data-invalid": invalid ? "true" : "false",

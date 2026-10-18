@@ -57,7 +57,7 @@ export interface PinInputProps {
   /** Field-level override for Form validation triggers */
   validateOn?: FormValidateOn | undefined;
   /** Whether the input is currently invalid */
-  invalid?: boolean | undefined;
+  invalid?: boolean | null | undefined;
   /** Visual variant */
   variant?: PinInputVariant | undefined;
   /** Semantic color */
@@ -148,6 +148,7 @@ export interface PinInputContext {
 export interface PinInputComputed {
   valueAsString: string;
   isValueComplete: boolean;
+  isEmpty: boolean;
   isFilled: boolean;
 }
 
@@ -195,6 +196,8 @@ export interface PinInputApi {
   valueAsString: string;
   /** Whether all inputs are filled */
   isValueComplete: boolean;
+  /** Whether all inputs are empty */
+  isEmpty: boolean;
   /** Whether at least one input has a value */
   isFilled: boolean;
   /** Whether the field is invalid (via Form validation or `invalid` prop) */

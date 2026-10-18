@@ -1,4 +1,8 @@
-import type { AnatomyPartName, ComponentUI, ResolvedUI } from "@code-ui/anatomy";
+import type {
+  AnatomyPartName,
+  ComponentUI,
+  ResolvedUI,
+} from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./drawer.anatomy";
@@ -9,7 +13,6 @@ export type DrawerState = "open" | "closed" | "closing" | "dragging";
 export type DrawerAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type DrawerUI = ComponentUI<typeof anatomy>;
 export type DrawerResolvedUI = ResolvedUI<typeof anatomy>;
-
 
 export interface OpenChangeDetails {
   open: boolean;
@@ -43,7 +46,6 @@ export interface DrawerProps {
   /** Explicit transition duration in ms (auto-computed from CSS if omitted) */
   duration?: number;
 }
-
 
 export type DrawerEvent =
   | { type: "OPEN" }
@@ -118,4 +120,3 @@ export interface DrawerApi {
   /** WXML data & attributes for Footer */
   footerProps: Record<string, any>;
 }
-

@@ -1,28 +1,15 @@
 import { createMachine } from "@code-ui/core";
 import type { FormRule } from "@code-ui/form";
+import { isEmpty } from "@code-ui/utils";
 import { defaultFormFieldProps } from "./form-field.props";
 import type {
   FormFieldMachine,
   FormFieldSchema,
 } from "./form-field.types";
 
-function isEmptyValue(value: any): boolean {
-  if (value === null || value === undefined || value === false) return true;
-  if (typeof value === "string") return value.trim().length === 0;
-  if (Array.isArray(value)) {
-    if (value.length === 0) return true;
-    return value.every((item) =>
-      typeof item === "string"
-        ? item.trim().length === 0
-        : item === null || item === undefined,
-    );
-  }
-  return false;
-}
-
 function createRequiredRule(message: string): FormRule {
   const descriptor = { required: true, message };
-  const fn: any = (value: any) => (!isEmptyValue(value) ? true : message);
+  const fn: any = (value: any) => (!isEmpty(value) ? true : message);
   fn.required = true;
   fn.message = message;
   Object.defineProperty(fn, "toJSON", {

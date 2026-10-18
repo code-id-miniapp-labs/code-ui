@@ -43,19 +43,13 @@ Component(
     }),
 
     computed: {
-      loading() {
-        return Boolean(
-          this.data.button?.loading || this.data.button?.internalLoading,
-        );
-      },
-
       classes() {
         const variant = this.data.variant;
         const color = this.data.color;
         const size = this.data.size;
         const block = this.data.block;
-        const disabled = this.data.disabled;
-        const loading = this.loading;
+        const disabled = Boolean(this.data.button?.disabled);
+        const loading = Boolean(this.data.button?.loading);
 
         const ui = this.data.ui;
 

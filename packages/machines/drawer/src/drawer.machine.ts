@@ -2,6 +2,7 @@ import { createMachine } from "@code-ui/core";
 import type { DrawerMachine, DrawerSchema } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
 import * as dom from "./drawer.dom";
+import { isNotEmpty } from "@code-ui/utils";
 
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
@@ -21,9 +22,8 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   context: ({ prop, bindable }) => ({
     open: bindable<boolean>(() => {
       const rawOpen = prop("open");
-      const isControlled = rawOpen !== undefined && rawOpen !== null;
       return {
-        value: isControlled ? Boolean(rawOpen) : undefined,
+        value: isNotEmpty(rawOpen) ? Boolean(rawOpen) : undefined,
         defaultValue: Boolean(prop("defaultOpen") ?? false),
         onChange: (open) => {
           prop("component")?.setData?.({ open });
@@ -146,7 +146,8 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     guards: {
       closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick") ?? true,
       isDismissible: ({ prop }) => prop("dismissible") ?? true,
-      dragPassed: ({ event }) => "passed" in event && (event as any).passed === true,
+      dragPassed: ({ event }) =>
+        "passed" in event && (event as any).passed === true,
     },
 
     actions: {

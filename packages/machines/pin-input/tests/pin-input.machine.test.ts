@@ -20,6 +20,7 @@ describe("Pin Input Machine", () => {
       expect(machine.context.get("value")).toEqual(["", "", "", ""]);
       expect(machine.computed("valueAsString")).toBe("");
       expect(machine.computed("isValueComplete")).toBe(false);
+      expect(machine.computed("isEmpty")).toBe(true);
       expect(machine.computed("isFilled")).toBe(false);
 
       const api = connectPinInput(machine.service);
@@ -27,10 +28,12 @@ describe("Pin Input Machine", () => {
       expect(api.value).toEqual(["", "", "", ""]);
       expect(api.valueAsString).toBe("");
       expect(api.isValueComplete).toBe(false);
+      expect(api.isEmpty).toBe(true);
       expect(api.isFilled).toBe(false);
       expect(api.focusedIndex).toBe(-1);
       expect(api.inputs.length).toBe(4);
       expect(api.rootProps["data-state"]).toBe("idle");
+      expect(api.rootProps["data-empty"]).toBe("true");
       expect(api.rootProps["data-complete"]).toBe("false");
 
       machine.stop();

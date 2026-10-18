@@ -10,4 +10,3 @@ export const defaultDrawerProps: DrawerProps = {
   duration: 300,
   ui: {},
 };
-

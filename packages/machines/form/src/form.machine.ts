@@ -1,6 +1,7 @@
 import { createMachine } from "@code-ui/core";
 import {
   createEventBus,
+  isEmpty,
   isEqual,
   isPromise,
   queryRect,
@@ -322,16 +323,9 @@ export function registerFormField(
 
   let fieldValue = registration.getValue();
   const presetVal =
-    controlledValues?.[name] ??
-    existingValues[name] ??
-    defaultValues?.[name];
+    controlledValues?.[name] ?? existingValues[name] ?? defaultValues?.[name];
 
-  if (
-    presetVal !== undefined &&
-    (fieldValue === undefined ||
-      fieldValue === "" ||
-      (Array.isArray(fieldValue) && fieldValue.every((c) => c === "")))
-  ) {
+  if (presetVal !== undefined && isEmpty(fieldValue)) {
     registration.setValue?.(presetVal);
     fieldValue = registration.getValue() ?? presetVal;
   }
@@ -362,7 +356,9 @@ export function registerFormField(
     isDirty: !isEqual(fieldValue, initialVal),
     isTouched: (service.context.get("touchedFields") ?? []).includes(name),
     isFocused: service.context.get("focusedField") === name,
-    isValidating: (service.context.get("validatingFields") ?? []).includes(name),
+    isValidating: (service.context.get("validatingFields") ?? []).includes(
+      name,
+    ),
   };
 
   const prevFieldStates = service.context.get("fieldStates") ?? {};
@@ -597,7 +593,10 @@ export async function scrollToFirstInvalidField(
     ]);
 
     if (rect && viewport) {
-      const scrollTop = Math.max(0, viewport.scrollTop + rect.top - scrollOffset);
+      const scrollTop = Math.max(
+        0,
+        viewport.scrollTop + rect.top - scrollOffset,
+      );
       const wxGlobal = (globalThis as Record<string, any>).wx;
       if (wxGlobal && typeof wxGlobal.pageScrollTo === "function") {
         wxGlobal.pageScrollTo({ scrollTop, duration: 250 });

@@ -46,6 +46,9 @@ export {
   isNull,
   hasProp,
   isPlainObject,
+  isEmpty,
+  isNotEmpty,
+  isNotNull,
 } from "./guard";
 
 export {

@@ -18,12 +18,14 @@ describe("Input Machine", () => {
 
       expect(machine.state.get()).toBe("idle");
       expect(machine.context.get("value")).toBe("");
+      expect(machine.computed("isEmpty")).toBe(true);
       expect(machine.computed("isFilled")).toBe(false);
       expect(machine.computed("isClearable")).toBe(false);
 
       const api = connectInput(machine.service);
       expect(api.state).toBe("idle");
       expect(api.value).toBe("");
+      expect(api.isEmpty).toBe(true);
       expect(api.isFilled).toBe(false);
       expect(api.isClearable).toBe(false);
       expect(api.disabled).toBe(false);

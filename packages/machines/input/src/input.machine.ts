@@ -1,10 +1,7 @@
 import { createMachine } from "@code-ui/core";
 import { bindFormField } from "@code-ui/form/context";
-import type {
-  InputMachine,
-  InputSchema,
-  InputType,
-} from "./input.types";
+import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
+import type { InputMachine, InputSchema, InputType } from "./input.types";
 import { defaultInputProps } from "./input.props";
 
 export const inputMachine: InputMachine = createMachine<InputSchema>({
@@ -36,14 +33,13 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
   context: ({ prop, bindable, getRefs }) => ({
     value: bindable<string>(() => {
       const rawVal = prop("value");
-      const isControlled = rawVal !== undefined && rawVal !== null;
-      const controlledVal = isControlled ? String(rawVal) : undefined;
+      const controlledVal = isNotNull(rawVal) ? String(rawVal) : undefined;
       const rawDefault = prop("defaultValue");
-      const initial = isControlled
-        ? (controlledVal as string)
-        : rawDefault !== undefined && rawDefault !== null
-          ? String(rawDefault)
-          : "";
+      const rawDefaultVal = isNotNull(rawDefault)
+        ? String(rawDefault)
+        : undefined;
+      const initial = (controlledVal ?? rawDefaultVal) || "";
+
       return {
         value: controlledVal,
         defaultValue: initial,
@@ -89,10 +85,13 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       defaultValue: "",
     })),
 
-    invalid: bindable<boolean>(() => ({
-      value: prop("invalid"),
-      defaultValue: false,
-    })),
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
 
     placeholder: bindable<string>(() => ({
       value: prop("placeholder"),
@@ -166,32 +165,35 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
   }),
 
   computed: {
-    isFilled: ({ context }) => context.get("value").length > 0,
+    isEmpty: ({ context }) => isEmpty(context.get("value")),
+    isFilled: ({ context }) => !isEmpty(context.get("value")),
     isClearable: ({ context, computed }) => {
       const isClearableProp = context.get("clearable");
       const isDisabled = Boolean(
         context.get("disabled") ||
-          context.get("formDisabled") ||
-          context.get("fieldDisabled"),
+        context.get("formDisabled") ||
+        context.get("fieldDisabled"),
       );
       const isReadOnly = Boolean(
         context.get("readOnly") || context.get("formReadOnly"),
       );
-      return Boolean(isClearableProp && !isDisabled && !isReadOnly && computed("isFilled"));
+      return Boolean(
+        isClearableProp && !isDisabled && !isReadOnly && computed("isFilled"),
+      );
     },
   },
 
   watch: ({ prop, context, refs }) => {
     const controlledVal = prop("value");
-    if (controlledVal !== undefined && controlledVal !== null) {
+    if (isNotNull(controlledVal)) {
       const stringVal = String(controlledVal);
       if (context.get("value") !== stringVal) {
         context.set("value", stringVal);
       }
     }
     const controlledInvalid = prop("invalid");
-    if (controlledInvalid !== undefined) {
-      context.set("invalid", controlledInvalid);
+    if (isNotNull(controlledInvalid)) {
+      context.set("invalid", Boolean(controlledInvalid));
     }
     const controlledFieldDisabled = prop("fieldDisabled");
     if (controlledFieldDisabled !== undefined) {
@@ -335,8 +337,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
           isDisabled: () =>
             Boolean(
               context.get("disabled") ||
-                context.get("formDisabled") ||
-                context.get("fieldDisabled"),
+              context.get("formDisabled") ||
+              context.get("fieldDisabled"),
             ),
           onValidationChange: (valState) => {
             context.set("invalid", !valState.isValid);
@@ -404,8 +406,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       handleInputChange: ({ context, event }) => {
         const isDisabled = Boolean(
           context.get("disabled") ||
-            context.get("formDisabled") ||
-            context.get("fieldDisabled"),
+          context.get("formDisabled") ||
+          context.get("fieldDisabled"),
         );
         const isReadOnly = Boolean(
           context.get("readOnly") || context.get("formReadOnly"),
@@ -434,7 +436,10 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
 
       setValue: ({ context, event }) => {
         const val = (event as any).value;
-        context.set("value", val !== undefined && val !== null ? String(val) : "");
+        context.set(
+          "value",
+          val !== undefined && val !== null ? String(val) : "",
+        );
       },
 
       clearValue: ({ context, prop }) => {

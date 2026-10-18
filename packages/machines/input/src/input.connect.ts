@@ -33,11 +33,13 @@ export function connectInput(service: InputService): InputApi {
   const name = context.get("name") ?? "";
 
   const isFilled = computed("isFilled");
+  const isEmptyVal = computed("isEmpty");
   const isClearable = computed("isClearable");
 
   return {
     state: currentState,
     value,
+    isEmpty: isEmptyVal,
     isFilled,
     isClearable,
     invalid,
@@ -96,6 +98,7 @@ export function connectInput(service: InputService): InputApi {
       id: dom.getRootId(scope),
       ...parts.root.attrs,
       "data-state": currentState,
+      "data-empty": isEmptyVal ? "true" : "false",
       "data-disabled": disabled ? "true" : "false",
       "data-readonly": readOnly ? "true" : "false",
       "data-invalid": invalid ? "true" : "false",
@@ -109,6 +112,7 @@ export function connectInput(service: InputService): InputApi {
       ...parts.base.attrs,
       name: name || undefined,
       "data-state": currentState,
+      "data-empty": isEmptyVal ? "true" : "false",
       "data-focused": isFocused ? "true" : "false",
       "data-disabled": disabled ? "true" : "false",
       "data-readonly": readOnly ? "true" : "false",

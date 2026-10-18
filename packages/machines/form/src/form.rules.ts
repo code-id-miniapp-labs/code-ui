@@ -1,3 +1,4 @@
+import { isEmpty } from "@code-ui/utils";
 import type {
   FormRule,
   FormRuleFn,
@@ -37,20 +38,6 @@ function getEffectiveLength(value: any): number {
   }
   if (typeof value === "string") return value.length;
   return String(value).length;
-}
-
-function isEmptyValue(value: any): boolean {
-  if (value === null || value === undefined || value === false) return true;
-  if (typeof value === "string") return value.trim().length === 0;
-  if (Array.isArray(value)) {
-    if (value.length === 0) return true;
-    return value.every((item) =>
-      typeof item === "string"
-        ? item.trim().length === 0
-        : item === null || item === undefined,
-    );
-  }
-  return false;
 }
 
 function attachRuleJSON(fn: FormRuleFn, descriptor: FormRuleObject): FormRuleFn {
@@ -251,7 +238,7 @@ export function shouldValidateOnTrigger(
 export const formRules = {
   required(message = "This field is required"): FormRuleFn {
     return attachRuleJSON(
-      (value: any) => !isEmptyValue(value) || message,
+      (value: any) => !isEmpty(value) || message,
       { required: true, message },
     );
   },
@@ -260,7 +247,7 @@ export const formRules = {
     const msg = message ?? `Must be at least ${min} characters`;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         return getEffectiveLength(value) >= min || msg;
       },
       { minLength: min, message: msg },
@@ -271,7 +258,7 @@ export const formRules = {
     const msg = message ?? `Must be at most ${max} characters`;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         return getEffectiveLength(value) <= max || msg;
       },
       { maxLength: max, message: msg },
@@ -282,7 +269,7 @@ export const formRules = {
     const msg = message ?? `Must be exactly ${length} characters`;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         return getEffectiveLength(value) === length || msg;
       },
       { exactLength: length, message: msg },
@@ -292,7 +279,7 @@ export const formRules = {
   pattern(regex: RegExp, message = "Invalid format"): FormRuleFn {
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         const str = Array.isArray(value) ? value.join("") : String(value);
         return regex.test(str) || message;
       },
@@ -308,7 +295,7 @@ export const formRules = {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         return emailRegex.test(String(value).trim()) || message;
       },
       { email: true, message },
@@ -319,7 +306,7 @@ export const formRules = {
     const numRegex = /^[0-9]+$/;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         const str = Array.isArray(value) ? value.join("") : String(value);
         return numRegex.test(str) || message;
       },
@@ -331,7 +318,7 @@ export const formRules = {
     const msg = message ?? `Must be greater than or equal to ${minVal}`;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         const num = Number(value);
         return (!Number.isNaN(num) && num >= minVal) || msg;
       },
@@ -343,7 +330,7 @@ export const formRules = {
     const msg = message ?? `Must be less than or equal to ${maxVal}`;
     return attachRuleJSON(
       (value: any) => {
-        if (isEmptyValue(value)) return true;
+        if (isEmpty(value)) return true;
         const num = Number(value);
         return (!Number.isNaN(num) && num <= maxVal) || msg;
       },

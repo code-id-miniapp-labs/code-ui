@@ -56,7 +56,7 @@ export interface InputProps {
   /** Field-level override for Form validation triggers */
   validateOn?: FormValidateOn | undefined;
   /** Whether the input is currently invalid */
-  invalid?: boolean | undefined;
+  invalid?: boolean | null | undefined;
   /** Visual variant */
   variant?: InputVariant | undefined;
   /** Semantic color */
@@ -161,6 +161,7 @@ export interface InputContext {
 }
 
 export interface InputComputed {
+  isEmpty: boolean;
   isFilled: boolean;
   isClearable: boolean;
 }
@@ -195,6 +196,8 @@ export interface InputApi {
   state: InputState;
   /** Current string value */
   value: string;
+  /** Whether input value is empty */
+  isEmpty: boolean;
   /** Whether input has a non-empty value */
   isFilled: boolean;
   /** Whether the clear button is currently active and visible */

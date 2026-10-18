@@ -8,6 +8,7 @@ Page({
     this.setData({
       controlledPin: e.detail.value,
     });
+    console.log(e.detail);
   },
 
   onPinComplete(e: WechatMiniprogram.CustomEvent) {

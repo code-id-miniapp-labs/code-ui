@@ -48,3 +48,25 @@ const isReactElement = (x: unknown) =>
 const isVueElement = (x: unknown) =>
   typeof x === "object" && x !== null && "__v_isVNode" in x;
 const isFrameworkElement = (x: unknown) => isReactElement(x) || isVueElement(x);
+
+export const isEmpty = (v: unknown): boolean => {
+  if (v === null || v === undefined) return true;
+  if (typeof v === "boolean") return !v;
+  if (typeof v === "number") return Number.isNaN(v);
+  if (typeof v === "string") return v.trim().length === 0;
+  if (isArray(v)) {
+    if (v.length === 0) return true;
+    return v.every(isEmpty);
+  }
+  if (v instanceof Map || v instanceof Set) {
+    return v.size === 0;
+  }
+  if (isPlainObject(v)) {
+    return Object.keys(v).length === 0;
+  }
+  return false;
+};
+
+export const isNotEmpty = (v: unknown): boolean => !isEmpty(v);
+
+export const isNotNull = (v: any): v is boolean => !isNull(v);

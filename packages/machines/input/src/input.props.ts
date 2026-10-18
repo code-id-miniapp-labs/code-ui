@@ -2,6 +2,7 @@ import type { InputProps } from "./input.types";
 
 export const defaultInputProps: InputProps = {
   value: null,
+  invalid: null,
   type: "text",
   variant: "outline",
   color: "primary",

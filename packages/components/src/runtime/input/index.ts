@@ -43,16 +43,12 @@ Component(
 
     computed: {
       classes() {
-        const isInvalid = Boolean(
-          this.data.input?.invalid || this.data.invalid,
-        );
+        const isInvalid = Boolean(this.data.input?.invalid);
+        const disabled = Boolean(this.data.input?.disabled);
+        const size = this.data.input?.size ?? "md";
         const variant = this.data.variant;
         const color = isInvalid ? "danger" : this.data.color;
-        const size = this.data.input?.size || this.data.size || "md";
         const highlight = isInvalid || Boolean(this.data.highlight);
-        const disabled = Boolean(
-          this.data.input?.disabled || this.data.disabled,
-        );
         const hasLeading = Boolean(
           this.data.leading || this.data.leadingIcon,
         );

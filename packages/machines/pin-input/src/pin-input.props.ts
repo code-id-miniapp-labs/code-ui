@@ -2,6 +2,7 @@ import type { PinInputProps } from "./pin-input.types";
 
 export const defaultPinInputProps: PinInputProps = {
   value: null,
+  invalid: null,
   length: 4,
   type: "numeric",
   variant: "outline",

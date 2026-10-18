@@ -44,24 +44,15 @@ Component(
 
     computed: {
       displayHelp() {
-        return (
-          this.data.formField?.displayHelp ||
-          this.data.help ||
-          this.data.helperText ||
-          ""
-        );
+        return this.data.formField?.displayHelp ?? "";
       },
       displayError() {
-        return this.data.formField?.displayError || this.data.error || "";
+        return this.data.formField?.displayError ?? "";
       },
       classes() {
-        const size = this.data.size || this.data.formField?.size || "md";
-        const disabled = Boolean(
-          this.data.formField?.disabled ?? this.data.disabled,
-        );
-        const required = Boolean(
-          this.data.required ?? this.data.formField?.required,
-        );
+        const size = this.data.formField?.size ?? "md";
+        const disabled = Boolean(this.data.formField?.disabled);
+        const required = Boolean(this.data.formField?.required);
         const ui = this.data.ui;
 
         const themeFns = formFieldTheme({

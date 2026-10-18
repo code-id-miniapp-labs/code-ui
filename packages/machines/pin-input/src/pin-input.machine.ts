@@ -1,5 +1,6 @@
 import { createMachine } from "@code-ui/core";
 import { bindFormField } from "@code-ui/form/context";
+import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   PinInputMachine,
   PinInputSchema,
@@ -145,10 +146,13 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       defaultValue: "",
     })),
 
-    invalid: bindable<boolean>(() => ({
-      value: prop("invalid"),
-      defaultValue: false,
-    })),
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
 
     mask: bindable<boolean>(() => ({
       value: prop("mask"),
@@ -211,15 +215,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     isValueComplete: ({ context }) => {
       const val = context.get("value");
       const len = context.get("length");
-      return (
-        val.length === len &&
-        val.every((char) => Boolean(char && char.trim() !== ""))
-      );
+      return val.length === len && val.every((char) => !isEmpty(char));
     },
-    isFilled: ({ context }) => {
-      const val = context.get("value");
-      return val.some((char) => Boolean(char && char.trim() !== ""));
-    },
+    isEmpty: ({ context }) => isEmpty(context.get("value")),
+    isFilled: ({ context }) => !isEmpty(context.get("value")),
   },
 
   watch: ({ prop, context, refs }) => {
@@ -237,8 +236,8 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       }
     }
     const controlledInvalid = prop("invalid");
-    if (controlledInvalid !== undefined) {
-      context.set("invalid", controlledInvalid);
+    if (isNotNull(controlledInvalid)) {
+      context.set("invalid", Boolean(controlledInvalid));
     }
     const controlledFieldDisabled = prop("fieldDisabled");
     if (controlledFieldDisabled !== undefined) {
@@ -394,9 +393,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               return;
             }
             const currentValues = context.get("value");
-            const firstEmptyIndex = currentValues.findIndex(
-              (c) => !c || c.trim() === "",
-            );
+            const firstEmptyIndex = currentValues.findIndex(isEmpty);
             const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
             state.set("focused");
             context.set("focusedIndex", targetIdx);
@@ -405,8 +402,8 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           isDisabled: () =>
             Boolean(
               context.get("disabled") ||
-                context.get("formDisabled") ||
-                context.get("fieldDisabled"),
+              context.get("formDisabled") ||
+              context.get("fieldDisabled"),
             ),
           onValidationChange: (valState) => {
             context.set("invalid", !valState.isValid);
@@ -493,9 +490,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         const idx =
           typeof (event as any).index === "number" ? (event as any).index : 0;
         const currentValues = context.get("value");
-        const firstEmptyIndex = currentValues.findIndex(
-          (c) => !c || c.trim() === "",
-        );
+        const firstEmptyIndex = currentValues.findIndex(isEmpty);
         const targetIndex =
           firstEmptyIndex !== -1
             ? firstEmptyIndex
@@ -669,7 +664,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
         const isComplete =
           currentValues.length === length &&
-          currentValues.every((c) => Boolean(c && c.trim() !== ""));
+          currentValues.every((c) => !isEmpty(c));
 
         if (isComplete && context.get("blurOnComplete")) {
           context.set("focusedIndex", -1);
