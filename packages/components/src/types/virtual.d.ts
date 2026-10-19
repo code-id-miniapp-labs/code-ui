@@ -46,6 +46,12 @@ declare module "virtual:cui/theme/pin-input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/switch" {
+  import type { default as switchTheme } from "@code-ui/core/src/theme/definitions/switch";
+  const theme: ReturnType<typeof switchTheme>;
+  export default theme;
+}
+
 
 declare module "virtual:cui/theme/*" {
   const theme: any;

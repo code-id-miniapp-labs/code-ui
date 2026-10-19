@@ -6,7 +6,11 @@ export default defineConfig(({ mode }) => {
   return {
     weapp: {
       tailwindcss: {
-        rem2rpx: true,
+        cssEntries: ["src/app.css"],
+        cssOptions: {
+          rem2rpx: true,
+          autoprefixer: true,
+        },
       },
       hmr: {
         runtime: "classic",

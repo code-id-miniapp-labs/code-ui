@@ -291,10 +291,17 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
 
   if (themeLines.length === 0 && rootLines.length === 0) return "";
 
-  let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page {\n${rootLines.join("\n")}\n}\n`;
+  // MiniProgram component style isolation (apply-shared) does not inherit tag-level
+  // resets (e.g. `view, text { --tw-translate-x: 0 }`). Providing defaults on :root, page, :host
+  // ensures transform/translate CSS variables cascade into custom components.
+  rootLines.push("  --tw-translate-x: 0;");
+  rootLines.push("  --tw-translate-y: 0;");
+  rootLines.push("  --tw-translate-z: 0;");
+
+  let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page, :host {\n${rootLines.join("\n")}\n}\n`;
 
   if (darkLines.length > 0) {
-    css += `\n@media (prefers-color-scheme: dark) {\n  :root, page {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="dark"], .dark {\n${darkLines.join("\n")}\n}\n`;
+    css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="dark"], .dark {\n${darkLines.join("\n")}\n}\n`;
   }
 
   return css;

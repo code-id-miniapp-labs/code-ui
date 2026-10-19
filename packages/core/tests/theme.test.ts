@@ -125,7 +125,7 @@ describe("@code-ui/core color generation", () => {
       size: "md",
     });
 
-    const { inputTheme } = await import("../src");
+    const { inputTheme, switchTheme } = await import("../src");
     const input = inputTheme();
     expect(input.slots).toHaveProperty("root");
     expect(input.slots).toHaveProperty("base");
@@ -136,6 +136,22 @@ describe("@code-ui/core color generation", () => {
       variant: "outline",
       color: "primary",
       size: "md",
+    });
+
+    const sw = switchTheme();
+    expect(sw.slots).toHaveProperty("root");
+    expect(sw.slots).toHaveProperty("base");
+    expect(sw.slots).toHaveProperty("container");
+    expect(sw.slots).toHaveProperty("thumb");
+    expect(sw.slots).toHaveProperty("icon");
+    expect(sw.slots).toHaveProperty("wrapper");
+    expect(sw.slots).toHaveProperty("label");
+    expect(sw.slots).toHaveProperty("description");
+    expect(sw.defaultVariants).toMatchObject({
+      color: "primary",
+      size: "md",
+      disabled: false,
+      checked: false,
     });
   });
 });

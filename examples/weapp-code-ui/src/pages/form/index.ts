@@ -21,10 +21,16 @@ Page({
       { exactLength: 4, message: "PIN must be exactly 4 digits" },
       { numeric: true, message: "PIN must contain digits only" },
     ],
+    termsRules: [
+      { required: true, message: "You must accept the Terms of Service to register" },
+    ],
+    newsletterControlled: true,
     formStatus: "",
     formMessage: "",
     transferStatus: "",
     transferMessage: "",
+    preferencesStatus: "",
+    preferencesMessage: "",
   },
 
   getRegistrationForm(): FormRef | null {
@@ -42,8 +48,21 @@ Page({
   resetRegistration() {
     this.getRegistrationForm()?.reset?.();
     this.setData({
+      newsletterControlled: true,
       formStatus: "",
       formMessage: "",
+    });
+  },
+
+  onNewsletterChange(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      newsletterControlled: e.detail.checked,
+    });
+  },
+
+  toggleNewsletterControlled() {
+    this.setData({
+      newsletterControlled: !this.data.newsletterControlled,
     });
   },
 
@@ -60,10 +79,13 @@ Page({
       username: "alice_w",
       email: "alice@example.com",
       pin: "2026",
+      terms: true,
+      newsletter: true,
     });
     this.setData({
+      newsletterControlled: true,
       formStatus: "Info",
-      formMessage: "Pre-filled with valid data.",
+      formMessage: "Pre-filled with valid data including accepted terms.",
     });
   },
 
@@ -115,6 +137,42 @@ Page({
     this.setData({
       transferStatus: "Error",
       transferMessage: "Please enter your 6-digit authorization PIN.",
+    });
+  },
+
+  getPreferencesForm(): FormRef | null {
+    return this.selectComponent("#preferences-form") as FormRef | null;
+  },
+
+  submitPreferences() {
+    this.getPreferencesForm()?.submit?.();
+  },
+
+  resetPreferences() {
+    this.getPreferencesForm()?.reset?.();
+    this.setData({
+      preferencesStatus: "",
+      preferencesMessage: "",
+    });
+  },
+
+  setHighSecurityPreferences() {
+    this.getPreferencesForm()?.setValues?.({
+      notifications: true,
+      biometrics: true,
+      twoFactor: true,
+      marketing: false,
+    });
+    this.setData({
+      preferencesStatus: "Info",
+      preferencesMessage: "Applied recommended high security profile.",
+    });
+  },
+
+  handlePreferencesSubmit(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      preferencesStatus: "Saved",
+      preferencesMessage: `Preferences updated: ${JSON.stringify(e.detail.values)}`,
     });
   },
 });

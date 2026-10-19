@@ -6,4 +6,5 @@ export { default as form } from "./form";
 export { default as formField } from "./form-field";
 export { default as input } from "./input";
 export { default as pinInput } from "./pin-input";
+export { default as switch } from "./switch";
 

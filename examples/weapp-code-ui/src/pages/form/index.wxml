@@ -66,6 +66,41 @@
             />
           </c-form-field>
 
+          <!-- Field 4: Newsletter (c-switch controlled) -->
+          <c-form-field name="newsletter">
+            <c-switch
+              name="newsletter"
+              color="primary"
+              label="Subscribe to Product Newsletter (Controlled)"
+              description="State bound to page data.newsletterControlled"
+              checked="{{newsletterControlled}}"
+              bind:change="onNewsletterChange"
+            />
+          </c-form-field>
+          <view class="flex items-center justify-between text-xs bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-200">
+            <text class="text-neutral-500">Page State (newsletterControlled):</text>
+            <text class="font-bold font-mono text-neutral-900">{{newsletterControlled ? 'true' : 'false'}}</text>
+          </view>
+          <view class="flex gap-2">
+            <c-button variant="soft" color="primary" size="xs" bind:tap="toggleNewsletterControlled">
+              Toggle Controlled Switch via Page State
+            </c-button>
+          </view>
+
+          <!-- Field 5: Terms of Service (c-switch with required validation rule) -->
+          <c-form-field
+            name="terms"
+            rules="{{termsRules}}"
+            required="{{true}}"
+          >
+            <c-switch
+              name="terms"
+              color="primary"
+              label="I agree to the Terms of Service & Privacy Policy"
+              description="Must be accepted before creating an account"
+            />
+          </c-form-field>
+
           <!-- Action Buttons -->
           <view class="flex flex-wrap gap-2 pt-2">
             <c-button variant="solid" color="primary" size="sm" bind:tap="submitRegistration">
@@ -131,6 +166,79 @@
           <view wx:if="{{transferStatus}}" class="mt-1 px-3 py-2 rounded-xl text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
             <text class="font-bold">{{transferStatus}}:</text>
             <text class="ml-1">{{transferMessage}}</text>
+          </view>
+        </view>
+      </c-form>
+    </c-card>
+
+    <!-- Form 3: Account & Security Preferences (Switches Form) -->
+    <c-card title="Independent Form 3: Account & Security Preferences" description="Dedicated form pattern integrating multiple c-switch controls with save, reset, and setValues.">
+      <c-form
+        id="preferences-form"
+        bind:submit="handlePreferencesSubmit"
+      >
+        <view class="flex flex-col gap-4">
+          <!-- Switch 1: Notifications -->
+          <c-form-field name="notifications">
+            <c-switch
+              name="notifications"
+              color="primary"
+              label="Push Notifications"
+              description="Receive instant alerts for account activity and messages"
+              defaultChecked="{{true}}"
+            />
+          </c-form-field>
+
+          <!-- Switch 2: Biometric Login -->
+          <c-form-field name="biometrics">
+            <c-switch
+              name="biometrics"
+              color="success"
+              label="Biometric Login"
+              description="Use FaceID or TouchID to authorize transactions quickly"
+              defaultChecked="{{true}}"
+            />
+          </c-form-field>
+
+          <!-- Switch 3: 2FA -->
+          <c-form-field name="twoFactor">
+            <c-switch
+              name="twoFactor"
+              color="warning"
+              label="Two-Factor Authentication (2FA)"
+              description="Require an extra verification code upon signing in"
+              defaultChecked="{{false}}"
+            />
+          </c-form-field>
+
+          <!-- Switch 4: Marketing -->
+          <c-form-field name="marketing">
+            <c-switch
+              name="marketing"
+              color="neutral"
+              label="Personalized Analytics"
+              description="Allow usage telemetry to improve component recommendations"
+              defaultChecked="{{false}}"
+            />
+          </c-form-field>
+
+          <!-- Action Buttons -->
+          <view class="flex flex-wrap gap-2 pt-1">
+            <c-button variant="solid" color="primary" size="sm" bind:tap="submitPreferences">
+              Save Preferences
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetPreferences">
+              Reset to Defaults
+            </c-button>
+            <c-button variant="soft" color="success" size="sm" bind:tap="setHighSecurityPreferences">
+              Apply High-Security Profile
+            </c-button>
+          </view>
+
+          <!-- Feedback Status Card -->
+          <view wx:if="{{preferencesStatus}}" class="mt-1 px-3 py-2.5 rounded-xl text-xs bg-primary-50 text-primary-950 border border-primary-200">
+            <text class="font-bold">{{preferencesStatus}}:</text>
+            <text class="ml-1 font-mono break-all">{{preferencesMessage}}</text>
           </view>
         </view>
       </c-form>
