@@ -7,7 +7,7 @@
   <view class="px-5 py-6 flex flex-col gap-4">
     <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">Components</view>
     <block wx:for="{{components}}" wx:key="id">
-      <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs hover:border-neutral-300 transition-all active:scale-[0.99] active:bg-neutral-50" data-path="{{item.path}}" bindtap="navigateToComponent">
+      <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs hover:border-neutral-300 transition-all active:scale-[0.99] active:bg-neutral-50" data-path="{{item.path}}" bind:tap="navigateToComponent">
         <view class="flex items-center justify-between mb-1.5">
           <view class="text-base font-bold text-neutral-900">{{item.name}}</view>
           <view class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">

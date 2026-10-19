@@ -264,6 +264,12 @@ export const formFieldMachine: FormFieldMachine =
     },
 
     watch: (params) => {
+      // Track reactive props so dynamic rule and prop updates re-emit field rules
+      params.prop("rules");
+      params.prop("required");
+      params.prop("disabled");
+      params.prop("name");
+
       const nextBus = params.prop("formBus");
       const currentBus = params.refs.get("currentFormBus");
       if (nextBus !== currentBus) {

@@ -879,4 +879,183 @@ describe("formMachine & PinInput integration", () => {
     form.machine.stop();
     pin.machine.stop();
   });
+
+  it("safely handles JSON-serialized RegExp objects across MiniProgram bridge and validates email", async () => {
+    const formComp = createMockComponent();
+    const inputComp = createMockComponent(formComp);
+
+    const form = createFormInstance({ component: formComp });
+
+    // Simulate WeChat MiniProgram Page data serialization where RegExp is serialized with JSON.stringify
+    const originalRules = [
+      { required: true, message: "Email address is required" },
+      {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: "Invalid email address format",
+      },
+    ];
+    const serializedRules = JSON.parse(JSON.stringify(originalRules));
+
+    let emailVal = "";
+    const emailField = bindFormField({
+      component: inputComp,
+      id: "email-input",
+      getName: () => "email",
+      getValue: () => emailVal,
+      setValue: (v) => {
+        emailVal = v;
+      },
+      getRules: () => serializedRules,
+    });
+
+    // 1. Invalid email 'iji' (contained characters from [object Object] which caused bug)
+    emailVal = "iji";
+    emailField.emitInput("iji");
+    await flush();
+
+    expect(form.api().isValid).toBe(false);
+    expect(form.api().errorBag).toEqual({
+      email: ["Invalid email address format"],
+    });
+
+    // 2. Another invalid email 'hello'
+    emailVal = "hello";
+    emailField.emitInput("hello");
+    await flush();
+
+    expect(form.api().isValid).toBe(false);
+    expect(form.api().errorBag).toEqual({
+      email: ["Invalid email address format"],
+    });
+
+    // 3. Valid email
+    emailVal = "alice@example.com";
+    emailField.emitInput("alice@example.com");
+    await flush();
+
+    expect(form.api().isValid).toBe(true);
+    expect(form.api().errorBag).toEqual({});
+
+    emailField.dispose();
+    form.machine.stop();
+  });
+
+  it("supports email: true and type: 'email' rules", async () => {
+    const formComp = createMockComponent();
+    const inputComp = createMockComponent(formComp);
+
+    const form = createFormInstance({ component: formComp });
+
+    let emailVal = "";
+    const emailField = bindFormField({
+      component: inputComp,
+      id: "email-input",
+      getName: () => "email",
+      getValue: () => emailVal,
+      getRules: () => [
+        { required: true, message: "Email required" },
+        { email: true, message: "Invalid email" },
+      ],
+    });
+
+    emailVal = "iji";
+    emailField.emitInput("iji");
+    await flush();
+    expect(form.api().errorBag).toEqual({ email: ["Invalid email"] });
+
+    emailVal = "test@domain.com";
+    emailField.emitInput("test@domain.com");
+    await flush();
+    expect(form.api().errorBag).toEqual({});
+
+    emailField.dispose();
+    form.machine.stop();
+  });
+
+  it("supports string patterns and regex with /.../ syntax", async () => {
+    const formComp = createMockComponent();
+    const inputComp = createMockComponent(formComp);
+
+    const form = createFormInstance({ component: formComp });
+
+    let val = "";
+    const field = bindFormField({
+      component: inputComp,
+      id: "code-input",
+      getName: () => "code",
+      getValue: () => val,
+      getRules: () => [
+        { pattern: "^[0-9]{4}$", message: "Must be 4 digits" },
+      ],
+    });
+
+    val = "abc";
+    field.emitInput("abc");
+    await flush();
+    expect(form.api().errorBag).toEqual({ code: ["Must be 4 digits"] });
+
+    val = "1234";
+    field.emitInput("1234");
+    await flush();
+    expect(form.api().errorBag).toEqual({});
+
+    field.dispose();
+    form.machine.stop();
+  });
+
+  it("does not fail intermittently on repeated validations when regex has 'g' flag", async () => {
+    const formComp = createMockComponent();
+    const inputComp = createMockComponent(formComp);
+
+    const form = createFormInstance({ component: formComp });
+
+    let val = "1234";
+    const field = bindFormField({
+      component: inputComp,
+      id: "code-input",
+      getName: () => "code",
+      getValue: () => val,
+      getRules: () => [
+        { pattern: /^[0-9]+$/g, message: "Digits only" },
+      ],
+    });
+
+    // Run 5 sequential validations with the exact same value
+    for (let i = 0; i < 5; i++) {
+      field.emitInput("1234");
+      await flush();
+      expect(form.api().errorBag).toEqual({});
+      expect(form.api().isValid).toBe(true);
+    }
+
+    field.dispose();
+    form.machine.stop();
+  });
+
+  it("safely ignores empty object { pattern: {} } without creating /[object Object]/", async () => {
+    const formComp = createMockComponent();
+    const inputComp = createMockComponent(formComp);
+
+    const form = createFormInstance({ component: formComp });
+
+    let val = "iji";
+    const field = bindFormField({
+      component: inputComp,
+      id: "test-input",
+      getName: () => "test",
+      getValue: () => val,
+      getRules: () => [
+        // Corrupt pattern object with no source/pattern
+        { pattern: {} as any, message: "Invalid format" },
+      ],
+    });
+
+    // Since pattern: {} is empty and has no source, it must not create /[object Object]/
+    field.emitInput("iji");
+    await flush();
+    expect(form.api().errorBag).toEqual({});
+
+    field.dispose();
+    form.machine.stop();
+  });
 });

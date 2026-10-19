@@ -4,6 +4,26 @@
  * MiniApp framework integration for code-ui FSM.
  */
 
+if (
+  typeof RegExp !== "undefined" &&
+  typeof (RegExp.prototype as any).toJSON !== "function"
+) {
+  try {
+    // eslint-disable-next-line no-extend-native
+    Object.defineProperty(RegExp.prototype, "toJSON", {
+      value(this: RegExp) {
+        return {
+          __isRegExp: true,
+          source: this.source,
+          flags: this.flags,
+        };
+      },
+      writable: true,
+      configurable: true,
+    });
+  } catch {}
+}
+
 export { MiniappMachine } from "./machine";
 export { connectToPage, connectToComponent } from "./connect";
 export type { ConnectFn, MiniAppInstance } from "./connect";

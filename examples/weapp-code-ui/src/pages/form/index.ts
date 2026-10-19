@@ -14,7 +14,7 @@ Page({
     ],
     emailRules: [
       { required: true, message: "Email address is required" },
-      { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email address format" },
+      { email: true, message: "Invalid email address format" },
     ],
     pinRules: [
       { required: true, message: "Security PIN is required" },

@@ -49,6 +49,62 @@ function attachRuleJSON(fn: FormRuleFn, descriptor: FormRuleObject): FormRuleFn 
   return fn;
 }
 
+if (
+  typeof RegExp !== "undefined" &&
+  typeof (RegExp.prototype as any).toJSON !== "function"
+) {
+  try {
+    // eslint-disable-next-line no-extend-native
+    Object.defineProperty(RegExp.prototype, "toJSON", {
+      value(this: RegExp) {
+        return {
+          __isRegExp: true,
+          source: this.source,
+          flags: this.flags,
+        };
+      },
+      writable: true,
+      configurable: true,
+    });
+  } catch {}
+}
+
+export function parseRegex(
+  pattern: unknown,
+  flags?: string,
+): RegExp | null {
+  if (pattern instanceof RegExp) {
+    return pattern;
+  }
+  if (typeof pattern === "string") {
+    const trimmed = pattern.trim();
+    if (trimmed.length === 0) return null;
+    const slashMatch = /^\/(.*)\/([a-z]*)$/i.exec(trimmed);
+    if (slashMatch && slashMatch[1] !== undefined) {
+      return new RegExp(slashMatch[1], slashMatch[2] || flags || "");
+    }
+    return new RegExp(trimmed, flags ?? "");
+  }
+  if (typeof pattern === "object" && pattern !== null) {
+    const obj = pattern as {
+      source?: unknown;
+      flags?: unknown;
+      pattern?: unknown;
+      patternFlags?: unknown;
+    };
+    if (typeof obj.source === "string" && obj.source.length > 0) {
+      const f = typeof obj.flags === "string" ? obj.flags : flags ?? "";
+      return new RegExp(obj.source, f);
+    }
+    if (typeof obj.pattern === "string" && obj.pattern.length > 0) {
+      const f =
+        typeof obj.patternFlags === "string" ? obj.patternFlags : flags ?? "";
+      return new RegExp(obj.pattern, f);
+    }
+  }
+  return null;
+}
+
 function expandRuleObject(ruleObj: FormRuleObject): FormRuleFn[] {
   const fns: FormRuleFn[] = [];
   const msg = ruleObj.message;
@@ -66,16 +122,19 @@ function expandRuleObject(ruleObj: FormRuleObject): FormRuleFn[] {
     fns.push(formRules.exactLength(ruleObj.exactLength, msg));
   }
   if (ruleObj.pattern !== undefined) {
-    const regex =
-      ruleObj.pattern instanceof RegExp
-        ? ruleObj.pattern
-        : new RegExp(String(ruleObj.pattern), ruleObj.patternFlags ?? "");
-    fns.push(formRules.pattern(regex, msg));
+    const regex = parseRegex(ruleObj.pattern, ruleObj.patternFlags);
+    if (regex) {
+      fns.push(formRules.pattern(regex, msg));
+    }
   }
-  if (ruleObj.email) {
+  if (ruleObj.email || (ruleObj as any).type === "email") {
     fns.push(formRules.email(msg));
   }
-  if (ruleObj.numeric) {
+  if (
+    ruleObj.numeric ||
+    (ruleObj as any).type === "number" ||
+    (ruleObj as any).type === "numeric"
+  ) {
     fns.push(formRules.numeric(msg));
   }
   if (typeof ruleObj.min === "number") {
@@ -281,6 +340,7 @@ export const formRules = {
       (value: any) => {
         if (isEmpty(value)) return true;
         const str = Array.isArray(value) ? value.join("") : String(value);
+        regex.lastIndex = 0;
         return regex.test(str) || message;
       },
       {
