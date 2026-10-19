@@ -17,6 +17,7 @@ import type {
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
+import type { SwitchProps } from "@code-ui/switch";
 import type { ThemeColor } from "@code-ui/core";
 
 export interface CuiCommonElementProps {
@@ -224,5 +225,28 @@ export interface CuiFormFieldElementProps extends CuiCommonElementProps {
   rules?: FormRule[];
   disabled?: boolean;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
+}
+
+export interface CuiSwitchElementProps extends CuiCommonElementProps {
+  ui?: SwitchProps["ui"];
+  name?: string;
+  value?: string;
+  label?: string;
+  description?: string;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  color?: SwitchProps["color"];
+  size?: SwitchProps["size"];
+  disabled?: boolean;
+  readOnly?: boolean;
+  loading?: boolean;
+  required?: boolean;
+  invalid?: boolean;
+  checkedIcon?: string;
+  uncheckedIcon?: string;
+  loadingIcon?: string;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<{ value: boolean; checked: boolean }>,
+  ) => void;
 }
 

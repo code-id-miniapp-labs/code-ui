@@ -32,6 +32,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
+      "@code-ui/switch": resolve(
+        import.meta.dirname,
+        "packages/machines/switch/src",
+      ),
     },
   },
   test: {

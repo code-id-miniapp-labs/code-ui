@@ -27,6 +27,7 @@ import {
   resolveTreeShakeOptions,
 } from "./core/config";
 import { cleanKeyframes, cleanKeyframesInDir } from "./core/keyframes";
+import { compatMiniProgramTransforms } from "./core/transforms";
 import { transformAppStyle } from "./core/style-inject";
 import { handleTreeShake } from "./core/tree-shake";
 import {
@@ -49,6 +50,7 @@ export {
   mergeConfig,
   serializeConfig,
 } from "./core/utils";
+export { compatMiniProgramTransforms } from "./core/transforms";
 
 function invalidateVirtualModules(
   server: ViteDevServer,
@@ -264,7 +266,9 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
             isBundleAsset(item) &&
             typeof item.source === "string"
           ) {
-            item.source = cleanKeyframes(item.source);
+            item.source = compatMiniProgramTransforms(
+              cleanKeyframes(item.source),
+            );
             cleanedBundleCssPaths.add(path.resolve(distRoot, fileName));
           }
         }

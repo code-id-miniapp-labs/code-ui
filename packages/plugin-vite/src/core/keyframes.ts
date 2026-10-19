@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { compatMiniProgramTransforms } from "./transforms";
 
 const KEYFRAMES_NAME_RE = /@keyframes\s+([a-zA-Z0-9_-]+)/;
 
@@ -78,7 +79,7 @@ export function cleanKeyframesInDir(
       if (skipFiles?.has(fullPath)) continue;
       try {
         const content = fs.readFileSync(fullPath, "utf8");
-        const cleaned = cleanKeyframes(content);
+        const cleaned = compatMiniProgramTransforms(cleanKeyframes(content));
         if (content !== cleaned) {
           fs.writeFileSync(fullPath, cleaned, "utf8");
         }

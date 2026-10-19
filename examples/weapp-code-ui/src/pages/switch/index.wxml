@@ -1,0 +1,167 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Switch</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Toggle switch control with Nuxt UI v4 styling, controlled checked, custom colors, sizes, and Form integration.
+    </view>
+  </view>
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Controlled Component -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Controlled Component</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Syncs checked state between page and machine context.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-switch checked="{{controlledChecked}}" label="Push Notifications" description="Receive real-time alerts on your device" bind:change="onControlledChange" />
+        <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
+          <text class="text-neutral-500">Checked:</text>
+          <text class="font-bold text-neutral-900">{{controlledChecked ? 'true' : 'false'}}</text>
+        </view>
+        <view class="text-xs text-neutral-400">
+          Last event:
+          <text class="font-mono text-neutral-700">{{lastEvent}}</text>
+        </view>
+        <view class="flex gap-2 pt-1">
+          <c-button size="sm" variant="outline" color="primary" bind:tap="toggleControlled">
+            Toggle from Outside
+          </c-button>
+        </view>
+      </view>
+    </view>
+    <!-- 2. Sizes -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
+      <view class="text-xs text-neutral-400 mb-3">xs, sm, md, lg, xl</view>
+      <view class="flex flex-col gap-4">
+        <c-switch size="xs" label="Size xs" defaultChecked="{{true}}" />
+        <c-switch size="sm" label="Size sm" defaultChecked="{{true}}" />
+        <c-switch size="md" label="Size md (default)" defaultChecked="{{true}}" />
+        <c-switch size="lg" label="Size lg" defaultChecked="{{true}}" />
+        <c-switch size="xl" label="Size xl" defaultChecked="{{true}}" />
+      </view>
+    </view>
+    <!-- 3. Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        primary, success, warning, danger, info, neutral
+      </view>
+      <view class="grid grid-cols-2 gap-3">
+        <c-switch color="primary" label="Primary" defaultChecked="{{true}}" />
+        <c-switch color="success" label="Success" defaultChecked="{{true}}" />
+        <c-switch color="warning" label="Warning" defaultChecked="{{true}}" />
+        <c-switch color="danger" label="Danger" defaultChecked="{{true}}" />
+        <c-switch color="info" label="Info" defaultChecked="{{true}}" />
+        <c-switch color="neutral" label="Neutral" defaultChecked="{{true}}" />
+      </view>
+    </view>
+    <!-- 4. States (Disabled, Loading, Required) -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">States</view>
+      <view class="text-xs text-neutral-400 mb-3">disabled, loading, required</view>
+      <view class="flex flex-col gap-3">
+        <c-switch label="Disabled (unchecked)" disabled="{{true}}" />
+        <c-switch label="Disabled (checked)" disabled="{{true}}" defaultChecked="{{true}}" />
+        <c-switch label="Loading state" loading="{{true}}" defaultChecked="{{true}}" />
+        <c-switch label="Required field" required="{{true}}" />
+      </view>
+    </view>
+    <!-- 5. Interactive Settings List -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Settings List Pattern</view>
+      <view class="text-xs text-neutral-400 mb-3">Common mobile settings list layout</view>
+      <view class="divide-y divide-neutral-100 flex flex-col">
+        <view class="py-3 flex items-center justify-between">
+          <c-switch label="Airplane Mode" description="Disable all wireless connections" checked="{{airplaneMode}}" bind:change="onAirplaneModeChange" />
+        </view>
+        <view class="py-3 flex items-center justify-between">
+          <c-switch label="Wi-Fi" description="Connect to wireless networks" checked="{{wifiEnabled}}" color="success" bind:change="onWifiChange" />
+        </view>
+        <view class="py-3 flex items-center justify-between">
+          <c-switch label="App Notifications" description="Allow banners, sounds and badges" checked="{{notifications}}" color="primary" bind:change="onNotificationsChange" />
+        </view>
+      </view>
+    </view>
+    <!-- 6. Form & Validation Integration -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Form & Validation Integration</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Integrated with c-form and c-form-field, supporting required validation rules, reset, and submit.
+      </view>
+      <c-form
+        id="switch-demo-form"
+        focusOnError="{{true}}"
+        showErrors="{{true}}"
+        bind:submit="handleSwitchFormSubmit"
+        bind:error="handleSwitchFormError"
+      >
+        <view class="flex flex-col gap-4">
+          <!-- 1. Controlled Switch inside Form -->
+          <c-form-field name="emailNotifications">
+            <c-switch
+              name="emailNotifications"
+              color="primary"
+              label="Email Notifications (Controlled)"
+              description="State bound to page data.formEmailNotifications"
+              checked="{{formEmailNotifications}}"
+              bind:change="onFormEmailNotificationsChange"
+            />
+          </c-form-field>
+
+          <view class="flex items-center justify-between text-xs bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-200">
+            <text class="text-neutral-500">Page State (formEmailNotifications):</text>
+            <text class="font-bold font-mono text-neutral-900">{{formEmailNotifications ? 'true' : 'false'}}</text>
+          </view>
+          <view class="flex gap-2">
+            <c-button variant="soft" color="primary" size="xs" bind:tap="toggleFormControlled">
+              Toggle Controlled Switch from Outside
+            </c-button>
+          </view>
+
+          <!-- 2. Uncontrolled Switch inside Form -->
+          <c-form-field name="autoRenew">
+            <c-switch
+              name="autoRenew"
+              color="info"
+              label="Auto-Renew Subscription (Uncontrolled)"
+              description="Save 20% on your membership with automatic renewals"
+              defaultChecked="{{true}}"
+            />
+          </c-form-field>
+
+          <!-- Switch 2 with Required Validation -->
+          <c-form-field
+            name="agreement"
+            rules="{{agreementRules}}"
+            required="{{true}}"
+          >
+            <c-switch
+              name="agreement"
+              color="success"
+              label="I accept the Terms and Conditions"
+              description="Required toggle before submitting"
+            />
+          </c-form-field>
+
+          <!-- Buttons -->
+          <view class="flex flex-wrap gap-2 pt-1">
+            <c-button variant="solid" color="primary" size="sm" bind:tap="submitSwitchForm">
+              Submit Form
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetSwitchForm">
+              Reset Form
+            </c-button>
+          </view>
+
+          <!-- Feedback Status Card -->
+          <view wx:if="{{switchFormStatus}}" class="mt-1 px-3 py-2.5 rounded-xl text-xs bg-neutral-100 text-neutral-800 border border-neutral-200">
+            <text class="font-bold text-neutral-950">{{switchFormStatus}}:</text>
+            <text class="ml-1 font-mono break-all">{{switchFormMessage}}</text>
+          </view>
+        </view>
+      </c-form>
+    </view>
+  </view>
+</view>

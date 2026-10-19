@@ -11,6 +11,7 @@
     "cui-form": "runtime/form/index",
     "cui-form-field": "runtime/form-field/index",
     "cui-input": "runtime/input/index",
-    "cui-pin-input": "runtime/pin-input/index"
+    "cui-pin-input": "runtime/pin-input/index",
+    "cui-switch": "runtime/switch/index"
   }
 }

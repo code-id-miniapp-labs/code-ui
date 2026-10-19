@@ -72,6 +72,12 @@
       "require": "./dist/runtime/pin-input/index.js"
     },
     "./pin-input/*": "./dist/runtime/pin-input/*",
+    "./switch": {
+      "types": "./dist/runtime/switch/index.d.ts",
+      "import": "./dist/runtime/switch/index.js",
+      "require": "./dist/runtime/switch/index.js"
+    },
+    "./switch/*": "./dist/runtime/switch/*",
     "./runtime/*": "./dist/runtime/*",
     "./dist/*": "./dist/*",
     "./themes/*": "./dist/themes/*",
@@ -85,7 +91,15 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "@code-ui/plugin-vite": "workspace:*",
+    "@types/node": "^26.2.0",
+    "alien-signals": "^1.0.4",
+    "miniprogram-api-typings": "^5.2.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.21",
+    "weapp-vite": "^7.3.0",
     "@code-ui/anatomy": "workspace:*",
     "@code-ui/button": "workspace:*",
     "@code-ui/context": "workspace:*",
@@ -96,17 +110,9 @@
     "@code-ui/input": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/switch": "workspace:*",
     "@code-ui/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"
-  },
-  "devDependencies": {
-    "@code-ui/plugin-vite": "workspace:*",
-    "@types/node": "^26.2.0",
-    "alien-signals": "^1.0.4",
-    "miniprogram-api-typings": "^5.2.3",
-    "typescript": "^5.5.4",
-    "vite": "^5.4.21",
-    "weapp-vite": "^7.3.0"
   },
   "peerDependencies": {
     "alien-signals": ">=1.0.0"

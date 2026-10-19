@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buttonTheme as createButtonTheme,
+  switchTheme as createSwitchTheme,
   resetConfig,
   setConfig,
 } from "@code-ui/core";
@@ -327,3 +328,60 @@ describe("tv type safety & variant inference", () => {
     expect(res.icon()).toBe("base-icon");
   });
 });
+
+describe("switchTheme resolution", () => {
+  const switchTheme = tv(createSwitchTheme());
+
+  it("resolves unchecked state classes correctly", () => {
+    const slots = resolveSlots(
+      switchTheme({ checked: false, size: "md", color: "primary" }) as any,
+    );
+
+    expect(slots.base).toContain("bg-neutral-200");
+    expect(slots.base).not.toContain("bg-primary");
+    expect(slots.thumb).toContain("translate-x-0");
+    expect(slots.thumb).toContain("translate-y-0");
+    expect(slots.thumb).not.toContain("translate-x-4");
+    expect(slots.icon).toContain("opacity-0");
+    expect(slots.icon).not.toContain("opacity-100");
+  });
+
+  it("resolves checked state classes and thumb translations across sizes", () => {
+    const sizeTranslations: Record<string, string> = {
+      xs: "translate-x-3",
+      sm: "translate-x-3.5",
+      md: "translate-x-4",
+      lg: "translate-x-4.5",
+      xl: "translate-x-5",
+    };
+
+    for (const [size, expectedTranslate] of Object.entries(sizeTranslations)) {
+      const slots = resolveSlots(
+        switchTheme({ checked: true, size, color: "primary" }) as any,
+      );
+
+      if (size === "lg") {
+        console.log("LG THUMB SLOTS:", slots.thumb);
+      }
+      expect(slots.base).toContain("bg-primary");
+      expect(slots.base).not.toContain("bg-neutral-200");
+      expect(slots.thumb).toContain(escapeClass(expectedTranslate));
+      expect(slots.thumb).toContain("translate-y-0");
+      expect(slots.thumb).not.toContain("translate-x-0");
+      expect(slots.icon).toContain("text-primary");
+      expect(slots.icon).toContain("opacity-100");
+    }
+  });
+
+  it("supports semantic colors when checked", () => {
+    for (const color of ["danger", "success", "warning", "info"] as const) {
+      const slots = resolveSlots(
+        switchTheme({ checked: true, size: "md", color }) as any,
+      );
+
+      expect(slots.base).toContain(`bg-${color}`);
+      expect(slots.icon).toContain(`text-${color}`);
+    }
+  });
+});
+

@@ -39,13 +39,11 @@
     "@icebreakers/eslint-config": "^8.0.2",
     "@icebreakers/stylelint-config": "^5.1.2",
     "@types/node": "^26.6.2",
-    "@weapp-vite/dashboard": "^7.3.0",
     "eslint": "^10.11.0",
     "miniprogram-api-typings": "^5.2.3",
-    "sass": "^1.105.0",
     "stylelint": "^17.15.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "weapp-vite": "^7.3.0"
+    "weapp-vite": "^7.5.0"
   }
 }

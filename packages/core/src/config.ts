@@ -56,6 +56,15 @@ export interface ComponentRegistry {
     | "trailingIcon"
     | "clear";
   pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
+  switch:
+    | "root"
+    | "base"
+    | "container"
+    | "thumb"
+    | "icon"
+    | "wrapper"
+    | "label"
+    | "description";
   [componentName: string]: string;
 }
 
