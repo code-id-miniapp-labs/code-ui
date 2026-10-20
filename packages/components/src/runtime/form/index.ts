@@ -49,7 +49,8 @@ Component(
 
     computed: {
       classes() {
-        const disabled = Boolean(this.data.disabled);
+        const api = this.data.form;
+        const disabled = Boolean(api?.disabled ?? this.data.disabled);
         const ui = this.data.ui;
 
         const themeFns = formTheme({

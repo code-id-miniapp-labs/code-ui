@@ -8,8 +8,8 @@ export const defaultSwitchProps: SwitchProps = {
   required: false,
   invalid: null,
   loading: false,
-  color: "primary",
-  size: "md",
+  color: "primary" as const,
+  size: "md" as const,
   value: "on",
   name: "",
   form: "",
@@ -18,7 +18,5 @@ export const defaultSwitchProps: SwitchProps = {
   checkedIcon: "",
   uncheckedIcon: "",
   loadingIcon: "",
-  fieldDisabled: false,
-  fieldSize: undefined,
   ui: {},
 };

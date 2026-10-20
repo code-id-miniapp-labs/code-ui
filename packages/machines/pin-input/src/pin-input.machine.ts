@@ -2,9 +2,12 @@ import { createMachine } from "@code-ui/core";
 import { bindFormField } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
+  PinInputColor,
   PinInputMachine,
   PinInputSchema,
+  PinInputSize,
   PinInputType,
+  PinInputVariant,
 } from "./pin-input.types";
 import { defaultPinInputProps } from "./pin-input.props";
 
@@ -116,6 +119,26 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
     focusedIndex: bindable<number>(() => ({
       defaultValue: prop("autoFocus") ? 0 : -1,
+    })),
+
+    variant: bindable<PinInputVariant>(() => ({
+      value: prop("variant"),
+      defaultValue: "outline",
+    })),
+
+    color: bindable<PinInputColor>(() => ({
+      value: prop("color"),
+      defaultValue: "primary",
+    })),
+
+    size: bindable<PinInputSize>(() => ({
+      value: prop("size"),
+      defaultValue: "md",
+    })),
+
+    highlight: bindable<boolean>(() => ({
+      value: prop("highlight"),
+      defaultValue: false,
     })),
 
     disabled: bindable<boolean>(() => ({

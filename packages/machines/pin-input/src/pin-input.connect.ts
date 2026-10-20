@@ -3,6 +3,7 @@ import type {
   PinInputCell,
   PinInputSeparator,
   PinInputService,
+  PinInputSize,
 } from "./pin-input.types";
 import { parts } from "./pin-input.anatomy";
 import * as dom from "./pin-input.dom";
@@ -38,19 +39,22 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const focusedIndex = isMachineFocused ? context.get("focusedIndex") : -1;
   const disabled = Boolean(
     context.get("disabled") ||
-      context.get("formDisabled") ||
-      context.get("fieldDisabled"),
+    context.get("formDisabled") ||
+    context.get("fieldDisabled"),
   );
   const readOnly = Boolean(
     context.get("readOnly") || context.get("formReadOnly"),
   );
-  const rawSize = service.prop("size");
+  const rawSize = context.get("size");
   const fieldSize = context.get("fieldSize");
   const size =
     rawSize && rawSize !== "md"
       ? rawSize
-      : ((fieldSize || rawSize || "md") as any);
+      : ((fieldSize || rawSize || "md") as PinInputSize);
   const invalid = Boolean(context.get("invalid"));
+  const variant = context.get("variant");
+  const color = context.get("color");
+  const highlight = Boolean(context.get("highlight"));
   const mask = context.get("mask");
   const type = context.get("type");
   const placeholder = context.get("placeholder");
@@ -112,6 +116,9 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   return {
     state: currentState,
     value,
+    variant,
+    color,
+    highlight,
     valueAsString,
     isValueComplete,
     isEmpty: isEmptyVal,

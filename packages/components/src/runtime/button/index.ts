@@ -44,12 +44,13 @@ Component(
 
     computed: {
       classes() {
-        const variant = this.data.variant;
-        const color = this.data.color;
-        const size = this.data.size;
-        const block = this.data.block;
-        const disabled = Boolean(this.data.button?.disabled);
-        const loading = Boolean(this.data.button?.loading);
+        const api = this.data.button;
+        const variant = api?.variant ?? this.data.variant;
+        const color = api?.color ?? this.data.color;
+        const size = api?.size ?? this.data.size;
+        const block = api?.block ?? this.data.block;
+        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const loading = Boolean(api?.loading ?? this.data.loading);
 
         const ui = this.data.ui;
 

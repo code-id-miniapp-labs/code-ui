@@ -43,13 +43,14 @@ Component(
 
     computed: {
       classes() {
-        const isInvalid = Boolean(this.data.cSwitch?.invalid);
-        const disabled = Boolean(this.data.cSwitch?.disabled);
-        const loading = Boolean(this.data.cSwitch?.loading);
-        const checked = Boolean(this.data.cSwitch?.checked);
-        const size = this.data.cSwitch?.size ?? "md";
-        const color = isInvalid ? "danger" : this.data.color;
-        const required = Boolean(this.data.required);
+        const api = this.data.cSwitch;
+        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
+        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const loading = Boolean(api?.loading ?? this.data.loading);
+        const checked = Boolean(api?.checked ?? this.data.checked);
+        const size = api?.size ?? this.data.size ?? "md";
+        const color = api?.color ?? this.data.color;
+        const required = Boolean(api?.required ?? this.data.required);
         const ui = this.data.ui;
 
         const themeFns = switchTheme({
@@ -59,6 +60,7 @@ Component(
           loading,
           checked,
           required,
+          invalid: isInvalid,
         });
 
         return resolveSlots(themeFns, ui, this.data.class);

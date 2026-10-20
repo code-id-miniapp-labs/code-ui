@@ -35,9 +35,10 @@ Component(
 
     computed: {
       classes() {
-        const placement = this.data.placement;
+        const api = this.data.drawer;
+        const placement = api?.placement ?? this.data.placement;
+        const isOpen = Boolean(api?.open ?? this.data.open);
         const ui = this.data.ui;
-        const isOpen = this.data.drawer?.open ?? false;
 
         const themeFns = drawerTheme({
           placement,

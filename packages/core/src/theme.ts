@@ -50,6 +50,7 @@ export interface ThemeOptions<
   C extends readonly string[] = typeof DEFAULT_THEME_COLORS,
 > {
   colors?: C | readonly string[] | string[];
+  errorColor?: string;
   transitions?: boolean;
   [key: string]: any;
 }

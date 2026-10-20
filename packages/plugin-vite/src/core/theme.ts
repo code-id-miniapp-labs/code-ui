@@ -399,8 +399,14 @@ export function compileComponentTheme(
       ? Array.from(new Set([...DEFAULT_THEME_COLORS, ...userColors]))
       : DEFAULT_THEME_COLORS;
 
+  const errorColor = (resolvedConfig.ui?.colors as any)?.error
+    ? "error"
+    : "danger";
+
   const isFactoryFn = typeof factory === "function";
-  const rawTheme = isFactoryFn ? factory({ colors: allColors }) : factory;
+  const rawTheme = isFactoryFn
+    ? factory({ colors: allColors, errorColor })
+    : factory;
   const camelName = componentName.replace(/-([a-z])/g, (_, c: string) =>
     c.toUpperCase(),
   );

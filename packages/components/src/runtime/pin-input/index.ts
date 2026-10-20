@@ -52,12 +52,13 @@ Component(
 
     computed: {
       classes() {
-        const isInvalid = Boolean(this.data.pinInput?.invalid);
-        const disabled = Boolean(this.data.pinInput?.disabled);
-        const size = this.data.pinInput?.size ?? "md";
-        const variant = this.data.variant;
-        const color = isInvalid ? "danger" : this.data.color;
-        const highlight = isInvalid || Boolean(this.data.highlight);
+        const api = this.data.pinInput;
+        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
+        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const size = api?.size ?? this.data.size ?? "md";
+        const variant = api?.variant ?? this.data.variant;
+        const color = api?.color ?? this.data.color;
+        const highlight = Boolean(api?.highlight ?? this.data.highlight);
         const ui = this.data.ui;
 
         const themeFns = pinInputTheme({
@@ -65,6 +66,7 @@ Component(
           color,
           size,
           highlight,
+          invalid: isInvalid,
           disabled,
         });
 

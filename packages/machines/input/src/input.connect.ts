@@ -1,6 +1,7 @@
 import type {
   InputApi,
   InputService,
+  InputSize,
 } from "./input.types";
 import { parts } from "./input.anatomy";
 import * as dom from "./input.dom";
@@ -13,19 +14,22 @@ export function connectInput(service: InputService): InputApi {
   const value = context.get("value") ?? "";
   const disabled = Boolean(
     context.get("disabled") ||
-      context.get("formDisabled") ||
-      context.get("fieldDisabled"),
+    context.get("formDisabled") ||
+    context.get("fieldDisabled"),
   );
   const readOnly = Boolean(
     context.get("readOnly") || context.get("formReadOnly"),
   );
-  const rawSize = service.prop("size");
+  const rawSize = context.get("size");
   const fieldSize = context.get("fieldSize");
   const size =
     rawSize && rawSize !== "md"
       ? rawSize
-      : ((fieldSize || rawSize || "md") as any);
+      : ((fieldSize || rawSize || "md") as InputSize);
   const invalid = Boolean(context.get("invalid"));
+  const variant = context.get("variant");
+  const color = context.get("color");
+  const highlight = Boolean(context.get("highlight"));
   const type = context.get("type");
   const password = context.get("password");
   const placeholder = context.get("placeholder");
@@ -39,6 +43,9 @@ export function connectInput(service: InputService): InputApi {
   return {
     state: currentState,
     value,
+    variant,
+    color,
+    highlight,
     isEmpty: isEmptyVal,
     isFilled,
     isClearable,

@@ -345,8 +345,8 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
           isDisabled: () =>
             Boolean(
               context.get("disabled") ||
-                context.get("formDisabled") ||
-                context.get("fieldDisabled"),
+              context.get("formDisabled") ||
+              context.get("fieldDisabled"),
             ),
           onValidationChange: (valState) => {
             context.set("invalid", !valState.isValid);

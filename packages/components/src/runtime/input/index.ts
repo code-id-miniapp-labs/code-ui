@@ -43,18 +43,20 @@ Component(
 
     computed: {
       classes() {
-        const isInvalid = Boolean(this.data.input?.invalid);
-        const disabled = Boolean(this.data.input?.disabled);
-        const size = this.data.input?.size ?? "md";
-        const variant = this.data.variant;
-        const color = isInvalid ? "danger" : this.data.color;
-        const highlight = isInvalid || Boolean(this.data.highlight);
+        const api = this.data.input;
+        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
+        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const size = api?.size ?? this.data.size ?? "md";
+        const variant = api?.variant ?? this.data.variant;
+        const color = api?.color ?? this.data.color;
+        const highlight = Boolean(api?.highlight ?? this.data.highlight);
         const hasLeading = Boolean(
           this.data.leading || this.data.leadingIcon,
         );
         const hasTrailing = Boolean(
           this.data.trailing ||
             this.data.trailingIcon ||
+            api?.isClearable ||
             this.data.clearable ||
             this.data.loading,
         );
@@ -65,6 +67,7 @@ Component(
           color,
           size,
           highlight,
+          invalid: isInvalid,
           disabled,
           leading: hasLeading,
           trailing: hasTrailing,
