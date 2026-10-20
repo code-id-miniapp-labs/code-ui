@@ -10,7 +10,8 @@
     "pages/pin-input/index",
     "pages/switch/index",
     "pages/form/index",
-    "pages/use-child/index"
+    "pages/use-child/index",
+    "pages/textarea/index"
   ],
   "window": {},
   "style": "v2",

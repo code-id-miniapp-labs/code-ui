@@ -145,6 +145,9 @@ importers:
       '@code-ui/switch':
         specifier: workspace:*
         version: link:../machines/switch
+      '@code-ui/textarea':
+        specifier: workspace:*
+        version: link:../machines/textarea
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../utils

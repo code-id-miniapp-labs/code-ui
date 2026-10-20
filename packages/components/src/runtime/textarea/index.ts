@@ -50,17 +50,16 @@ Component(
         const variant = api?.variant ?? this.data.variant;
         const color = api?.color ?? this.data.color;
         const highlight = Boolean(api?.highlight ?? this.data.highlight);
-        const hasLeading = Boolean(
-          this.data.leading || this.data.leadingIcon,
-        );
+        const hasLeading = Boolean(this.data.leading || this.data.leadingIcon);
         const hasTrailing = Boolean(
           this.data.trailing ||
-            this.data.trailingIcon ||
-            api?.isClearable ||
-            this.data.clearable ||
-            this.data.loading,
+          this.data.trailingIcon ||
+          api?.isClearable ||
+          this.data.clearable ||
+          this.data.loading,
         );
         const hasCount = Boolean(this.data.count);
+        const isAutoHeight = Boolean(api?.autoHeight ?? this.data.autoHeight);
         const ui = this.data.ui;
 
         const themeFns = textareaTheme({
@@ -73,6 +72,7 @@ Component(
           leading: hasLeading,
           trailing: hasTrailing,
           count: hasCount,
+          autoHeight: isAutoHeight,
         });
 
         return resolveSlots(themeFns, ui, this.data.class);
@@ -80,6 +80,11 @@ Component(
     },
 
     methods: {
+      handleRootTap() {
+        const api = (this as any).__codeUiApi ?? this.data.textarea;
+        api?.focus?.();
+      },
+
       handleInput(e: WechatMiniprogram.CustomEvent) {
         const api = (this as any).__codeUiApi ?? this.data.textarea;
         return api?.handleInput?.(e);

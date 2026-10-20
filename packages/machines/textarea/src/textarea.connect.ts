@@ -1,5 +1,6 @@
 import type {
   TextareaApi,
+  TextareaLineChangeDetails,
   TextareaService,
   TextareaSize,
 } from "./textarea.types";
@@ -75,6 +76,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     disabled,
     readOnly,
     size,
+    autoHeight,
 
     setValue(nextVal: string | number) {
       send({ type: "SET_VALUE", value: nextVal });

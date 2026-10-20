@@ -232,6 +232,8 @@ export interface TextareaApi {
   readOnly: boolean;
   /** Effective size variant */
   size: TextareaSize;
+  /** Whether auto-height dynamic sizing is enabled */
+  autoHeight: boolean;
   /** Set value programmatically */
   setValue(value: string | number): void;
   /** Clear value */

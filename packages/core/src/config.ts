@@ -65,6 +65,16 @@ export interface ComponentRegistry {
     | "wrapper"
     | "label"
     | "description";
+  textarea:
+    | "root"
+    | "base"
+    | "placeholder"
+    | "leading"
+    | "leadingIcon"
+    | "trailing"
+    | "trailingIcon"
+    | "clear"
+    | "count";
   [componentName: string]: string;
 }
 

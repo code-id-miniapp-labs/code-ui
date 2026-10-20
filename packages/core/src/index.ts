@@ -102,4 +102,5 @@ export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as inputTheme } from "./theme/definitions/input";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
 export { default as switchTheme } from "./theme/definitions/switch";
+export { default as textareaTheme } from "./theme/definitions/textarea";
 

@@ -18,6 +18,11 @@ import type {
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
 import type { SwitchProps } from "@code-ui/switch";
+import type {
+  TextareaProps,
+  TextareaValueChangeDetails,
+  TextareaLineChangeDetails,
+} from "@code-ui/textarea";
 import type { ThemeColor } from "@code-ui/core";
 
 export interface CuiCommonElementProps {
@@ -248,5 +253,53 @@ export interface CuiSwitchElementProps extends CuiCommonElementProps {
   onChange?: (
     event: WechatMiniprogram.CustomEvent<{ value: boolean; checked: boolean }>,
   ) => void;
+}
+
+export interface CuiTextareaElementProps extends CuiCommonElementProps {
+  ui?: TextareaProps["ui"];
+  name?: string;
+  value?: string | number | null;
+  defaultValue?: string | number | null;
+  placeholder?: string;
+  placeholderClass?: string;
+  placeholderStyle?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  clearable?: boolean;
+  clearIcon?: string;
+  loading?: boolean;
+  leading?: boolean;
+  trailing?: boolean;
+  leadingIcon?: string;
+  trailingIcon?: string;
+  autoFocus?: boolean;
+  autoHeight?: boolean;
+  fixed?: boolean;
+  maxlength?: number;
+  showConfirmBar?: boolean;
+  cursorSpacing?: number;
+  confirmType?: "return" | "send" | "search" | "next" | "go" | "done";
+  confirmHold?: boolean;
+  cursor?: number;
+  selectionStart?: number;
+  selectionEnd?: number;
+  adjustPosition?: boolean;
+  holdKeyboard?: boolean;
+  disableDefaultPadding?: boolean;
+  count?: boolean;
+  variant?: TextareaProps["variant"];
+  color?: TextareaProps["color"];
+  size?: TextareaProps["size"];
+  highlight?: boolean;
+  invalid?: boolean | null;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<TextareaValueChangeDetails>,
+  ) => void;
+  onLineChange?: (
+    event: WechatMiniprogram.CustomEvent<TextareaLineChangeDetails>,
+  ) => void;
+  onFocus?: (event: WechatMiniprogram.CustomEvent) => void;
+  onBlur?: (event: WechatMiniprogram.CustomEvent) => void;
+  onConfirm?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
