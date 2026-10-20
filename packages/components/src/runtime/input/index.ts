@@ -3,6 +3,7 @@ import {
   createProperties,
   computedBehavior,
   createComponentOptions,
+  getApi,
 } from "../_shared";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -79,28 +80,23 @@ Component(
 
     methods: {
       handleInput(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.input;
-        return api?.handleInput?.(e);
+        return getApi(this, "input")?.handleInput?.(e);
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.input;
-        api?.handleFocus?.(e);
+        getApi(this, "input")?.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.input;
-        api?.handleBlur?.(e);
+        getApi(this, "input")?.handleBlur?.(e);
       },
 
       handleConfirm(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.input;
-        api?.handleConfirm?.(e);
+        getApi(this, "input")?.handleConfirm?.(e);
       },
 
       handleClear(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.input;
-        api?.handleClear?.(e);
+        getApi(this, "input")?.handleClear?.(e);
       },
 
       handleKeyboardHeightChange(e: WechatMiniprogram.CustomEvent) {

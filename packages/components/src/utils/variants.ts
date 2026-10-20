@@ -135,38 +135,23 @@ function escapeSelector(token: string): string {
   if (len === 0) return "";
   let out = "";
   let last = 0;
-  for (let i = 0; i < len; ) {
-    const c1 = token.charCodeAt(i);
-    let code = c1;
-    let size = 1;
-    if (c1 >= 0xd800 && c1 <= 0xdbff && i + 1 < len) {
-      const c2 = token.charCodeAt(i + 1);
-      if (c2 >= 0xdc00 && c2 <= 0xdfff) {
-        code = ((c1 - 0xd800) << 10) + (c2 - 0xdc00) + 0x10000;
-        size = 2;
-      }
-    }
-    let rep: string | undefined;
-    if (code > 127) {
-      rep = `u_x${code.toString(16)}_`;
-    } else {
-      const ch = token[i] as string;
-      rep = ESCAPE_MAP[ch];
-      if (rep === undefined && i === 0) {
-        if (
-          isAsciiDigit(c1) ||
-          (ch === "-" && (len === 1 || isAsciiDigit(token.charCodeAt(1))))
-        ) {
-          rep = `_${ch}`;
-        }
-      }
-    }
+  for (let i = 0; i < len; i++) {
+    const ch = token[i] as string;
+    const rep = ESCAPE_MAP[ch];
     if (rep !== undefined) {
       if (last !== i) out += token.slice(last, i);
       out += rep;
-      last = i + size;
+      last = i + 1;
+    } else if (i === 0) {
+      const c1 = token.charCodeAt(0);
+      if (
+        isAsciiDigit(c1) ||
+        (ch === "-" && (len === 1 || isAsciiDigit(token.charCodeAt(1))))
+      ) {
+        out += `_${ch}`;
+        last = 1;
+      }
     }
-    i += size;
   }
   if (last === 0) return token;
   return last < len ? out + token.slice(last) : out;
@@ -203,48 +188,6 @@ export function escapeClass(value: string | null | undefined): string {
   return out;
 }
 
-const TEXT_SIZES = new Set([
-  "xs",
-  "sm",
-  "base",
-  "lg",
-  "xl",
-  "2xl",
-  "3xl",
-  "4xl",
-  "5xl",
-  "6xl",
-  "7xl",
-  "8xl",
-  "9xl",
-]);
-const TEXT_ALIGNS = new Set([
-  "left",
-  "center",
-  "right",
-  "justify",
-  "start",
-  "end",
-]);
-const DISPLAYS = new Set([
-  "block",
-  "inline-block",
-  "inline",
-  "flex",
-  "inline-flex",
-  "grid",
-  "inline-grid",
-  "hidden",
-]);
-const POSITIONS = new Set([
-  "static",
-  "fixed",
-  "absolute",
-  "relative",
-  "sticky",
-]);
-const BORDER_STYLES = new Set(["solid", "dashed", "dotted", "double", "none"]);
-
 /**
  * Returns a property group key for common Tailwind classes so conflicting
  * properties can be deduplicated (e.g. text-red-500 replacing text-white).
@@ -252,124 +195,94 @@ const BORDER_STYLES = new Set(["solid", "dashed", "dotted", "double", "none"]);
 export function getUtilityKey(token: string): string | null {
   const lastColon = token.lastIndexOf(":");
   const prefix = lastColon !== -1 ? token.slice(0, lastColon + 1) : "";
-  const main = lastColon !== -1 ? token.slice(lastColon + 1) : token;
+  const m = lastColon !== -1 ? token.slice(lastColon + 1) : token;
 
-  if (DISPLAYS.has(main)) return `${prefix}display`;
-  if (POSITIONS.has(main)) return `${prefix}position`;
-
-  // Spacing & sizing (supports negative margins like -mt-2)
-  const spacingMatch = main.match(/^-?(p|m)[xytrblse]?-/);
-  if (spacingMatch) {
-    const dir = main.startsWith("-")
-      ? main.slice(1, main.indexOf("-", 1))
-      : main.slice(0, main.indexOf("-"));
-    return `${prefix}${dir}`;
+  if (/^(block|inline(-block|-flex|-grid)?|flex|grid|hidden)$/.test(m)) {
+    return `${prefix}display`;
+  }
+  if (/^(static|fixed|absolute|relative|sticky)$/.test(m)) {
+    return `${prefix}position`;
   }
 
-  const sizeMatch = main.match(/^(w|h|min-w|min-h|max-w|max-h|size)-/);
+  // Spacing & sizing
+  if (/^-?[pm][xytrblse]?-/.test(m)) {
+    const d = m.startsWith("-")
+      ? m.slice(1, m.indexOf("-", 1))
+      : m.slice(0, m.indexOf("-"));
+    return `${prefix}${d}`;
+  }
+  const sizeMatch = m.match(/^(w|h|min-w|min-h|max-w|max-h|size)-/);
   if (sizeMatch) return `${prefix}${sizeMatch[1]}`;
 
-  // Flex / Grid common overrides
-  if (
-    main === "flex-row" ||
-    main === "flex-col" ||
-    main === "flex-row-reverse" ||
-    main === "flex-col-reverse"
-  ) {
-    return `${prefix}flex-direction`;
-  }
-  if (main.startsWith("items-")) return `${prefix}items`;
-  if (main.startsWith("justify-")) return `${prefix}justify`;
-  if (main.startsWith("gap-")) {
-    if (main.startsWith("gap-x-")) return `${prefix}gap-x`;
-    if (main.startsWith("gap-y-")) return `${prefix}gap-y`;
-    return `${prefix}gap`;
+  // Flex / Grid
+  if (/^flex-(row|col)(-reverse)?$/.test(m)) return `${prefix}flex-direction`;
+  if (m.startsWith("items-")) return `${prefix}items`;
+  if (m.startsWith("justify-")) return `${prefix}justify`;
+  if (m.startsWith("gap-")) {
+    return `${prefix}gap${m.startsWith("gap-x-") ? "-x" : m.startsWith("gap-y-") ? "-y" : ""}`;
   }
 
   // Rounded
-  if (main === "rounded" || main.startsWith("rounded-")) {
-    const sideMatch = main.match(
-      /^rounded-(tl|tr|bl|br|ss|se|ee|es|t|b|l|r|s|e)(?:-|$)/,
-    );
-    return sideMatch ? `${prefix}rounded-${sideMatch[1]}` : `${prefix}rounded`;
+  if (m === "rounded" || m.startsWith("rounded-")) {
+    const s = m.match(/^rounded-(tl|tr|bl|br|ss|se|ee|es|t|b|l|r|s|e)(?:-|$)/);
+    return `${prefix}rounded${s ? `-${s[1]}` : ""}`;
   }
 
   // Ring utilities
-  if (main === "ring" || main.startsWith("ring-")) {
-    const val = main === "ring" ? "" : main.slice(5);
-    if (val === "" || val === "inset" || /^\d+$/.test(val))
-      return `${prefix}ring-width`;
+  if (m === "ring" || m.startsWith("ring-")) {
+    const val = m === "ring" ? "" : m.slice(5);
+    if (!val || val === "inset" || /^\d+$/.test(val)) return `${prefix}ring-width`;
     if (val.startsWith("offset-")) {
-      const offsetVal = val.slice(7);
-      return /^\d+$/.test(offsetVal)
+      return /^\d+$/.test(val.slice(7))
         ? `${prefix}ring-offset-width`
         : `${prefix}ring-offset-color`;
     }
     return `${prefix}ring-color`;
   }
 
-  // Shadow & Opacity & Z-Index
-  if (main === "shadow" || main.startsWith("shadow-")) return `${prefix}shadow`;
-  if (main.startsWith("opacity-")) return `${prefix}opacity`;
-  if (/^-?z-/.test(main)) return `${prefix}z`;
-
-  // Font weight
+  if (m === "shadow" || m.startsWith("shadow-")) return `${prefix}shadow`;
+  if (m.startsWith("opacity-")) return `${prefix}opacity`;
+  if (/^-?z-/.test(m)) return `${prefix}z`;
   if (
     /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/.test(
-      main,
+      m,
     )
   ) {
     return `${prefix}font-weight`;
   }
 
-  // Text utilities
-  if (main.startsWith("text-")) {
-    const val = main.slice(5);
-    if (TEXT_SIZES.has(val) || /^\[(\d+|length:)/.test(val))
+  if (m.startsWith("text-")) {
+    const val = m.slice(5);
+    if (/^(xs|sm|base|lg|[2-9]?xl)$|^\[(\d+|length:)/.test(val)) {
       return `${prefix}text-size`;
-    if (TEXT_ALIGNS.has(val)) return `${prefix}text-align`;
-    if (
-      val === "ellipsis" ||
-      val === "clip" ||
-      val === "wrap" ||
-      val === "nowrap" ||
-      val === "balance" ||
-      val === "pretty"
-    ) {
+    }
+    if (/^(left|center|right|justify|start|end)$/.test(val)) {
+      return `${prefix}text-align`;
+    }
+    if (/^(ellipsis|clip|wrap|nowrap|balance|pretty)$/.test(val)) {
       return `${prefix}text-wrap-overflow`;
     }
     return `${prefix}text-color`;
   }
 
-  // Background utilities
-  if (main.startsWith("bg-")) {
-    const val = main.slice(3);
-    if (val === "auto" || val === "cover" || val === "contain")
-      return `${prefix}bg-size`;
-    if (val === "fixed" || val === "local" || val === "scroll")
-      return `${prefix}bg-attachment`;
-    if (
-      val === "repeat" ||
-      val === "no-repeat" ||
-      val === "repeat-x" ||
-      val === "repeat-y"
-    )
-      return `${prefix}bg-repeat`;
+  if (m.startsWith("bg-")) {
+    const val = m.slice(3);
+    if (/^(auto|cover|contain)$/.test(val)) return `${prefix}bg-size`;
+    if (/^(fixed|local|scroll)$/.test(val)) return `${prefix}bg-attachment`;
+    if (/^(no-)?repeat(-[xy])?$/.test(val)) return `${prefix}bg-repeat`;
     return `${prefix}bg-color`;
   }
 
-  // Border utilities
-  if (main === "border") return `${prefix}border-width`;
-  if (main.startsWith("border-")) {
-    const val = main.slice(7);
-    if (BORDER_STYLES.has(val)) return `${prefix}border-style`;
+  if (m === "border") return `${prefix}border-width`;
+  if (m.startsWith("border-")) {
+    const val = m.slice(7);
+    if (/^(solid|dashed|dotted|double|none)$/.test(val)) {
+      return `${prefix}border-style`;
+    }
     const dirMatch = val.match(/^(t|b|l|r|x|y|s|e)(?:-(.+))?$/);
     if (dirMatch) {
-      const dir = dirMatch[1];
       const rest = dirMatch[2];
-      if (!rest || /^\d+$|^\[(\d+|length:)/.test(rest))
-        return `${prefix}border-${dir}-width`;
-      return `${prefix}border-${dir}-color`;
+      return `${prefix}border-${dirMatch[1]}-${!rest || /^\d+$|^\[(\d+|length:)/.test(rest) ? "width" : "color"}`;
     }
     if (/^\d+$|^\[(\d+|length:)/.test(val)) return `${prefix}border-width`;
     return `${prefix}border-color`;

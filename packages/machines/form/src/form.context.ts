@@ -312,3 +312,123 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
     },
   };
 }
+
+export interface FormFieldSyncOptions {
+  component?: any;
+  bus?: EventBus<FormBusEvents> | undefined;
+  id?: string | undefined;
+  getFormId?: (() => string | undefined) | undefined;
+  getName: () => string;
+  getValue: () => any;
+  setValue: (value: any) => void;
+  resetValue: () => void;
+  focus?: (() => void) | undefined;
+  getRules?: (() => FormRule[]) | undefined;
+  getValidateOn?: (() => FormValidateOn | undefined) | undefined;
+  isDisabled?: (() => boolean) | undefined;
+  onValidationChange?: ((isValid: boolean) => void) | undefined;
+  onStateChange?:
+    | ((state: {
+        fieldDisabled?: boolean | undefined;
+        fieldSize?: any;
+        formDisabled?: boolean | undefined;
+        formReadOnly?: boolean | undefined;
+      }) => void)
+    | undefined;
+}
+
+export function setupFormFieldSync(
+  options: FormFieldSyncOptions,
+  refs: any,
+): BoundFormField {
+  refs.get("formField")?.dispose();
+  refs.set("currentFormBus", options.bus);
+
+  let suppressEmit = false;
+
+  const bound = bindFormField({
+    component: options.component,
+    bus: options.bus,
+    id: options.id ?? "field",
+    getFormId: options.getFormId,
+    getName: options.getName,
+    getValue: options.getValue,
+    setValue: (rawVal: any) => {
+      suppressEmit = true;
+      try {
+        options.setValue(rawVal);
+      } finally {
+        suppressEmit = false;
+      }
+    },
+    resetValue: () => {
+      suppressEmit = true;
+      try {
+        options.resetValue();
+      } finally {
+        suppressEmit = false;
+      }
+    },
+    focus: options.focus,
+    getRules: options.getRules,
+    getValidateOn: options.getValidateOn,
+    isDisabled: options.isDisabled,
+    onValidationChange: (valState) => {
+      options.onValidationChange?.(valState.isValid);
+    },
+    onFormStateChange: ({ disabled, readOnly }) => {
+      options.onStateChange?.({
+        formDisabled: disabled,
+        formReadOnly: readOnly,
+      });
+    },
+  });
+
+  const bus = bound.bus;
+  const disposers: Array<() => void> = [];
+  if (bus) {
+    disposers.push(
+      bus.on("field:state", (payload: any) => {
+        const currentName = options.getName();
+        if (!payload?.name || payload.name === currentName) {
+          options.onStateChange?.({
+            fieldDisabled: payload.disabled,
+            fieldSize: payload.size,
+          });
+        }
+      }),
+    );
+    disposers.push(
+      bus.on("form:state", (payload: any) => {
+        options.onStateChange?.({
+          formDisabled: payload?.disabled,
+          formReadOnly: payload?.readOnly,
+        });
+      }),
+    );
+  }
+  refs.set("busDisposers", disposers);
+
+  const origEmitInput = bound.emitInput.bind(bound);
+  const origEmitChange = bound.emitChange.bind(bound);
+  bound.emitInput = (val: any) => {
+    if (!suppressEmit) origEmitInput(val);
+  };
+  bound.emitChange = (val: any) => {
+    if (!suppressEmit) origEmitChange(val);
+  };
+
+  refs.set("formField", bound);
+  return bound;
+}
+
+export function cleanupFormFieldSync(refs: any) {
+  refs.get("formField")?.dispose();
+  refs.set("formField", undefined);
+  refs.set("currentFormBus", undefined);
+  const disposers = refs.get("busDisposers") ?? [];
+  for (let i = 0; i < disposers.length; i++) {
+    disposers[i]?.();
+  }
+  refs.set("busDisposers", []);
+}

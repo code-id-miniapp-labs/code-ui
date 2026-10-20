@@ -8,3 +8,7 @@ export {
   computedBehavior,
   createComponentOptions,
 } from "@code-ui/miniapp";
+
+export function getApi<T = any>(instance: any, key: string): T | undefined {
+  return instance.__codeUiApi ?? instance.data[key];
+}

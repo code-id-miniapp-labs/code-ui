@@ -38,9 +38,6 @@ export function createMachine<
   T extends MachineSchema = any,
   Base extends MachineSchema = any,
 >(config: MachineConfig<T, Base>): Machine<T> {
-  if (config && "extend" in config && config.extend) {
-    return extendMachine<T, Base>(config.extend, config);
-  }
   ensureStateIndex(config as Machine<T>);
   return config as Machine<T>;
 }

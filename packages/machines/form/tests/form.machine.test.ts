@@ -10,12 +10,12 @@ import {
 import {
   formMachine,
   connectForm,
-  formRules,
   injectFormBus,
   bindFormField,
   type FormProps,
   type FormSchema,
 } from "../src";
+import { formRules } from "../src/form.rules";
 
 const flush = () => new Promise((resolve) => queueMicrotask(resolve));
 

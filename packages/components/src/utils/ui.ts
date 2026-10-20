@@ -1,5 +1,5 @@
 import { getComponentConfig, getConfig } from "@code-ui/core";
-import { dedupeClasses, escapeClass, tv } from "./variants";
+import { cn, tv } from "./variants";
 
 const themeCache = new Map<string, any>();
 let cachedSource: unknown;
@@ -115,7 +115,7 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
           if (!override) return baseOut;
           return typeof override === "function"
             ? override(baseOut)
-            : dedupeClasses(baseOut, override);
+            : cn(baseOut, override);
         };
       } else {
         wrappedSlots[key] = origFn;
@@ -143,13 +143,12 @@ export function resolveSlots<
   for (const slot in themeFns) {
     const fn = themeFns[slot];
     if (typeof fn === "function") {
-      const slotClass = fn({
+      result[slot] = fn({
         class: [
           localUI?.[slot],
           slot === "root" ? localClass : undefined,
         ].filter(Boolean),
       });
-      result[slot] = escapeClass(dedupeClasses(slotClass));
     } else {
       result[slot] = "";
     }

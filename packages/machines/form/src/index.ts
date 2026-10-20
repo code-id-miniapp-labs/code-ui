@@ -5,16 +5,22 @@ export {
   provideFormBus,
   injectFormBus,
   bindFormField,
+  setupFormFieldSync,
+  cleanupFormFieldSync,
   resolveContextRequest,
   CONTEXT_REQUEST_EVENT,
 } from "./form.context";
-export type { BindFormFieldOptions, BoundFormField } from "./form.context";
+export type {
+  BindFormFieldOptions,
+  BoundFormField,
+  FormFieldSyncOptions,
+} from "./form.context";
 export {
   evaluateRules,
   runRules,
   shouldValidateOnTrigger,
-  formRules,
-} from "./form.rules";
+  registerRuleEvaluator,
+} from "./form.eval";
 export {
   formMachine,
   collectFormValues,
