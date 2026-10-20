@@ -27,22 +27,25 @@ export function compatMiniProgramTransforms(css: string): string {
 
   if (result.includes("translate:")) {
     result = result.replace(
-      /translate:\s*var\(--tw-translate-x\)\s+var\(--tw-translate-y\);/g,
-      "-webkit-transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n    translate: var(--tw-translate-x) var(--tw-translate-y);",
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*translate\s*\([^;]+\)\s*;\s*)*translate\s*:\s*var\(--tw-translate-x\)\s+var\(--tw-translate-y\)\s*;/g,
+      (_, indent) =>
+        `${indent}-webkit-transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}translate: var(--tw-translate-x) var(--tw-translate-y);`,
     );
   }
 
   if (result.includes("scale:")) {
     result = result.replace(
-      /scale:\s*var\(--tw-scale-x\)\s+var\(--tw-scale-y\);/g,
-      "-webkit-transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n    transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n    scale: var(--tw-scale-x) var(--tw-scale-y);",
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*scale\s*\([^;]+\)\s*;\s*)*scale\s*:\s*var\(--tw-scale-x\)\s+var\(--tw-scale-y\)\s*;/g,
+      (_, indent) =>
+        `${indent}-webkit-transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}scale: var(--tw-scale-x) var(--tw-scale-y);`,
     );
   }
 
   if (result.includes("rotate:")) {
     result = result.replace(
-      /(?<![\w-])rotate:\s*([^;]+);/g,
-      "-webkit-transform: rotate($1);\n    transform: rotate($1);\n    rotate: $1;",
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*rotate\s*\([^;]+\)\s*;\s*)*(?<![\w-])rotate\s*:\s*([^;]+);/g,
+      (_, indent, val) =>
+        `${indent}-webkit-transform: rotate(${val});\n${indent}transform: rotate(${val});\n${indent}rotate: ${val};`,
     );
   }
 

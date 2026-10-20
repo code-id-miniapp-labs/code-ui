@@ -4,7 +4,7 @@ export default defineConfig({
   prefix: "cui",
   ui: {
     colors: {
-      primary: "stone",
+      primary: "red",
     },
   },
   components: {

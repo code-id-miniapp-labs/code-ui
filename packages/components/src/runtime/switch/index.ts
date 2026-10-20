@@ -28,8 +28,8 @@ Component(
     behaviors: [switchBehavior, computedBehavior],
 
     options: {
-      multipleSlots: true,
       addGlobalClass: true,
+      multipleSlots: true,
       styleIsolation: "apply-shared",
       virtualHost: true,
     },

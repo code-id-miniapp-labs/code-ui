@@ -40,7 +40,10 @@ function getEffectiveLength(value: any): number {
   return String(value).length;
 }
 
-function attachRuleJSON(fn: FormRuleFn, descriptor: FormRuleObject): FormRuleFn {
+function attachRuleJSON(
+  fn: FormRuleFn,
+  descriptor: FormRuleObject,
+): FormRuleFn {
   Object.defineProperty(fn, "toJSON", {
     value: () => descriptor,
     enumerable: false,
@@ -69,10 +72,7 @@ if (
   } catch {}
 }
 
-export function parseRegex(
-  pattern: unknown,
-  flags?: string,
-): RegExp | null {
+export function parseRegex(pattern: unknown, flags?: string): RegExp | null {
   if (pattern instanceof RegExp) {
     return pattern;
   }
@@ -93,12 +93,12 @@ export function parseRegex(
       patternFlags?: unknown;
     };
     if (typeof obj.source === "string" && obj.source.length > 0) {
-      const f = typeof obj.flags === "string" ? obj.flags : flags ?? "";
+      const f = typeof obj.flags === "string" ? obj.flags : (flags ?? "");
       return new RegExp(obj.source, f);
     }
     if (typeof obj.pattern === "string" && obj.pattern.length > 0) {
       const f =
-        typeof obj.patternFlags === "string" ? obj.patternFlags : flags ?? "";
+        typeof obj.patternFlags === "string" ? obj.patternFlags : (flags ?? "");
       return new RegExp(obj.pattern, f);
     }
   }
@@ -153,7 +153,6 @@ function expandRuleObject(ruleObj: FormRuleObject): FormRuleFn[] {
 }
 
 /**
- * Evaluates an array of Vuetify-style validation rules against `value`.
  * Returns `string[]` synchronously when all rules are synchronous, or
  * `Promise<string[]>` when one or more rules return a Promise.
  */
@@ -296,10 +295,10 @@ export function shouldValidateOnTrigger(
  */
 export const formRules = {
   required(message = "This field is required"): FormRuleFn {
-    return attachRuleJSON(
-      (value: any) => !isEmpty(value) || message,
-      { required: true, message },
-    );
+    return attachRuleJSON((value: any) => !isEmpty(value) || message, {
+      required: true,
+      message,
+    });
   },
 
   minLength(min: number, message?: string): FormRuleFn {
