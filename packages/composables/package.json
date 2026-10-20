@@ -1,0 +1,37 @@
+{
+  "name": "@code-ui/composables",
+  "version": "0.0.1",
+  "description": "Vue-inspired reactive composition functions and hooks for WeChat MiniProgram",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@code-ui/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "miniprogram-api-typings": "^5.2.3",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.5.4",
+    "@code-ui/miniapp": "workspace:*",
+    "@code-ui/core": "workspace:*"
+  }
+}

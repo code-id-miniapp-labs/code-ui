@@ -1,7 +1,7 @@
 {
   "name": "@code-ui/miniapp",
   "version": "0.0.1",
-  "description": "MiniApp framework runtime and useMachine adapter for code-ui",
+  "description": "MiniApp framework runtime and machine adapter for code-ui",
   "files": [
     "dist"
   ],

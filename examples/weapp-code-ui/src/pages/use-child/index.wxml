@@ -1,0 +1,88 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">useChild Composable</view>
+    <view class="text-xs text-neutral-500 mt-1 leading-relaxed">
+      Replaces scoped slots in MiniProgram Base Library 2.x by reactively mirroring child state directly into parent data with zero event emitters.
+    </view>
+  </view>
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. PinInput Scoped Slot Replacement -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="flex items-center justify-between mb-1">
+        <view class="text-sm font-bold text-neutral-900">OTP Code (Child Component)</view>
+        <view class="text-[11px] font-semibold px-2 py-0.5 rounded-full {{otp.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}}">
+          {{otp.isCompleted ? '✓ Completed' : 'In Progress'}}
+        </view>
+      </view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Parent renders custom progress & status UI using child's internal state.
+      </view>
+      <view class="flex flex-col gap-4">
+        <!-- The Child Component (Note: NO bind:change or bind:snapshot needed!) -->
+        <c-pin-input id="otpInput" length="{{4}}" label="Enter 4-Digit Code" />
+        <!-- Custom Scoped UI rendered by PARENT using {{ otp.* }} -->
+        <view class="bg-neutral-50 p-3 rounded-xl border border-neutral-200 flex flex-col gap-2">
+          <view class="flex items-center justify-between text-xs">
+            <text class="text-neutral-500">Parent Reading Digits:</text>
+            <text class="font-mono font-bold text-neutral-900">
+              {{otp.value[0] || '·'}} {{otp.value[1] || '·'}} {{otp.value[2] || '·'}} {{otp.value[3] || '·'}}
+            </text>
+          </view>
+          <view class="flex items-center justify-between text-xs">
+            <text class="text-neutral-500">Filled Count:</text>
+          </view>
+          <!-- Progress Bar rendered by Parent -->
+          <view class="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden mt-1">
+            <view class="h-full bg-emerald-500 transition-all duration-200" style="width: {{(otp.valueLength || 0) * 25}}%;" />
+          </view>
+        </view>
+        <view class="flex gap-2">
+          <c-button size="sm" variant="outline" color="neutral" bind:tap="handleClearOtp">
+            Reset PIN (via api.clear())
+          </c-button>
+        </view>
+      </view>
+    </view>
+    <!-- 2. Text Input Scoped Slot Replacement -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Text Input with Parent Validation</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Parent displays dynamic feedback without child needing custom slot props.
+      </view>
+      <view class="flex flex-col gap-3">
+        <!-- Second Child Component -->
+        <c-input id="userInput" label="Username" placeholder="e.g. jandoe" />
+        <!-- Parent-rendered live helper text -->
+        <view class="flex items-center justify-between text-xs px-1">
+          <view wx:if="{{!user.value}}" class="text-neutral-400">Username is required</view>
+          <view wx:elif="{{user.value.length < 3}}" class="text-amber-600 font-medium">
+            Must be at least 3 characters
+          </view>
+          <view wx:else class="text-emerald-600 font-medium">✓ Looks good!</view>
+          <view class="text-neutral-400 font-mono">{{user.value.length || 0}} chars</view>
+        </view>
+        <view class="flex gap-2 mt-1">
+          <c-button size="sm" variant="outline" color="neutral" bind:tap="handleClearUser">
+            Clear Username
+          </c-button>
+        </view>
+      </view>
+    </view>
+    <!-- 3. Submitting Form via JS Snapshot Access -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Synchronous JS Snapshot</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Read state synchronously in JS (e.g. child.getSnapshot()) without event handlers.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-button color="primary" block="{{true}}" bind:tap="handleSubmit">
+          Verify & Submit Form
+        </c-button>
+        <view wx:if="{{submitResult}}" class="p-3 rounded-xl text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+          {{submitResult}}
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

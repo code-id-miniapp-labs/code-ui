@@ -88,7 +88,8 @@ Page({
   handleSwitchFormError() {
     this.setData({
       switchFormStatus: "Error",
-      switchFormMessage: "Please accept the required agreement switch before submitting.",
+      switchFormMessage:
+        "Please accept the required agreement switch before submitting.",
     });
   },
 });

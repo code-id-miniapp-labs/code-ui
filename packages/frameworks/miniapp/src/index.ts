@@ -27,8 +27,6 @@ if (
 export { MiniappMachine } from "./machine";
 export { connectToPage, connectToComponent } from "./connect";
 export type { ConnectFn, MiniAppInstance } from "./connect";
-export { useMachine } from "./use-machine";
-export type { UseMachineOptions, UseMachineReturn } from "./use-machine";
 export {
   createMachineBehavior,
   createProperties,
