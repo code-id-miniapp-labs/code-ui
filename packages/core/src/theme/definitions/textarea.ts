@@ -12,7 +12,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative flex flex-col w-full box-border rounded-lg border transition-colors focus-within:outline-none",
-      base: "w-full box-border border-0 p-0 m-0 bg-transparent text-neutral-900 focus:outline-none disabled:cursor-not-allowed disabled:text-neutral-400 resize-none leading-normal min-h-5",
+      base: "w-full box-border border-0 p-0 m-0 bg-transparent text-neutral-900 focus:outline-none disabled:cursor-not-allowed disabled:text-neutral-400 resize-none leading-normal min-h-12",
       placeholder: "text-neutral-400",
       leading:
         "absolute start-0 top-0 flex items-center justify-center pointer-events-none text-neutral-400",
@@ -47,7 +47,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
       size: {
         xs: {
           root: "text-xs p-2 min-h-16",
-          base: "text-xs min-h-4",
+          base: "text-xs min-h-8",
           placeholder: "text-xs",
           leading: "ps-2 pt-2",
           trailing: "pe-2 pt-2",
@@ -58,7 +58,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
         },
         sm: {
           root: "text-xs p-2.5 min-h-20",
-          base: "text-xs min-h-4",
+          base: "text-xs min-h-8",
           placeholder: "text-xs",
           leading: "ps-2.5 pt-2.5",
           trailing: "pe-2.5 pt-2.5",
@@ -69,7 +69,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
         },
         md: {
           root: "text-sm p-3 min-h-24",
-          base: "text-sm min-h-5",
+          base: "text-sm min-h-12",
           placeholder: "text-sm",
           leading: "ps-3 pt-3",
           trailing: "pe-3 pt-3",
@@ -80,7 +80,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
         },
         lg: {
           root: "text-base p-3.5 min-h-28",
-          base: "text-base min-h-6",
+          base: "text-base min-h-16",
           placeholder: "text-base",
           leading: "ps-3.5 pt-3.5",
           trailing: "pe-3.5 pt-3.5",
@@ -91,7 +91,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
         },
         xl: {
           root: "text-lg p-4 min-h-32",
-          base: "text-lg min-h-7",
+          base: "text-lg min-h-20",
           placeholder: "text-lg",
           leading: "ps-4 pt-4",
           trailing: "pe-4 pt-4",

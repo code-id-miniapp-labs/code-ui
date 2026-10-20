@@ -190,10 +190,15 @@ export default defineConfig({
     cssMinify: "lightningcss",
     sourcemap: false,
     terserOptions: {
+      toplevel: true,
       compress: {
         drop_debugger: true,
-        passes: 2,
+        drop_console: true,
+        passes: 3,
         module: true,
+      },
+      mangle: {
+        toplevel: true,
       },
       format: {
         comments: false,

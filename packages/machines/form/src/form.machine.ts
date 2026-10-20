@@ -4,19 +4,16 @@ import {
   isEmpty,
   isEqual,
   isPromise,
-  queryRect,
-  queryViewportScrollOffset,
 } from "@code-ui/utils";
 import { provideFormBus } from "./form.context";
 import { defaultFormProps } from "./form.props";
-import { evaluateRules, shouldValidateOnTrigger } from "./form.rules";
+import { evaluateRules, shouldValidateOnTrigger } from "./form.eval";
 import type {
   FormBusEvents,
   FormErrorBag,
   FormFieldError,
   FormFieldRegistration,
   FormFieldState,
-  FormFieldValidationState,
   FormMachine,
   FormRule,
   FormSchema,
@@ -51,37 +48,61 @@ function buildErrorsList(
   errorBag: FormErrorBag,
   fields: Map<string, FormFieldRegistration>,
 ): FormFieldError[] {
-  const list: FormFieldError[] = [];
-  for (const [name, messages] of Object.entries(errorBag)) {
-    if (!messages || messages.length === 0) continue;
-    const reg = fields.get(name);
-    list.push({
+  return Object.entries(errorBag)
+    .filter(([, msgs]) => msgs && msgs.length > 0)
+    .map(([name, messages]) => ({
       name,
-      id: reg?.id,
+      id: fields.get(name)?.id,
       message: messages[0] ?? "Invalid value",
       messages: [...messages],
-    });
-  }
+    }));
+}
+
+function toggleArrayItem(
+  arr: string[] | undefined,
+  item: string,
+  include: boolean,
+): string[] {
+  const list = arr ?? [];
+  const has = list.includes(item);
+  if (include && !has) return [...list, item];
+  if (!include && has) return list.filter((n) => n !== item);
   return list;
+}
+
+function makeFieldState(
+  name: string,
+  id: string,
+  value: any,
+  initialValue: any,
+  errors: string[] = [],
+  flags: {
+    isDirty?: boolean;
+    isTouched?: boolean;
+    isFocused?: boolean;
+    isValidating?: boolean;
+  } = {},
+): FormFieldState {
+  return {
+    name,
+    id,
+    value,
+    initialValue,
+    errors,
+    errorMessage: errors[0] ?? "",
+    isValid: errors.length === 0,
+    isDirty: flags.isDirty ?? !isEqual(value, initialValue),
+    isTouched: Boolean(flags.isTouched),
+    isFocused: Boolean(flags.isFocused),
+    isValidating: Boolean(flags.isValidating),
+  };
 }
 
 function notifyFieldValidation(
   field: FormFieldRegistration | undefined,
   state: FormFieldState,
 ) {
-  if (!field?.onValidationChange) return;
-  const payload: FormFieldValidationState = {
-    name: state.name,
-    id: state.id,
-    errors: state.errors,
-    errorMessage: state.errorMessage,
-    isValid: state.isValid,
-    isDirty: state.isDirty,
-    isTouched: state.isTouched,
-    isFocused: state.isFocused,
-    isValidating: state.isValidating,
-  };
-  field.onValidationChange(payload);
+  field?.onValidationChange?.(state);
 }
 
 export function collectFormValues(service: ServiceLike): Record<string, any> {
@@ -154,19 +175,19 @@ function applyFieldErrors(
     (service.context.get("initialValues") ?? {})[name] ??
     currentValue;
 
-  const updatedFieldState: FormFieldState = {
+  const updatedFieldState = makeFieldState(
     name,
-    id: field?.id ?? existingState?.id ?? name,
-    value: currentValue,
+    field?.id ?? existingState?.id ?? name,
+    currentValue,
     initialValue,
-    errors: [...messages],
-    errorMessage: messages[0] ?? "",
-    isValid: messages.length === 0,
-    isDirty: existingState?.isDirty ?? !isEqual(currentValue, initialValue),
-    isTouched: existingState?.isTouched ?? false,
-    isFocused: existingState?.isFocused ?? false,
-    isValidating,
-  };
+    messages,
+    {
+      isDirty: existingState?.isDirty ?? !isEqual(currentValue, initialValue),
+      isTouched: Boolean(existingState?.isTouched),
+      isFocused: Boolean(existingState?.isFocused),
+      isValidating,
+    },
+  );
 
   service.context.set("errorBag", nextErrorBag);
   service.context.set("errors", nextErrors);
@@ -205,19 +226,18 @@ export function validateSingleField(
   const outcome = evaluateRules(value, rules, allValues);
 
   if (Array.isArray(outcome)) {
-    const validating = service.context
-      .get("validatingFields")
-      .filter((n) => n !== name);
-    service.context.set("validatingFields", validating);
+    service.context.set(
+      "validatingFields",
+      toggleArrayItem(service.context.get("validatingFields"), name, false),
+    );
     applyFieldErrors(service, name, outcome, false);
     return outcome;
   }
 
-  // Mark field as validating
-  const currentValidating = service.context.get("validatingFields");
-  if (!currentValidating.includes(name)) {
-    service.context.set("validatingFields", [...currentValidating, name]);
-  }
+  service.context.set(
+    "validatingFields",
+    toggleArrayItem(service.context.get("validatingFields"), name, true),
+  );
 
   const prevStates = service.context.get("fieldStates");
   const existing = prevStates[name];
@@ -236,9 +256,11 @@ export function validateSingleField(
       return service.context.get("errorBag")[name] ?? [];
     }
 
-    const remainingValidating = service.context
-      .get("validatingFields")
-      .filter((n) => n !== name);
+    const remainingValidating = toggleArrayItem(
+      service.context.get("validatingFields"),
+      name,
+      false,
+    );
     service.context.set("validatingFields", remainingValidating);
 
     applyFieldErrors(service, name, asyncMessages, false);
@@ -345,21 +367,19 @@ export function registerFormField(
   });
 
   const existingErrors = (service.context.get("errorBag") ?? {})[name] ?? [];
-  const fieldState: FormFieldState = {
+  const fieldState = makeFieldState(
     name,
-    id: id || name,
-    value: fieldValue,
-    initialValue: initialVal,
-    errors: existingErrors,
-    errorMessage: existingErrors[0] ?? "",
-    isValid: existingErrors.length === 0,
-    isDirty: !isEqual(fieldValue, initialVal),
-    isTouched: (service.context.get("touchedFields") ?? []).includes(name),
-    isFocused: service.context.get("focusedField") === name,
-    isValidating: (service.context.get("validatingFields") ?? []).includes(
-      name,
-    ),
-  };
+    id || name,
+    fieldValue,
+    initialVal,
+    existingErrors,
+    {
+      isDirty: !isEqual(fieldValue, initialVal),
+      isTouched: service.context.get("touchedFields")?.includes(name),
+      isFocused: service.context.get("focusedField") === name,
+      isValidating: service.context.get("validatingFields")?.includes(name),
+    },
+  );
 
   const prevFieldStates = service.context.get("fieldStates") ?? {};
   service.context.set("fieldStates", {
@@ -412,18 +432,14 @@ export function unregisterFormField(
   delete nextFieldStates[name];
   service.context.set("fieldStates", nextFieldStates);
 
-  service.context.set(
-    "dirtyFields",
-    service.context.get("dirtyFields").filter((n) => n !== name),
-  );
-  service.context.set(
-    "touchedFields",
-    service.context.get("touchedFields").filter((n) => n !== name),
-  );
-  const nextValidating = service.context
-    .get("validatingFields")
-    .filter((n) => n !== name);
-  service.context.set("validatingFields", nextValidating);
+  const rem = (k: any) =>
+    service.context.set(
+      k,
+      toggleArrayItem(service.context.get(k), name, false),
+    );
+  rem("dirtyFields");
+  rem("touchedFields");
+  rem("validatingFields");
 
   if (service.context.get("focusedField") === name) {
     service.context.set("focusedField", null);
@@ -432,7 +448,7 @@ export function unregisterFormField(
   const currentState = service.state.get();
   if (
     nextErrors.length === 0 &&
-    nextValidating.length === 0 &&
+    (service.context.get("validatingFields") ?? []).length === 0 &&
     (currentState === "error" || currentState === "validating")
   ) {
     service.state.set("idle");
@@ -475,15 +491,10 @@ export function handleFieldInteraction(
     service.context.set("values", nextValues);
 
     isDirty = !isEqual(nextValue, initialValue);
-    const dirtyFields = service.context.get("dirtyFields") ?? [];
-    if (isDirty && !dirtyFields.includes(name)) {
-      service.context.set("dirtyFields", [...dirtyFields, name]);
-    } else if (!isDirty && dirtyFields.includes(name)) {
-      service.context.set(
-        "dirtyFields",
-        dirtyFields.filter((n) => n !== name),
-      );
-    }
+    service.context.set(
+      "dirtyFields",
+      toggleArrayItem(service.context.get("dirtyFields"), name, isDirty),
+    );
 
     if (trigger === "change") {
       service.prop("onValueChange")?.({ ...nextValues });
@@ -507,19 +518,19 @@ export function handleFieldInteraction(
   }
 
   const existingErrors = (service.context.get("errorBag") ?? {})[name] ?? [];
-  const updatedState: FormFieldState = {
+  const updatedState = makeFieldState(
     name,
-    id: field?.id ?? prevState?.id ?? name,
-    value: nextValue,
+    field?.id ?? prevState?.id ?? name,
+    nextValue,
     initialValue,
-    errors: existingErrors,
-    errorMessage: existingErrors[0] ?? "",
-    isValid: existingErrors.length === 0,
-    isDirty,
-    isTouched,
-    isFocused,
-    isValidating: prevState?.isValidating ?? false,
-  };
+    existingErrors,
+    {
+      isDirty,
+      isTouched,
+      isFocused,
+      isValidating: Boolean(prevState?.isValidating),
+    },
+  );
 
   service.context.set("fieldStates", {
     ...prevStates,
@@ -545,25 +556,12 @@ export function focusFirstInvalidField(service: ServiceLike): boolean {
   const errorBag = service.context.get("errorBag");
   const fields = service.refs.get("fields");
 
-  // Prioritize fields in registration order
   for (const [name, reg] of fields.entries()) {
-    const errs = errorBag[name];
-    if (errs && errs.length > 0 && typeof reg.focus === "function") {
+    if (errorBag[name]?.length && typeof reg.focus === "function") {
       reg.focus();
       return true;
     }
   }
-
-  // Fallback to errorBag keys order
-  for (const name of Object.keys(errorBag)) {
-    const errs = errorBag[name];
-    const reg = fields.get(name);
-    if (errs && errs.length > 0 && typeof reg?.focus === "function") {
-      reg.focus();
-      return true;
-    }
-  }
-
   return false;
 }
 
@@ -586,22 +584,14 @@ export async function scrollToFirstInvalidField(
   if (!targetReg) return false;
 
   try {
-    const selector = `#${targetReg.id}`;
-    const [rect, viewport] = await Promise.all([
-      queryRect(selector, targetReg.component ?? service.scope.component),
-      queryViewportScrollOffset(),
-    ]);
-
-    if (rect && viewport) {
-      const scrollTop = Math.max(
-        0,
-        viewport.scrollTop + rect.top - scrollOffset,
-      );
-      const wxGlobal = (globalThis as Record<string, any>).wx;
-      if (wxGlobal && typeof wxGlobal.pageScrollTo === "function") {
-        wxGlobal.pageScrollTo({ scrollTop, duration: 250 });
-        return true;
-      }
+    const wxGlobal = (globalThis as Record<string, any>).wx;
+    if (wxGlobal && typeof wxGlobal.pageScrollTo === "function") {
+      wxGlobal.pageScrollTo({
+        selector: `#${targetReg.id}`,
+        offsetTop: -scrollOffset,
+        duration: 250,
+      });
+      return true;
     }
   } catch {
     // Ignore in non-MiniApp test environments
@@ -709,19 +699,12 @@ export function resetFormFields(
     nextTouched = nextTouched.filter((n) => n !== name);
     nextValidating = nextValidating.filter((n) => n !== name);
 
-    const resetState: FormFieldState = {
+    const resetState = makeFieldState(
       name,
-      id: reg?.id ?? prevFieldStates[name]?.id ?? name,
-      value: restoredVal,
-      initialValue: cloneFieldValue(restoredVal),
-      errors: [],
-      errorMessage: "",
-      isValid: true,
-      isDirty: false,
-      isTouched: false,
-      isFocused: false,
-      isValidating: false,
-    };
+      reg?.id ?? prevFieldStates[name]?.id ?? name,
+      restoredVal,
+      cloneFieldValue(restoredVal),
+    );
     nextFieldStates[name] = resetState;
     notifyFieldValidation(reg, resetState);
   }
@@ -757,48 +740,36 @@ export function setFormErrors(
   const normalizedBag: FormErrorBag = {};
 
   if (Array.isArray(input)) {
-    for (let i = 0; i < input.length; i++) {
-      const item = input[i];
-      if (!item || !item.name) continue;
-      const msgs =
-        item.messages && item.messages.length > 0
-          ? item.messages
-          : item.message
-            ? [item.message]
-            : [];
-      if (msgs.length > 0) {
-        normalizedBag[item.name] = [...msgs];
-      }
+    for (const item of input) {
+      if (!item?.name) continue;
+      const msgs = item.messages?.length
+        ? item.messages
+        : item.message
+          ? [item.message]
+          : [];
+      if (msgs.length) normalizedBag[item.name] = [...msgs];
     }
   } else if (input && typeof input === "object") {
     for (const [name, raw] of Object.entries(input)) {
       const msgs = Array.isArray(raw)
-        ? raw.filter((m) => Boolean(m && m.trim()))
+        ? raw.filter(Boolean)
         : typeof raw === "string" && raw.trim()
           ? [raw]
           : [];
-      if (msgs.length > 0) {
-        normalizedBag[name] = msgs;
-      }
+      if (msgs.length) normalizedBag[name] = msgs;
     }
   }
 
-  // Clear previously errored fields that are not in the new errorBag
-  const prevErrorBag = service.context.get("errorBag");
-  const allAffectedNames = new Set<string>([
-    ...Object.keys(prevErrorBag),
+  const allAffected = new Set([
+    ...Object.keys(service.context.get("errorBag")),
     ...Object.keys(normalizedBag),
   ]);
-
-  for (const name of allAffectedNames) {
-    const msgs = normalizedBag[name] ?? [];
-    applyFieldErrors(service, name, msgs, false);
+  for (const name of allAffected) {
+    applyFieldErrors(service, name, normalizedBag[name] ?? [], false);
   }
 
-  const hasAnyError = Object.keys(normalizedBag).length > 0;
-  service.state.set(hasAnyError ? "error" : "idle");
-
-  // Ensure error list reflects normalizedBag
+  const hasAny = Object.keys(normalizedBag).length > 0;
+  service.state.set(hasAny ? "error" : "idle");
   service.context.set("errors", buildErrorsList(normalizedBag, fields));
 }
 
@@ -819,11 +790,7 @@ export function setFormValues(
     reg?.setValue?.(val);
 
     const isDirty = !isEqual(val, initialValues[name]);
-    if (isDirty && !nextDirty.includes(name)) {
-      nextDirty.push(name);
-    } else if (!isDirty && nextDirty.includes(name)) {
-      nextDirty = nextDirty.filter((n) => n !== name);
-    }
+    nextDirty = toggleArrayItem(nextDirty, name, isDirty);
   }
 
   service.context.set("values", prevValues);
@@ -927,95 +894,31 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
   },
 
   context: ({ prop, bindable }) => {
+    const b = <T>(val: T | undefined, def: T) =>
+      bindable<T>(() => ({ value: val, defaultValue: def }));
     const initialVals = cloneFieldValue(
       prop("value") ?? prop("defaultValue") ?? {},
     );
     return {
-      values: bindable<Record<string, any>>(() => ({
-        value: prop("value") ?? undefined,
-        defaultValue: initialVals,
-      })),
-
-      initialValues: bindable<Record<string, any>>(() => ({
-        defaultValue: cloneFieldValue(initialVals),
-      })),
-
-      errorBag: bindable<FormErrorBag>(() => ({
-        defaultValue: {},
-      })),
-
-      errors: bindable<FormFieldError[]>(() => ({
-        defaultValue: [],
-      })),
-
-      fieldStates: bindable<Record<string, FormFieldState>>(() => ({
-        defaultValue: {},
-      })),
-
-      dirtyFields: bindable<string[]>(() => ({
-        defaultValue: [],
-      })),
-
-      touchedFields: bindable<string[]>(() => ({
-        defaultValue: [],
-      })),
-
-      validatingFields: bindable<string[]>(() => ({
-        defaultValue: [],
-      })),
-
-      focusedField: bindable<string | null>(() => ({
-        defaultValue: null,
-      })),
-
-      submitCount: bindable<number>(() => ({
-        defaultValue: 0,
-      })),
-
-      disabled: bindable<boolean>(() => ({
-        value: prop("disabled"),
-        defaultValue: false,
-      })),
-
-      readOnly: bindable<boolean>(() => ({
-        value: prop("readOnly"),
-        defaultValue: false,
-      })),
-
-      focusOnError: bindable<boolean>(() => ({
-        value: prop("focusOnError"),
-        defaultValue: true,
-      })),
-
-      scrollToError: bindable<boolean>(() => ({
-        value: prop("scrollToError"),
-        defaultValue: false,
-      })),
-
-      scrollOffset: bindable<number>(() => ({
-        value: prop("scrollOffset"),
-        defaultValue: 24,
-      })),
-
-      validateOn: bindable<FormValidateOn>(() => ({
-        value: prop("validateOn"),
-        defaultValue: ["input", "change", "blur"],
-      })),
-
-      validateLazy: bindable<boolean>(() => ({
-        value: prop("validateLazy"),
-        defaultValue: false,
-      })),
-
-      showErrors: bindable<boolean>(() => ({
-        value: prop("showErrors"),
-        defaultValue: false,
-      })),
-
-      ui: bindable<any>(() => ({
-        value: prop("ui") ?? {},
-        defaultValue: {},
-      })),
+      values: b<Record<string, any>>(prop("value") ?? undefined, initialVals),
+      initialValues: b<Record<string, any>>(undefined, cloneFieldValue(initialVals)),
+      errorBag: b<FormErrorBag>(undefined, {}),
+      errors: b<FormFieldError[]>(undefined, []),
+      fieldStates: b<Record<string, FormFieldState>>(undefined, {}),
+      dirtyFields: b<string[]>(undefined, []),
+      touchedFields: b<string[]>(undefined, []),
+      validatingFields: b<string[]>(undefined, []),
+      focusedField: b<string | null>(undefined, null),
+      submitCount: b<number>(undefined, 0),
+      disabled: b<boolean>(prop("disabled"), false),
+      readOnly: b<boolean>(prop("readOnly"), false),
+      focusOnError: b<boolean>(prop("focusOnError"), true),
+      scrollToError: b<boolean>(prop("scrollToError"), false),
+      scrollOffset: b<number>(prop("scrollOffset"), 24),
+      validateOn: b<FormValidateOn>(prop("validateOn"), ["input", "change", "blur"]),
+      validateLazy: b<boolean>(prop("validateLazy"), false),
+      showErrors: b<boolean>(prop("showErrors"), false),
+      ui: b<any>(prop("ui") ?? {}, {}),
     };
   },
 
@@ -1159,110 +1062,36 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
         params.refs.set("busDisposers", []);
       },
 
-      handleFieldRegister: (params) => {
-        const event = params.event as { field: FormFieldRegistration };
-        if (event.field) registerFormField(params, event.field);
+      handleFieldRegister: (p) => {
+        const ev = p.event as any;
+        if (ev.field) registerFormField(p, ev.field);
       },
-
-      handleFieldUnregister: (params) => {
-        const event = params.event as { name: string; id?: string };
-        unregisterFormField(params, event.name, event.id);
+      handleFieldUnregister: (p) => {
+        const ev = p.event as any;
+        unregisterFormField(p, ev.name, ev.id);
       },
-
-      handleFieldInput: (params) => {
-        const event = params.event as {
-          name: string;
-          value: any;
-          id?: string;
-        };
-        handleFieldInteraction(params, "input", event);
+      handleFieldInput: (p) => handleFieldInteraction(p, "input", p.event as any),
+      handleFieldChange: (p) => handleFieldInteraction(p, "change", p.event as any),
+      handleFieldBlur: (p) => handleFieldInteraction(p, "blur", p.event as any),
+      handleFieldFocus: (p) => handleFieldInteraction(p, "focus", p.event as any),
+      handleValidate: (p) => {
+        const ev = p.event as any;
+        void validateFormFields(p, ev.name).then((res) => ev.resolve?.(res));
       },
-
-      handleFieldChange: (params) => {
-        const event = params.event as {
-          name: string;
-          value: any;
-          id?: string;
-        };
-        handleFieldInteraction(params, "change", event);
+      handleSubmit: (p) => {
+        const ev = p.event as any;
+        void submitForm(p).then((res) => ev.resolve?.(res));
       },
-
-      handleFieldBlur: (params) => {
-        const event = params.event as {
-          name: string;
-          value?: any;
-          id?: string;
-        };
-        handleFieldInteraction(params, "blur", event);
+      handleReset: (p) => resetFormFields(p, (p.event as any).name),
+      handleResetValidation: (p) => resetFormValidation(p, (p.event as any).name),
+      handleSetErrors: (p) => setFormErrors(p, (p.event as any).errors),
+      handleSetValues: (p) => {
+        const ev = p.event as any;
+        setFormValues(p, ev.values, Boolean(ev.validate));
       },
-
-      handleFieldFocus: (params) => {
-        const event = params.event as {
-          name: string;
-          value?: any;
-          id?: string;
-        };
-        handleFieldInteraction(params, "focus", event);
-      },
-
-      handleValidate: (params) => {
-        const event = params.event as {
-          name?: string | string[];
-          resolve?: (res: FormValidationResult) => void;
-        };
-        void validateFormFields(params, event.name).then((res) => {
-          event.resolve?.(res);
-        });
-      },
-
-      handleSubmit: (params) => {
-        const event = params.event as {
-          resolve?: (res: FormValidationResult) => void;
-        };
-        void submitForm(params).then((res) => {
-          event.resolve?.(res);
-        });
-      },
-
-      handleReset: (params) => {
-        const event = params.event as { name?: string | string[] };
-        resetFormFields(params, event.name);
-      },
-
-      handleResetValidation: (params) => {
-        const event = params.event as { name?: string | string[] };
-        resetFormValidation(params, event.name);
-      },
-
-      handleSetErrors: (params) => {
-        const event = params.event as {
-          errors:
-            | FormErrorBag
-            | Record<string, string | string[]>
-            | FormFieldError[];
-        };
-        setFormErrors(params, event.errors);
-      },
-
-      handleSetValues: (params) => {
-        const event = params.event as {
-          values: Record<string, any>;
-          validate?: boolean;
-        };
-        setFormValues(params, event.values, Boolean(event.validate));
-      },
-
-      handleSetFieldValue: (params) => {
-        const event = params.event as {
-          name: string;
-          value: any;
-          validate?: boolean;
-        };
-        setFormValues(
-          params,
-          { [event.name]: event.value },
-          Boolean(event.validate),
-        );
+      handleSetFieldValue: (p) => {
+        const ev = p.event as any;
+        setFormValues(p, { [ev.name]: ev.value }, Boolean(ev.validate));
       },
     },
   },

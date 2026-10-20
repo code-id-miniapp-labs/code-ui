@@ -1,10 +1,11 @@
 import { createMachine } from "@code-ui/core";
-import { bindFormField } from "@code-ui/form/context";
+import { setupFormFieldSync, cleanupFormFieldSync } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   PinInputColor,
   PinInputMachine,
   PinInputSchema,
+  PinInputSeparator,
   PinInputSize,
   PinInputType,
   PinInputVariant,
@@ -54,184 +55,106 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     };
   },
 
-  context: ({ prop, bindable, getRefs }) => ({
-    length: bindable<number>(() => ({
-      value: prop("length"),
-      defaultValue: 4,
-    })),
+  context: ({ prop, bindable, getRefs }) => {
+    const b = <T>(key: any, defaultValue: T) =>
+      bindable<T>(() => ({ value: prop(key), defaultValue }));
 
-    value: bindable<string[]>(() => {
-      const len = prop("length") ?? 4;
-      const rawVal = prop("value");
-      const isControlled = rawVal !== undefined && rawVal !== null;
-      const controlledVal = isControlled
-        ? normalizePinValue(rawVal, len)
-        : undefined;
+    return {
+      length: b("length", 4),
 
-      const rawDefault = prop("defaultValue");
-      const initial = isControlled
-        ? (controlledVal as string[])
-        : rawDefault !== undefined && rawDefault !== null
-          ? normalizePinValue(rawDefault, len)
-          : Array(len).fill("");
+      value: bindable<string[]>(() => {
+        const len = prop("length") ?? 4;
+        const rawVal = prop("value");
+        const isControlled = rawVal !== undefined && rawVal !== null;
+        const controlledVal = isControlled
+          ? normalizePinValue(rawVal, len)
+          : undefined;
 
-      return {
-        value: controlledVal,
-        defaultValue: initial,
-        isEqual: (a, b) => {
-          if (a === b) return true;
-          if (!Array.isArray(a) || !Array.isArray(b)) return false;
-          if (a.length !== b.length) return false;
-          for (let i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) return false;
-          }
-          return true;
-        },
-        onChange: (nextVal) => {
-          const valueAsString = nextVal.join("");
-          prop("onValueChange")?.({ value: nextVal, valueAsString });
-          prop("component")?.triggerEvent?.("change", {
-            value: nextVal,
-            valueAsString,
-          });
-          prop("component")?.setData?.({ value: nextVal });
+        const rawDefault = prop("defaultValue");
+        const initial = isControlled
+          ? (controlledVal as string[])
+          : rawDefault !== undefined && rawDefault !== null
+            ? normalizePinValue(rawDefault, len)
+            : Array(len).fill("");
 
-          const formField = getRefs().get("formField");
-
-          if (formField) {
-            formField.emitInput(valueAsString);
-            formField.emitChange(valueAsString);
-          }
-
-          const isComplete =
-            nextVal.length === (prop("length") ?? 4) &&
-            nextVal.every((c) => Boolean(c && c.trim() !== ""));
-          if (isComplete) {
-            prop("onValueComplete")?.({ value: nextVal, valueAsString });
-            prop("component")?.triggerEvent?.("complete", {
+        return {
+          value: controlledVal,
+          defaultValue: initial,
+          isEqual: (prev, next) => {
+            if (prev === next) return true;
+            if (!Array.isArray(prev) || !Array.isArray(next)) return false;
+            if (prev.length !== next.length) return false;
+            for (let i = 0; i < prev.length; i++) {
+              if (prev[i] !== next[i]) return false;
+            }
+            return true;
+          },
+          onChange: (nextVal) => {
+            const valueAsString = nextVal.join("");
+            prop("onValueChange")?.({ value: nextVal, valueAsString });
+            prop("component")?.triggerEvent?.("change", {
               value: nextVal,
               valueAsString,
             });
-          }
-        },
-      };
-    }),
+            prop("component")?.setData?.({ value: nextVal });
 
-    focusedIndex: bindable<number>(() => ({
-      defaultValue: prop("autoFocus") ? 0 : -1,
-    })),
+            const formField = getRefs().get("formField");
 
-    variant: bindable<PinInputVariant>(() => ({
-      value: prop("variant"),
-      defaultValue: "outline",
-    })),
+            if (formField) {
+              formField.emitInput(valueAsString);
+              formField.emitChange(valueAsString);
+            }
 
-    color: bindable<PinInputColor>(() => ({
-      value: prop("color"),
-      defaultValue: "primary",
-    })),
+            const isComplete =
+              nextVal.length === (prop("length") ?? 4) &&
+              nextVal.every((c) => Boolean(c && c.trim() !== ""));
+            if (isComplete) {
+              prop("onValueComplete")?.({ value: nextVal, valueAsString });
+              prop("component")?.triggerEvent?.("complete", {
+                value: nextVal,
+                valueAsString,
+              });
+            }
+          },
+        };
+      }),
 
-    size: bindable<PinInputSize>(() => ({
-      value: prop("size"),
-      defaultValue: "md",
-    })),
+      focusedIndex: bindable<number>(() => ({
+        defaultValue: prop("autoFocus") ? 0 : -1,
+      })),
 
-    highlight: bindable<boolean>(() => ({
-      value: prop("highlight"),
-      defaultValue: false,
-    })),
+      variant: b<PinInputVariant>("variant", "outline"),
+      color: b<PinInputColor>("color", "primary"),
+      size: b<PinInputSize>("size", "md"),
+      highlight: b("highlight", false),
+      disabled: b("disabled", false),
+      readOnly: b("readOnly", false),
+      formDisabled: b("formDisabled", false),
+      formReadOnly: b("formReadOnly", false),
+      fieldDisabled: b("fieldDisabled", false),
+      fieldSize: b<PinInputSize | "">("fieldSize", ""),
 
-    disabled: bindable<boolean>(() => ({
-      value: prop("disabled"),
-      defaultValue: false,
-    })),
+      invalid: bindable<boolean>(() => {
+        const rawInvalid = prop("invalid");
+        return {
+          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+          defaultValue: false,
+        };
+      }),
 
-    readOnly: bindable<boolean>(() => ({
-      value: prop("readOnly"),
-      defaultValue: false,
-    })),
-
-    formDisabled: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
-
-    formReadOnly: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
-
-    fieldDisabled: bindable<boolean>(() => ({
-      value: prop("fieldDisabled"),
-      defaultValue: false,
-    })),
-
-    fieldSize: bindable<any>(() => ({
-      value: prop("fieldSize"),
-      defaultValue: "",
-    })),
-
-    invalid: bindable<boolean>(() => {
-      const rawInvalid = prop("invalid");
-      return {
-        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-        defaultValue: false,
-      };
-    }),
-
-    mask: bindable<boolean>(() => ({
-      value: prop("mask"),
-      defaultValue: false,
-    })),
-
-    otp: bindable<boolean>(() => ({
-      value: prop("otp"),
-      defaultValue: true,
-    })),
-
-    type: bindable<PinInputType>(() => ({
-      value: prop("type"),
-      defaultValue: "numeric",
-    })),
-
-    placeholder: bindable<string>(() => ({
-      value: prop("placeholder"),
-      defaultValue: "",
-    })),
-
-    separator: bindable<any>(() => ({
-      value: prop("separator"),
-      defaultValue: false,
-    })),
-
-    separatorChar: bindable<string>(() => ({
-      value: prop("separatorChar"),
-      defaultValue: "-",
-    })),
-
-    blurOnComplete: bindable<boolean>(() => ({
-      value: prop("blurOnComplete"),
-      defaultValue: false,
-    })),
-
-    selectOnFocus: bindable<boolean>(() => ({
-      value: prop("selectOnFocus"),
-      defaultValue: false,
-    })),
-
-    form: bindable<string>(() => ({
-      value: prop("form"),
-      defaultValue: "",
-    })),
-
-    name: bindable<string>(() => ({
-      value: prop("name"),
-      defaultValue: "",
-    })),
-
-    ui: bindable<any>(() => ({
-      value: prop("ui") ?? {},
-      defaultValue: {},
-    })),
-  }),
+      mask: b("mask", false),
+      otp: b("otp", true),
+      type: b<PinInputType>("type", "numeric"),
+      placeholder: b("placeholder", ""),
+      separator: b<PinInputSeparator>("separator", false),
+      separatorChar: b("separatorChar", "-"),
+      blurOnComplete: b("blurOnComplete", false),
+      selectOnFocus: b("selectOnFocus", false),
+      form: b("form", ""),
+      name: b("name", ""),
+      ui: b("ui", {}),
+    };
+  },
 
   computed: {
     valueAsString: ({ context }) => context.get("value").join(""),
@@ -367,31 +290,19 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
     actions: {
       setupFormField: ({ context, prop, computed, refs, scope, state }) => {
-        refs.get("formField")?.dispose();
-
-        refs.set("currentFormBus", prop("formBus"));
-
-        let suppressEmit = false;
-
-        const bound = bindFormField({
-          component: prop("component"),
-          bus: prop("formBus"),
-          id: scope.id ?? "pin-input",
-          getFormId: () => context.get("form") || prop("form") || "",
-          getName: () => context.get("name") || prop("name") || "",
-          getValue: () => computed("valueAsString"),
-          setValue: (rawVal: any) => {
-            suppressEmit = true;
-            try {
+        setupFormFieldSync(
+          {
+            component: prop("component"),
+            bus: prop("formBus"),
+            id: scope.id ?? "pin-input",
+            getFormId: () => context.get("form") || prop("form") || "",
+            getName: () => context.get("name") || prop("name") || "",
+            getValue: () => computed("valueAsString"),
+            setValue: (rawVal: any) => {
               const len = context.get("length");
               context.set("value", normalizePinValue(rawVal, len));
-            } finally {
-              suppressEmit = false;
-            }
-          },
-          resetValue: () => {
-            suppressEmit = true;
-            try {
+            },
+            resetValue: () => {
               const len = context.get("length");
               const initial =
                 refs.get("initialValue") ??
@@ -401,94 +312,54 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               context.set("focusedIndex", -1);
               context.set("invalid", false);
               state.set("idle");
-            } finally {
-              suppressEmit = false;
-            }
-          },
-          focus: () => {
-            if (
-              context.get("disabled") ||
-              context.get("formDisabled") ||
-              context.get("fieldDisabled") ||
-              context.get("readOnly") ||
-              context.get("formReadOnly")
-            ) {
-              return;
-            }
-            const currentValues = context.get("value");
-            const firstEmptyIndex = currentValues.findIndex(isEmpty);
-            const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
-            state.set("focused");
-            context.set("focusedIndex", targetIdx);
-          },
-          getValidateOn: () => prop("validateOn"),
-          isDisabled: () =>
-            Boolean(
-              context.get("disabled") ||
-              context.get("formDisabled") ||
-              context.get("fieldDisabled"),
-            ),
-          onValidationChange: (valState) => {
-            context.set("invalid", !valState.isValid);
-          },
-          onFormStateChange: ({ disabled, readOnly }) => {
-            context.set("formDisabled", disabled);
-            context.set("formReadOnly", readOnly);
-          },
-        });
-
-        const bus = bound.bus;
-        const disposers: Array<() => void> = [];
-        if (bus) {
-          disposers.push(
-            bus.on("field:state", (payload: any) => {
-              const currentName = context.get("name") || prop("name");
-              if (!payload?.name || payload.name === currentName) {
-                if (payload.disabled !== undefined) {
-                  context.set("fieldDisabled", Boolean(payload.disabled));
-                }
-                if (payload.size !== undefined) {
-                  context.set("fieldSize", payload.size);
-                }
+            },
+            focus: () => {
+              if (
+                context.get("disabled") ||
+                context.get("formDisabled") ||
+                context.get("fieldDisabled") ||
+                context.get("readOnly") ||
+                context.get("formReadOnly")
+              ) {
+                return;
               }
-            }),
-          );
-
-          disposers.push(
-            bus.on("form:state", (payload: any) => {
-              if (payload?.disabled !== undefined) {
-                context.set("formDisabled", Boolean(payload.disabled));
+              const currentValues = context.get("value");
+              const firstEmptyIndex = currentValues.findIndex(isEmpty);
+              const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
+              state.set("focused");
+              context.set("focusedIndex", targetIdx);
+            },
+            getValidateOn: () => prop("validateOn"),
+            isDisabled: () =>
+              Boolean(
+                context.get("disabled") ||
+                context.get("formDisabled") ||
+                context.get("fieldDisabled"),
+              ),
+            onValidationChange: (isValid) => {
+              context.set("invalid", !isValid);
+            },
+            onStateChange: (s) => {
+              if (s.fieldDisabled !== undefined) {
+                context.set("fieldDisabled", Boolean(s.fieldDisabled));
               }
-              if (payload?.readOnly !== undefined) {
-                context.set("formReadOnly", Boolean(payload.readOnly));
+              if (s.fieldSize !== undefined) {
+                context.set("fieldSize", s.fieldSize);
               }
-            }),
-          );
-        }
-        refs.set("busDisposers", disposers);
-
-        // Wrap emitInput and emitChange to respect suppressEmit during Form-driven setValue/resetValue
-        const origEmitInput = bound.emitInput.bind(bound);
-        const origEmitChange = bound.emitChange.bind(bound);
-        bound.emitInput = (val: any) => {
-          if (!suppressEmit) origEmitInput(val);
-        };
-        bound.emitChange = (val: any) => {
-          if (!suppressEmit) origEmitChange(val);
-        };
-
-        refs.set("formField", bound);
+              if (s.formDisabled !== undefined) {
+                context.set("formDisabled", Boolean(s.formDisabled));
+              }
+              if (s.formReadOnly !== undefined) {
+                context.set("formReadOnly", Boolean(s.formReadOnly));
+              }
+            },
+          },
+          refs,
+        );
       },
 
       cleanupFormField: ({ refs }) => {
-        refs.get("formField")?.dispose();
-        refs.set("formField", undefined);
-        refs.set("currentFormBus", undefined);
-        const disposers = refs.get("busDisposers") ?? [];
-        for (let i = 0; i < disposers.length; i++) {
-          disposers[i]?.();
-        }
-        refs.set("busDisposers", []);
+        cleanupFormFieldSync(refs);
       },
 
       setFocusedIndex: ({

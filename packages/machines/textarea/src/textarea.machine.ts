@@ -1,5 +1,5 @@
 import { createMachine } from "@code-ui/core";
-import { bindFormField } from "@code-ui/form/context";
+import { setupFormFieldSync, cleanupFormFieldSync } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   TextareaColor,
@@ -36,159 +36,72 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
     };
   },
 
-  context: ({ prop, bindable, getRefs }) => ({
-    value: bindable<string>(() => {
-      const rawVal = prop("value");
-      const controlledVal = isNotNull(rawVal) ? String(rawVal) : undefined;
-      const rawDefault = prop("defaultValue");
-      const rawDefaultVal = isNotNull(rawDefault)
-        ? String(rawDefault)
-        : undefined;
-      const initial = (controlledVal ?? rawDefaultVal) || "";
+  context: ({ prop, bindable, getRefs }) => {
+    const b = <T>(key: any, defaultValue: T) =>
+      bindable<T>(() => ({ value: prop(key), defaultValue }));
 
-      return {
-        value: controlledVal,
-        defaultValue: initial,
-        onChange: (nextVal) => {
-          prop("onValueChange")?.({ value: nextVal });
-          prop("component")?.triggerEvent?.("change", { value: nextVal });
-          prop("component")?.setData?.({ value: nextVal });
+    return {
+      value: bindable<string>(() => {
+        const rawVal = prop("value");
+        const controlledVal = isNotNull(rawVal) ? String(rawVal) : undefined;
+        const rawDefault = prop("defaultValue");
+        const rawDefaultVal = isNotNull(rawDefault)
+          ? String(rawDefault)
+          : undefined;
+        const initial = (controlledVal ?? rawDefaultVal) || "";
 
-          const formField = getRefs().get("formField");
-          if (formField) {
-            formField.emitInput(nextVal);
-            formField.emitChange(nextVal);
-          }
-        },
-      };
-    }),
+        return {
+          value: controlledVal,
+          defaultValue: initial,
+          onChange: (nextVal) => {
+            prop("onValueChange")?.({ value: nextVal });
+            prop("component")?.triggerEvent?.("change", { value: nextVal });
+            prop("component")?.setData?.({ value: nextVal });
 
-    variant: bindable<TextareaVariant>(() => ({
-      value: prop("variant"),
-      defaultValue: "outline",
-    })),
+            const formField = getRefs().get("formField");
+            if (formField) {
+              formField.emitInput(nextVal);
+              formField.emitChange(nextVal);
+            }
+          },
+        };
+      }),
 
-    color: bindable<TextareaColor>(() => ({
-      value: prop("color"),
-      defaultValue: "primary",
-    })),
+      variant: b<TextareaVariant>("variant", "outline"),
+      color: b<TextareaColor>("color", "primary"),
+      size: b<TextareaSize>("size", "md"),
+      highlight: b("highlight", false),
+      disabled: b("disabled", false),
+      readOnly: b("readOnly", false),
+      formDisabled: b("formDisabled", false),
+      formReadOnly: b("formReadOnly", false),
+      fieldDisabled: b("fieldDisabled", false),
+      fieldSize: b<TextareaSize | "">("fieldSize", ""),
 
-    size: bindable<TextareaSize>(() => ({
-      value: prop("size"),
-      defaultValue: "md",
-    })),
+      invalid: bindable<boolean>(() => {
+        const rawInvalid = prop("invalid");
+        return {
+          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+          defaultValue: false,
+        };
+      }),
 
-    highlight: bindable<boolean>(() => ({
-      value: prop("highlight"),
-      defaultValue: false,
-    })),
-
-    disabled: bindable<boolean>(() => ({
-      value: prop("disabled"),
-      defaultValue: false,
-    })),
-
-    readOnly: bindable<boolean>(() => ({
-      value: prop("readOnly"),
-      defaultValue: false,
-    })),
-
-    formDisabled: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
-
-    formReadOnly: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
-
-    fieldDisabled: bindable<boolean>(() => ({
-      value: prop("fieldDisabled"),
-      defaultValue: false,
-    })),
-
-    fieldSize: bindable<any>(() => ({
-      value: prop("fieldSize"),
-      defaultValue: "",
-    })),
-
-    invalid: bindable<boolean>(() => {
-      const rawInvalid = prop("invalid");
-      return {
-        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-        defaultValue: false,
-      };
-    }),
-
-    placeholder: bindable<string>(() => ({
-      value: prop("placeholder"),
-      defaultValue: "",
-    })),
-
-    maxlength: bindable<number>(() => ({
-      value: prop("maxlength"),
-      defaultValue: 140,
-    })),
-
-    autoHeight: bindable<boolean>(() => ({
-      value: prop("autoHeight"),
-      defaultValue: false,
-    })),
-
-    clearable: bindable<boolean>(() => ({
-      value: prop("clearable"),
-      defaultValue: false,
-    })),
-
-    clearIcon: bindable<string>(() => ({
-      value: prop("clearIcon"),
-      defaultValue: "",
-    })),
-
-    loading: bindable<boolean>(() => ({
-      value: prop("loading"),
-      defaultValue: false,
-    })),
-
-    leading: bindable<boolean>(() => ({
-      value: prop("leading"),
-      defaultValue: false,
-    })),
-
-    trailing: bindable<boolean>(() => ({
-      value: prop("trailing"),
-      defaultValue: false,
-    })),
-
-    leadingIcon: bindable<string>(() => ({
-      value: prop("leadingIcon"),
-      defaultValue: "",
-    })),
-
-    trailingIcon: bindable<string>(() => ({
-      value: prop("trailingIcon"),
-      defaultValue: "",
-    })),
-
-    count: bindable<boolean>(() => ({
-      value: prop("count"),
-      defaultValue: false,
-    })),
-
-    form: bindable<string>(() => ({
-      value: prop("form"),
-      defaultValue: "",
-    })),
-
-    name: bindable<string>(() => ({
-      value: prop("name"),
-      defaultValue: "",
-    })),
-
-    ui: bindable<any>(() => ({
-      value: prop("ui") ?? {},
-      defaultValue: {},
-    })),
-  }),
+      placeholder: b("placeholder", ""),
+      maxlength: b("maxlength", 140),
+      autoHeight: b("autoHeight", false),
+      clearable: b("clearable", false),
+      clearIcon: b("clearIcon", ""),
+      loading: b("loading", false),
+      leading: b("leading", false),
+      trailing: b("trailing", false),
+      leadingIcon: b("leadingIcon", ""),
+      trailingIcon: b("trailingIcon", ""),
+      count: b("count", false),
+      form: b("form", ""),
+      name: b("name", ""),
+      ui: b("ui", {}),
+    };
+  },
 
   computed: {
     isEmpty: ({ context }) => isEmpty(context.get("value")),
@@ -316,32 +229,21 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
   implementations: {
     actions: {
       setupFormField: ({ context, prop, refs, scope, state }) => {
-        refs.get("formField")?.dispose();
-        refs.set("currentFormBus", prop("formBus"));
-
-        let suppressEmit = false;
-
-        const bound = bindFormField({
-          component: prop("component"),
-          bus: prop("formBus"),
-          id: scope.id ?? "textarea",
-          getFormId: () => context.get("form") || prop("form") || "",
-          getName: () => context.get("name") || prop("name") || "",
-          getValue: () => context.get("value"),
-          setValue: (rawVal: any) => {
-            suppressEmit = true;
-            try {
+        setupFormFieldSync(
+          {
+            component: prop("component"),
+            bus: prop("formBus"),
+            id: scope.id ?? "textarea",
+            getFormId: () => context.get("form") || prop("form") || "",
+            getName: () => context.get("name") || prop("name") || "",
+            getValue: () => context.get("value"),
+            setValue: (rawVal: any) => {
               context.set(
                 "value",
                 rawVal !== undefined && rawVal !== null ? String(rawVal) : "",
               );
-            } finally {
-              suppressEmit = false;
-            }
-          },
-          resetValue: () => {
-            suppressEmit = true;
-            try {
+            },
+            resetValue: () => {
               const initial =
                 refs.get("initialValue") ??
                 (prop("defaultValue") !== undefined
@@ -350,90 +252,50 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
               context.set("value", initial);
               context.set("invalid", false);
               state.set("idle");
-            } finally {
-              suppressEmit = false;
-            }
-          },
-          focus: () => {
-            if (
-              context.get("disabled") ||
-              context.get("formDisabled") ||
-              context.get("fieldDisabled") ||
-              context.get("readOnly") ||
-              context.get("formReadOnly")
-            ) {
-              return;
-            }
-            state.set("focused");
-          },
-          getValidateOn: () => prop("validateOn"),
-          isDisabled: () =>
-            Boolean(
-              context.get("disabled") ||
-              context.get("formDisabled") ||
-              context.get("fieldDisabled"),
-            ),
-          onValidationChange: (valState) => {
-            context.set("invalid", !valState.isValid);
-          },
-          onFormStateChange: ({ disabled, readOnly }) => {
-            context.set("formDisabled", disabled);
-            context.set("formReadOnly", readOnly);
-          },
-        });
-
-        const bus = bound.bus;
-        const disposers: Array<() => void> = [];
-        if (bus) {
-          disposers.push(
-            bus.on("field:state", (payload: any) => {
-              const currentName = context.get("name") || prop("name");
-              if (!payload?.name || payload.name === currentName) {
-                if (payload.disabled !== undefined) {
-                  context.set("fieldDisabled", Boolean(payload.disabled));
-                }
-                if (payload.size !== undefined) {
-                  context.set("fieldSize", payload.size);
-                }
+            },
+            focus: () => {
+              if (
+                context.get("disabled") ||
+                context.get("formDisabled") ||
+                context.get("fieldDisabled") ||
+                context.get("readOnly") ||
+                context.get("formReadOnly")
+              ) {
+                return;
               }
-            }),
-          );
-
-          disposers.push(
-            bus.on("form:state", (payload: any) => {
-              if (payload?.disabled !== undefined) {
-                context.set("formDisabled", Boolean(payload.disabled));
+              state.set("focused");
+            },
+            getValidateOn: () => prop("validateOn"),
+            isDisabled: () =>
+              Boolean(
+                context.get("disabled") ||
+                context.get("formDisabled") ||
+                context.get("fieldDisabled"),
+              ),
+            onValidationChange: (isValid) => {
+              context.set("invalid", !isValid);
+            },
+            onStateChange: (s) => {
+              if (s.fieldDisabled !== undefined) {
+                context.set("fieldDisabled", Boolean(s.fieldDisabled));
               }
-              if (payload?.readOnly !== undefined) {
-                context.set("formReadOnly", Boolean(payload.readOnly));
+              if (s.fieldSize !== undefined) {
+                context.set("fieldSize", s.fieldSize);
               }
-            }),
-          );
-        }
-        refs.set("busDisposers", disposers);
-
-        // Wrap emitInput and emitChange to respect suppressEmit during Form-driven setValue/resetValue
-        const origEmitInput = bound.emitInput.bind(bound);
-        const origEmitChange = bound.emitChange.bind(bound);
-        bound.emitInput = (val: any) => {
-          if (!suppressEmit) origEmitInput(val);
-        };
-        bound.emitChange = (val: any) => {
-          if (!suppressEmit) origEmitChange(val);
-        };
-
-        refs.set("formField", bound);
+              if (s.formDisabled !== undefined) {
+                context.set("formDisabled", Boolean(s.formDisabled));
+              }
+              if (s.formReadOnly !== undefined) {
+                context.set("formReadOnly", Boolean(s.formReadOnly));
+              }
+            },
+          },
+          refs,
+        );
       },
 
       cleanupFormField: ({ refs }) => {
-        refs.get("formField")?.dispose();
-        refs.set("formField", undefined);
-        refs.set("currentFormBus", undefined);
-        const disposers = refs.get("busDisposers") ?? [];
-        for (let i = 0; i < disposers.length; i++) {
-          disposers[i]?.();
-        }
-        refs.set("busDisposers", []);
+        cleanupFormFieldSync(refs);
       },
 
       handleInputChange: ({ context, event }) => {

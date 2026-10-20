@@ -3,6 +3,7 @@ import {
   createProperties,
   computedBehavior,
   createComponentOptions,
+  getApi,
 } from "../_shared";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -81,38 +82,31 @@ Component(
 
     methods: {
       handleRootTap() {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.focus?.();
+        getApi(this, "textarea")?.focus?.();
       },
 
       handleInput(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        return api?.handleInput?.(e);
+        return getApi(this, "textarea")?.handleInput?.(e);
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.handleFocus?.(e);
+        getApi(this, "textarea")?.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.handleBlur?.(e);
+        getApi(this, "textarea")?.handleBlur?.(e);
       },
 
       handleConfirm(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.handleConfirm?.(e);
+        getApi(this, "textarea")?.handleConfirm?.(e);
       },
 
       handleLineChange(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.handleLineChange?.(e);
+        getApi(this, "textarea")?.handleLineChange?.(e);
       },
 
       handleClear(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.textarea;
-        api?.handleClear?.(e);
+        getApi(this, "textarea")?.handleClear?.(e);
       },
 
       handleKeyboardHeightChange(e: WechatMiniprogram.CustomEvent) {

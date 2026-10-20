@@ -25,6 +25,10 @@ const formBehavior = createMachineBehavior({
   exportApi: true,
 });
 
+function getApi(ctx: any) {
+  return ctx.__codeUiApi ?? ctx.data.form;
+}
+
 Component(
   createComponentOptions({
     behaviors: [formBehavior, computedBehavior],
@@ -63,87 +67,58 @@ Component(
 
     methods: {
       handleSubmit(e?: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.handleSubmit?.(e);
+        return getApi(this)?.handleSubmit?.(e);
       },
-
       handleReset(e?: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.handleReset?.(e);
+        getApi(this)?.handleReset?.(e);
       },
-
       validate(name?: string | string[]) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.validate?.(name);
+        return getApi(this)?.validate?.(name);
       },
-
       submit() {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.submit?.();
+        return getApi(this)?.submit?.();
       },
-
       reset(name?: string | string[]) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.reset?.(name);
+        getApi(this)?.reset?.(name);
       },
-
       resetValidation(name?: string | string[]) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.resetValidation?.(name);
+        getApi(this)?.resetValidation?.(name);
       },
-
       clearErrors(name?: string | string[]) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.clearErrors?.(name);
+        getApi(this)?.clearErrors?.(name);
       },
-
       setErrors(
         errors:
           | FormErrorBag
           | Record<string, string | string[]>
           | FormFieldError[],
       ) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.setErrors?.(errors);
+        getApi(this)?.setErrors?.(errors);
       },
-
       getErrors(name?: string) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.getErrors?.(name) ?? [];
+        return getApi(this)?.getErrors?.(name) ?? [];
       },
-
       getValues() {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.getValues?.() ?? {};
+        return getApi(this)?.getValues?.() ?? {};
       },
-
       getFieldValue(name: string) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.getFieldValue?.(name);
+        return getApi(this)?.getFieldValue?.(name);
       },
-
       setValues(values: Record<string, any>, options?: { validate?: boolean }) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.setValues?.(values, options);
+        getApi(this)?.setValues?.(values, options);
       },
-
       setFieldValue(
         name: string,
         value: any,
         options?: { validate?: boolean },
       ) {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        api?.setFieldValue?.(name, value, options);
+        getApi(this)?.setFieldValue?.(name, value, options);
       },
-
       focusFirstError() {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.focusFirstError?.() ?? false;
+        return getApi(this)?.focusFirstError?.() ?? false;
       },
-
       scrollToFirstError() {
-        const api = (this as any).__codeUiApi ?? this.data.form;
-        return api?.scrollToFirstError?.() ?? Promise.resolve(false);
+        return getApi(this)?.scrollToFirstError?.() ?? Promise.resolve(false);
       },
     },
   }),

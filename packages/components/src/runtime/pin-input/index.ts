@@ -3,6 +3,7 @@ import {
   createProperties,
   computedBehavior,
   createComponentOptions,
+  getApi,
 } from "../_shared";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -76,23 +77,19 @@ Component(
 
     methods: {
       handleInput(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.pinInput;
-        return api?.handleInput?.(e);
+        return getApi(this, "pinInput")?.handleInput?.(e);
       },
 
       handleFocus(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.pinInput;
-        api?.handleFocus?.(e);
+        getApi(this, "pinInput")?.handleFocus?.(e);
       },
 
       handleBlur(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.pinInput;
-        api?.handleBlur?.(e);
+        getApi(this, "pinInput")?.handleBlur?.(e);
       },
 
       handleTap(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.pinInput;
-        api?.handleTap?.(e);
+        getApi(this, "pinInput")?.handleTap?.(e);
       },
     },
   }),

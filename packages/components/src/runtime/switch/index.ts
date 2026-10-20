@@ -3,6 +3,7 @@ import {
   createProperties,
   computedBehavior,
   createComponentOptions,
+  getApi,
 } from "../_shared";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -69,8 +70,7 @@ Component(
 
     methods: {
       handleTap(e: WechatMiniprogram.CustomEvent) {
-        const api = (this as any).__codeUiApi ?? this.data.cSwitch;
-        return api?.handleTap?.(e);
+        return getApi(this, "cSwitch")?.handleTap?.(e);
       },
     },
   }),
