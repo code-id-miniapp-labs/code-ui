@@ -4,6 +4,7 @@ import {
   switchTheme as createSwitchTheme,
   inputTheme as createInputTheme,
   pinInputTheme as createPinInputTheme,
+  textareaTheme as createTextareaTheme,
   resetConfig,
   setConfig,
 } from "@code-ui/core";
@@ -469,6 +470,50 @@ describe("pinInputTheme invalid & highlight theming", () => {
     expect(slots.input).toContain("border-danger");
     expect(slots.input).toContain(escapeClass("ring-danger/20"));
     expect(slots.input).toContain(escapeClass("focus:border-danger"));
+  });
+});
+
+describe("textareaTheme autoHeight and variants", () => {
+  const textareaTheme = tv(createTextareaTheme());
+
+  it("applies min-h-24 by default when autoHeight is false", () => {
+    const slots = resolveSlots(
+      textareaTheme({ size: "md", autoHeight: false }) as any,
+    );
+    expect(slots.root).toContain("min-h-24");
+    expect(slots.root).not.toContain("min-h-0");
+  });
+
+  it("overrides min-h-* with min-h-0 when autoHeight is true", () => {
+    const slots = resolveSlots(
+      textareaTheme({ size: "md", autoHeight: true }) as any,
+    );
+    expect(slots.root).toContain("min-h-0");
+    expect(slots.root).not.toContain("min-h-24");
+  });
+
+  it("applies pb-7 when count is true for size md", () => {
+    const slots = resolveSlots(
+      textareaTheme({ size: "md", count: true, autoHeight: true }) as any,
+    );
+    expect(slots.root).toContain("pb-7");
+    expect(slots.root).toContain("min-h-0");
+  });
+
+  it("applies danger styling when invalid: true", () => {
+    const slots = resolveSlots(
+      textareaTheme({ invalid: true }) as any,
+    );
+    expect(slots.root).toContain("border-danger");
+    expect(slots.root).toContain(escapeClass("ring-danger/20"));
+  });
+
+  it("resolves placeholder slot styling across sizes", () => {
+    const slots = resolveSlots(
+      textareaTheme({ size: "md" }) as any,
+    );
+    expect(slots.placeholder).toContain("text-neutral-400");
+    expect(slots.placeholder).toContain("text-sm");
   });
 });
 

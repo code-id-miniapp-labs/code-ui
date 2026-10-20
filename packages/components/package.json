@@ -78,6 +78,12 @@
       "require": "./dist/runtime/switch/index.js"
     },
     "./switch/*": "./dist/runtime/switch/*",
+    "./textarea": {
+      "types": "./dist/runtime/textarea/index.d.ts",
+      "import": "./dist/runtime/textarea/index.js",
+      "require": "./dist/runtime/textarea/index.js"
+    },
+    "./textarea/*": "./dist/runtime/textarea/*",
     "./runtime/*": "./dist/runtime/*",
     "./dist/*": "./dist/*",
     "./themes/*": "./dist/themes/*",
@@ -111,6 +117,7 @@
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
     "@code-ui/switch": "workspace:*",
+    "@code-ui/textarea": "workspace:*",
     "@code-ui/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"
   },

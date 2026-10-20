@@ -1,0 +1,102 @@
+<view
+  id="{{textarea.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="textarea"
+  data-part="root"
+  data-state="{{textarea.state}}"
+  data-focused="{{textarea.textareaProps['data-focused']}}"
+  data-disabled="{{textarea.rootProps['data-disabled']}}"
+  data-readonly="{{textarea.rootProps['data-readonly']}}"
+  data-invalid="{{textarea.rootProps['data-invalid']}}"
+  role="group"
+  aria-disabled="{{textarea.rootProps['aria-disabled']}}"
+  aria-invalid="{{textarea.rootProps['aria-invalid']}}"
+  bindtap="handleRootTap"
+>
+  <view
+    wx:if="{{leading || leadingIcon}}"
+    id="{{textarea.leadingProps.id}}"
+    class="{{classes.leading}}"
+    data-scope="textarea"
+    data-part="leading"
+  >
+    <slot name="leading" />
+    <text wx:if="{{leadingIcon}}" class="{{classes.leadingIcon}} {{leadingIcon}}" />
+  </view>
+
+  <textarea
+    id="{{textarea.textareaProps.id}}"
+    name="{{name}}"
+    class="{{classes.base}}"
+    data-scope="textarea"
+    data-part="base"
+    data-state="{{textarea.state}}"
+    data-focused="{{textarea.textareaProps['data-focused']}}"
+    data-disabled="{{textarea.textareaProps['data-disabled']}}"
+    data-readonly="{{textarea.textareaProps['data-readonly']}}"
+    data-invalid="{{textarea.textareaProps['data-invalid']}}"
+    value="{{textarea.value}}"
+    focus="{{textarea.textareaProps.focus}}"
+    disabled="{{textarea.textareaProps.disabled}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="{{classes.placeholder}}{{placeholderClass ? ' ' + placeholderClass : ''}}"
+    placeholder-style="{{placeholderStyle}}"
+    maxlength="{{maxlength}}"
+    auto-height="{{textarea.textareaProps.autoHeight || autoHeight}}"
+    fixed="{{fixed}}"
+    cursor-spacing="{{cursorSpacing}}"
+    cursor="{{cursor}}"
+    show-confirm-bar="{{showConfirmBar}}"
+    selection-start="{{selectionStart}}"
+    selection-end="{{selectionEnd}}"
+    adjust-position="{{adjustPosition}}"
+    hold-keyboard="{{holdKeyboard}}"
+    disable-default-padding="{{disableDefaultPadding}}"
+    confirm-type="{{confirmType}}"
+    confirm-hold="{{confirmHold}}"
+    aria-invalid="{{textarea.textareaProps['aria-invalid']}}"
+    aria-multiline="true"
+    bindinput="handleInput"
+    bindfocus="handleFocus"
+    bindblur="handleBlur"
+    bindconfirm="handleConfirm"
+    bindlinechange="handleLineChange"
+    bindkeyboardheightchange="handleKeyboardHeightChange"
+  />
+
+  <view
+    wx:if="{{trailing || trailingIcon || clearable || loading}}"
+    id="{{textarea.trailingProps.id}}"
+    class="{{classes.trailing}}"
+    data-scope="textarea"
+    data-part="trailing"
+  >
+    <view wx:if="{{loading}}" class="{{classes.trailingIcon}}">
+      <view class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+    </view>
+    <view
+      wx:elif="{{clearable && textarea.isClearable}}"
+      id="{{textarea.clearButtonProps.id}}"
+      class="{{classes.clear}}"
+      data-scope="textarea"
+      data-part="clear"
+      catchtap="handleClear"
+    >
+      <text class="{{clearIcon || 'text-sm font-bold leading-none'}}">✕</text>
+    </view>
+    <text wx:elif="{{trailingIcon}}" class="{{classes.trailingIcon}} {{trailingIcon}}" />
+    <slot name="trailing" />
+  </view>
+
+  <view
+    wx:if="{{count}}"
+    id="{{textarea.countProps.id}}"
+    class="{{classes.count}}"
+    data-scope="textarea"
+    data-part="count"
+  >
+    <slot name="count">
+      <text>{{textarea.characterCount}}{{maxlength > 0 ? '/' + maxlength : ''}}</text>
+    </slot>
+  </view>
+</view>

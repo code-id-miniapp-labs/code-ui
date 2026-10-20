@@ -36,6 +36,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/switch/src",
       ),
+      "@code-ui/textarea": resolve(
+        import.meta.dirname,
+        "packages/machines/textarea/src",
+      ),
     },
   },
   test: {

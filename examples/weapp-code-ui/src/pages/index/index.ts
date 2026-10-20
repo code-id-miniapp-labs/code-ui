@@ -30,6 +30,13 @@ Page({
         path: "/pages/switch/index",
       },
       {
+        id: "textarea",
+        name: "Textarea",
+        desc: "Multi-line textarea with Nuxt UI v4 styling, controlled value, character counter, auto-height, and Form link.",
+        badge: "Interactive",
+        path: "/pages/textarea/index",
+      },
+      {
         id: "card",
         name: "Card",
         desc: "Containers with structured header, body, footer slots & surface styling.",
