@@ -9,7 +9,8 @@
     "pages/input/index",
     "pages/pin-input/index",
     "pages/switch/index",
-    "pages/form/index"
+    "pages/form/index",
+    "pages/use-child/index"
   ],
   "window": {},
   "style": "v2",

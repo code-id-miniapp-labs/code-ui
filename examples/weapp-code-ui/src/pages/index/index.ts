@@ -57,6 +57,13 @@ Page({
         badge: "Form",
         path: "/pages/form/index",
       },
+      {
+        id: "use-child",
+        name: "useChild (Scoped Slots)",
+        desc: "Reactive snapshot subscription to child components without event emitters or manual setData.",
+        badge: "Composable",
+        path: "/pages/use-child/index",
+      },
     ],
   },
 
