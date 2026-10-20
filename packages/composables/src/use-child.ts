@@ -1,8 +1,5 @@
 import type { MachineSchema, Service } from "@code-ui/core";
-import type {
-  ConnectFn,
-  MiniappMachine,
-} from "@code-ui/miniapp";
+import type { ConnectFn, MiniappMachine } from "@code-ui/miniapp";
 import { diffSnapshot, warn } from "@code-ui/utils";
 
 /**
@@ -12,7 +9,6 @@ export type UseChildInstance =
   | WechatMiniprogram.Page.TrivialInstance
   | WechatMiniprogram.Component.TrivialInstance
   | WechatMiniprogram.Page.Instance<any, any>
-  | WechatMiniprogram.Component.Instance<any, any, any>
   | {
       setData: (...args: any[]) => any;
       selectComponent?: (...args: any[]) => any;
@@ -25,7 +21,6 @@ export type UseChildInstance =
 export type UseChildTarget =
   | string
   | WechatMiniprogram.Component.TrivialInstance
-  | WechatMiniprogram.Component.Instance<any, any, any>
   | Record<string, any>;
 
 export interface UseChildBaseOptions<
@@ -89,10 +84,7 @@ export interface UseChildReturn<
 
 const LISTENER_SET_KEY = "__codeUiSnapshotListeners";
 
-function resolveChild(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-): any {
+function resolveChild(instance: UseChildInstance, target: UseChildTarget): any {
   if (typeof target === "string") {
     if (instance && typeof instance.selectComponent === "function") {
       return instance.selectComponent(target);
@@ -132,7 +124,7 @@ function getChildService<T extends MachineSchema>(
   return comp?.__codeUiMachine?.service;
 }
 
-// Overload 1: With `connect` function — infers `Data` directly from `connect` return type
+//  With `connect` function — infers `Data` directly from `connect` return type
 export function useChild<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -142,7 +134,7 @@ export function useChild<
   options: UseChildConnectOptions<T, Data>,
 ): UseChildReturn<T, Data>;
 
-// Overload 2: Single generic for Data / API type (e.g. useChild<PinInputApi>(this, '#otp', options))
+// Single generic for Data / API type (e.g. useChild<PinInputApi>(this, '#otp', options))
 export function useChild<
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
@@ -151,7 +143,7 @@ export function useChild<
   options?: UseChildBaseOptions<Data>,
 ): UseChildReturn<any, Data>;
 
-// Overload 3: With explicit MachineSchema T and Data (e.g. useChild<PinInputSchema, PinInputApi>(...))
+// With explicit MachineSchema T and Data (e.g. useChild<PinInputSchema, PinInputApi>(...))
 export function useChild<
   T extends MachineSchema,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -161,7 +153,7 @@ export function useChild<
   options?: UseChildBaseOptions<Data>,
 ): UseChildReturn<T, Data>;
 
-// Overload 4: Fallback when passing unified UseChildOptions<T, Data>
+// Fallback when passing unified UseChildOptions<T, Data>
 export function useChild<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -171,7 +163,6 @@ export function useChild<
   options?: UseChildOptions<T, Data>,
 ): UseChildReturn<T, Data>;
 
-// Implementation
 export function useChild<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -459,7 +450,7 @@ export function useChild<
     get snapshot() {
       return latestSnapshot ?? computeSnapshot();
     },
-    api: apiProxy,
+    api: apiProxy as unknown as UseChildApi<Data>,
     send,
     get service() {
       return getChildService<T>(ensureChild());

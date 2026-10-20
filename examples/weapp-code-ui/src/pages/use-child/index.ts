@@ -60,8 +60,6 @@ Page({
       return;
     }
 
-    console.log(otpSnap);
-
     if (!otpSnap?.isValueComplete) {
       wx.showToast({ title: "Complete 4-digit OTP", icon: "none" });
       return;
