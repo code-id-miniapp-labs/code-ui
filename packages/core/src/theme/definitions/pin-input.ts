@@ -7,6 +7,7 @@ import {
 
 export default function pinInputTheme(options: ThemeOptions = {}) {
   const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
@@ -75,29 +76,46 @@ export default function pinInputTheme(options: ThemeOptions = {}) {
           input: "",
         },
       },
+      invalid: {
+        true: {
+          input: "",
+        },
+        false: {
+          input: "",
+        },
+      },
     },
-    compoundVariants: (colors as readonly string[]).flatMap((color) => [
+    compoundVariants: [
+      ...(colors as readonly string[]).flatMap((color) => [
+        {
+          color: color as (typeof colors)[number],
+          variant: ["outline", "subtle", "soft"] as any,
+          class: {
+            input: `focus:border-${color} focus:ring-2 focus:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+          },
+        },
+        {
+          color: color as (typeof colors)[number],
+          highlight: true as const,
+          class: {
+            input: `border-${color} ring-2 ring-${color}/20`,
+          },
+        },
+      ]),
       {
-        color: color as (typeof colors)[number],
-        variant: ["outline", "subtle", "soft"] as any,
+        invalid: true as const,
         class: {
-          input: `focus:border-${color} focus:ring-2 focus:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+          input: `border-${errorColor} ring-2 ring-${errorColor}/20 focus:border-${errorColor} focus:ring-2 focus:ring-${errorColor}/20 data-[focused=true]:border-${errorColor} data-[focused=true]:ring-2 data-[focused=true]:ring-${errorColor}/20`,
         },
       },
-      {
-        color: color as (typeof colors)[number],
-        highlight: true as const,
-        class: {
-          input: `border-${color} ring-2 ring-${color}/20`,
-        },
-      },
-    ]),
+    ],
     defaultVariants: {
       variant: "outline",
       color: "primary",
       size: "md",
       highlight: false,
       disabled: false,
+      invalid: false,
     },
   });
 }

@@ -125,6 +125,10 @@ export interface PinInputContext {
   length: number;
   value: string[];
   focusedIndex: number;
+  variant: PinInputVariant;
+  color: PinInputColor;
+  size: PinInputSize;
+  highlight: boolean;
   disabled: boolean;
   readOnly: boolean;
   formDisabled: boolean;
@@ -192,6 +196,12 @@ export interface PinInputApi {
   state: PinInputState;
   /** Current array of character values */
   value: string[];
+  /** Visual variant */
+  variant: PinInputVariant;
+  /** Semantic color */
+  color: PinInputColor;
+  /** Whether the input is highlighted */
+  highlight: boolean;
   /** Combined value as string */
   valueAsString: string;
   /** Whether all inputs are filled */

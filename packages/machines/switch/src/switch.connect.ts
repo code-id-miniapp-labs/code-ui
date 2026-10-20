@@ -1,4 +1,4 @@
-import type { SwitchApi, SwitchService } from "./switch.types";
+import type { SwitchApi, SwitchService, SwitchSize } from "./switch.types";
 import { parts } from "./switch.anatomy";
 import * as dom from "./switch.dom";
 
@@ -10,8 +10,8 @@ export function connectSwitch(service: SwitchService): SwitchApi {
   const isInteractive = computed("isInteractive");
   const disabled = Boolean(
     context.get("disabled") ||
-      context.get("formDisabled") ||
-      context.get("fieldDisabled"),
+    context.get("formDisabled") ||
+    context.get("fieldDisabled"),
   );
   const readOnly = Boolean(
     context.get("readOnly") || context.get("formReadOnly"),
@@ -20,13 +20,13 @@ export function connectSwitch(service: SwitchService): SwitchApi {
   const invalid = Boolean(context.get("invalid"));
   const required = Boolean(context.get("required"));
 
-  const rawSize = service.prop("size");
+  const rawSize = context.get("size");
   const fieldSize = context.get("fieldSize");
   const size =
     rawSize && rawSize !== "md"
       ? rawSize
-      : ((fieldSize || rawSize || "md") as any);
-  const color = context.get("color") ?? "primary";
+      : ((fieldSize || rawSize || "md") as SwitchSize);
+  const color = context.get("color");
   const name = context.get("name") ?? "";
   const value = context.get("value") ?? "on";
 

@@ -137,6 +137,10 @@ export type InputEvent =
 
 export interface InputContext {
   value: string;
+  variant: InputVariant;
+  color: InputColor;
+  size: InputSize;
+  highlight: boolean;
   disabled: boolean;
   readOnly: boolean;
   formDisabled: boolean;
@@ -196,6 +200,12 @@ export interface InputApi {
   state: InputState;
   /** Current string value */
   value: string;
+  /** Visual variant */
+  variant: InputVariant;
+  /** Semantic color */
+  color: InputColor;
+  /** Whether the input is highlighted */
+  highlight: boolean;
   /** Whether input value is empty */
   isEmpty: boolean;
   /** Whether input has a non-empty value */

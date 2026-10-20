@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buttonTheme as createButtonTheme,
   switchTheme as createSwitchTheme,
+  inputTheme as createInputTheme,
+  pinInputTheme as createPinInputTheme,
   resetConfig,
   setConfig,
 } from "@code-ui/core";
@@ -382,6 +384,108 @@ describe("switchTheme resolution", () => {
       expect(slots.base).toContain(`bg-${color}`);
       expect(slots.icon).toContain(`text-${color}`);
     }
+  });
+
+  it("handles invalid state on switch", () => {
+    // Unchecked invalid switch
+    const uncheckedInvalid = resolveSlots(
+      switchTheme({ checked: false, invalid: true, color: "primary" }) as any,
+    );
+    expect(uncheckedInvalid.base).toContain("ring-1");
+    expect(uncheckedInvalid.base).toContain("ring-danger");
+    expect(uncheckedInvalid.base).toContain("border-transparent");
+    expect(uncheckedInvalid.base).not.toContain("border-danger");
+
+    // Checked invalid switch
+    const checkedInvalid = resolveSlots(
+      switchTheme({ checked: true, invalid: true, color: "primary" }) as any,
+    );
+    expect(checkedInvalid.base).toContain("bg-danger");
+    expect(checkedInvalid.base).not.toContain("bg-primary");
+    expect(checkedInvalid.icon).toContain("text-danger");
+  });
+});
+
+describe("inputTheme invalid & highlight theming", () => {
+  const inputTheme = tv(createInputTheme());
+
+  it("applies primary focus/ring when valid", () => {
+    const slots = resolveSlots(
+      inputTheme({ color: "primary", invalid: false, highlight: false }) as any,
+    );
+    expect(slots.base).toContain(escapeClass("focus:border-primary"));
+    expect(slots.base).toContain(escapeClass("focus:ring-primary/20"));
+    expect(slots.base).not.toContain("border-danger");
+    expect(slots.base).not.toContain(escapeClass("ring-danger/20"));
+  });
+
+  it("applies highlight ring in specified color", () => {
+    const slots = resolveSlots(
+      inputTheme({ color: "primary", highlight: true, invalid: false }) as any,
+    );
+    expect(slots.base).toContain("border-primary");
+    expect(slots.base).toContain(escapeClass("ring-primary/20"));
+    expect(slots.base).not.toContain("border-danger");
+  });
+
+  it("overrides primary color with danger styles when invalid: true", () => {
+    const slots = resolveSlots(
+      inputTheme({ color: "primary", invalid: true, highlight: false }) as any,
+    );
+    expect(slots.base).toContain("border-danger");
+    expect(slots.base).toContain("ring-2");
+    expect(slots.base).toContain(escapeClass("ring-danger/20"));
+    expect(slots.base).toContain(escapeClass("focus:border-danger"));
+    expect(slots.base).toContain(escapeClass("focus:ring-danger/20"));
+    expect(slots.base).not.toContain("border-neutral-300");
+  });
+
+  it("supports custom errorColor via theme options", () => {
+    const customTheme = tv(createInputTheme({ errorColor: "rose" }));
+    const slots = resolveSlots(
+      customTheme({ color: "primary", invalid: true }) as any,
+    );
+    expect(slots.base).toContain("border-rose");
+    expect(slots.base).toContain(escapeClass("ring-rose/20"));
+    expect(slots.base).toContain(escapeClass("focus:border-rose"));
+  });
+});
+
+describe("pinInputTheme invalid & highlight theming", () => {
+  const pinInputTheme = tv(createPinInputTheme());
+
+  it("applies primary focus when valid", () => {
+    const slots = resolveSlots(
+      pinInputTheme({ color: "primary", invalid: false }) as any,
+    );
+    expect(slots.input).toContain(escapeClass("focus:border-primary"));
+    expect(slots.input).not.toContain("border-danger");
+  });
+
+  it("overrides with danger styles when invalid: true", () => {
+    const slots = resolveSlots(
+      pinInputTheme({ color: "primary", invalid: true }) as any,
+    );
+    expect(slots.input).toContain("border-danger");
+    expect(slots.input).toContain(escapeClass("ring-danger/20"));
+    expect(slots.input).toContain(escapeClass("focus:border-danger"));
+  });
+});
+
+describe("dedupeClasses ring utilities", () => {
+  it("deduplicates ring widths and ring colors", () => {
+    expect(
+      dedupeClasses("ring-2 ring-primary/20", "ring-4 ring-danger/20"),
+    ).toBe("ring-4 ring-danger/20");
+  });
+
+  it("deduplicates variant-prefixed ring colors", () => {
+    expect(
+      dedupeClasses(
+        "focus:ring-primary/20 focus:border-primary",
+        "focus:ring-danger/20 focus:border-danger",
+      ),
+    ).toBe("focus:ring-danger/20 focus:border-danger");
   });
 });
 

@@ -7,6 +7,7 @@ import {
 
 export default function switchTheme(options: ThemeOptions = {}) {
   const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
@@ -89,7 +90,13 @@ export default function switchTheme(options: ThemeOptions = {}) {
       },
       required: {
         true: {
-          label: "after:content-['*'] after:ms-0.5 after:text-danger",
+          label: `after:content-['*'] after:ms-0.5 after:text-${errorColor}`,
+        },
+        false: {},
+      },
+      invalid: {
+        true: {
+          base: `ring-1 ring-${errorColor}`,
         },
         false: {},
       },
@@ -103,6 +110,14 @@ export default function switchTheme(options: ThemeOptions = {}) {
           icon: `text-${color}`,
         },
       })),
+      {
+        invalid: true,
+        checked: true,
+        class: {
+          base: `bg-${errorColor}`,
+          icon: `text-${errorColor}`,
+        },
+      },
       {
         size: "xs",
         checked: true,
@@ -146,6 +161,7 @@ export default function switchTheme(options: ThemeOptions = {}) {
       checked: false,
       loading: false,
       required: false,
+      invalid: false,
     },
   });
 }

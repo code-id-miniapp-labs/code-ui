@@ -1,6 +1,8 @@
 import { defineTheme, type ThemeOptions } from "../../theme";
 
-export default function formFieldTheme(_options: ThemeOptions = {}) {
+export default function formFieldTheme(options: ThemeOptions = {}) {
+  const errorColor = options.errorColor ?? "danger";
+
   return defineTheme({
     slots: {
       root: "flex flex-col gap-1.5 w-full",
@@ -9,10 +11,10 @@ export default function formFieldTheme(_options: ThemeOptions = {}) {
       label: "block text-sm font-medium text-neutral-800",
       container: "relative w-full",
       description: "text-xs text-neutral-500",
-      error: "text-xs text-danger font-medium mt-0.5",
+      error: `text-xs text-${errorColor} font-medium mt-0.5`,
       hint: "text-xs text-neutral-400",
       help: "text-xs text-neutral-500 mt-0.5",
-      required: "text-xs text-danger font-bold",
+      required: `text-xs text-${errorColor} font-bold`,
     },
     variants: {
       size: {

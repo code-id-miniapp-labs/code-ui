@@ -1,7 +1,14 @@
 import { createMachine } from "@code-ui/core";
 import { bindFormField } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
-import type { InputMachine, InputSchema, InputType } from "./input.types";
+import type {
+  InputColor,
+  InputMachine,
+  InputSchema,
+  InputSize,
+  InputType,
+  InputVariant,
+} from "./input.types";
 import { defaultInputProps } from "./input.props";
 
 export const inputMachine: InputMachine = createMachine<InputSchema>({
@@ -56,6 +63,26 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         },
       };
     }),
+
+    variant: bindable<InputVariant>(() => ({
+      value: prop("variant"),
+      defaultValue: "outline",
+    })),
+
+    color: bindable<InputColor>(() => ({
+      value: prop("color"),
+      defaultValue: "primary",
+    })),
+
+    size: bindable<InputSize>(() => ({
+      value: prop("size"),
+      defaultValue: "md",
+    })),
+
+    highlight: bindable<boolean>(() => ({
+      value: prop("highlight"),
+      defaultValue: false,
+    })),
 
     disabled: bindable<boolean>(() => ({
       value: prop("disabled"),

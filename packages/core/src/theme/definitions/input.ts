@@ -7,6 +7,7 @@ import {
 
 export default function inputTheme(options: ThemeOptions = {}) {
   const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
@@ -115,6 +116,14 @@ export default function inputTheme(options: ThemeOptions = {}) {
           base: "",
         },
       },
+      invalid: {
+        true: {
+          base: "",
+        },
+        false: {
+          base: "",
+        },
+      },
     },
     compoundVariants: [
       {
@@ -203,6 +212,12 @@ export default function inputTheme(options: ThemeOptions = {}) {
           },
         },
       ]),
+      {
+        invalid: true as const,
+        class: {
+          base: `border-${errorColor} ring-2 ring-${errorColor}/20 focus:border-${errorColor} focus:ring-2 focus:ring-${errorColor}/20 data-[focused=true]:border-${errorColor} data-[focused=true]:ring-2 data-[focused=true]:ring-${errorColor}/20`,
+        },
+      },
     ],
     defaultVariants: {
       variant: "outline",
@@ -212,6 +227,7 @@ export default function inputTheme(options: ThemeOptions = {}) {
       trailing: false,
       highlight: false,
       disabled: false,
+      invalid: false,
     },
   });
 }

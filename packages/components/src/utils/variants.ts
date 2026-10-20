@@ -294,6 +294,20 @@ export function getUtilityKey(token: string): string | null {
     return sideMatch ? `${prefix}rounded-${sideMatch[1]}` : `${prefix}rounded`;
   }
 
+  // Ring utilities
+  if (main === "ring" || main.startsWith("ring-")) {
+    const val = main === "ring" ? "" : main.slice(5);
+    if (val === "" || val === "inset" || /^\d+$/.test(val))
+      return `${prefix}ring-width`;
+    if (val.startsWith("offset-")) {
+      const offsetVal = val.slice(7);
+      return /^\d+$/.test(offsetVal)
+        ? `${prefix}ring-offset-width`
+        : `${prefix}ring-offset-color`;
+    }
+    return `${prefix}ring-color`;
+  }
+
   // Shadow & Opacity & Z-Index
   if (main === "shadow" || main.startsWith("shadow-")) return `${prefix}shadow`;
   if (main.startsWith("opacity-")) return `${prefix}opacity`;
