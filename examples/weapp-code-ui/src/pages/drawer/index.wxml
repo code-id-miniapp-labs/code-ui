@@ -6,7 +6,6 @@
       Gesture-driven modal drawer with backdrop dimming and bottom/top/left/right placements.
     </view>
   </view>
-
   <view class="px-5 flex flex-col gap-6">
     <!-- Placements -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -27,31 +26,26 @@
         </c-button>
       </view>
     </view>
-
     <!-- State Indicator -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Drawer State</view>
       <view class="text-xs text-neutral-500">
-        Current status: <text class="font-bold text-neutral-800">{{drawerOpen ? 'Open (' + placement + ')' : 'Closed'}}</text>
+        Current status:
+        <text class="font-bold text-neutral-800">
+          {{drawerOpen ? 'Open (' + placement + ')' : 'Closed'}}
+        </text>
       </view>
     </view>
   </view>
-
   <!-- The Drawer Instance -->
-  <c-drawer
-    open="{{drawerOpen}}"
-    placement="{{placement}}"
-    bind:close="onDrawerClose"
-  >
+  <c-drawer open="{{drawerOpen}}" placement="{{placement}}" bind:close="onDrawerClose">
     <view class="p-6 flex flex-col gap-4">
       <view class="flex items-center justify-between">
         <view class="text-base font-bold text-neutral-900">Drawer Title</view>
-        <c-button size="xs" variant="ghost" color="neutral" bind:tap="closeDrawer">
-          ✕
-        </c-button>
+        <c-button size="xs" variant="ghost" color="neutral" bind:tap="closeDrawer">✕</c-button>
       </view>
       <view class="text-xs text-neutral-600 leading-relaxed">
-        This is a modal drawer rendered via Code UI's Zag-powered drawer machine.
+        This is a modal drawer rendered via Code UI's.
         Swipe to dismiss, tap the backdrop, or click the close button.
       </view>
       <view class="pt-2 flex gap-2">

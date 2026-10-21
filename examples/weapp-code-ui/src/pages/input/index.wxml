@@ -3,10 +3,9 @@
   <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
     <view class="text-xl font-extrabold text-neutral-950">Input</view>
     <view class="text-xs text-neutral-500 mt-1">
-      Single-line text input with Nuxt UI v4 styling, controlled value, clearable button, and Form integration.
+      Single-line text input with styling, controlled value, clearable button, and Form integration.
     </view>
   </view>
-
   <view class="px-5 flex flex-col gap-6">
     <!-- 1. Controlled Component -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -15,19 +14,14 @@
         Syncs state between page and machine context.
       </view>
       <view class="flex flex-col gap-3">
-        <c-input
-          value="{{controlledValue}}"
-          placeholder="Type something..."
-          bind:change="onControlledInput"
-          bind:focus="onInputFocus"
-          bind:blur="onInputBlur"
-        />
+        <c-input value="{{controlledValue}}" placeholder="Type something..." bind:change="onControlledInput" bind:focus="onInputFocus" bind:blur="onInputBlur" />
         <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
           <text class="text-neutral-500">Value:</text>
           <text class="font-bold text-neutral-900">{{controlledValue || '(empty)'}}</text>
         </view>
         <view class="text-xs text-neutral-400">
-          Last event: <text class="font-mono text-neutral-700">{{lastEvent}}</text>
+          Last event:
+          <text class="font-mono text-neutral-700">{{lastEvent}}</text>
         </view>
         <view class="flex gap-2 pt-1">
           <c-button size="sm" variant="outline" color="primary" bind:tap="setControlledPredefined">
@@ -39,7 +33,6 @@
         </view>
       </view>
     </view>
-
     <!-- 2. Variants -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Variants</view>
@@ -52,11 +45,14 @@
         <c-input variant="none" placeholder="None variant (borderless)" />
       </view>
     </view>
-
     <!-- 3. Colors & Ring Focus -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Colors (Tap to focus and see ring)</view>
-      <view class="text-xs text-neutral-400 mb-3">primary, success, warning, danger, info, neutral</view>
+      <view class="text-sm font-bold text-neutral-900 mb-1">
+        Colors (Tap to focus and see ring)
+      </view>
+      <view class="text-xs text-neutral-400 mb-3">
+        primary, success, warning, danger, info, neutral
+      </view>
       <view class="flex flex-col gap-2.5">
         <c-input color="primary" placeholder="Primary color" />
         <c-input color="success" placeholder="Success color" />
@@ -66,7 +62,6 @@
         <c-input color="neutral" placeholder="Neutral color" />
       </view>
     </view>
-
     <!-- 4. Sizes -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
@@ -79,7 +74,6 @@
         <c-input size="xl" placeholder="Extra large (xl)" />
       </view>
     </view>
-
     <!-- 5. Clearable & Features -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Clearable & Password Modes</view>
@@ -87,25 +81,16 @@
         Clearable displays a ✕ clear button when non-empty.
       </view>
       <view class="flex flex-col gap-3">
-        <c-input
-          clearable="{{true}}"
-          value="{{clearableValue}}"
-          placeholder="Clearable input"
-          bind:change="onClearableChange"
-          bind:clear="onInputClear"
-        />
-        <c-input
-          password="{{true}}"
-          value="{{passwordValue}}"
-          placeholder="Password mode"
-        />
+        <c-input clearable="{{true}}" value="{{clearableValue}}" placeholder="Clearable input" bind:change="onClearableChange" bind:clear="onInputClear" />
+        <c-input password="{{true}}" value="{{passwordValue}}" placeholder="Password mode" />
       </view>
     </view>
-
     <!-- 6. Leading & Trailing Slots -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Slots & Loading</view>
-      <view class="text-xs text-neutral-400 mb-3">Leading slot, trailing slot, and loading state.</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Leading slot, trailing slot, and loading state.
+      </view>
       <view class="flex flex-col gap-3">
         <c-input leading="{{true}}" placeholder="Search with leading slot">
           <text slot="leading" class="text-xs text-neutral-400">🔍</text>
@@ -116,7 +101,6 @@
         <c-input loading="{{true}}" placeholder="Loading state with spinner" />
       </view>
     </view>
-
     <!-- 7. Disabled, ReadOnly & Highlight -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Disabled, ReadOnly & Highlight</view>

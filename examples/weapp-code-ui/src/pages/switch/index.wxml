@@ -3,7 +3,7 @@
   <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
     <view class="text-xl font-extrabold text-neutral-950">Switch</view>
     <view class="text-xs text-neutral-500 mt-1">
-      Toggle switch control with Nuxt UI v4 styling, controlled checked, custom colors, sizes, and Form integration.
+      Toggle switch control with styling, controlled checked, custom colors, sizes, and Form integration.
     </view>
   </view>
   <view class="px-5 flex flex-col gap-6">
@@ -90,61 +90,31 @@
       <view class="text-xs text-neutral-400 mb-3">
         Integrated with c-form and c-form-field, supporting required validation rules, reset, and submit.
       </view>
-      <c-form
-        id="switch-demo-form"
-        focusOnError="{{true}}"
-        showErrors="{{true}}"
-        bind:submit="handleSwitchFormSubmit"
-        bind:error="handleSwitchFormError"
-      >
+      <c-form id="switch-demo-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleSwitchFormSubmit" bind:error="handleSwitchFormError">
         <view class="flex flex-col gap-4">
           <!-- 1. Controlled Switch inside Form -->
           <c-form-field name="emailNotifications">
-            <c-switch
-              name="emailNotifications"
-              color="primary"
-              label="Email Notifications (Controlled)"
-              description="State bound to page data.formEmailNotifications"
-              checked="{{formEmailNotifications}}"
-              bind:change="onFormEmailNotificationsChange"
-            />
+            <c-switch name="emailNotifications" color="primary" label="Email Notifications (Controlled)" description="State bound to page data.formEmailNotifications" checked="{{formEmailNotifications}}" bind:change="onFormEmailNotificationsChange" />
           </c-form-field>
-
           <view class="flex items-center justify-between text-xs bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-200">
             <text class="text-neutral-500">Page State (formEmailNotifications):</text>
-            <text class="font-bold font-mono text-neutral-900">{{formEmailNotifications ? 'true' : 'false'}}</text>
+            <text class="font-bold font-mono text-neutral-900">
+              {{formEmailNotifications ? 'true' : 'false'}}
+            </text>
           </view>
           <view class="flex gap-2">
             <c-button variant="soft" color="primary" size="xs" bind:tap="toggleFormControlled">
               Toggle Controlled Switch from Outside
             </c-button>
           </view>
-
           <!-- 2. Uncontrolled Switch inside Form -->
           <c-form-field name="autoRenew">
-            <c-switch
-              name="autoRenew"
-              color="info"
-              label="Auto-Renew Subscription (Uncontrolled)"
-              description="Save 20% on your membership with automatic renewals"
-              defaultChecked="{{true}}"
-            />
+            <c-switch name="autoRenew" color="info" label="Auto-Renew Subscription (Uncontrolled)" description="Save 20% on your membership with automatic renewals" defaultChecked="{{true}}" />
           </c-form-field>
-
           <!-- Switch 2 with Required Validation -->
-          <c-form-field
-            name="agreement"
-            rules="{{agreementRules}}"
-            required="{{true}}"
-          >
-            <c-switch
-              name="agreement"
-              color="success"
-              label="I accept the Terms and Conditions"
-              description="Required toggle before submitting"
-            />
+          <c-form-field name="agreement" rules="{{agreementRules}}" required="{{true}}">
+            <c-switch name="agreement" color="success" label="I accept the Terms and Conditions" description="Required toggle before submitting" />
           </c-form-field>
-
           <!-- Buttons -->
           <view class="flex flex-wrap gap-2 pt-1">
             <c-button variant="solid" color="primary" size="sm" bind:tap="submitSwitchForm">
@@ -154,7 +124,6 @@
               Reset Form
             </c-button>
           </view>
-
           <!-- Feedback Status Card -->
           <view wx:if="{{switchFormStatus}}" class="mt-1 px-3 py-2.5 rounded-xl text-xs bg-neutral-100 text-neutral-800 border border-neutral-200">
             <text class="font-bold text-neutral-950">{{switchFormStatus}}:</text>

@@ -18,14 +18,14 @@ Page({
       {
         id: "pin-input",
         name: "PinInput",
-        desc: "Zag.js OTP cells with auto-advance, password masking & separator dividers.",
+        desc: "OTP cells with auto-advance, password masking & separator dividers.",
         badge: "Interactive",
         path: "/pages/pin-input/index",
       },
       {
         id: "switch",
         name: "Switch",
-        desc: "Toggle switch with Nuxt UI v4 styling, controlled checked, custom colors, sizes, and Form link.",
+        desc: "Toggle switch, controlled checked, custom colors, sizes, and Form link.",
         badge: "Interactive",
         path: "/pages/switch/index",
       },
@@ -39,7 +39,7 @@ Page({
       {
         id: "textarea",
         name: "Textarea",
-        desc: "Multi-line textarea with Nuxt UI v4 styling, controlled value, character counter, auto-height, and Form link.",
+        desc: "Multi-line textarea, controlled value, character counter, auto-height, and Form link.",
         badge: "Interactive",
         path: "/pages/textarea/index",
       },

@@ -57,7 +57,9 @@ describe("@code-ui/core color generation", () => {
     const outlineSuccess = compounds.find(
       (c) => c.variant === "outline" && c.color === "success",
     );
-    expect(outlineSuccess?.class.root).toBe("border border-success text-success");
+    expect(outlineSuccess?.class.root).toBe(
+      "border border-success text-success",
+    );
   });
 
   it("defineTheme works seamlessly with createColorVariants and createColorCompoundVariants", () => {
@@ -93,7 +95,7 @@ describe("@code-ui/core color generation", () => {
     expect(colorTest).toBe("warning");
   });
 
-  it("provides Nuxt UI v4 theme definitions for card, chip, and pinInput", async () => {
+  it("provides theme definitions for card, chip, and pinInput", async () => {
     const { cardTheme, chipTheme, pinInputTheme } = await import("../src");
 
     const card = cardTheme();
@@ -155,4 +157,3 @@ describe("@code-ui/core color generation", () => {
     });
   });
 });
-

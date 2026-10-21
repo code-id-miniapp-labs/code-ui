@@ -23,7 +23,7 @@ const DEFAULT_SEMANTIC_COLORS = new Set([
 
 /**
  * Returns the component's TV theme extended with cui.config.ts overrides.
- * Cached so extending only runs once per component type (Nuxt UI v4 pattern).
+ * Cached so extending only runs once per component type.
  */
 export function getResolvedTheme<T extends (...args: any[]) => any>(
   componentName: string,
@@ -130,7 +130,6 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
 
 /**
  * Resolves final slot classes by passing local UI overrides into TV slot functions.
- * Matches Nuxt UI v4 slot resolution.
  */
 export function resolveSlots<
   T extends Record<string, ((opts?: any) => string) | undefined>,

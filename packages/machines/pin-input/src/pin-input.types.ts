@@ -95,7 +95,6 @@ export interface PinInputProps {
   /** Whether to select text on focus */
   selectOnFocus?: boolean | undefined;
   /**
-   * Nuxt UI-style separator configuration:
    * - number: Insert separator after every Nth input (e.g. 3 for 123-456)
    * - number[]: Insert separator after specific input counts (e.g. [3])
    * - boolean: If true, defaults to inserting after length / 2

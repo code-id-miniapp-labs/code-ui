@@ -62,7 +62,7 @@ describe("Pin Input Machine", () => {
     });
   });
 
-  describe("Nuxt UI-style Separator", () => {
+  describe("style Separator", () => {
     it("renders separators at regular intervals (e.g. separator: 3 for length 6)", () => {
       const machine = new MiniappMachine(pinInputMachine, {
         length: 6,
@@ -494,8 +494,8 @@ describe("Pin Input Machine", () => {
     });
   });
 
-  describe("Zag.js Per-Cell Input Props & Hidden Input", () => {
-    it("embeds Zag.js-compatible inputProps and separatorProps on every cell in inputs for each length", async () => {
+  describe("Per-Cell Input Props & Hidden Input", () => {
+    it("embeds inputProps and separatorProps on every cell in inputs for each length", async () => {
       const triggerEvent = vi.fn();
       const machine = new MiniappMachine(pinInputMachine, {
         id: "otp-1",
@@ -781,5 +781,3 @@ describe("Pin Input Machine", () => {
     });
   });
 });
-
-

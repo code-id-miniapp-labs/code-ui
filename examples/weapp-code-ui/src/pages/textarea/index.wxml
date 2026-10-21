@@ -3,7 +3,7 @@
   <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
     <view class="text-xl font-extrabold text-neutral-950">Textarea</view>
     <view class="text-xs text-neutral-500 mt-1">
-      Multi-line textarea with Nuxt UI v4 styling, controlled value, character counter, auto-height, and Form integration.
+      Multi-line textarea with styling, controlled value, character counter, auto-height, and Form integration.
     </view>
   </view>
   <view class="px-5 flex flex-col gap-6">
@@ -143,7 +143,7 @@
           <view class="text-xs font-semibold text-neutral-600 mb-1">
             Character Counter (maxlength 100):
           </view>
-          <c-textarea count="{{true}}" maxlength="{{100}}" defaultValue="Nuxt UI v4 style character counter pre-configured in the bottom right corner." placeholder="Type with counter..." />
+          <c-textarea count="{{true}}" maxlength="{{100}}" defaultValue="style character counter pre-configured in the bottom right corner." placeholder="Type with counter..." />
         </view>
         <view>
           <view class="text-xs font-semibold text-neutral-600 mb-1">Clearable:</view>

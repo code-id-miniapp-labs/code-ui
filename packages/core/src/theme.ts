@@ -32,7 +32,7 @@ export interface ThemeDefinition<
   defaultVariants?: DV;
 }
 
-/** Standard semantic colors supported across all component themes (mirroring Nuxt UI) */
+/** Standard semantic colors supported across all component themes */
 export const DEFAULT_THEME_COLORS = [
   "primary",
   "neutral",
@@ -76,7 +76,6 @@ export type ColorVariantRule<S extends ThemeSlots> = (
 
 /**
  * Automatically generates compoundVariants across an array of colors and variant rules.
- * Mirrors Nuxt UI's dynamic color compound variants generator.
  */
 export function createColorCompoundVariants<
   const C extends readonly string[] = typeof DEFAULT_THEME_COLORS,
@@ -128,7 +127,6 @@ export function defineTheme<
 
 /**
  * Type extractor that derives variant unions and slot keys from a theme definition.
- * Equivalent to Nuxt UI's ComponentConfig type extractor.
  *
  * @example
  * ```ts
