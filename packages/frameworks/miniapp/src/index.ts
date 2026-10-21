@@ -33,6 +33,9 @@ export {
   cuiFormParentBehavior,
   cuiFormFieldBehavior,
   cuiFormFieldWrapperBehavior,
+  cuiRadioGroupBehavior,
+  cuiRadioGroupParentBehavior,
+  cuiRadioItemBehavior,
 } from "./behavior";
 export type { CreateMachineBehaviorOptions } from "./behavior";
 export { wxButtonBehavior } from "./behaviors/button";

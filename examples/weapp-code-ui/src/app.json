@@ -9,6 +9,7 @@
     "pages/input/index",
     "pages/pin-input/index",
     "pages/switch/index",
+    "pages/radio/index",
     "pages/form/index",
     "pages/use-child/index",
     "pages/textarea/index"

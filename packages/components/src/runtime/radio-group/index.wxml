@@ -1,0 +1,46 @@
+<view
+  class="{{classes.root}}"
+  data-scope="radio-group"
+  data-part="root"
+  role="radiogroup"
+  aria-disabled="{{cRadioGroup.disabled}}"
+  aria-invalid="{{cRadioGroup.invalid}}"
+  aria-required="{{cRadioGroup.required}}"
+>
+  <view wx:if="{{cRadioGroup.legend || legend}}" class="{{classes.legend}}">
+    {{cRadioGroup.legend || legend}}
+  </view>
+  <slot wx:else name="legend" />
+
+  <view class="{{classes.fieldset}}" role="presentation">
+    <block wx:if="{{cRadioGroup.items && cRadioGroup.items.length > 0}}">
+      <c-radio
+        wx:for="{{cRadioGroup.items}}"
+        wx:key="value"
+        value="{{item.value}}"
+        label="{{item.label}}"
+        description="{{item.description}}"
+        disabled="{{item.disabled}}"
+        checked="{{item.checked}}"
+        variant="{{item.variant || cRadioGroup.variant || variant}}"
+        color="{{item.color || cRadioGroup.color || color}}"
+        size="{{cRadioGroup.size || size}}"
+        ui="{{item.ui || cRadioGroup.ui || ui}}"
+        bind:change="handleItemTap"
+        data-value="{{item.value}}"
+      />
+    </block>
+
+    <slot />
+  </view>
+
+  <view wx:if="{{cRadioGroup.help || help}}" class="{{classes.help}}">
+    {{cRadioGroup.help || help}}
+  </view>
+  <slot wx:else name="help" />
+
+  <view wx:if="{{cRadioGroup.error || error}}" class="{{classes.error}}">
+    {{cRadioGroup.error || error}}
+  </view>
+  <slot wx:else name="error" />
+</view>

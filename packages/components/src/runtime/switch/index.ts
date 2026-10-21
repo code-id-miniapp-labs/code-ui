@@ -49,7 +49,7 @@ Component(
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
         const loading = Boolean(api?.loading ?? this.data.loading);
         const checked = Boolean(api?.checked ?? this.data.checked);
-        const size = api?.size ?? this.data.size ?? "md";
+        const size = api?.size ?? this.data.size;
         const color = api?.color ?? this.data.color;
         const required = Boolean(api?.required ?? this.data.required);
         const ui = this.data.ui;

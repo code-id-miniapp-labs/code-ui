@@ -56,7 +56,7 @@ Component(
         const api = this.data.pinInput;
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size ?? "md";
+        const size = api?.size ?? this.data.size;
         const variant = api?.variant ?? this.data.variant;
         const color = api?.color ?? this.data.color;
         const highlight = Boolean(api?.highlight ?? this.data.highlight);

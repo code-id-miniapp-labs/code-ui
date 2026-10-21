@@ -17,6 +17,11 @@ import type {
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
+import type {
+  RadioGroupProps,
+  RadioGroupValueChangeDetails,
+} from "@code-ui/radio-group";
+import type { RadioProps } from "@code-ui/radio";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
   TextareaProps,
@@ -302,4 +307,44 @@ export interface CuiTextareaElementProps extends CuiCommonElementProps {
   onBlur?: (event: WechatMiniprogram.CustomEvent) => void;
   onConfirm?: (event: WechatMiniprogram.CustomEvent) => void;
 }
+
+export interface CuiRadioGroupElementProps extends CuiCommonElementProps {
+  ui?: RadioGroupProps["ui"];
+  name?: string;
+  value?: string | null;
+  defaultValue?: string | null;
+  color?: RadioGroupProps["color"];
+  size?: RadioGroupProps["size"];
+  orientation?: RadioGroupProps["orientation"];
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean | null;
+  legend?: string;
+  help?: string;
+  error?: string;
+  items?: RadioGroupProps["items"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<RadioGroupValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiRadioElementProps extends CuiCommonElementProps {
+  ui?: RadioProps["ui"];
+  value?: string;
+  label?: string;
+  description?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  invalid?: boolean | null;
+  color?: RadioProps["color"];
+  size?: RadioProps["size"];
+  variant?: RadioProps["variant"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<{ value: string; checked: boolean }>,
+  ) => void;
+}
+
 

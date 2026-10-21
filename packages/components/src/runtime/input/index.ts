@@ -6,11 +6,7 @@ import {
   getApi,
 } from "../_shared";
 import { resolveSlots } from "../../utils/ui";
-import {
-  inputMachine,
-  connectInput,
-  defaultInputProps,
-} from "@code-ui/input";
+import { inputMachine, connectInput, defaultInputProps } from "@code-ui/input";
 import themeConfig from "virtual:cui/theme/input";
 import { tv } from "../../utils/variants";
 
@@ -47,19 +43,17 @@ Component(
         const api = this.data.input;
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size ?? "md";
+        const size = api?.size ?? this.data.size;
         const variant = api?.variant ?? this.data.variant;
         const color = api?.color ?? this.data.color;
         const highlight = Boolean(api?.highlight ?? this.data.highlight);
-        const hasLeading = Boolean(
-          this.data.leading || this.data.leadingIcon,
-        );
+        const hasLeading = Boolean(this.data.leading || this.data.leadingIcon);
         const hasTrailing = Boolean(
           this.data.trailing ||
-            this.data.trailingIcon ||
-            api?.isClearable ||
-            this.data.clearable ||
-            this.data.loading,
+          this.data.trailingIcon ||
+          api?.isClearable ||
+          this.data.clearable ||
+          this.data.loading,
         );
         const ui = this.data.ui;
 

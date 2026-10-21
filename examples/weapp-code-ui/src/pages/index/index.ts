@@ -30,6 +30,13 @@ Page({
         path: "/pages/switch/index",
       },
       {
+        id: "radio",
+        name: "Radio & RadioGroup",
+        desc: "Accessible radio buttons with pure CSS geometry, card variants, horizontal layout, useChild & Form link.",
+        badge: "Interactive",
+        path: "/pages/radio/index",
+      },
+      {
         id: "textarea",
         name: "Textarea",
         desc: "Multi-line textarea with Nuxt UI v4 styling, controlled value, character counter, auto-height, and Form link.",

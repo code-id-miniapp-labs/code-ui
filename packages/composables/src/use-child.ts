@@ -297,19 +297,40 @@ export function useChild<
       if (typeof prop === "string" && prop in targetObj) {
         return targetObj[prop];
       }
+      const snap = latestSnapshot ?? computeSnapshot();
+      if (snap && typeof prop === "string" && prop in snap) {
+        const val = (snap as any)[prop];
+        return typeof val === "function" ? val.bind(snap) : val;
+      }
       return Reflect.get(targetObj, prop, receiver);
     },
     has(targetObj, prop) {
       if (isApiDirty) syncApiTarget();
-      return prop in targetObj;
+      if (prop in targetObj) return true;
+      const snap = latestSnapshot ?? computeSnapshot();
+      return snap ? prop in snap : false;
     },
     ownKeys(targetObj) {
       if (isApiDirty) syncApiTarget();
-      return Reflect.ownKeys(targetObj);
+      const snap = latestSnapshot ?? computeSnapshot();
+      const keys = new Set(Reflect.ownKeys(targetObj));
+      if (snap) {
+        for (const k of Reflect.ownKeys(snap)) {
+          keys.add(k);
+        }
+      }
+      return Array.from(keys);
     },
     getOwnPropertyDescriptor(targetObj, prop) {
       if (isApiDirty) syncApiTarget();
-      return Reflect.getOwnPropertyDescriptor(targetObj, prop);
+      if (prop in targetObj) {
+        return Reflect.getOwnPropertyDescriptor(targetObj, prop);
+      }
+      const snap = latestSnapshot ?? computeSnapshot();
+      if (snap && prop in snap) {
+        return Reflect.getOwnPropertyDescriptor(snap, prop);
+      }
+      return undefined;
     },
   });
 

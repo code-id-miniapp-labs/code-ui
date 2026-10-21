@@ -4,6 +4,8 @@ export * from "@code-ui/form";
 export * from "@code-ui/form-field";
 export * from "@code-ui/input";
 export * from "@code-ui/pin-input";
+export * from "@code-ui/radio";
+export * from "@code-ui/radio-group";
 export * from "@code-ui/switch";
 export * from "@code-ui/context";
 export * from "@code-ui/miniapp";

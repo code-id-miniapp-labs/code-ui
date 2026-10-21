@@ -38,7 +38,7 @@ export const bindable: BindableFn = Object.assign(
           console.log(`[bindable > ${props().debug}] setValue`, { next, prev });
         }
 
-        if (!controlled()) _signal(next);
+        _signal(next);
 
         if (!eq(next, prev)) {
           props().onChange?.(next, prev);

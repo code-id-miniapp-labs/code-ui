@@ -50,7 +50,7 @@ Component(
         return this.data.formField?.displayError ?? "";
       },
       classes() {
-        const size = this.data.formField?.size ?? "md";
+        const size = this.data.formField?.size;
         const disabled = Boolean(this.data.formField?.disabled);
         const required = Boolean(this.data.formField?.required);
         const ui = this.data.ui;
