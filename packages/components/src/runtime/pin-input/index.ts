@@ -45,7 +45,7 @@ Component(
         optionalTypes: [Number, Array],
         value: false,
       },
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -71,7 +71,7 @@ Component(
           disabled,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 

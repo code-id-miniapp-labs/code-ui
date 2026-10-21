@@ -1,0 +1,5 @@
+page, view, text, image {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -45,7 +45,7 @@ Component(
         optionalTypes: [String],
         value: ["input", "change", "blur"],
       },
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -61,7 +61,7 @@ Component(
           disabled,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 

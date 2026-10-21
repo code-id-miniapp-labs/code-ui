@@ -1,0 +1,4 @@
+<block>
+  <image wx:if="{{isPath}}" class="{{classes.root}}" src="{{resolvedName}}" mode="aspectFit" data-scope="icon" data-part="root" />
+  <view wx:elif="{{resolvedName}}" class="{{resolvedName}} {{classes.root}}" data-scope="icon" data-part="root" aria-hidden="true" />
+</block>

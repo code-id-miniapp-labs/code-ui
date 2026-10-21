@@ -1,8 +1,14 @@
 import { loadConfig } from "c12";
-import { componentThemes, type CodeUIConfig } from "@code-ui/core";
+import {
+  componentThemes,
+  ICON_COLLECTION_PRESETS,
+  getActiveCollections,
+  type CodeUIConfig,
+} from "@code-ui/core";
 import type {
   AutoImportOptions,
   CodeUIVitePluginOptions,
+  IconsPluginOptions,
   ResolvedAutoImportOptions,
   ResolvedTreeShakeOptions,
   TreeShakeOptions,
@@ -42,6 +48,13 @@ export function mergeConfig(
         ...overrides.ui?.colors,
       };
     }
+  }
+
+  if (base.icons || overrides.icons) {
+    merged.icons = {
+      ...base.icons,
+      ...overrides.icons,
+    };
   }
 
   if (base.components || overrides.components) {
@@ -131,7 +144,13 @@ export class PluginConfigManager {
     this.options = options;
     this.resolvedConfig = mergeConfig(
       { prefix: "cui" },
-      { ui: options.ui, components: options.components },
+      {
+        ui: options.ui,
+        components: options.components,
+        icons: isPlainObject(options.icons)
+          ? (options.icons as any)
+          : undefined,
+      },
     );
   }
 
@@ -156,6 +175,9 @@ export class PluginConfigManager {
       this.resolvedConfig = mergeConfig(config || { prefix: "cui" }, {
         ui: this.options.ui,
         components: this.options.components,
+        icons: isPlainObject(this.options.icons)
+          ? (this.options.icons as any)
+          : undefined,
       });
 
       if (configFile) {
@@ -165,7 +187,13 @@ export class PluginConfigManager {
       console.warn("[code-ui] Failed to load cui.config.ts:", err);
       this.resolvedConfig = mergeConfig(
         { prefix: "cui" },
-        { ui: this.options.ui, components: this.options.components },
+        {
+          ui: this.options.ui,
+          components: this.options.components,
+          icons: isPlainObject(this.options.icons)
+            ? (this.options.icons as any)
+            : undefined,
+        },
       );
     } finally {
       this.invalidateCache();
@@ -263,6 +291,48 @@ if (import.meta.hot) {
       }
     }
 
+    const iconsConfig = this.resolvedConfig.icons;
+    const prefix =
+      typeof iconsConfig?.prefix === "string" ? iconsConfig.prefix : "i";
+    const collections = getActiveCollections(iconsConfig);
+
+    for (const col of collections) {
+      if (col in ICON_COLLECTION_PRESETS) {
+        const preset =
+          ICON_COLLECTION_PRESETS[
+            col as keyof typeof ICON_COLLECTION_PRESETS
+          ];
+        allThemeClasses.add(`${prefix}-${col}-${preset.check}`);
+        allThemeClasses.add(`${prefix}-${col}-${preset.minus}`);
+        allThemeClasses.add(`${prefix}-${col}-${preset.close}`);
+        allThemeClasses.add(`${prefix}-${col}-${preset.loading}`);
+      } else {
+        allThemeClasses.add(`${prefix}-${col}-check`);
+        allThemeClasses.add(`${prefix}-${col}-minus`);
+        allThemeClasses.add(`${prefix}-${col}-close`);
+        allThemeClasses.add(`${prefix}-${col}-loading`);
+      }
+    }
+
+    if (iconsConfig) {
+      for (const [key, val] of Object.entries(iconsConfig)) {
+        if (
+          key === "collection" ||
+          key === "collections" ||
+          key === "prefix" ||
+          !val
+        )
+          continue;
+        if (
+          typeof val === "string" &&
+          !val.startsWith("data:") &&
+          !val.includes("/")
+        ) {
+          allThemeClasses.add(val);
+        }
+      }
+    }
+
     if (allThemeClasses.size === 0) {
       this.cachedInlineThemeSource = "";
       return "";
@@ -275,6 +345,16 @@ if (import.meta.hot) {
     const directive = `\n@source inline("${inlineClasses}");\n`;
     this.cachedInlineThemeSource = directive;
     return directive;
+  }
+
+  public getIconsPluginOptions(): IconsPluginOptions | null {
+    const raw = this.options.icons;
+    if (raw === false) return null;
+    if (raw === true) return { autoPlugin: true };
+    if (isPlainObject(raw)) {
+      return raw as IconsPluginOptions;
+    }
+    return { autoPlugin: "auto" };
   }
 
   public getThemeCSS(): string {

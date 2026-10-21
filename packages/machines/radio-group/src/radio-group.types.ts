@@ -113,10 +113,6 @@ export interface RadioGroupProps {
   required?: boolean | undefined;
   /** Legend / group label */
   legend?: string | undefined;
-  /** Helper text */
-  help?: string | undefined;
-  /** Error message */
-  error?: string | undefined;
   /** Item options rendered automatically via wx:for */
   items?: (string | RadioGroupItemRaw)[] | undefined;
   /** Callback fired when selected value changes */
@@ -138,8 +134,6 @@ export type RadioGroupContext = {
   orientation: RadioGroupOrientation;
   variant: RadioGroupVariant;
   legend: string;
-  help: string;
-  error: string;
   items: (string | RadioGroupItemRaw)[];
   ui: RadioGroupUI;
   fieldDisabled: boolean;
@@ -210,10 +204,6 @@ export interface RadioGroupApi {
   variant: RadioGroupVariant;
   /** Legend title */
   legend: string;
-  /** Help message */
-  help: string;
-  /** Error message */
-  error: string;
   /** Pre-computed items with state and props for WXML wx:for rendering */
   items: RadioGroupItem[];
   /** Tap handler for precomputed wx:for items */

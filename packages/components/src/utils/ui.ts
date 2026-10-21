@@ -99,7 +99,6 @@ export function getResolvedTheme<T extends (...args: any[]) => any>(
 
   const globalSlots = globalConfig?.slots;
 
-  // Wrap so globalConfig.slots is applied with override priority over default variant classes
   const resolvedThemeFn = ((props?: any) => {
     const slotFns = extendedTV(props) as any;
     if (!globalSlots || typeof slotFns !== "object" || slotFns === null) {

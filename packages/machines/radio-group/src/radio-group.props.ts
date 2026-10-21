@@ -14,8 +14,6 @@ export const defaultRadioGroupProps: RadioGroupProps = {
   name: "",
   form: "",
   legend: "",
-  help: "",
-  error: "",
   items: [],
   ui: {},
 };

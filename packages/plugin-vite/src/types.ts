@@ -13,6 +13,32 @@ export interface TreeShakeOptions {
   library?: string;
 }
 
+export interface IconsPluginOptions {
+  /**
+   * Whether to auto-inject the Tailwind CSS v4 icon plugin directive into app.css.
+   * - 'auto' (default): checks if @egoist/tailwindcss-icons is installed in node_modules, and injects if present.
+   * - true: always inject.
+   * - false: never inject.
+   */
+  autoPlugin?: boolean | "auto";
+  /**
+   * Prefix for icon classes. Default: "i"
+   */
+  prefix?: string;
+  /**
+   * Scale relative to current font size. Default: 1
+   */
+  scale?: number;
+  /**
+   * List of icon collection names to support.
+   */
+  collections?: string[];
+  /**
+   * Extra CSS properties or plugin options passed to the icon plugin.
+   */
+  extraProperties?: Record<string, string>;
+}
+
 export interface CodeUIVitePluginOptions {
   cwd?: string;
   configFile?: string;
@@ -24,6 +50,7 @@ export interface CodeUIVitePluginOptions {
   autoSource?: boolean;
   autoImport?: boolean | AutoImportOptions;
   treeShake?: boolean | TreeShakeOptions;
+  icons?: CodeUIConfig["icons"] | boolean | IconsPluginOptions;
   ui?: CodeUIConfig["ui"];
   components?: CodeUIConfig["components"];
 }

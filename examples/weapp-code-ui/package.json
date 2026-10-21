@@ -37,12 +37,17 @@
     "@code-ui/plugin-vite": "workspace:*"
   },
   "devDependencies": {
+    "@code-ui/checkbox": "workspace:*",
+    "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/input": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
+    "@egoist/tailwindcss-icons": "^1.9.2",
     "@icebreakers/eslint-config": "^8.0.2",
     "@icebreakers/stylelint-config": "^5.1.2",
+    "@iconify-json/lucide": "^1.2.146",
+    "@iconify-json/tabler": "^1.2.42",
     "@types/node": "^26.6.2",
     "eslint": "^10.11.0",
     "miniprogram-api-typings": "^5.2.3",

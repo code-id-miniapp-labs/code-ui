@@ -45,7 +45,7 @@ Component(
           open: isOpen,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 
@@ -74,7 +74,7 @@ Component(
     },
 
     properties: createProperties(defaultDrawerProps, {
-      class: {
+      className: {
         type: String,
         value: "",
       },

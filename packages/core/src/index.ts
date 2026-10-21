@@ -72,7 +72,19 @@ export type {
   ComponentRegistry,
   KnownComponentSlots,
   SlotRecord,
+  IconsConfig,
+  BuiltinIconCollection,
 } from "./config";
+
+export {
+  DEFAULT_ICONS,
+  DEFAULT_SVG_ICONS,
+  ICON_COLLECTION_PRESETS,
+  getActiveCollections,
+  getIcons,
+  getIcon,
+} from "./icons";
+export type { DefaultIconName, ResolvedIcons } from "./icons";
 
 export {
   defineTheme,
@@ -95,10 +107,13 @@ export type {
 export * as componentThemes from "./theme/definitions";
 export { default as buttonTheme } from "./theme/definitions/button";
 export { default as cardTheme } from "./theme/definitions/card";
+export { default as checkboxTheme } from "./theme/definitions/checkbox";
+export { default as checkboxGroupTheme } from "./theme/definitions/checkbox-group";
 export { default as chipTheme } from "./theme/definitions/chip";
 export { default as drawerTheme } from "./theme/definitions/drawer";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
+export { default as iconTheme } from "./theme/definitions/icon";
 export { default as inputTheme } from "./theme/definitions/input";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
 export { default as radioTheme } from "./theme/definitions/radio";

@@ -1,42 +1,53 @@
 {
-  "description": "项目配置文件",
-  "miniprogramRoot": "dist/",
-  "compileType": "miniprogram",
-  "setting": {
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    },
-    "coverView": false,
-    "postcss": false,
-    "minified": false,
-    "enhance": false,
-    "showShadowRootInWxmlPanel": false,
-    "packNpmRelationList": [],
-    "ignoreUploadUnusedFiles": true,
-    "compileHotReLoad": false,
-    "skylineRenderEnable": false,
-    "packNpmManually": false,
-    "es6": true,
-    "minifyWXML": true
-  },
-  "simulatorType": "wechat",
-  "simulatorPluginLibVersion": {},
-  "condition": {
-    "miniprogram": {
-      "list": []
-    }
-  },
-  "srcMiniprogramRoot": "dist/",
-  "editorSetting": {
-    "tabIndent": "insertSpaces",
-    "tabSize": 2
-  },
-  "libVersion": "3.13.2",
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
-  "appid": "touristappid"
+	"description": "项目配置文件",
+	"miniprogramRoot": "dist/",
+	"compileType": "miniprogram",
+	"setting": {
+		"babelSetting": {
+			"ignore": [],
+			"disablePlugins": [],
+			"outputPath": ""
+		},
+		"coverView": false,
+		"postcss": false,
+		"minified": false,
+		"enhance": false,
+		"showShadowRootInWxmlPanel": false,
+		"packNpmRelationList": [],
+		"ignoreUploadUnusedFiles": true,
+		"compileHotReLoad": false,
+		"skylineRenderEnable": false,
+		"packNpmManually": false,
+		"es6": true,
+		"minifyWXML": true,
+		"newFeature": true,
+		"urlCheck": false,
+		"nodeModules": true,
+		"autoAudits": false,
+		"uploadWithSourceMap": true,
+		"uglifyFileName": true,
+		"remoteDebugLogEnable": true,
+		"prefetch": false
+	},
+	"simulatorType": "wechat",
+	"simulatorPluginLibVersion": {},
+	"srcMiniprogramRoot": "dist/",
+	"editorSetting": {
+		"tabIndent": "insertSpaces",
+		"tabSize": 2
+	},
+	"libVersion": "3.13.2",
+	"packOptions": {
+		"ignore": [],
+		"include": []
+	},
+	"appid": "touristappid",
+	"TCSASappid": "touristId",
+	"projectname": "weapp-code-ui-icon",
+	"scripts": {},
+	"condition": {
+		"miniprogram": {
+			"list": []
+		}
+	}
 }

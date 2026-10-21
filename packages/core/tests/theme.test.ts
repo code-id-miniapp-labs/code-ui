@@ -127,7 +127,77 @@ describe("@code-ui/core color generation", () => {
       size: "md",
     });
 
-    const { inputTheme, switchTheme } = await import("../src");
+    const {
+      checkboxTheme,
+      inputTheme,
+      switchTheme,
+      iconTheme,
+      getIcons,
+      getIcon,
+    } = await import("../src");
+    const checkbox = checkboxTheme();
+    expect(checkbox.slots).toHaveProperty("root");
+    expect(checkbox.slots).toHaveProperty("base");
+    expect(checkbox.slots).toHaveProperty("indicator");
+    expect(checkbox.slots).toHaveProperty("icon");
+    expect(checkbox.slots).toHaveProperty("wrapper");
+    expect(checkbox.slots).toHaveProperty("label");
+    expect(checkbox.slots).toHaveProperty("description");
+    expect(checkbox.defaultVariants).toMatchObject({
+      variant: "outline",
+      color: "primary",
+      size: "md",
+      checked: false,
+      indeterminate: false,
+    });
+    const icon = iconTheme();
+    expect(Object.keys(icon.slots)).toEqual(["root"]);
+    expect(icon.variants).toEqual({});
+    expect(getIcons().check).toBe("i-lucide-check");
+    expect(getIcon("check")).toBe("i-lucide-check");
+    expect(getIcon("minus")).toBe("i-lucide-minus");
+    expect(getIcon("close")).toBe("i-lucide-x");
+    expect(getIcon("loading")).toBe("i-lucide-loader-circle");
+
+    // Multiple collections: first entry is the primary (drives default aliases)
+    const { setConfig, resetConfig, getActiveCollections } =
+      await import("../src");
+    setConfig({
+      icons: {
+        collections: ["tabler", "lucide", "mdi"],
+      },
+    });
+    expect(getActiveCollections()).toEqual(["tabler", "lucide", "mdi"]);
+    expect(getIcon("check")).toBe("i-tabler-check");
+    expect(getIcon("lucide:check")).toBe("i-lucide-check");
+    expect(getIcon("mdi:loading")).toBe("i-mdi-loading");
+    expect(getIcon("tabler:home")).toBe("i-tabler-home");
+    expect(getIcon("lucide:heart")).toBe("i-lucide-heart");
+    resetConfig();
+
+    setConfig({ icons: { collections: ["tabler"] } });
+    expect(getIcon("check")).toBe("i-tabler-check");
+    expect(getIcon("minus")).toBe("i-tabler-minus");
+    expect(getIcon("close")).toBe("i-tabler-x");
+    expect(getIcon("loading")).toBe("i-tabler-loader-2");
+    resetConfig();
+
+    // Test custom prefix and granular overrides
+    setConfig({
+      icons: {
+        collections: ["mdi"],
+        prefix: "icon",
+        check: "icon-custom-check",
+        search: "icon-mdi-magnify",
+      },
+    });
+    expect(getIcon("check")).toBe("icon-custom-check");
+    expect(getIcon("minus")).toBe("icon-mdi-minus");
+    expect(getIcon("close")).toBe("icon-mdi-close");
+    expect(getIcon("loading")).toBe("icon-mdi-loading");
+    expect(getIcon("search")).toBe("icon-mdi-magnify");
+    resetConfig();
+
     const input = inputTheme();
     expect(input.slots).toHaveProperty("root");
     expect(input.slots).toHaveProperty("base");

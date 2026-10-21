@@ -1,4 +1,12 @@
 import type { ButtonProps } from "@code-ui/button";
+import type {
+  CheckboxProps,
+  CheckboxCheckedChangeDetails,
+} from "@code-ui/checkbox";
+import type {
+  CheckboxGroupProps,
+  CheckboxGroupValueChangeDetails,
+} from "@code-ui/checkbox-group";
 import type { DrawerProps } from "@code-ui/drawer";
 import type {
   FormErrorDetails,
@@ -69,6 +77,31 @@ export interface CuiCardElementProps extends CuiCommonElementProps {
   description?: string;
   showHeader?: boolean;
   showFooter?: boolean;
+}
+
+export interface CuiCheckboxElementProps extends CuiCommonElementProps {
+  ui?: CheckboxProps["ui"];
+  name?: string;
+  value?: string;
+  label?: string;
+  description?: string;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  indeterminate?: boolean;
+  defaultIndeterminate?: boolean;
+  color?: CheckboxProps["color"];
+  size?: CheckboxProps["size"];
+  variant?: "outline" | "card" | (string & {});
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean | null;
+  icon?: string;
+  indeterminateIcon?: string;
+  customIndicator?: boolean;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<CheckboxCheckedChangeDetails>,
+  ) => void;
 }
 
 export interface CuiChipElementProps extends CuiCommonElementProps {
@@ -237,6 +270,14 @@ export interface CuiFormFieldElementProps extends CuiCommonElementProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
+export interface CuiIconElementProps extends CuiCommonElementProps {
+  ui?: Partial<Record<"root" | "icon" | "image", string>>;
+  name?: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | (string & {});
+  color?: ThemeColor;
+  spin?: boolean;
+}
+
 export interface CuiSwitchElementProps extends CuiCommonElementProps {
   ui?: SwitchProps["ui"];
   name?: string;
@@ -346,5 +387,30 @@ export interface CuiRadioElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<{ value: string; checked: boolean }>,
   ) => void;
 }
+
+export interface CuiCheckboxGroupElementProps extends CuiCommonElementProps {
+  ui?: CheckboxGroupProps["ui"];
+  name?: string;
+  value?: string[] | null;
+  defaultValue?: string[] | null;
+  color?: CheckboxGroupProps["color"];
+  size?: CheckboxGroupProps["size"];
+  orientation?: CheckboxGroupProps["orientation"];
+  variant?: CheckboxGroupProps["variant"];
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean | null;
+  legend?: string;
+  help?: string;
+  error?: string;
+  min?: number | null;
+  max?: number | null;
+  items?: CheckboxGroupProps["items"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<CheckboxGroupValueChangeDetails>,
+  ) => void;
+}
+
 
 

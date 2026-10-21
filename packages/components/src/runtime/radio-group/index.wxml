@@ -33,14 +33,4 @@
 
     <slot />
   </view>
-
-  <view wx:if="{{cRadioGroup.help || help}}" class="{{classes.help}}">
-    {{cRadioGroup.help || help}}
-  </view>
-  <slot wx:else name="help" />
-
-  <view wx:if="{{cRadioGroup.error || error}}" class="{{classes.error}}">
-    {{cRadioGroup.error || error}}
-  </view>
-  <slot wx:else name="error" />
 </view>

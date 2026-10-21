@@ -35,8 +35,6 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
   const orientation = context.get("orientation");
   const variant = context.get("variant");
   const legend = context.get("legend") ?? "";
-  const help = context.get("help") ?? "";
-  const error = context.get("error") ?? "";
 
   const getItemProps = (item: { value: string; disabled?: boolean | undefined }) => {
     const itemChecked = currentValue === item.value;
@@ -120,8 +118,6 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     orientation,
     variant,
     legend,
-    help,
-    error,
     items,
     handleItemTap: (e?: any) => {
       const val = e?.currentTarget?.dataset?.value ?? e?.detail?.value;

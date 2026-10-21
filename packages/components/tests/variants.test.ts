@@ -6,6 +6,9 @@ import {
   pinInputTheme as createPinInputTheme,
   radioTheme as createRadioTheme,
   radioGroupTheme as createRadioGroupTheme,
+  checkboxTheme as createCheckboxTheme,
+  checkboxGroupTheme as createCheckboxGroupTheme,
+  iconTheme as createIconTheme,
   textareaTheme as createTextareaTheme,
   resetConfig,
   setConfig,
@@ -20,6 +23,9 @@ import {
 const buttonTheme = tv(createButtonTheme());
 const radioTheme = tv(createRadioTheme());
 const radioGroupTheme = tv(createRadioGroupTheme());
+const checkboxTheme = tv(createCheckboxTheme());
+const checkboxGroupTheme = tv(createCheckboxGroupTheme());
+const iconTheme = tv(createIconTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -614,4 +620,99 @@ describe("dedupeClasses ring utilities", () => {
     ).toBe("focus:ring-danger/20 focus:border-danger");
   });
 });
+
+describe("iconTheme resolution", () => {
+  it("defaults to a 1em, non-shrinking box", () => {
+    const slots = resolveSlots(iconTheme() as any);
+    expect(slots.root).toContain("shrink-0");
+    expect(slots.root).toContain(escapeClass("size-[1em]"));
+  });
+
+  it("accepts size, color and animation as plain classes", () => {
+    const slots = resolveSlots(
+      iconTheme() as any,
+      undefined,
+      "size-5 text-danger animate-spin",
+    );
+    // user size replaces the 1em default instead of stacking with it
+    expect(slots.root).not.toContain(escapeClass("size-[1em]"));
+    expect(slots.root).toContain("size-5");
+    expect(slots.root).toContain("text-danger");
+    expect(slots.root).toContain("animate-spin");
+  });
+});
+
+describe("checkboxTheme resolution", () => {
+  it("resolves unchecked state", () => {
+    const slots = resolveSlots(checkboxTheme() as any);
+    expect(slots.base).toContain("border-neutral-300");
+    expect(slots.indicator).toContain("opacity-0");
+  });
+
+  it("resolves checked state with color", () => {
+    const slots = resolveSlots(
+      checkboxTheme({ checked: true, color: "primary" }) as any,
+    );
+    expect(slots.base).toContain("bg-primary");
+    expect(slots.indicator).toContain("opacity-100");
+  });
+
+  it("resolves indeterminate state", () => {
+    const slots = resolveSlots(
+      checkboxTheme({ indeterminate: true, color: "danger" }) as any,
+    );
+    expect(slots.base).toContain("bg-danger");
+    expect(slots.indicator).toContain("opacity-100");
+  });
+
+  it("resolves card variant", () => {
+    const slots = resolveSlots(
+      checkboxTheme({ variant: "card", checked: true, color: "primary" }) as any,
+    );
+    expect(slots.root).toContain("border-primary");
+    expect(slots.base).toContain("bg-primary");
+  });
+
+  it("resolves invalid state", () => {
+    const slots = resolveSlots(
+      checkboxTheme({ invalid: true, checked: true }) as any,
+    );
+    expect(slots.base).toContain("bg-danger");
+  });
+});
+
+describe("checkboxGroupTheme resolution", () => {
+  it("resolves default slots and orientation", () => {
+    const slots = resolveSlots(checkboxGroupTheme() as any);
+    expect(slots.root).toContain("relative");
+    expect(slots.fieldset).toContain("flex-col");
+    expect(slots.legend).toContain("font-medium");
+    expect(slots.base).toContain("rounded");
+  });
+
+  it("resolves horizontal orientation", () => {
+    const slots = resolveSlots(
+      checkboxGroupTheme({ orientation: "horizontal" }) as any,
+    );
+    expect(slots.fieldset).toContain("flex-row");
+  });
+
+  it("resolves card variant and size", () => {
+    const slots = resolveSlots(
+      checkboxGroupTheme({ variant: "card", size: "lg" }) as any,
+    );
+    expect(slots.item).toContain("rounded-xl");
+    expect(slots.base).toContain("w-5");
+  });
+
+  it("resolves required and invalid states", () => {
+    const slots = resolveSlots(
+      checkboxGroupTheme({ required: true, invalid: true }) as any,
+    );
+    expect(slots.legend).toContain("after_ctext-danger");
+    expect(slots.base).toContain("border-danger");
+  });
+});
+
+
 

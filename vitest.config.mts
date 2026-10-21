@@ -14,6 +14,8 @@ export default defineConfig({
         "packages/frameworks/miniapp/src",
       ),
       "@code-ui/button": resolve(import.meta.dirname, "packages/machines/button/src"),
+      "@code-ui/checkbox": resolve(import.meta.dirname, "packages/machines/checkbox/src"),
+      "@code-ui/checkbox-group": resolve(import.meta.dirname, "packages/machines/checkbox-group/src"),
       "@code-ui/drawer": resolve(import.meta.dirname, "packages/machines/drawer/src"),
       "@code-ui/form/context": resolve(
         import.meta.dirname,

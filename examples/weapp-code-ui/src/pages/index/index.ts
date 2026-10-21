@@ -30,6 +30,13 @@ Page({
         path: "/pages/switch/index",
       },
       {
+        id: "checkbox",
+        name: "Checkbox & CheckboxGroup",
+        desc: "Accessible checkbox and multi-select groups with indeterminate state, card variants, min/max limits & Form link.",
+        badge: "Interactive",
+        path: "/pages/checkbox/index",
+      },
+      {
         id: "radio",
         name: "Radio & RadioGroup",
         desc: "Accessible radio buttons with pure CSS geometry, card variants, horizontal layout, useChild & Form link.",
@@ -56,6 +63,13 @@ Page({
         desc: "Corner badge indicators, counters, and standalone notification pills.",
         badge: "Display",
         path: "/pages/chip/index",
+      },
+      {
+        id: "icon",
+        name: "Icon",
+        desc: "Vector icon masks with dynamic collections, semantic colors, sizing, and spinning animation.",
+        badge: "Display",
+        path: "/pages/icon/index",
       },
       {
         id: "drawer",

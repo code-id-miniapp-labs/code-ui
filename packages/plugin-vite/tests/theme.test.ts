@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { generateThemeCSS, SHADES } from "../src/core/theme";
+import { transformAppStyle } from "../src/core/style-inject";
+import { PluginConfigManager } from "../src/core/config";
 
 describe("generateThemeCSS", () => {
   it("generates default palette tokens with 50-950 shades and dark mode shifts", () => {
@@ -199,6 +201,66 @@ describe("codeUI virtual themes", () => {
     );
     expect(loadedPinInput).toContain("export default {");
     expect(loadedPinInput).toContain('"separator"');
+  });
+
+  it("injects @plugin @egoist/tailwindcss-icons when enabled", () => {
+    const configManager = new PluginConfigManager({
+      icons: { autoPlugin: true },
+    });
+    const result = transformAppStyle(
+      '@import "tailwindcss";',
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    expect(result).not.toBeNull();
+    expect(result?.code).toContain('@plugin "@egoist/tailwindcss-icons";');
+  });
+
+  it("does not duplicate @plugin if already present in stylesheet", () => {
+    const configManager = new PluginConfigManager({
+      icons: { autoPlugin: true },
+    });
+    const existing = '@import "tailwindcss";\n@plugin "@egoist/tailwindcss-icons";';
+    const result = transformAppStyle(
+      existing,
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    // Should not contain a second @plugin directive
+    const matches = result?.code.match(/@plugin "@egoist\/tailwindcss-icons"/g);
+    expect(matches?.length).toBe(1);
+  });
+
+  it("includes collection preset icon classes in @source inline directive", () => {
+    const configManager = new PluginConfigManager({
+      icons: {
+        collections: ["tabler"],
+        search: "i-tabler-search",
+      },
+    });
+    const directive = configManager.getInlineThemeClassesDirective();
+    expect(directive).toContain("i-tabler-check");
+    expect(directive).toContain("i-tabler-minus");
+    expect(directive).toContain("i-tabler-x");
+    expect(directive).toContain("i-tabler-loader-2");
+    expect(directive).toContain("i-tabler-search");
+  });
+
+  it("includes presets for multiple collections in @source inline directive", () => {
+    const configManager = new PluginConfigManager({
+      icons: {
+        collections: ["lucide", "tabler"],
+      },
+    });
+    const directive = configManager.getInlineThemeClassesDirective();
+    expect(directive).toContain("i-lucide-check");
+    expect(directive).toContain("i-lucide-loader-circle");
+    expect(directive).toContain("i-tabler-check");
+    expect(directive).toContain("i-tabler-loader-2");
   });
 });
 

@@ -50,7 +50,7 @@ Component(
         type: Object,
         value: {},
       },
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -73,7 +73,7 @@ Component(
           standalone,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
   }),

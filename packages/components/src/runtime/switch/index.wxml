@@ -47,17 +47,20 @@
         data-loading="{{cSwitch.thumbProps['data-loading']}}"
         aria-hidden="true"
       >
-        <view
+        <c-icon
           wx:if="{{loading}}"
-          class="{{loadingIcon || 'w-2.5 h-2.5 rounded-full border-2 border-neutral-400 border-t-transparent animate-spin'}}"
+          name="{{loadingIcon || 'loading'}}"
+          class="w-full h-full animate-spin"
         />
-        <text
+        <c-icon
           wx:elif="{{cSwitch.checked && checkedIcon}}"
-          class="{{classes.icon}} {{checkedIcon}}"
+          name="{{checkedIcon}}"
+          class="{{classes.icon}}"
         />
-        <text
+        <c-icon
           wx:elif="{{!cSwitch.checked && uncheckedIcon}}"
-          class="{{classes.icon}} {{uncheckedIcon}}"
+          name="{{uncheckedIcon}}"
+          class="{{classes.icon}}"
         />
         <slot wx:else name="thumb" />
       </view>

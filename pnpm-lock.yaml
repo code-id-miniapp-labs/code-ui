@@ -33,21 +33,39 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-vite
     devDependencies:
+      '@code-ui/checkbox':
+        specifier: workspace:*
+        version: link:../../packages/machines/checkbox
+      '@code-ui/checkbox-group':
+        specifier: workspace:*
+        version: link:../../packages/machines/checkbox-group
       '@code-ui/input':
         specifier: workspace:*
         version: link:../../packages/machines/input
       '@code-ui/pin-input':
         specifier: workspace:*
         version: link:../../packages/machines/pin-input
+      '@code-ui/radio':
+        specifier: workspace:*
+        version: link:../../packages/machines/radio
       '@code-ui/radio-group':
         specifier: workspace:*
         version: link:../../packages/machines/radio-group
+      '@egoist/tailwindcss-icons':
+        specifier: ^1.9.2
+        version: 1.9.2(tailwindcss@4.3.3)
       '@icebreakers/eslint-config':
         specifier: ^8.0.2
         version: 8.0.3(eslint-plugin-pnpm@1.9.1(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(oxlint@1.78.0)(postcss@8.5.30)(stylelint-config-html@2.0.0(postcss-html@2.0.0(postcss@8.5.30))(stylelint@17.15.0(supports-color@10.2.2)(typescript@6.0.3)))(stylelint@17.15.0(supports-color@10.2.2)(typescript@6.0.3))(supports-color@10.2.2)(tailwindcss@4.3.3)(typescript@6.0.3)(vitest@5.0.2(@types/node@26.6.2)(vite@8.3.4(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.0(supports-color@10.2.2))(sass@1.105.0)(stylus@0.64.0(supports-color@10.2.2))(terser@5.50.0)(yaml@2.9.1)))
       '@icebreakers/stylelint-config':
         specifier: ^5.1.2
         version: 5.1.2(postcss@8.5.30)(stylelint-config-html@2.0.0(postcss-html@2.0.0(postcss@8.5.30))(stylelint@17.15.0(supports-color@10.2.2)(typescript@6.0.3)))(stylelint@17.15.0(supports-color@10.2.2)(typescript@6.0.3))(tailwindcss@4.3.3)
+      '@iconify-json/lucide':
+        specifier: ^1.2.146
+        version: 1.2.146
+      '@iconify-json/tabler':
+        specifier: ^1.2.42
+        version: 1.2.42
       '@types/node':
         specifier: ^26.6.2
         version: 26.6.2
@@ -118,6 +136,12 @@ importers:
       '@code-ui/button':
         specifier: workspace:*
         version: link:../machines/button
+      '@code-ui/checkbox':
+        specifier: workspace:*
+        version: link:../machines/checkbox
+      '@code-ui/checkbox-group':
+        specifier: workspace:*
+        version: link:../machines/checkbox-group
       '@code-ui/context':
         specifier: workspace:*
         version: link:../context
@@ -145,6 +169,9 @@ importers:
       '@code-ui/plugin-vite':
         specifier: workspace:*
         version: link:../plugin-vite
+      '@code-ui/radio':
+        specifier: workspace:*
+        version: link:../machines/radio
       '@code-ui/radio-group':
         specifier: workspace:*
         version: link:../machines/radio-group
@@ -292,6 +319,62 @@ importers:
         specifier: ^5.5.4
         version: 5.9.3
 
+  packages/machines/checkbox:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/checkbox-group:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
   packages/machines/drawer:
     dependencies:
       '@code-ui/anatomy':
@@ -415,6 +498,31 @@ importers:
       '@code-ui/form':
         specifier: workspace:*
         version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/radio:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../../utils
@@ -1937,6 +2045,11 @@ packages:
       oxlint:
         optional: true
 
+  '@egoist/tailwindcss-icons@1.9.2':
+    resolution: {integrity: sha512-I6XsSykmhu2cASg5Hp/ICLsJ/K/1aXPaSKjgbWaNp2xYnb4We/arWMmkhhV+9CglOFCUbqx0A3mM2kWV32ZIhw==}
+    peerDependencies:
+      tailwindcss: '*'
+
   '@emnapi/core@1.11.2':
     resolution: {integrity: sha512-TC8MkTuZUtcTSiFeuC0ksCh9QIJ5+F21MvZ4Wn4ORfYaFJ/0dsiudv5tVkejgwZlwQ39jL9WWDe2lz8x0WglOA==}
 
@@ -2426,6 +2539,18 @@ packages:
     resolution: {integrity: sha512-8Tj5ozOA0vg8kpQGbhvTL2qwno78H8q38hUjyopuFpneEqRzKM9zlIay40Fb9sDCaCu5tNrLSGqeV17tH3sQ6g==}
     engines: {node: '>=22.13.0'}
     hasBin: true
+
+  '@iconify-json/lucide@1.2.146':
+    resolution: {integrity: sha512-T7qetsZJ682CCVT2X8C5uYEF6G/mtSoPl8F87wvu1LbfeVt4RxdP03NtaAs4RrrAXbWHBLjKrb8cmMtDucoI5g==}
+
+  '@iconify-json/tabler@1.2.42':
+    resolution: {integrity: sha512-fObaBh/H2zJphk3lS1dWPUf/buuGaCHQXnB4UYgKOPXQub5Ac1qEu0AHRj/0+E2FEl8pWfgM2xQWzfz7ffcY+A==}
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
+
+  '@iconify/utils@3.1.7':
+    resolution: {integrity: sha512-JZHlwdID+dy+lTgbYC8NEC4zeugqeYsc6jewvzb4c58kHauJn+X7rNwQjxz5p2qSjqaEeQoLkCIQ9v/H4PK0/w==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -10033,7 +10158,7 @@ snapshots:
 
   '@antfu/install-pkg@2.1.0':
     dependencies:
-      package-manager-detector: 1.8.0
+      package-manager-detector: 1.9.0
       tinyexec: 1.3.1
 
   '@babel/code-frame@7.29.7':
@@ -11639,6 +11764,11 @@ snapshots:
       eslint: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)
       oxlint: 1.78.0
 
+  '@egoist/tailwindcss-icons@1.9.2(tailwindcss@4.3.3)':
+    dependencies:
+      '@iconify/utils': 3.1.7
+      tailwindcss: 4.3.3
+
   '@emnapi/core@1.11.2':
     dependencies:
       '@emnapi/wasi-threads': 1.2.2
@@ -12107,6 +12237,22 @@ snapshots:
       - stylelint
       - stylelint-config-html
       - tailwindcss
+
+  '@iconify-json/lucide@1.2.146':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/tabler@1.2.42':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify/types@2.0.0': {}
+
+  '@iconify/utils@3.1.7':
+    dependencies:
+      '@antfu/install-pkg': 2.1.0
+      '@iconify/types': 2.0.0
+      import-meta-resolve: 4.2.0
 
   '@img/colour@1.1.0': {}
 
@@ -13836,7 +13982,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.2
       estree-walker: 3.0.3
-      magic-string: 1.4.2
+      magic-string: 1.4.3
     optionalDependencies:
       vite: 5.4.21(@types/node@26.2.0)(less@4.9.0(supports-color@10.2.2))(lightningcss@1.33.0)(sass@1.105.0)(stylus@0.64.0(supports-color@10.2.2))(terser@5.50.0)
     optional: true
@@ -13846,7 +13992,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.2
       estree-walker: 3.0.3
-      magic-string: 1.4.2
+      magic-string: 1.4.3
     optionalDependencies:
       vite: 8.3.4(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.0(supports-color@10.2.2))(sass@1.105.0)(stylus@0.64.0(supports-color@10.2.2))(terser@5.50.0)(yaml@2.9.1)
 
@@ -19542,7 +19688,7 @@ snapshots:
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
-      magic-string: 1.4.2
+      magic-string: 1.4.3
       obug: 2.1.4
       picomatch: 4.0.7
       std-env: 4.2.0
@@ -19564,7 +19710,7 @@ snapshots:
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
-      magic-string: 1.4.2
+      magic-string: 1.4.3
       obug: 2.1.4
       picomatch: 4.0.7
       std-env: 4.2.0

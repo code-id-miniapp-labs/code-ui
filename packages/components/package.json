@@ -36,6 +36,18 @@
       "require": "./dist/runtime/card/index.js"
     },
     "./card/*": "./dist/runtime/card/*",
+    "./checkbox": {
+      "types": "./dist/runtime/checkbox/index.d.ts",
+      "import": "./dist/runtime/checkbox/index.js",
+      "require": "./dist/runtime/checkbox/index.js"
+    },
+    "./checkbox/*": "./dist/runtime/checkbox/*",
+    "./checkbox-group": {
+      "types": "./dist/runtime/checkbox-group/index.d.ts",
+      "import": "./dist/runtime/checkbox-group/index.js",
+      "require": "./dist/runtime/checkbox-group/index.js"
+    },
+    "./checkbox-group/*": "./dist/runtime/checkbox-group/*",
     "./chip": {
       "types": "./dist/runtime/chip/index.d.ts",
       "import": "./dist/runtime/chip/index.js",
@@ -60,6 +72,12 @@
       "require": "./dist/runtime/form-field/index.js"
     },
     "./form-field/*": "./dist/runtime/form-field/*",
+    "./icon": {
+      "types": "./dist/runtime/icon/index.d.ts",
+      "import": "./dist/runtime/icon/index.js",
+      "require": "./dist/runtime/icon/index.js"
+    },
+    "./icon/*": "./dist/runtime/icon/*",
     "./input": {
       "types": "./dist/runtime/input/index.d.ts",
       "import": "./dist/runtime/input/index.js",
@@ -120,6 +138,8 @@
     "weapp-vite": "^7.3.0",
     "@code-ui/anatomy": "workspace:*",
     "@code-ui/button": "workspace:*",
+    "@code-ui/checkbox": "workspace:*",
+    "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/context": "workspace:*",
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",

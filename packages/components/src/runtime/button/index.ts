@@ -36,7 +36,7 @@ Component(
 
     data: {},
     properties: createProperties(defaultButtonProps, {
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -63,7 +63,7 @@ Component(
           loading,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 

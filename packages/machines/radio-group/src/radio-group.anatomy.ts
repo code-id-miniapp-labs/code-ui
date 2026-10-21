@@ -10,8 +10,6 @@ export const anatomy = createAnatomy("radio-group").parts(
   "wrapper",
   "label",
   "description",
-  "help",
-  "error",
 );
 
 export const parts = anatomy.build();

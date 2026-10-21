@@ -1,0 +1,359 @@
+import { describe, it, expect, vi } from "vitest";
+import { MiniappMachine } from "@code-ui/miniapp";
+import { formMachine, connectForm } from "@code-ui/form";
+import { checkboxMachine } from "../src/checkbox.machine";
+import { connectCheckbox } from "../src/checkbox.connect";
+
+function flush(): Promise<void> {
+  return new Promise((resolve) => queueMicrotask(resolve));
+}
+
+describe("Checkbox Machine", () => {
+  describe("Initialization & Default Props", () => {
+    it("initializes in unchecked state by default", () => {
+      const machine = new MiniappMachine(checkboxMachine, {});
+      machine.start();
+
+      expect(machine.state.get()).toBe("unchecked");
+      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.context.get("indeterminate")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
+      expect(machine.computed("isIndeterminate")).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(true);
+
+      const api = connectCheckbox(machine.service);
+      expect(api.state).toBe("unchecked");
+      expect(api.checked).toBe(false);
+      expect(api.isChecked).toBe(false);
+      expect(api.indeterminate).toBe(false);
+      expect(api.isIndeterminate).toBe(false);
+      expect(api.isInteractive).toBe(true);
+      expect(api.disabled).toBe(false);
+      expect(api.readOnly).toBe(false);
+      expect(api.invalid).toBe(false);
+      expect(api.size).toBe("md");
+      expect(api.color).toBe("primary");
+      expect(api.icon).toBe("check");
+      expect(api.indeterminateIcon).toBe("minus");
+      expect(api.rootProps["data-state"]).toBe("unchecked");
+      expect(api.rootProps["data-checked"]).toBe("false");
+      expect(api.baseProps["aria-checked"]).toBe(false);
+      expect(api.hiddenInputProps.checked).toBe(false);
+
+      machine.stop();
+    });
+
+    it("initializes with defaultChecked = true", () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        defaultChecked: true,
+      });
+      machine.start();
+
+      expect(machine.state.get()).toBe("checked");
+      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
+
+      const api = connectCheckbox(machine.service);
+      expect(api.state).toBe("checked");
+      expect(api.checked).toBe(true);
+      expect(api.baseProps["aria-checked"]).toBe(true);
+      expect(api.baseProps["data-state"]).toBe("checked");
+
+      machine.stop();
+    });
+
+    it("initializes with indeterminate = true", () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        indeterminate: true,
+      });
+      machine.start();
+
+      expect(machine.state.get()).toBe("indeterminate");
+      expect(machine.context.get("indeterminate")).toBe(true);
+      expect(machine.computed("isIndeterminate")).toBe(true);
+
+      const api = connectCheckbox(machine.service);
+      expect(api.state).toBe("indeterminate");
+      expect(api.indeterminate).toBe(true);
+      expect(api.baseProps["aria-checked"]).toBe("mixed");
+      expect(api.baseProps["data-state"]).toBe("indeterminate");
+
+      machine.stop();
+    });
+  });
+
+  describe("Toggling & State Transitions", () => {
+    it("toggles state via toggle() and handleTap()", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {});
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+
+      api.toggle();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(true);
+      expect(machine.state.get()).toBe("checked");
+
+      api.handleTap();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(false);
+      expect(machine.state.get()).toBe("unchecked");
+
+      machine.stop();
+    });
+
+    it("transitions from indeterminate to checked when toggled", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        defaultIndeterminate: true,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      expect(api.state).toBe("indeterminate");
+
+      api.toggle();
+      await flush();
+
+      const updated = connectCheckbox(machine.service);
+      expect(updated.state).toBe("checked");
+      expect(updated.checked).toBe(true);
+      expect(updated.indeterminate).toBe(false);
+
+      machine.stop();
+    });
+
+    it("programmatically sets checked and indeterminate", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {});
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      api.setChecked(true);
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(true);
+
+      api.setIndeterminate(true);
+      await flush();
+      expect(connectCheckbox(machine.service).indeterminate).toBe(true);
+      expect(machine.state.get()).toBe("indeterminate");
+
+      machine.stop();
+    });
+
+    it("does not toggle when disabled", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        disabled: true,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      expect(api.isInteractive).toBe(false);
+
+      api.toggle();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(false);
+
+      machine.stop();
+    });
+
+    it("does not toggle when readOnly", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        readOnly: true,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      expect(api.isInteractive).toBe(false);
+
+      api.toggle();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(false);
+
+      machine.stop();
+    });
+  });
+
+  describe("Callbacks & Events", () => {
+    it("calls onCheckedChange and onChange on toggle", async () => {
+      const onCheckedChange = vi.fn();
+      const onChange = vi.fn();
+
+      const machine = new MiniappMachine(checkboxMachine, {
+        onCheckedChange,
+        onChange,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      api.toggle();
+      await flush();
+
+      expect(onCheckedChange).toHaveBeenCalledWith({ value: true, checked: true });
+      expect(onChange).toHaveBeenCalledWith({ value: true, checked: true });
+
+      machine.stop();
+    });
+
+    it("calls onChange with custom value when value prop is passed", async () => {
+      const onChange = vi.fn();
+      const component = { triggerEvent: vi.fn(), setData: vi.fn() };
+
+      const machine = new MiniappMachine(checkboxMachine, {
+        value: "apple",
+        onChange,
+        component,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      api.toggle();
+      await flush();
+
+      expect(onChange).toHaveBeenCalledWith({ value: "apple", checked: true });
+      expect(component.triggerEvent).toHaveBeenCalledWith("change", {
+        value: "apple",
+        checked: true,
+      });
+
+      machine.stop();
+    });
+
+    it("resets value via resetChecked()", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        defaultChecked: true,
+      });
+      machine.start();
+
+      const api = connectCheckbox(machine.service);
+      api.toggle();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(false);
+
+      api.resetChecked();
+      await flush();
+      expect(connectCheckbox(machine.service).checked).toBe(true);
+
+      machine.stop();
+    });
+
+    it("handles controlled checked mode without premature state mutation", async () => {
+      const onChange = vi.fn();
+      const onCheckedChange = vi.fn();
+      const component = { triggerEvent: vi.fn(), setData: vi.fn() };
+
+      const machine = new MiniappMachine(checkboxMachine, {
+        checked: false,
+        value: "terms",
+        onChange,
+        onCheckedChange,
+        component,
+      });
+      machine.start();
+
+      let api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(api.state).toBe("unchecked");
+
+      // User taps controlled checkbox:
+      api.handleTap();
+      await flush();
+
+      // Should emit change event requesting checked = true
+      expect(onChange).toHaveBeenCalledWith({ value: "terms", checked: true });
+      expect(onCheckedChange).toHaveBeenCalledWith({ value: "terms", checked: true });
+      expect(component.triggerEvent).toHaveBeenCalledWith("change", {
+        value: "terms",
+        checked: true,
+      });
+
+      // But state and api.checked remain unchanged because prop has not changed!
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(api.state).toBe("unchecked");
+
+      // Parent accepts change and passes new prop checked: true
+      machine.updateProps({ checked: true });
+      await flush();
+
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(true);
+      expect(api.state).toBe("checked");
+
+      // User taps again:
+      api.handleTap();
+      await flush();
+
+      expect(onChange).toHaveBeenCalledWith({ value: "terms", checked: false });
+      expect(api.checked).toBe(true);
+      expect(api.state).toBe("checked");
+
+      // Parent updates prop to checked: false
+      machine.updateProps({ checked: false });
+      await flush();
+
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(api.state).toBe("unchecked");
+
+      machine.stop();
+    });
+  });
+
+  describe("Form Integration", () => {
+    it("synchronizes with Form bus", async () => {
+      const formComp = {
+        setData: vi.fn(),
+        triggerEvent: vi.fn(),
+      };
+      const checkboxComp = {
+        setData: vi.fn(),
+        triggerEvent: vi.fn(),
+        selectOwnerComponent: () => formComp,
+      };
+
+      const formM = new MiniappMachine(formMachine, {
+        component: formComp,
+        rules: {
+          agreement: [
+            (val: boolean) => (val === true ? true : "Must agree to terms"),
+          ],
+        },
+      });
+      formM.start();
+
+      const formApi = connectForm(formM.service);
+      const bus = formApi.bus;
+
+      const checkboxM = new MiniappMachine(checkboxMachine, {
+        name: "agreement",
+        defaultChecked: false,
+        formBus: bus,
+        component: checkboxComp,
+      });
+      checkboxM.start();
+      await flush();
+
+      let cApi = connectCheckbox(checkboxM.service);
+      expect(cApi.checked).toBe(false);
+      expect(cApi.invalid).toBe(false);
+
+      // Validate form -> should fail because agreement is false
+      const result = await formApi.validate();
+      await flush();
+
+      expect(result.valid).toBe(false);
+      cApi = connectCheckbox(checkboxM.service);
+      expect(cApi.invalid).toBe(true);
+
+      // User toggles checkbox -> checked = true
+      cApi.toggle();
+      await flush();
+
+      const revalidated = await formApi.validate();
+      expect(revalidated.valid).toBe(true);
+
+      checkboxM.stop();
+      formM.stop();
+    });
+  });
+});

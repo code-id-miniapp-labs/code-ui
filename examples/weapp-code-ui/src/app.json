@@ -9,10 +9,12 @@
     "pages/input/index",
     "pages/pin-input/index",
     "pages/switch/index",
+    "pages/checkbox/index",
     "pages/radio/index",
     "pages/form/index",
     "pages/use-child/index",
-    "pages/textarea/index"
+    "pages/textarea/index",
+    "pages/icon/index"
   ],
   "window": {},
   "style": "v2",

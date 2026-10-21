@@ -59,6 +59,16 @@ export interface CreateMachineBehaviorOptions<
    */
   radioItem?: boolean;
   /**
+   * Mark this component as a Checkbox Group parent (`<c-checkbox-group>`),
+   * automatically wiring relations for descendant `<c-checkbox>` items.
+   */
+  checkboxGroup?: boolean;
+  /**
+   * Mark this component as a Checkbox item (`<c-checkbox>`),
+   * automatically wiring relations to link with ancestor `<c-checkbox-group>`.
+   */
+  checkboxItem?: boolean;
+  /**
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
   exportApi?: boolean;
@@ -218,6 +228,71 @@ export const cuiRadioItemBehavior: any =
             },
             unlinked(this: any, target: any) {
               unlinkRadioFromParentGroup(target, this);
+            },
+          },
+        },
+      })
+    : {};
+
+/**
+ * Shared Behavior reference for `<c-checkbox-group>` parent components.
+ * Used as relations.target to link descendant <c-checkbox> components natively
+ * without file paths or tree-shaking hazards.
+ */
+export const cuiCheckboxGroupBehavior: any =
+  typeof Behavior !== "undefined" ? Behavior({}) : {};
+export const cuiCheckboxGroupParentBehavior: any = cuiCheckboxGroupBehavior;
+
+function linkCheckboxToParentGroup(group: any, checkbox: any) {
+  const service = group.__codeUiMachine?.service;
+  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  checkbox.__codeUiCheckboxGroupBus = bus;
+  if (checkbox.__codeUiMachine) {
+    const ctx = service?.context;
+    checkbox.__codeUiMachine.updateProps({
+      groupBus: bus,
+      groupValue: ctx?.get("value"),
+      groupDisabled: ctx?.get("disabled"),
+      groupInvalid: ctx?.get("invalid"),
+      groupSize: ctx?.get("size"),
+      groupColor: ctx?.get("color"),
+      groupVariant: ctx?.get("variant"),
+    });
+  } else {
+    checkbox.__codeUiPendingCheckboxGroup = group;
+  }
+}
+
+function unlinkCheckboxFromParentGroup(_group: any, checkbox: any) {
+  checkbox.__codeUiCheckboxGroupBus = undefined;
+  if (checkbox.__codeUiMachine) {
+    checkbox.__codeUiMachine.updateProps({
+      groupBus: undefined,
+      groupValue: undefined,
+      groupDisabled: undefined,
+      groupSize: undefined,
+      groupColor: undefined,
+      groupVariant: undefined,
+    });
+  }
+}
+
+/**
+ * Shared Behavior reference for `<c-checkbox>` child components.
+ * Automatically links to ancestor `<c-checkbox-group>`.
+ */
+export const cuiCheckboxItemBehavior: any =
+  typeof Behavior !== "undefined"
+    ? Behavior({
+        relations: {
+          cuiCheckboxGroupParent: {
+            type: "ancestor",
+            target: cuiCheckboxGroupBehavior,
+            linked(this: any, target: any) {
+              linkCheckboxToParentGroup(target, this);
+            },
+            unlinked(this: any, target: any) {
+              unlinkCheckboxFromParentGroup(target, this);
             },
           },
         },
@@ -419,6 +494,8 @@ export function createMachineBehavior<
     formParent = false,
     radioGroup = false,
     radioItem = false,
+    checkboxGroup = false,
+    checkboxItem = false,
     exportApi = false,
     deferred = false,
   } = options;
@@ -458,6 +535,12 @@ export function createMachineBehavior<
   }
   if (radioItem) {
     behaviors.push(cuiRadioItemBehavior);
+  }
+  if (checkboxGroup) {
+    behaviors.push(cuiCheckboxGroupBehavior);
+  }
+  if (checkboxItem) {
+    behaviors.push(cuiCheckboxItemBehavior);
   }
   if (exportApi) behaviors.push("wx://component-export");
 
@@ -508,6 +591,19 @@ export function createMachineBehavior<
       },
       unlinked(this: any, target: any) {
         unlinkRadioFromParentGroup(this, target);
+      },
+    };
+  }
+
+  if (checkboxGroup) {
+    relations.cuiCheckboxChild = {
+      type: "descendant",
+      target: cuiCheckboxItemBehavior,
+      linked(this: any, target: any) {
+        linkCheckboxToParentGroup(this, target);
+      },
+      unlinked(this: any, target: any) {
+        unlinkCheckboxFromParentGroup(this, target);
       },
     };
   }
@@ -634,6 +730,34 @@ export function createMachineBehavior<
           }
         }
 
+        if (checkboxItem) {
+          const parent =
+            this.__codeUiPendingCheckboxGroup ??
+            (typeof this.getRelationNodes === "function"
+              ? this.getRelationNodes("cuiCheckboxGroupParent")?.[0]
+              : undefined);
+          if (parent) {
+            const pService = parent.__codeUiMachine?.service;
+            const bus =
+              parent.__codeUiCheckboxGroupBus ??
+              getServiceBus(pService) ??
+              pService?.refs?.get?.("bus");
+            if (bus) {
+              initialProps.groupBus = bus;
+              this.__codeUiCheckboxGroupBus = bus;
+            }
+            if (pService) {
+              const ctx = pService.context;
+              initialProps.groupValue = ctx?.get("value");
+              initialProps.groupDisabled = ctx?.get("disabled");
+              initialProps.groupInvalid = ctx?.get("invalid");
+              initialProps.groupSize = ctx?.get("size");
+              initialProps.groupColor = ctx?.get("color");
+              initialProps.groupVariant = ctx?.get("variant");
+            }
+          }
+        }
+
         if (this.data) {
           syncProps.forEach((propKey) => {
             const keyStr = propKey as string;
@@ -653,6 +777,15 @@ export function createMachineBehavior<
           if (children && children.length > 0) {
             for (const child of children) {
               linkRadioToParentGroup(this, child);
+            }
+          }
+        }
+
+        if (checkboxGroup && typeof this.getRelationNodes === "function") {
+          const children = this.getRelationNodes("cuiCheckboxChild");
+          if (children && children.length > 0) {
+            for (const child of children) {
+              linkCheckboxToParentGroup(this, child);
             }
           }
         }
@@ -719,10 +852,25 @@ export function createMachineBehavior<
             }
           }
         }
+
+        if (checkboxGroup && typeof this.getRelationNodes === "function") {
+          const children = this.getRelationNodes("cuiCheckboxChild");
+          if (children && children.length > 0) {
+            for (const child of children) {
+              linkCheckboxToParentGroup(this, child);
+            }
+          }
+        }
         if (radioItem && typeof this.getRelationNodes === "function") {
           const parents = this.getRelationNodes("cuiRadioGroupParent");
           if (parents && parents.length > 0) {
             linkRadioToParentGroup(parents[0], this);
+          }
+        }
+        if (checkboxItem && typeof this.getRelationNodes === "function") {
+          const parents = this.getRelationNodes("cuiCheckboxGroupParent");
+          if (parents && parents.length > 0) {
+            linkCheckboxToParentGroup(parents[0], this);
           }
         }
         if (formParent && typeof this.getRelationNodes === "function") {

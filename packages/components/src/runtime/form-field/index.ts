@@ -36,7 +36,7 @@ Component(
     },
 
     properties: createProperties(defaultFormFieldProps, {
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -61,7 +61,7 @@ Component(
           required,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
   }),

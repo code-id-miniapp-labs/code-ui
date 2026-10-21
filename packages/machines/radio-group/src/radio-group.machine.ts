@@ -50,8 +50,9 @@ export const radioGroupMachine: RadioGroupMachine = createMachine<RadioGroupSche
           value: controlledVal,
           defaultValue: initial,
           onChange: (nextVal) => {
-            prop("onValueChange")?.({ value: nextVal });
-            prop("onChange")?.({ value: nextVal });
+            const valStr = nextVal ?? "";
+            prop("onValueChange")?.({ value: valStr });
+            prop("onChange")?.({ value: valStr });
             prop("component")?.triggerEvent?.("change", {
               value: nextVal,
             });
@@ -62,6 +63,7 @@ export const radioGroupMachine: RadioGroupMachine = createMachine<RadioGroupSche
               bus.emit("group:change", {
                 value: nextVal,
                 disabled: Boolean(prop("disabled")),
+                invalid: Boolean(prop("invalid")),
                 size: prop("size") ?? "md",
                 color: prop("color") ?? "primary",
                 variant: prop("variant") ?? "outline",
@@ -100,8 +102,6 @@ export const radioGroupMachine: RadioGroupMachine = createMachine<RadioGroupSche
       orientation: b<RadioGroupOrientation>("orientation", "vertical"),
       variant: b<RadioGroupVariant>("variant", "outline"),
       legend: b("legend", ""),
-      help: b("help", ""),
-      error: b("error", ""),
       items: b<any[]>("items", []),
       ui: b("ui", {}),
     };

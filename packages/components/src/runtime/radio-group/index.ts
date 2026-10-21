@@ -37,7 +37,7 @@ Component(
     },
 
     properties: createProperties(defaultRadioGroupProps, {
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -65,7 +65,7 @@ Component(
           invalid: isInvalid,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 

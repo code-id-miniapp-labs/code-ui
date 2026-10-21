@@ -36,6 +36,9 @@ export {
   cuiRadioGroupBehavior,
   cuiRadioGroupParentBehavior,
   cuiRadioItemBehavior,
+  cuiCheckboxGroupBehavior,
+  cuiCheckboxGroupParentBehavior,
+  cuiCheckboxItemBehavior,
 } from "./behavior";
 export type { CreateMachineBehaviorOptions } from "./behavior";
 export { wxButtonBehavior } from "./behaviors/button";

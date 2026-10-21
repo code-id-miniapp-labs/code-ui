@@ -36,7 +36,7 @@ Component(
     },
 
     properties: createProperties(defaultTextareaProps, {
-      class: {
+      className: {
         type: String,
         value: "",
       },
@@ -76,7 +76,7 @@ Component(
           autoHeight: isAutoHeight,
         });
 
-        return resolveSlots(themeFns, ui, this.data.class);
+        return resolveSlots(themeFns, ui, this.data.className);
       },
     },
 

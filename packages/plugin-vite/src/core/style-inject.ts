@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { getActiveCollections } from "@code-ui/core";
 import { THEME_TAG } from "./theme";
 import type { PluginConfigManager } from "./config";
 
@@ -53,6 +54,107 @@ function resolveComponentScanTarget(
   return resolved;
 }
 
+function isTailwindIconsInstalled(
+  projectRoot: string,
+  styleDir: string,
+): boolean {
+  try {
+    require.resolve("@egoist/tailwindcss-icons", {
+      paths: [projectRoot, styleDir],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function checkIconCollectionInstalled(
+  collection: string,
+  projectRoot: string,
+  styleDir: string,
+): boolean {
+  try {
+    require.resolve(`@iconify-json/${collection}`, {
+      paths: [projectRoot, styleDir],
+    });
+    return true;
+  } catch {
+    try {
+      require.resolve("@iconify/json", {
+        paths: [projectRoot, styleDir],
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function resolveIconsPluginDirective(
+  code: string,
+  projectRoot: string,
+  styleDir: string,
+  configManager: PluginConfigManager,
+): string {
+  if (
+    code.includes('@plugin "@egoist/tailwindcss-icons"') ||
+    code.includes("@plugin '@egoist/tailwindcss-icons'")
+  ) {
+    return "";
+  }
+
+  const iconsOptions = configManager.getIconsPluginOptions();
+  if (!iconsOptions) return "";
+
+  const autoPlugin = iconsOptions.autoPlugin ?? "auto";
+  if (autoPlugin === false) return "";
+
+  const collections = getActiveCollections(configManager.resolvedConfig.icons);
+  const isInstalled = isTailwindIconsInstalled(projectRoot, styleDir);
+
+  if (autoPlugin === "auto" && !isInstalled) {
+    if (collections.length > 0) {
+      console.warn(
+        `\n[code-ui] ⚠️ Icon collection(s) "${collections.join(", ")}" configured, but "@egoist/tailwindcss-icons" is not installed.\nPlease install it via:\n  pnpm add -D @egoist/tailwindcss-icons\n`,
+      );
+    }
+    return "";
+  }
+
+  for (const col of collections) {
+    if (!checkIconCollectionInstalled(col, projectRoot, styleDir)) {
+      console.warn(
+        `\n[code-ui] ⚠️ Icon collection "${col}" is configured in cui.config.ts, but "@iconify-json/${col}" was not found.\nPlease install it via:\n  pnpm add -D @iconify-json/${col}\n`,
+      );
+    }
+  }
+
+  const hasCustomOptions =
+    iconsOptions.scale !== undefined ||
+    iconsOptions.prefix !== undefined ||
+    (iconsOptions.extraProperties &&
+      Object.keys(iconsOptions.extraProperties).length > 0);
+
+  if (!hasCustomOptions) {
+    return `\n@plugin "@egoist/tailwindcss-icons";\n`;
+  }
+
+  const lines: string[] = [];
+  if (iconsOptions.scale !== undefined) {
+    lines.push(`  scale: ${iconsOptions.scale};`);
+  }
+  if (iconsOptions.prefix !== undefined) {
+    lines.push(`  prefix: "${iconsOptions.prefix}";`);
+  }
+  if (iconsOptions.extraProperties) {
+    for (const [k, v] of Object.entries(iconsOptions.extraProperties)) {
+      lines.push(`  ${k}: ${v};`);
+    }
+  }
+
+  return `\n@plugin "@egoist/tailwindcss-icons" {\n${lines.join("\n")}\n};\n`;
+}
+
 export function transformAppStyle(
   code: string,
   cleanId: string,
@@ -74,8 +176,8 @@ export function transformAppStyle(
     }
   }
 
-  if (!code.includes(".wxml")) {
-    injection += `\n@source "./**/*.wxml";\n`;
+  if (!code.includes(".wxml") && !code.includes(".ts")) {
+    injection += `\n@source "./**/*.{ts,js,wxml}";\n`;
   }
 
   const { compScanDir, compGlobPattern } = resolveComponentScanTarget(
@@ -89,6 +191,16 @@ export function transformAppStyle(
     if (!code.includes(relComp)) {
       injection += `\n@source "${compSource}";\n`;
     }
+  }
+
+  const iconsDirective = resolveIconsPluginDirective(
+    code,
+    projectRoot,
+    styleDir,
+    configManager,
+  );
+  if (iconsDirective) {
+    injection += iconsDirective;
   }
 
   // All @code-ui/core theme definitions (plus user color & component overrides)

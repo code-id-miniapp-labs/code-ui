@@ -1,0 +1,12 @@
+<view class="{{classes.root}}" data-scope="checkbox-group" data-part="root" role="group" aria-disabled="{{cCheckboxGroup.disabled}}" aria-invalid="{{cCheckboxGroup.invalid}}" aria-required="{{cCheckboxGroup.required}}">
+  <view wx:if="{{cCheckboxGroup.legend || legend}}" class="{{classes.legend}}">
+    {{cCheckboxGroup.legend || legend}}
+  </view>
+  <slot wx:else name="legend" />
+  <view class="{{classes.fieldset}}" role="presentation">
+    <block wx:if="{{cCheckboxGroup.items && cCheckboxGroup.items.length > 0}}">
+      <c-checkbox wx:for="{{cCheckboxGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant || cCheckboxGroup.variant || variant}}" color="{{item.color || cCheckboxGroup.color || color}}" size="{{cCheckboxGroup.size || size}}" ui="{{item.ui || cCheckboxGroup.ui || ui}}" bind:change="handleItemTap" data-value="{{item.value}}" />
+    </block>
+    <slot />
+  </view>
+</view>

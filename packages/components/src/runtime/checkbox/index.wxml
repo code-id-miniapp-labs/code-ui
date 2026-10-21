@@ -1,0 +1,20 @@
+<view id="{{cCheckbox.rootProps.id}}" class="{{classes.root}}" data-scope="checkbox" data-part="root" data-state="{{cCheckbox.rootProps['data-state']}}" data-checked="{{cCheckbox.rootProps['data-checked']}}" data-indeterminate="{{cCheckbox.rootProps['data-indeterminate']}}" data-disabled="{{cCheckbox.rootProps['data-disabled']}}" data-readonly="{{cCheckbox.rootProps['data-readonly']}}" data-invalid="{{cCheckbox.rootProps['data-invalid']}}" bind:tap="handleTap">
+  <view id="{{cCheckbox.baseProps.id}}" class="{{classes.base}}" data-scope="checkbox" data-part="base" data-state="{{cCheckbox.baseProps['data-state']}}" data-checked="{{cCheckbox.baseProps['data-checked']}}" data-indeterminate="{{cCheckbox.baseProps['data-indeterminate']}}" data-disabled="{{cCheckbox.baseProps['data-disabled']}}" data-readonly="{{cCheckbox.baseProps['data-readonly']}}" data-invalid="{{cCheckbox.baseProps['data-invalid']}}" role="checkbox" aria-checked="{{cCheckbox.baseProps['aria-checked']}}" aria-disabled="{{cCheckbox.baseProps['aria-disabled']}}">
+    <view id="{{cCheckbox.indicatorProps.id}}" class="{{classes.indicator}}" data-scope="checkbox" data-part="indicator" data-state="{{cCheckbox.indicatorProps['data-state']}}" data-checked="{{cCheckbox.indicatorProps['data-checked']}}" data-indeterminate="{{cCheckbox.indicatorProps['data-indeterminate']}}" data-disabled="{{cCheckbox.indicatorProps['data-disabled']}}">
+      <slot name="indicator" />
+      <block wx:if="{{!customIndicator}}">
+        <block wx:if="{{cCheckbox.indeterminate}}">
+          <c-icon name="{{cCheckbox.indeterminateIcon || indeterminateIcon}}" class="{{classes.icon}}" />
+        </block>
+        <block wx:elif="{{cCheckbox.checked}}">
+          <c-icon name="{{cCheckbox.icon || icon}}" class="{{classes.icon}}" />
+        </block>
+      </block>
+    </view>
+  </view>
+  <view wx:if="{{cCheckbox.label || label || cCheckbox.description || description}}" class="{{classes.wrapper}}">
+    <text wx:if="{{cCheckbox.label || label}}" class="{{classes.label}}" user-select="{{false}}">{{cCheckbox.label || label}}</text>
+    <text wx:if="{{cCheckbox.description || description}}" class="{{classes.description}}" user-select="{{false}}">{{cCheckbox.description || description}}</text>
+  </view>
+  <slot wx:else />
+</view>

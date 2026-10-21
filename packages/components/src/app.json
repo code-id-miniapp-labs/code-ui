@@ -6,10 +6,13 @@
   "usingComponents": {
     "cui-button": "runtime/button/index",
     "cui-card": "runtime/card/index",
+    "cui-checkbox": "runtime/checkbox/index",
+    "cui-checkbox-group": "runtime/checkbox-group/index",
     "cui-chip": "runtime/chip/index",
     "cui-drawer": "runtime/drawer/index",
     "cui-form": "runtime/form/index",
     "cui-form-field": "runtime/form-field/index",
+    "cui-icon": "runtime/icon/index",
     "cui-input": "runtime/input/index",
     "cui-pin-input": "runtime/pin-input/index",
     "cui-radio": "runtime/radio/index",

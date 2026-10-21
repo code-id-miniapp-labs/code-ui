@@ -10,6 +10,18 @@ declare module "virtual:cui/theme/card" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/checkbox" {
+  import type { default as checkboxTheme } from "@code-ui/core/src/theme/definitions/checkbox";
+  const theme: ReturnType<typeof checkboxTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/checkbox-group" {
+  import type { default as checkboxGroupTheme } from "@code-ui/core/src/theme/definitions/checkbox-group";
+  const theme: ReturnType<typeof checkboxGroupTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/chip" {
   import type { default as chipTheme } from "@code-ui/core/src/theme/definitions/chip";
   const theme: ReturnType<typeof chipTheme>;
@@ -31,6 +43,12 @@ declare module "virtual:cui/theme/form" {
 declare module "virtual:cui/theme/form-field" {
   import type { default as formFieldTheme } from "@code-ui/core/src/theme/definitions/form-field";
   const theme: ReturnType<typeof formFieldTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/icon" {
+  import type { default as iconTheme } from "@code-ui/core/src/theme/definitions/icon";
+  const theme: ReturnType<typeof iconTheme>;
   export default theme;
 }
 

@@ -20,8 +20,6 @@ export default function radioGroupTheme(options: ThemeOptions = {}) {
       wrapper: "ms-2 flex flex-col justify-center",
       label: "block font-medium text-neutral-900 leading-snug",
       description: "text-neutral-500 leading-snug",
-      help: "text-xs text-neutral-500 leading-snug",
-      error: `text-xs text-${errorColor} leading-snug`,
     },
     variants: {
       variant: {

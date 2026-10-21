@@ -21,7 +21,7 @@
     data-part="leading"
   >
     <slot name="leading" />
-    <text wx:if="{{leadingIcon}}" class="{{classes.leadingIcon}} {{leadingIcon}}" />
+    <c-icon wx:if="{{leadingIcon}}" name="{{leadingIcon}}" class="{{classes.leadingIcon}}" />
   </view>
 
   <textarea
@@ -72,7 +72,7 @@
     data-part="trailing"
   >
     <view wx:if="{{loading}}" class="{{classes.trailingIcon}}">
-      <view class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+      <c-icon name="loading" class="w-full h-full animate-spin" />
     </view>
     <view
       wx:elif="{{clearable && textarea.isClearable}}"
@@ -82,9 +82,9 @@
       data-part="clear"
       catchtap="handleClear"
     >
-      <text class="{{clearIcon || 'text-sm font-bold leading-none'}}">✕</text>
+      <c-icon name="{{clearIcon || 'close'}}" class="size-3.5" />
     </view>
-    <text wx:elif="{{trailingIcon}}" class="{{classes.trailingIcon}} {{trailingIcon}}" />
+    <c-icon wx:elif="{{trailingIcon}}" name="{{trailingIcon}}" class="{{classes.trailingIcon}}" />
     <slot name="trailing" />
   </view>
 
