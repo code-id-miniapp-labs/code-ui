@@ -46,6 +46,18 @@ declare module "virtual:cui/theme/pin-input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/radio" {
+  import type { default as radioTheme } from "@code-ui/core/src/theme/definitions/radio";
+  const theme: ReturnType<typeof radioTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/radio-group" {
+  import type { default as radioGroupTheme } from "@code-ui/core/src/theme/definitions/radio-group";
+  const theme: ReturnType<typeof radioGroupTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/switch" {
   import type { default as switchTheme } from "@code-ui/core/src/theme/definitions/switch";
   const theme: ReturnType<typeof switchTheme>;

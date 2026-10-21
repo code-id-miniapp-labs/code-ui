@@ -1,0 +1,255 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-20">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Radio & RadioGroup</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Accessible radio buttons and group controls with pure CSS geometry, card variants, horizontal layout, useChild, and Form validation.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Controlled Component -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">1. Controlled Component</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Declarative two-way sync via value prop and bind:change event.
+      </view>
+      <view class="flex flex-col gap-4">
+        <c-radio-group value="{{controlledPlan}}" bind:change="onControlledPlanChange">
+          <c-radio value="free" label="Free Plan" description="Basic access for personal projects" />
+          <c-radio value="pro" label="Pro Plan ($19/mo)" description="Unlimited features with priority support" />
+          <c-radio value="enterprise" label="Enterprise Plan" description="Dedicated infrastructure & custom SLA" />
+        </c-radio-group>
+
+        <view class="flex items-center justify-between text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200">
+          <text class="text-neutral-500">Selected Value:</text>
+          <text class="font-bold text-neutral-900 font-mono">{{controlledPlan || '(none)'}}</text>
+        </view>
+        <view class="text-xs text-neutral-400">
+          Last event: <text class="font-mono text-neutral-700">{{lastEvent}}</text>
+        </view>
+
+        <view class="flex flex-wrap gap-2 pt-1">
+          <c-button size="sm" variant="outline" color="neutral" bind:tap="setPlanFree">
+            Set to "free"
+          </c-button>
+          <c-button size="sm" variant="outline" color="primary" bind:tap="setPlanPro">
+            Set to "pro"
+          </c-button>
+          <c-button size="sm" variant="outline" color="danger" bind:tap="clearControlledPlan">
+            Clear Selection
+          </c-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 2. Programmatic Control (useChild) -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">2. Programmatic Control (useChild)</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Subscribes to child machine snapshot and calls api.setValue() / api.clear() directly.
+      </view>
+      <view class="flex flex-col gap-4">
+        <c-radio-group id="programmatic-radio-group" defaultValue="pro">
+          <c-radio value="starter" label="Starter Tier" description="Standard rate limit (100 req/min)" />
+          <c-radio value="pro" label="Pro Tier" description="High throughput (10,000 req/min)" />
+          <c-radio value="enterprise" label="Enterprise Tier" description="Uncapped dedicated bandwidth" />
+        </c-radio-group>
+
+        <view class="flex items-center justify-between text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200">
+          <text class="text-neutral-500">useChild Snapshot Value:</text>
+          <text class="font-bold text-primary font-mono">{{programmaticGroup.value || useChildLastValue}}</text>
+        </view>
+
+        <view class="flex flex-wrap gap-2 pt-1">
+          <c-button size="sm" variant="soft" color="neutral" bind:tap="useChildSetStarter">
+            api.setValue('starter')
+          </c-button>
+          <c-button size="sm" variant="soft" color="primary" bind:tap="useChildSetEnterprise">
+            api.setValue('enterprise')
+          </c-button>
+          <c-button size="sm" variant="soft" color="danger" bind:tap="useChildClear">
+            api.clear()
+          </c-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 3. Card Variant -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">3. Card Variant (variant="card")</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Selectable card layout with soft background, active border, and ring.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-radio-group value="{{selectedBilling}}" variant="card" bind:change="onBillingChange">
+          <c-radio
+            value="monthly"
+            variant="card"
+            label="Monthly Billing"
+            description="$24 / month, cancel anytime"
+          />
+          <c-radio
+            value="annual"
+            variant="card"
+            label="Annual Billing (Save 20%)"
+            description="$19 / month, billed annually as $228"
+          />
+        </c-radio-group>
+      </view>
+    </view>
+
+    <!-- 4. Auto-rendered Items Prop -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">4. Auto-rendered (items Prop)</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Pass an array of options directly to c-radio-group without writing child tags.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-radio-group
+          value="{{selectedFruit}}"
+          items="{{fruitOptions}}"
+          bind:change="onFruitChange"
+        />
+        <view class="text-xs text-neutral-500 bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
+          Selected fruit: <text class="font-bold text-neutral-900">{{selectedFruit}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 5. Horizontal Orientation -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">5. Horizontal Orientation</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        orientation="horizontal" wraps items in a flex row.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-radio-group
+          orientation="horizontal"
+          value="{{deliverySpeed}}"
+          bind:change="onDeliverySpeedChange"
+        >
+          <c-radio value="standard" label="Standard" />
+          <c-radio value="express" label="Express" />
+          <c-radio value="overnight" label="Overnight" />
+        </c-radio-group>
+      </view>
+    </view>
+
+    <!-- 6. Sizes -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">6. Sizes</view>
+      <view class="text-xs text-neutral-400 mb-3">xs, sm, md, lg, xl</view>
+      <view class="flex flex-col gap-4">
+        <c-radio-group size="xs" defaultValue="xs">
+          <c-radio value="xs" label="Size xs (3.5 / 1.5)" />
+        </c-radio-group>
+        <c-radio-group size="sm" defaultValue="sm">
+          <c-radio value="sm" label="Size sm (4.0 / 2.0)" />
+        </c-radio-group>
+        <c-radio-group size="md" defaultValue="md">
+          <c-radio value="md" label="Size md (4.5 / 2.0 - Default)" />
+        </c-radio-group>
+        <c-radio-group size="lg" defaultValue="lg">
+          <c-radio value="lg" label="Size lg (5.0 / 2.5)" />
+        </c-radio-group>
+        <c-radio-group size="xl" defaultValue="xl">
+          <c-radio value="xl" label="Size xl (6.0 / 3.0)" />
+        </c-radio-group>
+      </view>
+    </view>
+
+    <!-- 7. Semantic Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">7. Semantic Colors</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        primary, success, warning, danger, info, neutral
+      </view>
+      <view class="grid grid-cols-2 gap-3">
+        <c-radio-group color="primary" defaultValue="opt">
+          <c-radio value="opt" label="Primary" />
+        </c-radio-group>
+        <c-radio-group color="success" defaultValue="opt">
+          <c-radio value="opt" label="Success" />
+        </c-radio-group>
+        <c-radio-group color="warning" defaultValue="opt">
+          <c-radio value="opt" label="Warning" />
+        </c-radio-group>
+        <c-radio-group color="danger" defaultValue="opt">
+          <c-radio value="opt" label="Danger" />
+        </c-radio-group>
+        <c-radio-group color="info" defaultValue="opt">
+          <c-radio value="opt" label="Info" />
+        </c-radio-group>
+        <c-radio-group color="neutral" defaultValue="opt">
+          <c-radio value="opt" label="Neutral" />
+        </c-radio-group>
+      </view>
+    </view>
+
+    <!-- 8. Custom Indicator Slot -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">8. Custom Indicator Slot</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Use slot="indicator" inside c-radio to render custom glyphs, icons, or badges.
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-radio-group value="{{customDelivery}}" bind:change="onCustomDeliveryChange">
+          <c-radio customIndicator="{{true}}" value="delivery" label="Home Delivery" description="Standard door delivery in 2-3 business days">
+            <view slot="indicator" class="w-2.5 h-2.5 rounded-full {{customDelivery === 'delivery' ? 'bg-primary' : 'bg-transparent'}}" />
+          </c-radio>
+          <c-radio customIndicator="{{true}}" value="pickup" label="In-Store Pickup" description="Ready in 1 hour at your nearest store">
+            <view slot="indicator" class="w-2.5 h-2.5 rounded-full {{customDelivery === 'pickup' ? 'bg-success' : 'bg-transparent'}}" />
+          </c-radio>
+        </c-radio-group>
+      </view>
+    </view>
+
+    <!-- 9. Form & Validation Integration -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">9. Form & Validation Integration</view>
+      <view class="text-xs text-neutral-400 mb-3">
+        Wired with c-form and c-form-field. Supports validation rules, reset, and submit payloads.
+      </view>
+
+      <c-form
+        id="radio-demo-form"
+        bind:submit="handleRadioFormSubmit"
+        bind:error="handleRadioFormError"
+      >
+        <c-form-field
+          name="membership"
+          label="Membership Level"
+          required
+          rules="{{membershipRules}}"
+          description="Required level for club perks and discount tiers"
+        >
+          <c-radio-group
+            name="membership"
+            value="{{formMembership}}"
+            variant="card"
+            bind:change="onFormMembershipChange"
+          >
+            <c-radio value="silver" variant="card" label="Silver Member" description="5% discount on all purchases" />
+            <c-radio value="gold" variant="card" label="Gold Member" description="15% discount + free global shipping" />
+            <c-radio value="platinum" variant="card" label="Platinum VIP" description="25% discount + personal concierge" />
+          </c-radio-group>
+        </c-form-field>
+
+        <view class="flex gap-2 pt-4">
+          <c-button color="primary" bind:tap="submitRadioForm">
+            Submit Form
+          </c-button>
+          <c-button variant="outline" color="neutral" bind:tap="resetRadioForm">
+            Reset
+          </c-button>
+        </view>
+      </c-form>
+
+      <view wx:if="{{formStatus}}" class="mt-4 p-3 rounded-xl text-xs {{formStatus === 'Success' ? 'bg-success-50 text-success-700 border border-success-200' : 'bg-danger-50 text-danger-700 border border-danger-200'}}">
+        <view class="font-bold">{{formStatus}}</view>
+        <view class="mt-0.5 break-all font-mono">{{formMessage}}</view>
+      </view>
+    </view>
+  </view>
+</view>

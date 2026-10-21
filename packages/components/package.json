@@ -72,6 +72,18 @@
       "require": "./dist/runtime/pin-input/index.js"
     },
     "./pin-input/*": "./dist/runtime/pin-input/*",
+    "./radio": {
+      "types": "./dist/runtime/radio/index.d.ts",
+      "import": "./dist/runtime/radio/index.js",
+      "require": "./dist/runtime/radio/index.js"
+    },
+    "./radio/*": "./dist/runtime/radio/*",
+    "./radio-group": {
+      "types": "./dist/runtime/radio-group/index.d.ts",
+      "import": "./dist/runtime/radio-group/index.js",
+      "require": "./dist/runtime/radio-group/index.js"
+    },
+    "./radio-group/*": "./dist/runtime/radio-group/*",
     "./switch": {
       "types": "./dist/runtime/switch/index.d.ts",
       "import": "./dist/runtime/switch/index.js",
@@ -116,6 +128,8 @@
     "@code-ui/input": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/radio": "workspace:*",
+    "@code-ui/radio-group": "workspace:*",
     "@code-ui/switch": "workspace:*",
     "@code-ui/textarea": "workspace:*",
     "@code-ui/utils": "workspace:*",

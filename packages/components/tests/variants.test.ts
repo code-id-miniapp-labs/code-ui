@@ -4,6 +4,8 @@ import {
   switchTheme as createSwitchTheme,
   inputTheme as createInputTheme,
   pinInputTheme as createPinInputTheme,
+  radioTheme as createRadioTheme,
+  radioGroupTheme as createRadioGroupTheme,
   textareaTheme as createTextareaTheme,
   resetConfig,
   setConfig,
@@ -16,6 +18,8 @@ import {
 } from "../src/utils/variants";
 
 const buttonTheme = tv(createButtonTheme());
+const radioTheme = tv(createRadioTheme());
+const radioGroupTheme = tv(createRadioGroupTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -514,6 +518,83 @@ describe("textareaTheme autoHeight and variants", () => {
     );
     expect(slots.placeholder).toContain("text-neutral-400");
     expect(slots.placeholder).toContain("text-sm");
+  });
+});
+
+describe("radioTheme resolution", () => {
+  it("resolves default slots and classes", () => {
+    const slots = resolveSlots(radioTheme() as any);
+    expect(slots.root).toContain("inline-flex items-start");
+    expect(slots.base).toContain("rounded-full");
+    expect(slots.indicator).toContain("rounded-full");
+  });
+
+  it("resolves variant = card styling", () => {
+    const slots = resolveSlots(
+      radioTheme({ variant: "card" }) as any,
+    );
+    expect(slots.root).toContain("p-3 rounded-xl border");
+    expect(slots.root).toContain("shadow-xs");
+  });
+
+  it("resolves checked card styling with color", () => {
+    const slots = resolveSlots(
+      radioTheme({ variant: "card", color: "primary", checked: true }) as any,
+    );
+    expect(slots.root).toContain("border-primary");
+    expect(slots.root).toContain("ring-primary");
+    expect(slots.indicator).toContain("bg-primary");
+  });
+
+  it("resolves invalid card styling even when unchecked", () => {
+    const slots = resolveSlots(
+      radioTheme({ variant: "card", invalid: true, checked: false }) as any,
+    );
+    expect(slots.root).toContain("border-danger");
+    expect(slots.root).toContain("ring-danger");
+    expect(slots.base).toContain("border-danger");
+  });
+});
+
+describe("radioGroupTheme resolution", () => {
+  it("resolves default slots and classes", () => {
+    const slots = resolveSlots(radioGroupTheme() as any);
+    expect(slots.root).toContain("inline-flex flex-col");
+    expect(slots.fieldset).toContain("flex flex-col gap-2");
+    expect(slots.item).toContain("inline-flex items-start");
+    expect(slots.base).toContain("rounded-full");
+    expect(slots.indicator).toContain("rounded-full");
+  });
+
+  it("resolves horizontal orientation", () => {
+    const slots = resolveSlots(
+      radioGroupTheme({ orientation: "horizontal" }) as any,
+    );
+    expect(slots.fieldset).toContain("flex-row flex-wrap gap-4");
+  });
+
+  it("resolves checked compound variant with color", () => {
+    const slots = resolveSlots(
+      radioGroupTheme({ color: "primary", checked: true }) as any,
+    );
+    expect(slots.base).toContain("border-primary");
+    expect(slots.indicator).toContain("bg-primary");
+  });
+
+  it("resolves invalid styling", () => {
+    const slots = resolveSlots(
+      radioGroupTheme({ invalid: true }) as any,
+    );
+    expect(slots.base).toContain("border-danger");
+    expect(slots.base).toContain("ring-danger");
+  });
+
+  it("resolves disabled state", () => {
+    const slots = resolveSlots(
+      radioGroupTheme({ disabled: true }) as any,
+    );
+    expect(slots.item).toContain("opacity-50 cursor-not-allowed");
+    expect(slots.base).toContain("cursor-not-allowed");
   });
 });
 

@@ -32,6 +32,14 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
+      "@code-ui/radio": resolve(
+        import.meta.dirname,
+        "packages/machines/radio/src",
+      ),
+      "@code-ui/radio-group": resolve(
+        import.meta.dirname,
+        "packages/machines/radio-group/src",
+      ),
       "@code-ui/switch": resolve(
         import.meta.dirname,
         "packages/machines/switch/src",

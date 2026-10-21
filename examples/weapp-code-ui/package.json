@@ -39,6 +39,8 @@
   "devDependencies": {
     "@code-ui/input": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/radio": "workspace:*",
+    "@code-ui/radio-group": "workspace:*",
     "@icebreakers/eslint-config": "^8.0.2",
     "@icebreakers/stylelint-config": "^5.1.2",
     "@types/node": "^26.6.2",

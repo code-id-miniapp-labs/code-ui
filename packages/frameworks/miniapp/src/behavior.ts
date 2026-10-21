@@ -49,6 +49,16 @@ export interface CreateMachineBehaviorOptions<
    */
   formParent?: boolean;
   /**
+   * Mark this component as a Radio Group parent (`<c-radio-group>`),
+   * automatically wiring relations for descendant `<c-radio>` items.
+   */
+  radioGroup?: boolean;
+  /**
+   * Mark this component as a Radio item (`<c-radio>`),
+   * automatically wiring relations to link with ancestor `<c-radio-group>`.
+   */
+  radioItem?: boolean;
+  /**
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
   exportApi?: boolean;
@@ -148,6 +158,71 @@ function getComponentId(instance: object, explicitId?: string): string {
  */
 export const cuiFormParentBehavior: any =
   typeof Behavior !== "undefined" ? Behavior({}) : {};
+
+/**
+ * Shared Behavior reference for `<c-radio-group>` parent components.
+ * Used as relations.target to link descendant <c-radio> components natively
+ * without file paths or tree-shaking hazards.
+ */
+export const cuiRadioGroupBehavior: any =
+  typeof Behavior !== "undefined" ? Behavior({}) : {};
+export const cuiRadioGroupParentBehavior: any = cuiRadioGroupBehavior;
+
+function linkRadioToParentGroup(group: any, radio: any) {
+  const service = group.__codeUiMachine?.service;
+  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  radio.__codeUiRadioGroupBus = bus;
+  if (radio.__codeUiMachine) {
+    const ctx = service?.context;
+    radio.__codeUiMachine.updateProps({
+      groupBus: bus,
+      groupValue: ctx?.get("value"),
+      groupDisabled: ctx?.get("disabled"),
+      groupInvalid: ctx?.get("invalid"),
+      groupSize: ctx?.get("size"),
+      groupColor: ctx?.get("color"),
+      groupVariant: ctx?.get("variant"),
+    });
+  } else {
+    radio.__codeUiPendingRadioGroup = group;
+  }
+}
+
+function unlinkRadioFromParentGroup(_group: any, radio: any) {
+  radio.__codeUiRadioGroupBus = undefined;
+  if (radio.__codeUiMachine) {
+    radio.__codeUiMachine.updateProps({
+      groupBus: undefined,
+      groupValue: undefined,
+      groupDisabled: undefined,
+      groupSize: undefined,
+      groupColor: undefined,
+      groupVariant: undefined,
+    });
+  }
+}
+
+/**
+ * Shared Behavior reference for `<c-radio>` child components.
+ * Automatically links to ancestor `<c-radio-group>`.
+ */
+export const cuiRadioItemBehavior: any =
+  typeof Behavior !== "undefined"
+    ? Behavior({
+        relations: {
+          cuiRadioGroupParent: {
+            type: "ancestor",
+            target: cuiRadioGroupBehavior,
+            linked(this: any, target: any) {
+              linkRadioToParentGroup(target, this);
+            },
+            unlinked(this: any, target: any) {
+              unlinkRadioFromParentGroup(target, this);
+            },
+          },
+        },
+      })
+    : {};
 
 function shouldLinkField(parent: any, child: any): boolean {
   const childFormProp =
@@ -342,6 +417,8 @@ export function createMachineBehavior<
     formFieldWrapper = false,
     nativeFormField = true,
     formParent = false,
+    radioGroup = false,
+    radioItem = false,
     exportApi = false,
     deferred = false,
   } = options;
@@ -375,6 +452,12 @@ export function createMachineBehavior<
   }
   if (formParent) {
     behaviors.push(cuiFormParentBehavior);
+  }
+  if (radioGroup) {
+    behaviors.push(cuiRadioGroupBehavior);
+  }
+  if (radioItem) {
+    behaviors.push(cuiRadioItemBehavior);
   }
   if (exportApi) behaviors.push("wx://component-export");
 
@@ -412,6 +495,19 @@ export function createMachineBehavior<
       },
       unlinked(this: any, target: any) {
         unlinkFieldFromParentBus(this, target);
+      },
+    };
+  }
+
+  if (radioGroup) {
+    relations.cuiRadioChild = {
+      type: "descendant",
+      target: cuiRadioItemBehavior,
+      linked(this: any, target: any) {
+        linkRadioToParentGroup(this, target);
+      },
+      unlinked(this: any, target: any) {
+        unlinkRadioFromParentGroup(this, target);
       },
     };
   }
@@ -510,6 +606,34 @@ export function createMachineBehavior<
           }
         }
 
+        if (radioItem) {
+          const parent =
+            this.__codeUiPendingRadioGroup ??
+            (typeof this.getRelationNodes === "function"
+              ? this.getRelationNodes("cuiRadioGroupParent")?.[0]
+              : undefined);
+          if (parent) {
+            const pService = parent.__codeUiMachine?.service;
+            const bus =
+              parent.__codeUiRadioGroupBus ??
+              getServiceBus(pService) ??
+              pService?.refs?.get?.("bus");
+            if (bus) {
+              initialProps.groupBus = bus;
+              this.__codeUiRadioGroupBus = bus;
+            }
+            if (pService) {
+              const ctx = pService.context;
+              initialProps.groupValue = ctx?.get("value");
+              initialProps.groupDisabled = ctx?.get("disabled");
+              initialProps.groupInvalid = ctx?.get("invalid");
+              initialProps.groupSize = ctx?.get("size");
+              initialProps.groupColor = ctx?.get("color");
+              initialProps.groupVariant = ctx?.get("variant");
+            }
+          }
+        }
+
         if (this.data) {
           syncProps.forEach((propKey) => {
             const keyStr = propKey as string;
@@ -523,6 +647,15 @@ export function createMachineBehavior<
 
         this.__codeUiMachine = machine;
         this.__codeUiDeferred = deferred;
+
+        if (radioGroup && typeof this.getRelationNodes === "function") {
+          const children = this.getRelationNodes("cuiRadioChild");
+          if (children && children.length > 0) {
+            for (const child of children) {
+              linkRadioToParentGroup(this, child);
+            }
+          }
+        }
 
         if (formFieldWrapper) {
           this.__codeUiIsFormFieldWrapper = true;
@@ -573,6 +706,34 @@ export function createMachineBehavior<
               connect,
               key,
             );
+          }
+        }
+      },
+
+      ready(this: any) {
+        if (radioGroup && typeof this.getRelationNodes === "function") {
+          const children = this.getRelationNodes("cuiRadioChild");
+          if (children && children.length > 0) {
+            for (const child of children) {
+              linkRadioToParentGroup(this, child);
+            }
+          }
+        }
+        if (radioItem && typeof this.getRelationNodes === "function") {
+          const parents = this.getRelationNodes("cuiRadioGroupParent");
+          if (parents && parents.length > 0) {
+            linkRadioToParentGroup(parents[0], this);
+          }
+        }
+        if (formParent && typeof this.getRelationNodes === "function") {
+          const bus =
+            this.__codeUiFormBus ??
+            getServiceBus(this.__codeUiMachine?.service);
+          if (bus) {
+            const fields = this.getRelationNodes("cuiFormField") ?? [];
+            for (let i = 0; i < fields.length; i++) {
+              linkFieldToParentBus(this, fields[i], bus);
+            }
           }
         }
       },

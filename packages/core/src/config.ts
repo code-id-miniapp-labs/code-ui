@@ -56,6 +56,19 @@ export interface ComponentRegistry {
     | "trailingIcon"
     | "clear";
   pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
+  radio: "root" | "base" | "indicator" | "wrapper" | "label" | "description";
+  radioGroup:
+    | "root"
+    | "fieldset"
+    | "legend"
+    | "item"
+    | "base"
+    | "indicator"
+    | "wrapper"
+    | "label"
+    | "description"
+    | "help"
+    | "error";
   switch:
     | "root"
     | "base"

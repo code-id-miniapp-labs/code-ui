@@ -119,8 +119,14 @@ function getComponentDirectDeps(
       if (json?.usingComponents && typeof json.usingComponents === "object") {
         const prefix = treeLibrary + "/";
         for (const val of Object.values(json.usingComponents)) {
-          if (typeof val === "string" && val.startsWith(prefix)) {
-            deps.push(val);
+          if (typeof val === "string") {
+            if (val.startsWith(prefix)) {
+              deps.push(val);
+            } else if (val.startsWith(".")) {
+              const abs = path.resolve(path.dirname(sourceJsonPath), val);
+              const rel = path.relative(graph.sourceDir, abs).replace(/\\/g, "/");
+              deps.push(`${treeLibrary}/${rel}`);
+            }
           }
         }
       }
