@@ -12,14 +12,14 @@ export default function switchTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative inline-flex items-start select-none",
-      base: "inline-flex items-center shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      base: "inline-flex mt-0.5 items-center shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       container: "flex items-center",
       thumb:
         "pointer-events-none rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-out motion-reduce:transition-none flex items-center justify-center translate-y-0",
       icon: "shrink-0 transition-[color,opacity] duration-200 ease-out",
       wrapper: "ms-2 flex flex-col justify-center",
       label: "block font-medium text-neutral-900 leading-snug",
-      description: "text-neutral-500 leading-snug",
+      description: "text-neutral-500 mt-0.5 leading-snug",
     },
     variants: {
       color: createColorVariants(colors),

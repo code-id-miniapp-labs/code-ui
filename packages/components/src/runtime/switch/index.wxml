@@ -10,12 +10,12 @@
     </view>
   </view>
   <view wx:if="{{label || description}}" class="{{classes.wrapper}}" data-scope="switch" data-part="wrapper">
-    <text wx:if="{{label}}" id="{{cSwitch.labelProps.id}}" class="{{classes.label}}" data-scope="switch" data-part="label" data-disabled="{{cSwitch.labelProps['data-disabled']}}">
+    <view wx:if="{{label}}" id="{{cSwitch.labelProps.id}}" class="{{classes.label}}" data-scope="switch" data-part="label" data-disabled="{{cSwitch.labelProps['data-disabled']}}">
       {{label}}
-    </text>
-    <text wx:if="{{description}}" id="{{cSwitch.descriptionProps.id}}" class="{{classes.description}}" data-scope="switch" data-part="description" data-disabled="{{cSwitch.descriptionProps['data-disabled']}}">
+    </view>
+    <view wx:if="{{description}}" id="{{cSwitch.descriptionProps.id}}" class="{{classes.description}}" data-scope="switch" data-part="description" data-disabled="{{cSwitch.descriptionProps['data-disabled']}}">
       {{description}}
-    </text>
+    </view>
   </view>
   <slot />
 </view>
