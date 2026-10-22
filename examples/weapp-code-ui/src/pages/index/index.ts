@@ -2,6 +2,13 @@ Page({
   data: {
     components: [
       {
+        id: "avatar",
+        name: "Avatar",
+        desc: "User profile representation with image, initials, and icon fallbacks.",
+        badge: "Display",
+        path: "/pages/avatar/index",
+      },
+      {
         id: "button",
         name: "Button",
         desc: "Interactive triggers with solid, outline, soft variants & async auto-loading.",

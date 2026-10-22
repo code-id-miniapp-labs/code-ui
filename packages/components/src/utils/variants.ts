@@ -188,107 +188,298 @@ export function escapeClass(value: string | null | undefined): string {
   return out;
 }
 
+// 1. Pre-defined Sets & Regexes for O(1) / zero-allocation lookups
+const DISPLAY_SET = new Set([
+  "block",
+  "inline-block",
+  "inline",
+  "flex",
+  "inline-flex",
+  "grid",
+  "inline-grid",
+  "contents",
+  "list-item",
+  "hidden",
+]);
+
+const POSITION_SET = new Set([
+  "static",
+  "fixed",
+  "absolute",
+  "relative",
+  "sticky",
+]);
+
+const FONT_WEIGHT_SET = new Set([
+  "thin",
+  "extralight",
+  "light",
+  "normal",
+  "medium",
+  "semibold",
+  "bold",
+  "extrabold",
+  "black",
+]);
+
+const TEXT_ALIGN_SET = new Set([
+  "left",
+  "center",
+  "right",
+  "justify",
+  "start",
+  "end",
+]);
+
+const TEXT_WRAP_SET = new Set([
+  "wrap",
+  "nowrap",
+  "balance",
+  "pretty",
+  "ellipsis",
+  "clip",
+]);
+
+const BG_SIZE_SET = new Set(["auto", "cover", "contain"]);
+const BG_ATTACHMENT_SET = new Set(["fixed", "local", "scroll"]);
+const BG_POSITION_SET = new Set([
+  "bottom",
+  "center",
+  "left",
+  "left-bottom",
+  "left-top",
+  "right",
+  "right-bottom",
+  "right-top",
+  "top",
+]);
+
+const BORDER_STYLE_SET = new Set([
+  "solid",
+  "dashed",
+  "dotted",
+  "double",
+  "hidden",
+  "none",
+]);
+
+const TEXT_SIZE_RE =
+  /^([2-9]?xs|sm|md|base|lg|[2-9]?xl)$|^\[(\d+|length:|var\(--font-size)/;
+const NUMERIC_OR_LENGTH_RE = /^\d+$|^\[(\d+|length:)/;
+const SPACING_RE = /^-?([pm][xytrblse]?|space-[xy])-/;
+const SIZE_RE = /^(w|h|min-w|min-h|max-w|max-h|size)-/;
+const INSET_RE = /^-?(inset(-[xy])?|top|right|bottom|left|start|end)-/;
+const ROUNDED_DIR_RE = /^rounded-(tl|tr|bl|br|ss|se|ee|es|t|b|l|r|s|e)(?:-|$)/;
+const BORDER_DIR_RE = /^(t|b|l|r|x|y|s|e)(?:-(.+))?$/;
+const BG_REPEAT_RE = /^(no-)?repeat(-[xy])?$/;
+const BG_GRADIENT_RE =
+  /^( none|gradient-to-(t|tr|r|br|b|bl|l|tl)|linear-to-|radial|conic)/;
+
+/**
+ * Finds the last variant colon `:` that is NOT inside arbitrary brackets `[...]`.
+ * Prevents breaking on `text-[length:16rpx]` or `bg-[url(https://...)]`.
+ */
+function splitPrefixAndUtil(token: string): [prefix: string, util: string] {
+  let bracketDepth = 0;
+  let lastColon = -1;
+
+  for (let i = 0; i < token.length; i++) {
+    const ch = token[i];
+    if (ch === "[") bracketDepth++;
+    else if (ch === "]" && bracketDepth > 0) bracketDepth--;
+    else if (ch === ":" && bracketDepth === 0) lastColon = i;
+  }
+
+  const prefix = lastColon !== -1 ? token.slice(0, lastColon + 1) : "";
+  let util = lastColon !== -1 ? token.slice(lastColon + 1) : token;
+
+  // Strip Tailwind's `!` important modifier so `!p-4` deduplicates against `p-2`
+  if (util.startsWith("!")) {
+    util = util.slice(1);
+  }
+
+  return [prefix, util];
+}
+
 /**
  * Returns a property group key for common Tailwind classes so conflicting
  * properties can be deduplicated (e.g. text-red-500 replacing text-white).
  */
-export function getUtilityKey(token: string): string | null {
-  const lastColon = token.lastIndexOf(":");
-  const prefix = lastColon !== -1 ? token.slice(0, lastColon + 1) : "";
-  const m = lastColon !== -1 ? token.slice(lastColon + 1) : token;
+export function computeUtilityKey(token: string): string | null {
+  const [prefix, m] = splitPrefixAndUtil(token);
 
-  if (/^(block|inline(-block|-flex|-grid)?|flex|grid|hidden)$/.test(m)) {
-    return `${prefix}display`;
+  // 1. Exact-match standalone utilities
+  if (DISPLAY_SET.has(m)) return `${prefix}display`;
+  if (POSITION_SET.has(m)) return `${prefix}position`;
+  if (m === "truncate") return `${prefix}truncate`;
+  if (m === "italic" || m === "not-italic") return `${prefix}font-style`;
+  if (
+    m === "underline" ||
+    m === "overline" ||
+    m === "line-through" ||
+    m === "no-underline"
+  ) {
+    return `${prefix}text-decoration`;
   }
-  if (/^(static|fixed|absolute|relative|sticky)$/.test(m)) {
-    return `${prefix}position`;
+  if (
+    m === "uppercase" ||
+    m === "lowercase" ||
+    m === "capitalize" ||
+    m === "normal-case"
+  ) {
+    return `${prefix}text-transform`;
   }
 
-  // Spacing & sizing
-  if (/^-?[pm][xytrblse]?-/.test(m)) {
-    const d = m.startsWith("-")
-      ? m.slice(1, m.indexOf("-", 1))
-      : m.slice(0, m.indexOf("-"));
-    return `${prefix}${d}`;
-  }
-  const sizeMatch = m.match(/^(w|h|min-w|min-h|max-w|max-h|size)-/);
+  // 2. Spacing (p-*, m-*, space-x-*, etc.)
+  const spacingMatch = m.match(SPACING_RE);
+  if (spacingMatch) return `${prefix}${spacingMatch[1]}`;
+
+  // 3. Sizing (w-*, h-*, size-*, min-w-*, max-w-*, etc.)
+  const sizeMatch = m.match(SIZE_RE);
   if (sizeMatch) return `${prefix}${sizeMatch[1]}`;
 
-  // Flex / Grid
-  if (/^flex-(row|col)(-reverse)?$/.test(m)) return `${prefix}flex-direction`;
-  if (m.startsWith("items-")) return `${prefix}items`;
-  if (m.startsWith("justify-")) return `${prefix}justify`;
-  if (m.startsWith("gap-")) {
-    return `${prefix}gap${m.startsWith("gap-x-") ? "-x" : m.startsWith("gap-y-") ? "-y" : ""}`;
+  // 4. Inset / Positioning coordinates (inset-*, top-*, left-*, etc.)
+  const insetMatch = m.match(INSET_RE);
+  if (insetMatch) return `${prefix}${insetMatch[1]}`;
+
+  // 5. Typography (`text-*`, `font-*`, `leading-*`, `tracking-*`)
+  if (m.startsWith("text-")) {
+    const val = m.slice(5);
+    if (TEXT_SIZE_RE.test(val)) return `${prefix}text-size`;
+    if (TEXT_ALIGN_SET.has(val)) return `${prefix}text-align`;
+    if (TEXT_WRAP_SET.has(val)) return `${prefix}text-wrap`;
+    return `${prefix}text-color`;
   }
 
-  // Rounded
+  if (m.startsWith("font-")) {
+    const val = m.slice(5);
+    return FONT_WEIGHT_SET.has(val)
+      ? `${prefix}font-weight`
+      : `${prefix}font-family`;
+  }
+
+  if (m.startsWith("leading-")) return `${prefix}leading`;
+  if (m.startsWith("tracking-")) return `${prefix}tracking`;
+  if (m.startsWith("align-")) return `${prefix}vertical-align`;
+
+  // 6. Backgrounds (`bg-*`)
+  if (m.startsWith("bg-")) {
+    const val = m.slice(3);
+    if (BG_SIZE_SET.has(val) || val.startsWith("size:"))
+      return `${prefix}bg-size`;
+    if (BG_ATTACHMENT_SET.has(val)) return `${prefix}bg-attachment`;
+    if (BG_POSITION_SET.has(val) || val.startsWith("position:"))
+      return `${prefix}bg-position`;
+    if (BG_REPEAT_RE.test(val)) return `${prefix}bg-repeat`;
+    if (BG_GRADIENT_RE.test(val)) return `${prefix}bg-image`;
+    return `${prefix}bg-color`;
+  }
+
+  // 7. Borders (`border`, `border-*`, `rounded-*`)
+  if (m === "border") return `${prefix}border-width`;
+  if (m.startsWith("border-")) {
+    const val = m.slice(7);
+    if (BORDER_STYLE_SET.has(val)) return `${prefix}border-style`;
+    const dirMatch = val.match(BORDER_DIR_RE);
+    if (dirMatch) {
+      const [, dir, rest] = dirMatch;
+      const isWidth = !rest || NUMERIC_OR_LENGTH_RE.test(rest);
+      return `${prefix}border-${dir}-${isWidth ? "width" : "color"}`;
+    }
+    if (NUMERIC_OR_LENGTH_RE.test(val)) return `${prefix}border-width`;
+    return `${prefix}border-color`;
+  }
+
   if (m === "rounded" || m.startsWith("rounded-")) {
-    const s = m.match(/^rounded-(tl|tr|bl|br|ss|se|ee|es|t|b|l|r|s|e)(?:-|$)/);
+    const s = m.match(ROUNDED_DIR_RE);
     return `${prefix}rounded${s ? `-${s[1]}` : ""}`;
   }
 
-  // Ring utilities
+  // 8. Rings (`ring`, `ring-*`)
   if (m === "ring" || m.startsWith("ring-")) {
     const val = m === "ring" ? "" : m.slice(5);
-    if (!val || val === "inset" || /^\d+$/.test(val)) return `${prefix}ring-width`;
+    if (val === "inset") return `${prefix}ring-inset`;
+    if (!val || NUMERIC_OR_LENGTH_RE.test(val)) return `${prefix}ring-width`;
     if (val.startsWith("offset-")) {
-      return /^\d+$/.test(val.slice(7))
+      return NUMERIC_OR_LENGTH_RE.test(val.slice(7))
         ? `${prefix}ring-offset-width`
         : `${prefix}ring-offset-color`;
     }
     return `${prefix}ring-color`;
   }
 
+  // 9. Flexbox & Grid
+  if (m.startsWith("flex-")) {
+    const val = m.slice(5);
+    if (
+      val === "row" ||
+      val === "col" ||
+      val === "row-reverse" ||
+      val === "col-reverse"
+    ) {
+      return `${prefix}flex-direction`;
+    }
+    if (val === "wrap" || val === "nowrap" || val === "wrap-reverse") {
+      return `${prefix}flex-wrap`;
+    }
+    if (val === "1" || val === "auto" || val === "initial" || val === "none") {
+      return `${prefix}flex`;
+    }
+  }
+  if (m === "shrink" || m.startsWith("shrink-")) return `${prefix}shrink`;
+  if (m === "grow" || m.startsWith("grow-")) return `${prefix}grow`;
+  if (m.startsWith("basis-")) return `${prefix}basis`;
+  if (m.startsWith("items-")) return `${prefix}items`;
+  if (m.startsWith("justify-")) return `${prefix}justify`;
+  if (m.startsWith("self-")) return `${prefix}self`;
+  if (m.startsWith("content-")) return `${prefix}content`;
+  if (m.startsWith("grid-cols-")) return `${prefix}grid-cols`;
+  if (m.startsWith("grid-rows-")) return `${prefix}grid-rows`;
+  if (m.startsWith("col-span-")) return `${prefix}col-span`;
+  if (m.startsWith("row-span-")) return `${prefix}row-span`;
+  if (m.startsWith("gap-")) {
+    return `${prefix}gap${m.startsWith("gap-x-") ? "-x" : m.startsWith("gap-y-") ? "-y" : ""}`;
+  }
+
+  // 10. Effects, Layout & Interactivity
   if (m === "shadow" || m.startsWith("shadow-")) return `${prefix}shadow`;
   if (m.startsWith("opacity-")) return `${prefix}opacity`;
   if (/^-?z-/.test(m)) return `${prefix}z`;
-  if (
-    /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/.test(
-      m,
-    )
-  ) {
-    return `${prefix}font-weight`;
+  if (m.startsWith("overflow-")) {
+    return `${prefix}overflow${m.startsWith("overflow-x-") ? "-x" : m.startsWith("overflow-y-") ? "-y" : ""}`;
   }
-
-  if (m.startsWith("text-")) {
-    const val = m.slice(5);
-    if (/^(xs|sm|base|lg|[2-9]?xl)$|^\[(\d+|length:)/.test(val)) {
-      return `${prefix}text-size`;
-    }
-    if (/^(left|center|right|justify|start|end)$/.test(val)) {
-      return `${prefix}text-align`;
-    }
-    if (/^(ellipsis|clip|wrap|nowrap|balance|pretty)$/.test(val)) {
-      return `${prefix}text-wrap-overflow`;
-    }
-    return `${prefix}text-color`;
-  }
-
-  if (m.startsWith("bg-")) {
-    const val = m.slice(3);
-    if (/^(auto|cover|contain)$/.test(val)) return `${prefix}bg-size`;
-    if (/^(fixed|local|scroll)$/.test(val)) return `${prefix}bg-attachment`;
-    if (/^(no-)?repeat(-[xy])?$/.test(val)) return `${prefix}bg-repeat`;
-    return `${prefix}bg-color`;
-  }
-
-  if (m === "border") return `${prefix}border-width`;
-  if (m.startsWith("border-")) {
+  if (m.startsWith("object-")) {
     const val = m.slice(7);
-    if (/^(solid|dashed|dotted|double|none)$/.test(val)) {
-      return `${prefix}border-style`;
-    }
-    const dirMatch = val.match(/^(t|b|l|r|x|y|s|e)(?:-(.+))?$/);
-    if (dirMatch) {
-      const rest = dirMatch[2];
-      return `${prefix}border-${dirMatch[1]}-${!rest || /^\d+$|^\[(\d+|length:)/.test(rest) ? "width" : "color"}`;
-    }
-    if (/^\d+$|^\[(\d+|length:)/.test(val)) return `${prefix}border-width`;
-    return `${prefix}border-color`;
+    return /^(contain|cover|fill|none|scale-down)$/.test(val)
+      ? `${prefix}object-fit`
+      : `${prefix}object-position`;
   }
+  if (m.startsWith("cursor-")) return `${prefix}cursor`;
+  if (m.startsWith("select-")) return `${prefix}select`;
+  if (m.startsWith("pointer-events-")) return `${prefix}pointer-events`;
+  if (m.startsWith("aspect-")) return `${prefix}aspect`;
 
   return null;
+}
+
+/**
+ * Returns a property group key for common Tailwind classes so conflicting
+ * properties can be deduplicated (e.g. text-red-500 replacing text-white).
+ */
+const UTIL_KEY_CACHE_LIMIT = 512;
+const utilKeyCache = new Map<string, string | null>();
+
+export function getUtilityKey(token: string): string | null {
+  const cached = utilKeyCache.get(token);
+  if (cached !== undefined) return cached;
+
+  const key = computeUtilityKey(token); // <-- rename the function above to computeUtilityKey
+  if (utilKeyCache.size >= UTIL_KEY_CACHE_LIMIT) {
+    const oldest = utilKeyCache.keys().next();
+    if (!oldest.done) utilKeyCache.delete(oldest.value);
+  }
+  utilKeyCache.set(token, key);
+  return key;
 }
 
 export function dedupeClasses(
@@ -321,6 +512,10 @@ export function cn(...classes: ClassValue[]): string {
   return escapeClass(dedupeClasses(cx(...classes)));
 }
 
+function normalizeVariantValue(val: any): string {
+  return val === true ? "true" : val === false ? "false" : String(val);
+}
+
 function matchesCompound(
   cv: Record<string, any>,
   mergedProps: Record<string, any>,
@@ -329,7 +524,14 @@ function matchesCompound(
     if (k === "class" || k === "className") continue;
     const v = cv[k];
     const propVal = mergedProps[k];
-    if (Array.isArray(v) ? !v.includes(propVal) : propVal !== v) {
+    if (propVal === undefined || propVal === null) return false;
+
+    const normProp = normalizeVariantValue(propVal);
+    if (Array.isArray(v)) {
+      if (!v.some((item) => normalizeVariantValue(item) === normProp)) {
+        return false;
+      }
+    } else if (normalizeVariantValue(v) !== normProp) {
       return false;
     }
   }
@@ -343,8 +545,13 @@ function resolveExtraOpts(opts?: TVClassProp | string): string {
 }
 
 /**
- * Lightweight runtime TV (Tailwind Variants) evaluator.
+ * Internal helper to merge and dedupe raw classes BEFORE escaping,
+ * preventing double-escaping when using `extend`.
  */
+function mergeRaw(...classes: ClassValue[]): string {
+  return dedupeClasses(cx(...classes));
+}
+
 export function tv<S extends TVSlots = {}, V extends TVVariants = {}>(
   config: TVOptions<S, V>,
 ): TVFn<S, V>;
@@ -361,11 +568,17 @@ export function tv(config: any): any {
     extend,
   } = config || {};
 
+  // Merge inherited variants, slots, and defaultVariants from `extend`
+  const mergedSlots = extend?.slots ? { ...extend.slots, ...slots } : slots;
+  const mergedVariants = extend?.variants
+    ? { ...extend.variants, ...variants }
+    : variants;
   const combinedDefaults = extend?.defaultVariants
     ? { ...extend.defaultVariants, ...defaultVariants }
     : defaultVariants;
 
   const tvFn = (props: Record<string, any> = {}) => {
+    // 1. Build mergedProps: defaults first, then explicit props (ignoring undefined)
     const mergedProps: Record<string, any> = { ...combinedDefaults };
     for (const k in props) {
       if (k !== "class" && k !== "className" && props[k] !== undefined) {
@@ -374,14 +587,160 @@ export function tv(config: any): any {
     }
 
     const propLevelExtra = cx(props.class, props.className);
+
+    // Call raw evaluation on extended parent so tokens aren't escaped prematurely
     const baseResult =
-      typeof extend === "function" ? extend(mergedProps) : undefined;
+      typeof extend?.__raw === "function"
+        ? extend.__raw(mergedProps)
+        : typeof extend === "function"
+          ? extend(mergedProps)
+          : undefined;
 
     const hasSlots = Boolean(
-      slots ||
+      mergedSlots ||
       (baseResult &&
         typeof baseResult === "object" &&
         !Array.isArray(baseResult)),
+    );
+
+    // Determine deterministic variant key order (config order first, then any extra keys)
+    const variantKeys = Array.from(
+      new Set([...Object.keys(mergedVariants), ...Object.keys(mergedProps)]),
+    );
+
+    if (hasSlots) {
+      const buildSlotMap = (escapeOutput: boolean) => {
+        const slotResults: Record<
+          string,
+          (opts?: TVClassProp | string) => string
+        > = {};
+        const slotNames = new Set([
+          ...(base ? ["root"] : []),
+          ...Object.keys(mergedSlots || {}),
+          ...(baseResult && typeof baseResult === "object"
+            ? Object.keys(baseResult)
+            : []),
+        ]);
+
+        for (const slot of slotNames) {
+          const classes: ClassValue[] = [];
+
+          if (slot === "root" && base) classes.push(base);
+          if (mergedSlots?.[slot]) classes.push(mergedSlots[slot]);
+
+          for (const varKey of variantKeys) {
+            const varVal = mergedProps[varKey];
+            if (varVal === undefined || varVal === null) continue;
+            const varConfig =
+              mergedVariants[varKey]?.[normalizeVariantValue(varVal)];
+
+            if (varConfig) {
+              if (typeof varConfig === "object" && !Array.isArray(varConfig)) {
+                if (varConfig[slot]) classes.push(varConfig[slot]);
+              } else if (slot === "root") {
+                classes.push(varConfig);
+              }
+            }
+          }
+
+          for (let i = 0; i < compoundVariants.length; i++) {
+            const cv = compoundVariants[i];
+            if (matchesCompound(cv, mergedProps)) {
+              const cvClass = cv.class || cv.className;
+              if (
+                cvClass &&
+                typeof cvClass === "object" &&
+                !Array.isArray(cvClass)
+              ) {
+                if (cvClass[slot]) classes.push(cvClass[slot]);
+              } else if (slot === "root" && cvClass) {
+                classes.push(cvClass);
+              }
+            }
+          }
+
+          if (slot === "root" && propLevelExtra) {
+            classes.push(propLevelExtra);
+          }
+
+          const slotBaseStr = cx(...classes);
+
+          slotResults[slot] = (opts?: TVClassProp | string) => {
+            const inherited =
+              baseResult && typeof baseResult[slot] === "function"
+                ? baseResult[slot]()
+                : "";
+            const rawMerged = mergeRaw(
+              inherited,
+              slotBaseStr,
+              resolveExtraOpts(opts),
+            );
+            return escapeOutput ? escapeClass(rawMerged) : rawMerged;
+          };
+        }
+        return slotResults;
+      };
+
+      return buildSlotMap(true);
+    }
+
+    // Single-element (no slots)
+    const buildSingle = (escapeOutput: boolean) => {
+      const classes: ClassValue[] = [];
+      if (base) classes.push(base);
+
+      for (const varKey of variantKeys) {
+        const varVal = mergedProps[varKey];
+        if (varVal === undefined || varVal === null) continue;
+        const varConfig =
+          mergedVariants[varKey]?.[normalizeVariantValue(varVal)];
+        if (varConfig) classes.push(varConfig);
+      }
+
+      for (let i = 0; i < compoundVariants.length; i++) {
+        const cv = compoundVariants[i];
+        if (matchesCompound(cv, mergedProps)) {
+          const cvClass = cv.class || cv.className;
+          if (cvClass) classes.push(cvClass);
+        }
+      }
+
+      if (propLevelExtra) classes.push(propLevelExtra);
+      const baseStr = cx(...classes);
+
+      return (opts?: TVClassProp | string) => {
+        const inherited = typeof baseResult === "function" ? baseResult() : "";
+        const rawMerged = mergeRaw(inherited, baseStr, resolveExtraOpts(opts));
+        return escapeOutput ? escapeClass(rawMerged) : rawMerged;
+      };
+    };
+
+    return buildSingle(true);
+  };
+
+  // Expose an unescaped runner so child `extend` calls can deduplicate accurately
+  tvFn.__raw = (props: Record<string, any> = {}) => {
+    // Same evaluation without running `escapeClass` yet
+    const mergedProps: Record<string, any> = { ...combinedDefaults };
+    for (const k in props) {
+      if (k !== "class" && k !== "className" && props[k] !== undefined) {
+        mergedProps[k] = props[k];
+      }
+    }
+    const propLevelExtra = cx(props.class, props.className);
+    const baseResult =
+      typeof extend?.__raw === "function"
+        ? extend.__raw(mergedProps)
+        : undefined;
+
+    const hasSlots = Boolean(
+      mergedSlots ||
+      (baseResult &&
+        typeof baseResult === "object" &&
+        !Array.isArray(baseResult)),
+    );
+    const variantKeys = Array.from(
+      new Set([...Object.keys(mergedVariants), ...Object.keys(mergedProps)]),
     );
 
     if (hasSlots) {
@@ -390,20 +749,21 @@ export function tv(config: any): any {
         (opts?: TVClassProp | string) => string
       > = {};
       const slotNames = new Set([
-        ...Object.keys(slots || {}),
-        ...(baseResult ? Object.keys(baseResult) : []),
+        ...(base ? ["root"] : []),
+        ...Object.keys(mergedSlots || {}),
+        ...(baseResult && typeof baseResult === "object"
+          ? Object.keys(baseResult)
+          : []),
       ]);
-
       for (const slot of slotNames) {
         const classes: ClassValue[] = [];
-
         if (slot === "root" && base) classes.push(base);
-        if (slots?.[slot]) classes.push(slots[slot]);
-
-        for (const varKey in mergedProps) {
+        if (mergedSlots?.[slot]) classes.push(mergedSlots[slot]);
+        for (const varKey of variantKeys) {
           const varVal = mergedProps[varKey];
           if (varVal === undefined || varVal === null) continue;
-          const varConfig = variants[varKey]?.[String(varVal)];
+          const varConfig =
+            mergedVariants[varKey]?.[normalizeVariantValue(varVal)];
           if (varConfig) {
             if (typeof varConfig === "object" && !Array.isArray(varConfig)) {
               if (varConfig[slot]) classes.push(varConfig[slot]);
@@ -412,7 +772,6 @@ export function tv(config: any): any {
             }
           }
         }
-
         for (let i = 0; i < compoundVariants.length; i++) {
           const cv = compoundVariants[i];
           if (matchesCompound(cv, mergedProps)) {
@@ -428,35 +787,27 @@ export function tv(config: any): any {
             }
           }
         }
-
-        if (slot === "root" && propLevelExtra) {
-          classes.push(propLevelExtra);
-        }
-
+        if (slot === "root" && propLevelExtra) classes.push(propLevelExtra);
         const slotBaseStr = cx(...classes);
-
         slotResults[slot] = (opts?: TVClassProp | string) => {
           const inherited =
             baseResult && typeof baseResult[slot] === "function"
               ? baseResult[slot]()
               : "";
-          return cn(inherited, slotBaseStr, resolveExtraOpts(opts));
+          return mergeRaw(inherited, slotBaseStr, resolveExtraOpts(opts));
         };
       }
       return slotResults;
     }
 
-    // Single-element (no slots)
     const classes: ClassValue[] = [];
     if (base) classes.push(base);
-
-    for (const varKey in mergedProps) {
+    for (const varKey of variantKeys) {
       const varVal = mergedProps[varKey];
       if (varVal === undefined || varVal === null) continue;
-      const varConfig = variants[varKey]?.[String(varVal)];
+      const varConfig = mergedVariants[varKey]?.[normalizeVariantValue(varVal)];
       if (varConfig) classes.push(varConfig);
     }
-
     for (let i = 0; i < compoundVariants.length; i++) {
       const cv = compoundVariants[i];
       if (matchesCompound(cv, mergedProps)) {
@@ -464,18 +815,16 @@ export function tv(config: any): any {
         if (cvClass) classes.push(cvClass);
       }
     }
-
     if (propLevelExtra) classes.push(propLevelExtra);
     const baseStr = cx(...classes);
-
     return (opts?: TVClassProp | string) => {
       const inherited = typeof baseResult === "function" ? baseResult() : "";
-      return cn(inherited, baseStr, resolveExtraOpts(opts));
+      return mergeRaw(inherited, baseStr, resolveExtraOpts(opts));
     };
   };
 
-  tvFn.slots = slots;
-  tvFn.variants = variants;
+  tvFn.slots = mergedSlots;
+  tvFn.variants = mergedVariants;
   tvFn.defaultVariants = combinedDefaults;
 
   return tvFn;

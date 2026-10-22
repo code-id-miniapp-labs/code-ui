@@ -4,17 +4,21 @@
       <slot name="indicator" />
       <block wx:if="{{!customIndicator}}">
         <block wx:if="{{cCheckbox.indeterminate}}">
-          <c-icon name="{{cCheckbox.indeterminateIcon || indeterminateIcon}}" class="{{classes.icon}}" />
+          <c-icon name="{{cCheckbox.indeterminateIcon || indeterminateIcon}}" className="{{classes.icon}}" />
         </block>
         <block wx:elif="{{cCheckbox.checked}}">
-          <c-icon name="{{cCheckbox.icon || icon}}" class="{{classes.icon}}" />
+          <c-icon name="{{cCheckbox.icon || icon}}" className="{{classes.icon}}" />
         </block>
       </block>
     </view>
   </view>
   <view wx:if="{{cCheckbox.label || label || cCheckbox.description || description}}" class="{{classes.wrapper}}">
-    <text wx:if="{{cCheckbox.label || label}}" class="{{classes.label}}" user-select="{{false}}">{{cCheckbox.label || label}}</text>
-    <text wx:if="{{cCheckbox.description || description}}" class="{{classes.description}}" user-select="{{false}}">{{cCheckbox.description || description}}</text>
+    <text wx:if="{{cCheckbox.label || label}}" class="{{classes.label}}" user-select="{{false}}">
+      {{cCheckbox.label || label}}
+    </text>
+    <text wx:if="{{cCheckbox.description || description}}" class="{{classes.description}}" user-select="{{false}}">
+      {{cCheckbox.description || description}}
+    </text>
   </view>
   <slot wx:else />
 </view>

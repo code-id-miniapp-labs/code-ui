@@ -399,9 +399,7 @@ export function compileComponentTheme(
       ? Array.from(new Set([...DEFAULT_THEME_COLORS, ...userColors]))
       : DEFAULT_THEME_COLORS;
 
-  const errorColor = (resolvedConfig.ui?.colors as any)?.error
-    ? "error"
-    : "danger";
+  const errorColor = resolvedConfig.ui?.colors?.error ? "error" : "danger";
 
   const isFactoryFn = typeof factory === "function";
   const rawTheme = isFactoryFn
@@ -410,7 +408,9 @@ export function compileComponentTheme(
   const camelName = componentName.replace(/-([a-z])/g, (_, c: string) =>
     c.toUpperCase(),
   );
-  const kebabName = componentName.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  const kebabName = componentName
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase();
   const overrides =
     resolvedConfig.components?.[componentName] ??
     resolvedConfig.components?.[camelName] ??

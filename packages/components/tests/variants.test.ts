@@ -12,13 +12,9 @@ import {
   textareaTheme as createTextareaTheme,
   resetConfig,
   setConfig,
+  avatarTheme as createAvatarTheme,
 } from "@code-ui/core";
-import {
-  cn,
-  dedupeClasses,
-  escapeClass,
-  tv,
-} from "../src/utils/variants";
+import { cn, dedupeClasses, escapeClass, tv } from "../src/utils/variants";
 
 const buttonTheme = tv(createButtonTheme());
 const radioTheme = tv(createRadioTheme());
@@ -26,6 +22,7 @@ const radioGroupTheme = tv(createRadioGroupTheme());
 const checkboxTheme = tv(createCheckboxTheme());
 const checkboxGroupTheme = tv(createCheckboxGroupTheme());
 const iconTheme = tv(createIconTheme());
+const avatarTheme = tv(createAvatarTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -511,17 +508,13 @@ describe("textareaTheme autoHeight and variants", () => {
   });
 
   it("applies danger styling when invalid: true", () => {
-    const slots = resolveSlots(
-      textareaTheme({ invalid: true }) as any,
-    );
+    const slots = resolveSlots(textareaTheme({ invalid: true }) as any);
     expect(slots.root).toContain("border-danger");
     expect(slots.root).toContain(escapeClass("ring-danger/20"));
   });
 
   it("resolves placeholder slot styling across sizes", () => {
-    const slots = resolveSlots(
-      textareaTheme({ size: "md" }) as any,
-    );
+    const slots = resolveSlots(textareaTheme({ size: "md" }) as any);
     expect(slots.placeholder).toContain("text-neutral-400");
     expect(slots.placeholder).toContain("text-sm");
   });
@@ -536,9 +529,7 @@ describe("radioTheme resolution", () => {
   });
 
   it("resolves variant = card styling", () => {
-    const slots = resolveSlots(
-      radioTheme({ variant: "card" }) as any,
-    );
+    const slots = resolveSlots(radioTheme({ variant: "card" }) as any);
     expect(slots.root).toContain("p-3 rounded-xl border");
     expect(slots.root).toContain("shadow-xs");
   });
@@ -588,17 +579,13 @@ describe("radioGroupTheme resolution", () => {
   });
 
   it("resolves invalid styling", () => {
-    const slots = resolveSlots(
-      radioGroupTheme({ invalid: true }) as any,
-    );
+    const slots = resolveSlots(radioGroupTheme({ invalid: true }) as any);
     expect(slots.base).toContain("border-danger");
     expect(slots.base).toContain("ring-danger");
   });
 
   it("resolves disabled state", () => {
-    const slots = resolveSlots(
-      radioGroupTheme({ disabled: true }) as any,
-    );
+    const slots = resolveSlots(radioGroupTheme({ disabled: true }) as any);
     expect(slots.item).toContain("opacity-50 cursor-not-allowed");
     expect(slots.base).toContain("cursor-not-allowed");
   });
@@ -667,7 +654,11 @@ describe("checkboxTheme resolution", () => {
 
   it("resolves card variant", () => {
     const slots = resolveSlots(
-      checkboxTheme({ variant: "card", checked: true, color: "primary" }) as any,
+      checkboxTheme({
+        variant: "card",
+        checked: true,
+        color: "primary",
+      }) as any,
     );
     expect(slots.root).toContain("border-primary");
     expect(slots.base).toContain("bg-primary");
@@ -714,5 +705,34 @@ describe("checkboxGroupTheme resolution", () => {
   });
 });
 
+describe("avatarTheme resolution", () => {
+  it("resolves default slots", () => {
+    const slots = resolveSlots(avatarTheme() as any);
+    expect(slots.root).toContain("size-8");
+    expect(slots.image).toContain("h-full w-full");
+    expect(slots.fallback).toContain("text-sm");
+    expect(slots.icon).toContain("shrink-0");
+  });
 
+  it("resolves avatar color and size", () => {
+    const slots = resolveSlots(
+      avatarTheme({ color: "primary", size: "lg" }) as any,
+      undefined,
+      "",
+    );
+    expect(slots.root).toContain("bg-primary_f10");
+    expect(slots.root).toContain("size-9");
+    expect(slots.fallback).toContain("text-md");
+  });
 
+  it("resolves neutral color correctly", () => {
+    const slots = resolveSlots(
+      avatarTheme({ color: "neutral" }) as any,
+      {},
+      "",
+    );
+    expect(slots.root).toContain("size-8");
+    expect(slots.fallback).toContain("text-muted");
+    expect(slots.fallback).toContain("text-sm");
+  });
+});
