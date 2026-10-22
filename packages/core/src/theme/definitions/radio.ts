@@ -12,11 +12,11 @@ export default function radioTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative inline-flex items-start select-none cursor-pointer",
-      base: "relative flex items-center justify-center rounded-full border border-neutral-300 bg-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      base: "relative mt-0.5 flex items-center justify-center rounded-full border border-neutral-300 bg-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       indicator: "rounded-full transition-transform duration-150 ease-out",
       wrapper: "ms-2 flex flex-col justify-center",
       label: "block font-medium text-neutral-900 leading-snug",
-      description: "text-neutral-500 leading-snug",
+      description: "text-neutral-500 mt-0.5 leading-snug",
     },
     variants: {
       variant: {

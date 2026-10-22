@@ -12,13 +12,13 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative inline-flex flex-row items-start select-none cursor-pointer",
-      base: "relative flex items-center justify-center border transition-colors shrink-0",
+      base: "relative mt-0.5 flex items-center justify-center border transition-colors shrink-0",
       indicator:
         "flex items-center justify-center w-full h-full text-white transition-opacity duration-150 ease-out select-none pointer-events-none",
       icon: "w-full h-full select-none pointer-events-none",
       wrapper: "ms-2 flex flex-col justify-center select-none min-w-0",
       label: "block font-medium text-neutral-900 leading-snug select-none",
-      description: "text-neutral-500 leading-snug select-none",
+      description: "block mt-0.5 text-neutral-500 leading-snug select-none",
     },
     variants: {
       variant: {

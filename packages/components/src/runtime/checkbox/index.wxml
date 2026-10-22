@@ -13,12 +13,12 @@
     </view>
   </view>
   <view wx:if="{{cCheckbox.label || label || cCheckbox.description || description}}" class="{{classes.wrapper}}">
-    <text wx:if="{{cCheckbox.label || label}}" class="{{classes.label}}" user-select="{{false}}">
+    <view wx:if="{{cCheckbox.label || label}}" class="{{classes.label}}" user-select="{{false}}">
       {{cCheckbox.label || label}}
-    </text>
-    <text wx:if="{{cCheckbox.description || description}}" class="{{classes.description}}" user-select="{{false}}">
+    </view>
+    <view wx:if="{{cCheckbox.description || description}}" class="{{classes.description}}" user-select="{{false}}">
       {{cCheckbox.description || description}}
-    </text>
+    </view>
   </view>
   <slot wx:else />
 </view>
