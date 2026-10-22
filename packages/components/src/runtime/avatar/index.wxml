@@ -1,0 +1,7 @@
+<view class="{{classes.root}}">
+  <image wx:if="{{src && !imageError}}" src="{{src}}" mode="{{mode}}" lazy-load="{{lazyLoad}}" class="{{classes.image}}" binderror="onImageError" />
+  <block wx:else>
+    <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.icon}}" />
+    <view wx:else="{{fallbackText}}" class="{{classes.fallback}}">{{fallbackText}}</view>
+  </block>
+</view>

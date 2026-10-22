@@ -42,6 +42,7 @@ export interface ComponentRegistry {
     | "description"
     | "help"
     | "error";
+  avatar: "root" | "image" | "fallback" | "icon";
   chip: "root" | "base";
   drawer:
     | "root"

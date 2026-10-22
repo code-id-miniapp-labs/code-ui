@@ -82,6 +82,11 @@ declare module "virtual:cui/theme/switch" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/avatar" {
+  import type { default as avatarTheme } from "@code-ui/core/src/theme/definitions/avatar";
+  const theme: ReturnType<typeof avatarTheme>;
+  export default theme;
+}
 
 declare module "virtual:cui/theme/*" {
   const theme: any;
