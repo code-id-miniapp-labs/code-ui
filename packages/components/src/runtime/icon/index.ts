@@ -14,7 +14,6 @@ Component(
     behaviors: [computedBehavior],
 
     options: {
-      addGlobalClass: true,
       styleIsolation: "apply-shared",
       virtualHost: true,
     },

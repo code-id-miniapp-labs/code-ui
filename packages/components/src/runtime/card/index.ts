@@ -11,7 +11,6 @@ Component(
 
     options: {
       multipleSlots: true,
-      addGlobalClass: true,
       styleIsolation: "apply-shared",
       virtualHost: true,
     },

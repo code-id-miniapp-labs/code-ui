@@ -8,7 +8,6 @@ const avatarTheme = tv(themeConfig);
 Component(
   createComponentOptions({
     options: {
-      addGlobalClass: true,
       styleIsolation: "apply-shared",
       virtualHost: true,
     },

@@ -30,7 +30,6 @@ Component(
     behaviors: [checkboxGroupBehavior, computedBehavior],
 
     options: {
-      addGlobalClass: true,
       multipleSlots: true,
       styleIsolation: "apply-shared",
       virtualHost: true,
