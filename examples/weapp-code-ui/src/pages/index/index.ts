@@ -25,7 +25,7 @@ Page({
       {
         id: "divider",
         name: "Divider",
-        desc: "-",
+        desc: "Separators with labels, icons, slots, horizontal/vertical orientations, and styling.",
         badge: "Display",
         path: "/pages/divider/index",
       },

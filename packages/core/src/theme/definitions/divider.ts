@@ -10,9 +10,9 @@ export default function dividerTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "flex items-center w-full",
+      root: "flex items-center",
       container: "flex items-center gap-2 shrink-0",
-      border: "flex-1 border-t",
+      border: "flex-1",
       icon: "shrink-0",
       label: "shrink-0",
     },
@@ -21,23 +21,18 @@ export default function dividerTheme(options: ThemeOptions = {}) {
       size: {
         xs: {
           container: "text-[10px]",
-          border: "border-t-[1px]",
         },
         sm: {
           container: "text-xs",
-          border: "border-t-[1px]",
         },
         md: {
           container: "text-sm",
-          border: "border-t-[1px]",
         },
         lg: {
           container: "text-base",
-          border: "border-t-[1px]",
         },
         xl: {
           container: "text-lg",
-          border: "border-t-[1px]",
         },
       },
       type: {
@@ -53,12 +48,12 @@ export default function dividerTheme(options: ThemeOptions = {}) {
       },
       orientation: {
         horizontal: {
-          root: "flex-row",
+          root: "w-full flex-row",
           border: "border-t",
         },
         vertical: {
-          root: "flex-col",
-          border: "border-l border-t-0",
+          root: "h-full flex-col",
+          border: "border-s border-t-0",
         },
       },
       position: {

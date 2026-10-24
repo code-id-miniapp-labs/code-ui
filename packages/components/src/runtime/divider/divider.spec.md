@@ -39,17 +39,23 @@ _Implemented in `packages/components/src/runtime/divider/`_
 
 ### Props
 
-| Prop        | Type     | Default   | Description                             |
-| :---------- | :------- | :-------- | :-------------------------------------- |
-| `ui`        | `Object` | `{}`      | Nuxt UI v4 style overrides for slots.   |
-| `className` | `String` | `""`      | Custom classes for the root element.    |
-| `color`     | `string` | `primary` | The semantic color variant.             |
-| `size`      | `string` | `md`      | The size variant.                       |
-| `type`      | `string` | `solid`   | The styling variant for border          |
-| `label`     | `string` | `""`      | The text to display inside the divider. | `orientation` | `string` | `horizontal` | The orientation of the separator. | `position` | `center` | The position of the content. |
+| Prop           | Type      | Default        | Description                                               |
+| :------------- | :-------- | :------------- | :-------------------------------------------------------- |
+| `ui`           | `Object`  | `{}`           | Nuxt UI v4 style overrides for slots.                     |
+| `class`        | `String`  | `""`           | Custom classes for the root element.                      |
+| `className`    | `String`  | `""`           | Alias for `class`.                                        |
+| `color`        | `string`  | `"neutral"`    | The semantic color variant.                               |
+| `size`         | `string`  | `"xs"`         | The size / thickness variant (`xs`, `sm`, `md`, `lg`, `xl`). |
+| `type`         | `string`  | `"solid"`      | Border style line variant (`solid`, `dashed`, `dotted`).  |
+| `orientation`  | `string`  | `"horizontal"` | The orientation (`horizontal` or `vertical`).            |
+| `position`     | `string`  | `"center"`     | Position of content along the line (`start`, `center`, `end`). |
+| `label`        | `string`  | `""`           | The text to display inside the divider.                   |
+| `content`      | `boolean` | `false`        | Force content rendering when using slots without label.   |
+| `leadingIcon`  | `string`  | `""`           | Name of leading icon.                                     |
+| `trailingIcon` | `string`  | `""`           | Name of trailing icon.                                    |
 
 ### Slots/Children
 
-- **Default Slot:** Custom content can be passed instead of `label`.
-- **leading When true, the icon will be displayed on the left side.
-- **trailing When true, the icon will be displayed on the right side.
+- **Default Slot:** Custom content displayed in the center label area.
+- **leading:** Slot for custom leading content / icon.
+- **trailing:** Slot for custom trailing content / icon.
