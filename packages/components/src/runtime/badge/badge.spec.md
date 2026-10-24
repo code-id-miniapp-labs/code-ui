@@ -53,9 +53,3 @@ _Implemented in `packages/components/src/runtime/badge/`_
 - **Default Slot:** Custom content can be passed instead of `label`.
 - **leading When true, the icon will be displayed on the left side.
 - **trailing When true, the icon will be displayed on the right side.
-
-## 5. Verification Plan
-
-- [ ] **Theme Test:** Verify `packages/core/tests/badge.test.ts` resolves all variant combinations into correct Tailwind classes.
-- [ ] **Runtime Test:** Ensure props (`color`, `size`, `variant`) are correctly passed to the `tv` instance.
-- [ ] **Showcase:** Implement `examples/weapp-code-ui/src/pages/badge/` to display a matrix of all colors, sizes, and variants.
