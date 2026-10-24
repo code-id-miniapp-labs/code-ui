@@ -7,6 +7,7 @@
     "cui-button": "runtime/button/index",
     "cui-card": "runtime/card/index",
     "cui-avatar": "runtime/avatar/index",
+    "cui-badge": "runtime/badge/index",
     "cui-checkbox": "runtime/checkbox/index",
     "cui-checkbox-group": "runtime/checkbox-group/index",
     "cui-chip": "runtime/chip/index",

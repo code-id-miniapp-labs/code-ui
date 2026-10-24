@@ -1,0 +1,14 @@
+<view class="{{classes.root}}">
+  <view wx:if="{{leading}}" class="{{classes.leading}}">
+    <slot name="leading" />
+  </view>
+  
+  <view class="{{classes.text}}">
+    <slot />
+    {{label}}
+  </view>
+
+  <view wx:if="{{trailing}}" class="{{classes.trailing}}">
+    <slot name="trailing" />
+  </view>
+</view>

@@ -1,0 +1,55 @@
+<view class="p-4 space-y-8">
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Colors</text>
+    <view class="flex flex-wrap gap-2">
+      <c-badge color="primary">Primary</c-badge>
+      <c-badge color="success">Success</c-badge>
+      <c-badge color="warning">Warning</c-badge>
+      <c-badge color="danger">Danger</c-badge>
+      <c-badge color="neutral">Neutral</c-badge>
+      <c-badge color="info">Info</c-badge>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Variants</text>
+    <view class="flex flex-wrap gap-2">
+      <c-badge variant="solid" color="primary">Solid</c-badge>
+      <c-badge variant="outline" color="primary">Outline</c-badge>
+      <c-badge variant="soft" color="primary">Ghost</c-badge>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Sizes</text>
+    <view class="flex items-center gap-2">
+      <c-badge size="xs">Extra Small</c-badge>
+      <c-badge size="sm">Small</c-badge>
+      <c-badge size="md">Medium</c-badge>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Slots & Icons</text>
+    <view class="flex flex-wrap gap-2">
+      <c-badge leading>
+        <c-icon slot="leading" name="i-lucide-check" size="12px" />
+        Verified
+      </c-badge>
+      <c-badge trailing>
+        Notification
+        <c-icon slot="trailing" name="i-lucide-bell" size="12px" />
+      </c-badge>
+      <c-badge leading trailing>
+        <c-icon slot="leading" name="i-lucide-alert-circle" className="text-sm" />
+        Attention Required
+        <c-icon slot="trailing" name="i-lucide-chevron-right" className="text-sm" />
+      </c-badge>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Custom UI Override</text>
+    <view class="flex flex-wrap gap-2">
+      <c-badge ui="{{ { root: 'bg-purple-500 text-white px-4 py-2 rounded-none' } }}">
+        Custom Style
+      </c-badge>
+    </view>
+  </section>
+</view>

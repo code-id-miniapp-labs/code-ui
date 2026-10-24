@@ -15,7 +15,8 @@
     "pages/form/index",
     "pages/use-child/index",
     "pages/textarea/index",
-    "pages/icon/index"
+    "pages/icon/index",
+    "pages/badge/index"
   ],
   "window": {},
   "style": "v2",

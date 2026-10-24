@@ -88,6 +88,12 @@ declare module "virtual:cui/theme/avatar" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/badge" {
+  import type { default as badgeTheme } from "@code-ui/core/src/theme/definitions/badge";
+  const theme: ReturnType<typeof badgeTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;
