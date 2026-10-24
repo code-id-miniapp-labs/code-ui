@@ -94,6 +94,12 @@ declare module "virtual:cui/theme/badge" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/skeleton" {
+  import type { default as skeletonTheme } from "@code-ui/core/src/theme/definitions/skeleton";
+  const theme: ReturnType<typeof skeletonTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;

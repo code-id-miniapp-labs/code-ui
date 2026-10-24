@@ -16,6 +16,13 @@ Page({
         path: "/pages/badge/index",
       },
       {
+        id: "skeleton",
+        name: "Skeleton",
+        desc: "-",
+        badge: "Display",
+        path: "/pages/skeleton/index",
+      },
+      {
         id: "button",
         name: "Button",
         desc: "Interactive triggers with solid, outline, soft variants & async auto-loading.",

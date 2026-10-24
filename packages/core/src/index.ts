@@ -120,6 +120,7 @@ export { default as inputTheme } from "./theme/definitions/input";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
 export { default as radioTheme } from "./theme/definitions/radio";
 export { default as radioGroupTheme } from "./theme/definitions/radio-group";
+export { default as skeletonTheme } from "./theme/definitions/skeleton";
 export { default as switchTheme } from "./theme/definitions/switch";
 export { default as textareaTheme } from "./theme/definitions/textarea";
 
