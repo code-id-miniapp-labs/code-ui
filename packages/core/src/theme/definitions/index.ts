@@ -5,6 +5,7 @@ export { default as card } from "./card";
 export { default as checkbox } from "./checkbox";
 export { default as checkboxGroup } from "./checkbox-group";
 export { default as chip } from "./chip";
+export { default as divider } from "./divider";
 export { default as drawer } from "./drawer";
 export { default as form } from "./form";
 export { default as formField } from "./form-field";

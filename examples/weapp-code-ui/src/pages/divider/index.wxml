@@ -1,0 +1,85 @@
+<view class="p-4 space-y-8">
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Basic Usage</text>
+    <view class="space-y-4">
+      <c-divider />
+      <c-divider label="Separator" />
+      <c-divider label="Divider with Label" />
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Colors</text>
+    <view class="space-y-4">
+      <c-divider color="primary" label="Primary" />
+      <c-divider color="success" label="Success" />
+      <c-divider color="warning" label="Warning" />
+      <c-divider color="danger" label="Danger" />
+      <c-divider color="neutral" label="Neutral" />
+      <c-divider color="info" label="Info" />
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Sizes</text>
+    <view class="space-y-4">
+      <c-divider size="xs" label="Extra Small (xs)" />
+      <c-divider size="sm" label="Small (sm)" />
+      <c-divider size="md" label="Medium (md)" />
+      <c-divider size="lg" label="Large (lg)" />
+      <c-divider size="xl" label="Extra Large (xl)" />
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Line Types</text>
+    <view class="space-y-4">
+      <c-divider type="solid" label="Solid" />
+      <c-divider type="dashed" label="Dashed" />
+      <c-divider type="dotted" label="Dotted" />
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Positions</text>
+    <view class="space-y-4">
+      <c-divider position="start" label="Start" />
+      <c-divider position="center" label="Center" />
+      <c-divider position="end" label="End" />
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Orientation</text>
+    <view class="flex items-center gap-8 h-20">
+      <view class="flex-1">
+        <text class="text-xs block mb-2">Horizontal</text>
+        <c-divider orientation="horizontal" />
+      </view>
+      <view class="h-full">
+        <text class="text-xs block mb-2 text-center">Vertical</text>
+        <c-divider orientation="vertical" class="h-full" />
+      </view>
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">Icons & Slots</text>
+    <view class="space-y-4">
+      <c-divider leadingIcon="i-lucide-chevron-right" />
+      <c-divider trailingIcon="i-lucide-arrow-right" label="Trailing Icon" />
+      <c-divider leadingIcon="i-lucide-info" trailingIcon="i-lucide-help" label="Both Icons" />
+      <c-divider>
+        <view slot="leading" class="flex items-center text-xs text-gray-500">
+          <c-icon name="i-lucide-user" size="12px" />
+          <text>User</text>
+        </view>
+        Custom Slot Content
+        <view slot="trailing" class="flex items-center text-xs text-gray-500">
+          <text>Admin</text>
+          <c-icon name="i-lucide-shield" size="12px" />
+        </view>
+      </c-divider>
+    </view>
+  </view>
+  <view class="space-y-4">
+    <text class="text-lg font-bold">UI Overrides</text>
+    <view class="space-y-4">
+      <c-divider ui="{{ { container: 'mt-4' } }}" label="Thick Purple Border" />
+    </view>
+  </view>
+</view>

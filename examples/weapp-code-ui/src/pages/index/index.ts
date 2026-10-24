@@ -23,6 +23,13 @@ Page({
         path: "/pages/skeleton/index",
       },
       {
+        id: "divider",
+        name: "Divider",
+        desc: "-",
+        badge: "Display",
+        path: "/pages/divider/index",
+      },
+      {
         id: "button",
         name: "Button",
         desc: "Interactive triggers with solid, outline, soft variants & async auto-loading.",

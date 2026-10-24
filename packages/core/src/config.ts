@@ -44,6 +44,7 @@ export interface ComponentRegistry {
     | "error";
   avatar: "root" | "image" | "fallback" | "icon";
   badge: "root" | "text";
+  divider: "root" | "container" | "icon" | "label";
   skeleton: "root";
   chip: "root" | "base";
   drawer:
@@ -168,6 +169,8 @@ export type ColorValue = TailwindColorPalette | (string & {});
 export interface UIColorsConfig {
   /** Primary brand color (Tailwind palette name or hex/rgb) */
   primary?: ColorValue;
+  /** Secondary brand color (Tailwind palette name or hex/rgb) */
+  secondary?: ColorValue;
   /** Neutral/gray color (Tailwind palette name or hex/rgb) */
   neutral?: ColorValue;
   /** Success color (Tailwind palette name or hex/rgb) */

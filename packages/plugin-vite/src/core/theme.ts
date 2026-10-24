@@ -189,6 +189,7 @@ const WHITESPACE_RE = /\s+/;
 
 const DEFAULT_COLORS: Record<string, string> = {
   primary: "red",
+  secondary: "stone",
   neutral: "zinc",
   danger: "red",
   success: "green",

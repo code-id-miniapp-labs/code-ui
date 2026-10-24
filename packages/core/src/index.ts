@@ -112,6 +112,7 @@ export { default as cardTheme } from "./theme/definitions/card";
 export { default as checkboxTheme } from "./theme/definitions/checkbox";
 export { default as checkboxGroupTheme } from "./theme/definitions/checkbox-group";
 export { default as chipTheme } from "./theme/definitions/chip";
+export { default as dividerTheme } from "./theme/definitions/divider";
 export { default as drawerTheme } from "./theme/definitions/drawer";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
