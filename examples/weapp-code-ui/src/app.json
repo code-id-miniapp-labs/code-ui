@@ -17,6 +17,7 @@
     "pages/textarea/index",
     "pages/icon/index",
     "pages/badge/index",
+    "pages/divider/index",
     "pages/skeleton/index"
   ],
   "window": {},
