@@ -64,6 +64,12 @@ declare module "virtual:cui/theme/pin-input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/qr-code" {
+  import type { default as qrCodeTheme } from "@code-ui/core/src/theme/definitions/qr-code";
+  const theme: ReturnType<typeof qrCodeTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/radio" {
   import type { default as radioTheme } from "@code-ui/core/src/theme/definitions/radio";
   const theme: ReturnType<typeof radioTheme>;

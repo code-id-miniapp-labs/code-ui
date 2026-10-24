@@ -45,6 +45,9 @@ importers:
       '@code-ui/pin-input':
         specifier: workspace:*
         version: link:../../packages/machines/pin-input
+      '@code-ui/qr-code':
+        specifier: workspace:*
+        version: link:../../packages/machines/qr-code
       '@code-ui/radio':
         specifier: workspace:*
         version: link:../../packages/machines/radio
@@ -169,6 +172,9 @@ importers:
       '@code-ui/plugin-vite':
         specifier: workspace:*
         version: link:../plugin-vite
+      '@code-ui/qr-code':
+        specifier: workspace:*
+        version: link:../machines/qr-code
       '@code-ui/radio':
         specifier: workspace:*
         version: link:../machines/radio
@@ -501,6 +507,34 @@ importers:
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/qr-code:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+      uqr:
+        specifier: ^0.1.2
+        version: 0.1.3
     devDependencies:
       '@types/node':
         specifier: ^26.2.0
@@ -9616,6 +9650,9 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  uqr@0.1.3:
+    resolution: {integrity: sha512-0rjE8iEJe4YmT9TOhwsZtqCMRLc5DXZUI2UEYUUg63ikBkqqE5EYWaI0etFe/5KUcmcYwLih2RND1kq+hrUJXA==}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -19583,6 +19620,8 @@ snapshots:
       browserslist: 4.29.0
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  uqr@0.1.3: {}
 
   uri-js@4.4.1:
     dependencies:

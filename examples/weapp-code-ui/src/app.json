@@ -18,7 +18,8 @@
     "pages/icon/index",
     "pages/badge/index",
     "pages/divider/index",
-    "pages/skeleton/index"
+    "pages/skeleton/index",
+    "pages/qr-code/index"
   ],
   "window": {},
   "style": "v2",

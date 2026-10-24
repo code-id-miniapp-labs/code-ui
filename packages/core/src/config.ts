@@ -81,6 +81,7 @@ export interface ComponentRegistry {
     | "trailingIcon"
     | "clear";
   pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
+  qrCode: "root" | "frame" | "pattern" | "overlay";
   radio: "root" | "base" | "indicator" | "wrapper" | "label" | "description";
   radioGroup:
     | "root"

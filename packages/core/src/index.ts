@@ -119,6 +119,7 @@ export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as iconTheme } from "./theme/definitions/icon";
 export { default as inputTheme } from "./theme/definitions/input";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
+export { default as qrCodeTheme } from "./theme/definitions/qr-code";
 export { default as radioTheme } from "./theme/definitions/radio";
 export { default as radioGroupTheme } from "./theme/definitions/radio-group";
 export { default as skeletonTheme } from "./theme/definitions/skeleton";

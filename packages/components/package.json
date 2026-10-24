@@ -90,6 +90,12 @@
       "require": "./dist/runtime/pin-input/index.js"
     },
     "./pin-input/*": "./dist/runtime/pin-input/*",
+    "./qr-code": {
+      "types": "./dist/runtime/qr-code/index.d.ts",
+      "import": "./dist/runtime/qr-code/index.js",
+      "require": "./dist/runtime/qr-code/index.js"
+    },
+    "./qr-code/*": "./dist/runtime/qr-code/*",
     "./radio": {
       "types": "./dist/runtime/radio/index.d.ts",
       "import": "./dist/runtime/radio/index.js",
@@ -148,6 +154,7 @@
     "@code-ui/input": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
     "@code-ui/switch": "workspace:*",
