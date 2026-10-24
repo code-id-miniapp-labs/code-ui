@@ -1,4 +1,5 @@
 export { default as avatar } from "./avatar";
+export { default as badge } from "./badge";
 export { default as button } from "./button";
 export { default as card } from "./card";
 export { default as checkbox } from "./checkbox";

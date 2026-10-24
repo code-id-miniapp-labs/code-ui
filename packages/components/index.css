@@ -1,17 +1,7 @@
 @import "./keyframes.wxss";
 
-
 @theme {
   --color-elevated: var(--color-neutral-100);
   --color-accented: var(--color-neutral-200);
   --color-inverted: var(--color-neutral-900);
 }
-
-@layer theme {
-    :root, page, :host {
-        --ui-bg-elevated: var(--color-neutral-100);
-        --ui-bg-accented: var(--color-neutral-200);
-        --ui-bg-inverted: var(--color-neutral-900);
-    }
-}
-

@@ -9,6 +9,13 @@ Page({
         path: "/pages/avatar/index",
       },
       {
+        id: "badge",
+        name: "Badge",
+        desc: "-",
+        badge: "Display",
+        path: "/pages/badge/index",
+      },
+      {
         id: "button",
         name: "Button",
         desc: "Interactive triggers with solid, outline, soft variants & async auto-loading.",

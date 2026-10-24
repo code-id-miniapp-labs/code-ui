@@ -106,6 +106,7 @@ export type {
 } from "./theme";
 export * as componentThemes from "./theme/definitions";
 export { default as avatarTheme } from "./theme/definitions/avatar";
+export { default as badgeTheme } from "./theme/definitions/badge";
 export { default as buttonTheme } from "./theme/definitions/button";
 export { default as cardTheme } from "./theme/definitions/card";
 export { default as checkboxTheme } from "./theme/definitions/checkbox";
