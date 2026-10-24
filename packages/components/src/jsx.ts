@@ -26,6 +26,10 @@ import type {
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
 import type {
+  QrCodeProps,
+  QrCodeValueChangeDetails,
+} from "@code-ui/qr-code";
+import type {
   RadioGroupProps,
   RadioGroupValueChangeDetails,
 } from "@code-ui/radio-group";
@@ -409,6 +413,24 @@ export interface CuiCheckboxGroupElementProps extends CuiCommonElementProps {
   items?: CheckboxGroupProps["items"];
   onChange?: (
     event: WechatMiniprogram.CustomEvent<CheckboxGroupValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiQrCodeElementProps extends CuiCommonElementProps {
+  ui?: QrCodeProps["ui"];
+  value?: string;
+  defaultValue?: string;
+  ecc?: QrCodeProps["ecc"];
+  border?: number;
+  encoding?: QrCodeProps["encoding"];
+  pixelSize?: number;
+  size?: QrCodeProps["size"];
+  color?: QrCodeProps["color"];
+  overlaySrc?: string;
+  showOverlay?: boolean;
+  rootStyle?: string;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<QrCodeValueChangeDetails>,
   ) => void;
 }
 

@@ -41,6 +41,7 @@
     "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/input": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.9.2",

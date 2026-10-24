@@ -120,6 +120,13 @@ Page({
         badge: "Composable",
         path: "/pages/use-child/index",
       },
+      {
+        id: "qr-code",
+        name: "QR Code",
+        desc: "Universal QR code generator powered by uqr, with SVG path rendering, custom error correction levels, sizes, colors, and center overlay logo.",
+        badge: "Interactive",
+        path: "/pages/qr-code/index",
+      },
     ],
   },
 

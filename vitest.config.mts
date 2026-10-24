@@ -34,6 +34,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
+      "@code-ui/qr-code": resolve(
+        import.meta.dirname,
+        "packages/machines/qr-code/src",
+      ),
       "@code-ui/radio": resolve(
         import.meta.dirname,
         "packages/machines/radio/src",

@@ -17,6 +17,7 @@
     "cui-icon": "runtime/icon/index",
     "cui-input": "runtime/input/index",
     "cui-pin-input": "runtime/pin-input/index",
+    "cui-qr-code": "runtime/qr-code/index",
     "cui-radio": "runtime/radio/index",
     "cui-radio-group": "runtime/radio-group/index",
     "cui-skeleton": "runtime/skeleton/index",
