@@ -10,7 +10,6 @@ import {
   startBatch,
 } from "alien-signals";
 
-
 export type ComputedGetter<T = any, TThis = any> = (this: TThis) => T;
 export type ComputedSetter<T = any, TThis = any> = (
   this: TThis,
@@ -87,7 +86,6 @@ export function parseComputedDef(def?: ComputedDef): {
   };
 }
 
-
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
 /** `true` when `T` has a `string` index signature (i.e. its keys are unknown). */
@@ -131,7 +129,9 @@ type Or<A extends boolean, B extends boolean> = A extends true ? true : B;
 type LooseWhen<B extends boolean> = B extends true ? Record<string, any> : {};
 
 type PropertiesToData<P> = {
-  [K in keyof FilterUnknownKeys<P>]: P[K] extends WechatMiniprogram.Component.AllProperty
+  [
+    K in keyof FilterUnknownKeys<P>
+  ]: P[K] extends WechatMiniprogram.Component.AllProperty
     ? WechatMiniprogram.Component.PropertyToData<P[K]>
     : any;
 };
@@ -243,12 +243,15 @@ export type ComponentOptionsWithComputed<
     >
   >;
 
-
 const _COMPUTED_INITIALIZED = "__cui_computedInit__" as const;
 const _COMPUTED_DEFS = "__cui_computedDefs__" as const;
+/** Prevents duplicate initial evaluation when both `createPageOptions` and `computedBehavior` run. */
+const _COMPUTED_PRE_EVALUATED = "__cui_computedPreEval__" as const;
 /** Synchronously re-syncs signals from `this.data` and emits computed changes. */
 const _COMPUTED_FLUSH = "__cui_computedFlush__" as const;
-/** Re-syncs tracked data signals from `this.data` (used by the `**` observer). */
+/** Re-syncs a single tracked property signal in O(1) when updated by a parent component. */
+const _COMPUTED_SYNC_PROP = "__cui_computedSyncProp__" as const;
+/** Re-syncs all tracked data signals from `this.data` (fallback for full sync). */
 const _COMPUTED_SYNC = "__cui_computedSync__" as const;
 /** Tears down signals, effects and restores the original `setData`. */
 const _COMPUTED_DISPOSE = "__cui_computedDispose__" as const;
@@ -376,16 +379,22 @@ export function createPageOptions<
   Object.assign(data, evaluateInitialComputed(computedDefs, data));
 
   const originalOnLoad = (options as any).onLoad;
+  const originalOnShow = (options as any).onShow;
   const originalOnUnload = (options as any).onUnload;
 
-  return {
+  const pageOptions: Record<string, any> = {
     ...options,
     data,
     behaviors: ensureComputedBehavior(options.behaviors),
+    [_COMPUTED_PRE_EVALUATED]: true,
     onLoad(this: any, query: Record<string, string | undefined>) {
       setupComputed(this, computedDefs, { immediate: false });
       this[_COMPUTED_FLUSH]?.();
       return originalOnLoad?.call(this, query);
+    },
+    onShow(this: any) {
+      this[_COMPUTED_FLUSH]?.();
+      return originalOnShow?.call(this);
     },
     onUnload(this: any) {
       try {
@@ -395,8 +404,9 @@ export function createPageOptions<
       }
     },
   };
-}
 
+  return pageOptions;
+}
 
 function defaultValueForType(type: unknown): unknown {
   switch (type) {
@@ -408,6 +418,8 @@ function defaultValueForType(type: unknown): unknown {
       return false;
     case Array:
       return [];
+    case Object:
+      return null;
     default:
       return null;
   }
@@ -417,10 +429,36 @@ function propertyDefault(def: unknown): unknown {
   if (def === null) return null;
   if (typeof def === "function") return defaultValueForType(def);
   if (def && typeof def === "object") {
-    if ("value" in def) return (def as { value: unknown }).value;
+    const val = (def as { value?: unknown }).value;
+    if (val !== undefined) return val;
     return defaultValueForType((def as { type?: unknown }).type);
   }
   return undefined;
+}
+
+/**
+ * Determines whether a component property definition can hold an Object or Array
+ * (requiring `propKey.**` deep path observation) vs. a primitive (`propKey`).
+ */
+function isDeepObservableProp(def: unknown): boolean {
+  if (def === null || def === undefined) return true;
+  if (typeof def === "function") {
+    return def === Object || def === Array;
+  }
+  if (typeof def === "object") {
+    const { type, optionalTypes } = def as {
+      type?: unknown;
+      optionalTypes?: unknown[];
+    };
+    const isComplexType = (t: unknown) =>
+      t === Object || t === Array || t === null || t === undefined;
+    if (isComplexType(type)) return true;
+    if (Array.isArray(optionalTypes) && optionalTypes.some(isComplexType)) {
+      return true;
+    }
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -484,7 +522,6 @@ export function evaluateInitialComputed(
   }
   return out;
 }
-
 
 function cloneValue<T>(val: T): T {
   if (Array.isArray(val)) {
@@ -568,7 +605,6 @@ const warnReadonly = (key: string) => {
   );
 };
 
-
 export interface SetupComputedOptions {
   /**
    * Emit the initial computed diff synchronously during setup.
@@ -618,6 +654,10 @@ export function setupComputed(
   const computedSetters: Record<string, (val: unknown) => void> =
     Object.create(null);
 
+  // Re-entrancy guards against circular getters, circular setters, and getter side-effects
+  const activeGetters = new Set<string>();
+  const activeSetters = new Set<string>();
+
   const readReactive = (key: string): unknown => {
     const c = computedSignals[key];
     return c ? c() : getDataSignal(key)();
@@ -625,8 +665,22 @@ export function setupComputed(
 
   const writeComputed = (key: string, val: unknown) => {
     const setter = computedSetters[key];
-    if (setter) setter(val);
-    else warnReadonly(key);
+    if (!setter) {
+      warnReadonly(key);
+      return;
+    }
+    if (activeSetters.has(key)) {
+      console.warn(
+        `[code-ui/computed] Circular setter invocation detected for "${key}".`,
+      );
+      return;
+    }
+    activeSetters.add(key);
+    try {
+      setter(val);
+    } finally {
+      activeSetters.delete(key);
+    }
   };
 
   /** Reactive view of `this.data` / `this.properties` used inside getters. */
@@ -651,7 +705,10 @@ export function setupComputed(
     },
     getOwnPropertyDescriptor(_target, prop) {
       if (typeof prop !== "string") return undefined;
-      if (!computedKeySet.has(prop) && !(self.data && hasOwn(self.data, prop))) {
+      if (
+        !computedKeySet.has(prop) &&
+        !(self.data && hasOwn(self.data, prop))
+      ) {
         return undefined;
       }
       return {
@@ -691,6 +748,13 @@ export function setupComputed(
   for (const key of computedKeys) {
     const { get, set } = parseComputedDef(computedDefs[key]);
     computedSignals[key] = alienComputed<unknown>((prev) => {
+      if (activeGetters.has(key)) {
+        console.warn(
+          `[code-ui/computed] Circular computed dependency detected in "${key}".`,
+        );
+        return prev !== undefined ? prev : readData(key);
+      }
+      activeGetters.add(key);
       try {
         return get.call(computedCtx);
       } catch (err) {
@@ -699,6 +763,8 @@ export function setupComputed(
           err,
         );
         return prev !== undefined ? prev : readData(key);
+      } finally {
+        activeGetters.delete(key);
       }
     });
     if (set) {
@@ -721,7 +787,7 @@ export function setupComputed(
   /** Last values sent to the view, seeded from (definition-time) initial data. */
   const cache: Record<string, unknown> = Object.create(null);
   for (const key of computedKeys) {
-    cache[key] = readData(key);
+    cache[key] = cloneValue(readData(key));
   }
 
   /** Returns changed computed values (and commits them to `cache`), or `null`. */
@@ -732,7 +798,7 @@ export function setupComputed(
       for (const key of computedKeys) {
         const val = computedSignals[key]!();
         if (!isEqual(cache[key], val)) {
-          cache[key] = val;
+          cache[key] = cloneValue(val);
           if (!updates) updates = {};
           updates[key] = val;
         }
@@ -778,8 +844,44 @@ export function setupComputed(
   };
 
   /**
-   * Pulls changes that bypassed our patched `setData` (parent property
-   * updates, writes through a stale `setData` reference) into the signals.
+   * O(1) sync for a single property updated by a parent component.
+   * Skips work entirely if no computed getter ever subscribed to `key`.
+   */
+  const syncPropFromData = (key: string, currentVal?: unknown) => {
+    const sig = dataSignals.get(key);
+    if (!sig) return;
+
+    pauseTracking();
+    try {
+      const current = currentVal !== undefined ? currentVal : readData(key);
+      const prev = sig();
+      if (!Object.is(prev, current)) {
+        if (
+          typeof current === "object" &&
+          current !== null &&
+          isEqual(prev, current)
+        ) {
+          return;
+        }
+        // Clone object/array references when a sub-path observer (`prop.**`)
+        // fires with the same root reference mutated in place by WeChat.
+        sig(
+          typeof current === "object" && current !== null
+            ? cloneValue(current)
+            : current,
+        );
+      } else if (typeof current === "object" && current !== null) {
+        // Sub-path update (`prop.nested`) where WeChat mutated `this.data.prop` in-place
+        sig(cloneValue(current));
+      }
+    } finally {
+      resumeTracking();
+    }
+  };
+
+  /**
+   * Full sync across all tracked `dataSignals` (used on initial `attached`
+   * and `pageLifetimes.show`).
    */
   const syncFromData = () => {
     if (!dataSignals.size) return;
@@ -788,7 +890,17 @@ export function setupComputed(
     try {
       for (const [key, sig] of dataSignals) {
         const current = readData(key);
-        if (!Object.is(sig(), current)) sig(current);
+        const prev = sig();
+        if (!Object.is(prev, current)) {
+          if (
+            typeof current === "object" &&
+            current !== null &&
+            isEqual(prev, current)
+          ) {
+            continue;
+          }
+          sig(current);
+        }
       }
     } finally {
       endBatch();
@@ -799,6 +911,13 @@ export function setupComputed(
   const patchedSetData: SetDataFn = (data, callback) => {
     if (disposed) {
       originalSetData.call(self, data, callback);
+      return;
+    }
+
+    if (activeGetters.size > 0) {
+      console.error(
+        `[code-ui/computed] Do not call this.setData() inside a computed getter (${[...activeGetters].join(", ")}).`,
+      );
       return;
     }
 
@@ -823,6 +942,7 @@ export function setupComputed(
         applyingWrites = true;
         startBatch();
         try {
+          const dirtyRoots = new Set<string>();
           for (const path of Object.keys(normal)) {
             const tokens = parsePath(path);
             if (tokens.length === 0) continue;
@@ -853,7 +973,11 @@ export function setupComputed(
             }
 
             if (self.data) self.data[rootKey] = nextRoot;
-            dataSignals.get(rootKey)?.(nextRoot);
+            dirtyRoots.add(rootKey);
+          }
+
+          for (const rootKey of dirtyRoots) {
+            dataSignals.get(rootKey)?.(readData(rootKey));
           }
         } finally {
           endBatch();
@@ -861,11 +985,14 @@ export function setupComputed(
         }
 
         const updates = collectComputedUpdates();
-        callOriginal(updates ? Object.assign(normal, updates) : normal, callback);
+        callOriginal(
+          updates ? Object.assign(normal, updates) : normal,
+          callback,
+        );
       }
 
       for (const [key, val] of setterEntries) {
-        computedSetters[key]!(val);
+        writeComputed(key, val);
       }
 
       if (!hasNormal && callback) {
@@ -878,8 +1005,6 @@ export function setupComputed(
 
   self.setData = patchedSetData;
 
-
-
   const stopScope = effectScope(() => {
     effect(() => {
       for (const key of computedKeys) computedSignals[key]!();
@@ -888,7 +1013,10 @@ export function setupComputed(
     });
   });
 
-
+  self[_COMPUTED_SYNC_PROP] = (key: string, val?: unknown) => {
+    if (disposed || writeDepth > 0) return;
+    syncPropFromData(key, val);
+  };
 
   self[_COMPUTED_SYNC] = () => {
     if (disposed || writeDepth > 0) return;
@@ -912,6 +1040,9 @@ export function setupComputed(
     for (const key of definedKeys) delete self[key];
     dataSignals.clear();
     boundMethodCache.clear();
+    activeGetters.clear();
+    activeSetters.clear();
+    self[_COMPUTED_SYNC_PROP] = undefined;
     self[_COMPUTED_SYNC] = undefined;
     self[_COMPUTED_FLUSH] = undefined;
     self[_COMPUTED_DISPOSE] = undefined;
@@ -955,22 +1086,39 @@ export const computedBehavior =
             return computedDefs;
           };
 
-          defFields.data = defFields.data || {};
-          Object.assign(
-            defFields.data,
-            evaluateInitialComputed(
-              computedDefs,
+          if (!defFields[_COMPUTED_PRE_EVALUATED]) {
+            defFields.data = defFields.data || {};
+            Object.assign(
               defFields.data,
-              defFields.properties,
-            ),
-          );
+              evaluateInitialComputed(
+                computedDefs,
+                defFields.data,
+                defFields.properties,
+              ),
+            );
+          }
 
-          defFields.observers = defFields.observers || {};
-          const userWildcard = defFields.observers["**"];
-          defFields.observers["**"] = function (this: any, ...args: any[]) {
-            this[_COMPUTED_SYNC]?.();
-            return userWildcard?.apply(this, args);
-          };
+          // Attach targeted observers ONLY to declared `properties` instead of `**`.
+          const properties = defFields.properties;
+          if (properties && typeof properties === "object") {
+            const propKeys = Object.keys(properties);
+            if (propKeys.length > 0) {
+              defFields.observers = defFields.observers || {};
+              for (const propKey of propKeys) {
+                const observerKey = isDeepObservableProp(properties[propKey])
+                  ? `${propKey}.**`
+                  : propKey;
+                const userObserver = defFields.observers[observerKey];
+                defFields.observers[observerKey] = function (
+                  this: any,
+                  newVal: any,
+                ) {
+                  this[_COMPUTED_SYNC_PROP]?.(propKey, newVal);
+                  return userObserver?.call(this, newVal);
+                };
+              }
+            }
+          }
         },
 
         lifetimes: {
