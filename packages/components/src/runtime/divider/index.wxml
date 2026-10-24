@@ -1,6 +1,6 @@
 <view class="{{classes.root}}">
-  <!-- Position: Start -->
-  <view wx:if="{{hasContent && position === 'start'}}" class="{{classes.container}}">
+  <view class="{{classes.border}}" wx:if="{{!hasContent || position === 'center' || position === 'end'}}" />
+  <view wx:if="{{hasContent}}" class="{{classes.container}}">
     <slot name="leading" />
     <c-icon wx:if="{{leadingIcon}}" class="{{classes.icon}}" name="{{leadingIcon}}" />
     <view wx:if="{{label || defaultSlot}}" class="{{classes.label}}">
@@ -10,29 +10,5 @@
     <c-icon wx:if="{{trailingIcon}}" class="{{classes.icon}}" name="{{trailingIcon}}" />
     <slot name="trailing" />
   </view>
-  <view class="{{classes.border}}" wx:if="{{position === 'start' || position === 'center'}}" />
-  <!-- Position: Center -->
-  <view wx:if="{{hasContent && position === 'center'}}" class="{{classes.container}}">
-    <slot name="leading" />
-    <c-icon wx:if="{{leadingIcon}}" class="{{classes.icon}}" name="{{leadingIcon}}" />
-    <view wx:if="{{label || defaultSlot}}" class="{{classes.label}}">
-      <text wx:if="{{label}}">{{label}}</text>
-      <slot />
-    </view>
-    <c-icon wx:if="{{trailingIcon}}" class="{{classes.icon}}" name="{{trailingIcon}}" />
-    <slot name="trailing" />
-  </view>
-  <view class="{{classes.border}}" wx:if="{{position === 'center'}}" />
-  <!-- Position: End -->
-  <view class="{{classes.border}}" wx:if="{{position === 'end'}}" />
-  <view wx:if="{{hasContent && position === 'end'}}" class="{{classes.container}}">
-    <slot name="leading" />
-    <c-icon wx:if="{{leadingIcon}}" class="{{classes.icon}}" name="{{leadingIcon}}" />
-    <view wx:if="{{label || defaultSlot}}" class="{{classes.label}}">
-      <text wx:if="{{label}}">{{label}}</text>
-      <slot />
-    </view>
-    <c-icon wx:if="{{trailingIcon}}" class="{{classes.icon}}" name="{{trailingIcon}}" />
-    <slot name="trailing" />
-  </view>
+  <view class="{{classes.border}}" wx:if="{{hasContent && (position === 'center' || position === 'start')}}" />
 </view>

@@ -21,6 +21,10 @@ Component(
         type: String,
         value: "",
       },
+      class: {
+        type: String,
+        value: "",
+      },
       color: {
         type: String,
         value: "neutral",
@@ -32,6 +36,10 @@ Component(
       type: {
         type: String,
         value: "solid",
+      },
+      content: {
+        type: Boolean,
+        value: false,
       },
       label: {
         type: String,
@@ -59,20 +67,24 @@ Component(
       classes() {
         const ui = this.data.ui;
         const color = this.data.color;
+        const size = this.data.size;
         const orientation = this.data.orientation;
         const type = this.data.type;
         const position = this.data.position;
 
         const theme = dividerTheme({
           color,
+          size,
           orientation,
           type,
           position,
         });
-        return resolveSlots(theme, ui, this.data.className);
+        const localClass = this.data.class || this.data.className;
+        return resolveSlots(theme, ui, localClass);
       },
       hasContent() {
         return !!(
+          this.data.content ||
           this.data.label ||
           this.data.leadingIcon ||
           this.data.trailingIcon

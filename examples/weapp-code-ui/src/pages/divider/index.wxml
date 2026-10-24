@@ -1,85 +1,249 @@
-<view class="p-4 space-y-8">
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Basic Usage</text>
-    <view class="space-y-4">
-      <c-divider />
-      <c-divider label="Separator" />
-      <c-divider label="Divider with Label" />
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Divider</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Visual separator with support for labels, icons, slots, horizontal/vertical orientations, line types, and custom styling.
     </view>
   </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Colors</text>
-    <view class="space-y-4">
-      <c-divider color="primary" label="Primary" />
-      <c-divider color="success" label="Success" />
-      <c-divider color="warning" label="Warning" />
-      <c-divider color="danger" label="Danger" />
-      <c-divider color="neutral" label="Neutral" />
-      <c-divider color="info" label="Info" />
-    </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Sizes</text>
-    <view class="space-y-4">
-      <c-divider size="xs" label="Extra Small (xs)" />
-      <c-divider size="sm" label="Small (sm)" />
-      <c-divider size="md" label="Medium (md)" />
-      <c-divider size="lg" label="Large (lg)" />
-      <c-divider size="xl" label="Extra Large (xl)" />
-    </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Line Types</text>
-    <view class="space-y-4">
-      <c-divider type="solid" label="Solid" />
-      <c-divider type="dashed" label="Dashed" />
-      <c-divider type="dotted" label="Dotted" />
-    </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Positions</text>
-    <view class="space-y-4">
-      <c-divider position="start" label="Start" />
-      <c-divider position="center" label="Center" />
-      <c-divider position="end" label="End" />
-    </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Orientation</text>
-    <view class="flex items-center gap-8 h-20">
-      <view class="flex-1">
-        <text class="text-xs block mb-2">Horizontal</text>
-        <c-divider orientation="horizontal" />
-      </view>
-      <view class="h-full">
-        <text class="text-xs block mb-2 text-center">Vertical</text>
-        <c-divider orientation="vertical" class="h-full" />
+
+  <view class="px-5 flex flex-col gap-6">
+
+    <!-- 1. Basic Usage -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Basic Usage</view>
+      <view class="text-xs text-neutral-400">Plain divider line, divider with text label, and custom slotted badge.</view>
+      <view class="flex flex-col gap-6 pt-2">
+        <view class="flex flex-col gap-2">
+          <text class="text-xs text-neutral-400">Plain line</text>
+          <c-divider />
+        </view>
+        <view class="flex flex-col gap-2">
+          <text class="text-xs text-neutral-400">With label</text>
+          <c-divider label="Section Header" />
+        </view>
+        <view class="flex flex-col gap-2">
+          <text class="text-xs text-neutral-400">With custom slot badge</text>
+          <c-divider content>
+            <c-badge color="primary" variant="subtle" size="sm">Featured</c-badge>
+          </c-divider>
+        </view>
       </view>
     </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">Icons & Slots</text>
-    <view class="space-y-4">
-      <c-divider leadingIcon="i-lucide-chevron-right" />
-      <c-divider trailingIcon="i-lucide-arrow-right" label="Trailing Icon" />
-      <c-divider leadingIcon="i-lucide-info" trailingIcon="i-lucide-help" label="Both Icons" />
-      <c-divider>
-        <view slot="leading" class="flex items-center text-xs text-gray-500">
-          <c-icon name="i-lucide-user" size="12px" />
-          <text>User</text>
+
+    <!-- 2. Orientations -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Orientations</view>
+      <view class="text-xs text-neutral-400">Horizontal spans width; vertical spans container height in toolbars, stats, and navigation.</view>
+      
+      <view class="flex flex-col gap-4 pt-2">
+        <text class="text-xs text-neutral-400">Horizontal</text>
+        <c-divider orientation="horizontal" label="Horizontal Line" />
+
+        <text class="text-xs text-neutral-400 mt-2">Vertical in Metrics / Stats Bar</text>
+        <view class="flex items-center justify-around h-16 bg-neutral-50 rounded-xl border border-neutral-200 px-4">
+          <view class="flex flex-col items-center">
+            <text class="text-sm font-bold text-neutral-900">1,280</text>
+            <text class="text-[10px] text-neutral-400">Followers</text>
+          </view>
+          <c-divider orientation="vertical" class="h-8" />
+          <view class="flex flex-col items-center">
+            <text class="text-sm font-bold text-neutral-900">342</text>
+            <text class="text-[10px] text-neutral-400">Following</text>
+          </view>
+          <c-divider orientation="vertical" class="h-8" />
+          <view class="flex flex-col items-center">
+            <text class="text-sm font-bold text-neutral-900">89</text>
+            <text class="text-[10px] text-neutral-400">Projects</text>
+          </view>
         </view>
-        Custom Slot Content
-        <view slot="trailing" class="flex items-center text-xs text-gray-500">
-          <text>Admin</text>
-          <c-icon name="i-lucide-shield" size="12px" />
+
+        <text class="text-xs text-neutral-400 mt-2">Vertical with Label</text>
+        <view class="flex items-center justify-center gap-4 h-24 bg-neutral-50 rounded-xl border border-neutral-200 p-3">
+          <c-button size="sm" variant="outline">Sign In</c-button>
+          <c-divider orientation="vertical" label="OR" class="h-full" />
+          <c-button size="sm" color="primary">Register</c-button>
         </view>
-      </c-divider>
+      </view>
     </view>
-  </view>
-  <view class="space-y-4">
-    <text class="text-lg font-bold">UI Overrides</text>
-    <view class="space-y-4">
-      <c-divider ui="{{ { container: 'mt-4' } }}" label="Thick Purple Border" />
+
+    <!-- 3. Positions -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Content Positions</view>
+      <view class="text-xs text-neutral-400">Place content at the start, center, or end of the divider line.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">position="start"</text>
+          <c-divider position="start" label="Start Position" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">position="center" (default)</text>
+          <c-divider position="center" label="Center Position" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">position="end"</text>
+          <c-divider position="end" label="End Position" />
+        </view>
+      </view>
     </view>
+
+    <!-- 4. Icons & Slots -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Icons & Slots</view>
+      <view class="text-xs text-neutral-400">Support for leadingIcon, trailingIcon, and custom slot projections.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Leading icon only</text>
+          <c-divider leadingIcon="i-lucide-sparkles" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Leading icon with label</text>
+          <c-divider leadingIcon="i-lucide-info" label="Account Information" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Trailing icon with label (end position)</text>
+          <c-divider trailingIcon="i-lucide-arrow-right" label="View All Activity" position="end" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Both icons with label</text>
+          <c-divider leadingIcon="i-lucide-shield-check" trailingIcon="i-lucide-chevron-right" label="Security Verified" color="success" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Custom leading & trailing slot elements</text>
+          <c-divider content>
+            <view slot="leading" class="flex items-center text-xs text-neutral-500">
+              <c-icon name="i-lucide-user" size="14px" />
+            </view>
+            <text class="font-semibold text-neutral-800 text-xs">Admin Access</text>
+            <view slot="trailing" class="flex items-center text-xs text-primary">
+              <c-icon name="i-lucide-shield" size="14px" />
+            </view>
+          </c-divider>
+        </view>
+      </view>
+    </view>
+
+    <!-- 5. Line Types -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Line Types</view>
+      <view class="text-xs text-neutral-400">Solid, dashed, and dotted line styles.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">type="solid" (default)</text>
+          <c-divider type="solid" label="Solid" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">type="dashed"</text>
+          <c-divider type="dashed" label="Dashed" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">type="dotted"</text>
+          <c-divider type="dotted" label="Dotted" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 6. Sizes (Thickness) -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Sizes</view>
+      <view class="text-xs text-neutral-400">Line thickness and container typography scaling.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">size="xs" (1px line, 10px text)</text>
+          <c-divider size="xs" label="Extra Small (xs)" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">size="sm" (2px line, 12px text)</text>
+          <c-divider size="sm" label="Small (sm)" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">size="md" (3px line, 14px text)</text>
+          <c-divider size="md" label="Medium (md)" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">size="lg" (4px line, 16px text)</text>
+          <c-divider size="lg" label="Large (lg)" />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">size="xl" (5px line, 18px text)</text>
+          <c-divider size="xl" label="Extra Large (xl)" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 7. Colors -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Colors</view>
+      <view class="text-xs text-neutral-400">Semantic color options across borders and labels.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <c-divider color="neutral" label="Neutral (default)" />
+        <c-divider color="primary" label="Primary" />
+        <c-divider color="success" label="Success" />
+        <c-divider color="warning" label="Warning" />
+        <c-divider color="danger" label="Danger" />
+        <c-divider color="info" label="Info" />
+      </view>
+    </view>
+
+    <!-- 8. Real-world Patterns -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">Real-world Patterns</view>
+      <view class="text-xs text-neutral-400">Common UI compositions with dividers.</view>
+
+      <view class="flex flex-col gap-6 pt-2">
+        <!-- Auth / Social Login Pattern -->
+        <view class="p-4 bg-neutral-50 rounded-xl border border-neutral-200 flex flex-col gap-3">
+          <text class="text-xs font-bold text-neutral-700">Auth Login Flow</text>
+          <c-button color="primary" class="w-full">Continue with Email</c-button>
+          <c-divider label="or sign in with" />
+          <view class="flex gap-2">
+            <c-button variant="outline" class="flex-1">WeChat</c-button>
+            <c-button variant="outline" class="flex-1">Apple</c-button>
+          </view>
+        </view>
+
+        <!-- Order / Invoice Breakdown -->
+        <view class="p-4 bg-neutral-50 rounded-xl border border-neutral-200 flex flex-col gap-3">
+          <view class="flex justify-between items-center">
+            <text class="text-sm font-bold text-neutral-900">Order #84920</text>
+            <c-badge color="success" size="sm">Shipped</c-badge>
+          </view>
+          <c-divider type="dashed" />
+          <view class="flex justify-between text-xs text-neutral-500">
+            <text>Expected Delivery</text>
+            <text class="font-medium text-neutral-900">Tomorrow, 2:00 PM</text>
+          </view>
+          <c-divider type="dashed" />
+          <view class="flex justify-between text-xs text-neutral-500">
+            <text>Total Amount</text>
+            <text class="font-bold text-primary">$128.50</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 9. UI Slot Overrides -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="text-sm font-bold text-neutral-900">UI Slot Overrides</view>
+      <view class="text-xs text-neutral-400">Instance-level styling customization through the ui prop.</view>
+      <view class="flex flex-col gap-5 pt-2">
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Custom dashed purple border and pill container</text>
+          <c-divider
+            label="Special Promo"
+            ui="{{ { border: 'border-purple-400 border-dashed', container: 'bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-200 font-bold' } }}"
+          />
+        </view>
+        <view class="flex flex-col gap-1">
+          <text class="text-xs text-neutral-400">Custom emerald tracking milestone</text>
+          <c-divider
+            label="Milestone 3 Completed"
+            ui="{{ { border: 'border-emerald-500', container: 'text-emerald-600 font-semibold tracking-wider uppercase text-[10px]' } }}"
+            leadingIcon="i-lucide-check-circle"
+          />
+        </view>
+      </view>
+    </view>
+
   </view>
 </view>
