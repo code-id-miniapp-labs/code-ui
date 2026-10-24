@@ -1,0 +1,58 @@
+<view class="p-4 space-y-8">
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Animation Variants</text>
+    <view class="space-y-4">
+      <view class="space-y-2">
+        <text class="text-sm text-gray-500">Pulse (Default)</text>
+        <c-skeleton variant="pulse" className="h-8 w-full" />
+      </view>
+      <view class="space-y-2">
+        <text class="text-sm text-gray-500">Shine</text>
+        <c-skeleton variant="shine" className="h-8 w-full" />
+      </view>
+      <view class="space-y-2">
+        <text class="text-sm text-gray-500">None</text>
+        <c-skeleton variant="none" className="h-8 w-full" />
+      </view>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Practical Examples</text>
+    <view class="space-y-4 p-4 border rounded-lg">
+      <text class="text-sm font-medium">Profile Card Skeleton</text>
+      <view class="flex items-center gap-3">
+        <c-skeleton class="h-12 w-12 rounded-full" />
+        <view class="flex-1 space-y-2">
+          <c-skeleton class="h-4 w-1/2" />
+          <c-skeleton class="h-3 w-3/4" />
+        </view>
+      </view>
+    </view>
+    <view class="space-y-4 p-4 border rounded-lg">
+      <text class="text-sm font-medium">List Item Skeleton</text>
+      <view class="space-y-3">
+        <view class="flex items-center gap-3">
+          <c-skeleton class="h-10 w-10 rounded" />
+          <view class="flex-1 space-y-2">
+            <c-skeleton class="h-4 w-full" />
+            <c-skeleton class="h-3 w-2/3" />
+          </view>
+        </view>
+        <view class="flex items-center gap-3">
+          <c-skeleton class="h-10 w-10 rounded" />
+          <view class="flex-1 space-y-2">
+            <c-skeleton class="h-4 w-full" />
+            <c-skeleton class="h-3 w-2/3" />
+          </view>
+        </view>
+      </view>
+    </view>
+  </section>
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Custom Styling (UI Prop)</text>
+    <view class="flex flex-wrap gap-2">
+      <c-skeleton ui="{{ { root: 'bg-blue-200 h-4 w-20 rounded-full' } }}" />
+      <c-skeleton ui="{{ { root: 'bg-red-200 h-4 w-32 rounded-sm' } }}" />
+    </view>
+  </section>
+</view>

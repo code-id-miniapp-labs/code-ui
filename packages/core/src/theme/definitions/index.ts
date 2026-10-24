@@ -13,6 +13,7 @@ export { default as input } from "./input";
 export { default as pinInput } from "./pin-input";
 export { default as radio } from "./radio";
 export { default as radioGroup } from "./radio-group";
+export { default as skeleton } from "./skeleton";
 export { default as switch } from "./switch";
 export { default as textarea } from "./textarea";
 

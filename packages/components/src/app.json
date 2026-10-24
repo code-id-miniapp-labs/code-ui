@@ -19,6 +19,7 @@
     "cui-pin-input": "runtime/pin-input/index",
     "cui-radio": "runtime/radio/index",
     "cui-radio-group": "runtime/radio-group/index",
+    "cui-skeleton": "runtime/skeleton/index",
     "cui-switch": "runtime/switch/index",
     "cui-textarea": "runtime/textarea/index"
   }
