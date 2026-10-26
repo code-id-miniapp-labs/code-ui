@@ -44,6 +44,8 @@
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
+    "@code-ui/stepper": "workspace:*",
+    "@code-ui/stepper-item": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.9.2",
     "@icebreakers/eslint-config": "^8.0.2",
     "@icebreakers/stylelint-config": "^5.1.2",

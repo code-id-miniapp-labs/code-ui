@@ -127,6 +127,13 @@ Page({
         badge: "Interactive",
         path: "/pages/qr-code/index",
       },
+      {
+        id: "stepper",
+        name: "Stepper",
+        desc: "Progress indicators for multi-step workflows with compound items, custom slots, linear guards, and vertical orientation.",
+        badge: "Interactive",
+        path: "/pages/stepper/index",
+      },
     ],
   },
 

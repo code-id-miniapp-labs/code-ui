@@ -108,6 +108,18 @@
       "require": "./dist/runtime/radio-group/index.js"
     },
     "./radio-group/*": "./dist/runtime/radio-group/*",
+    "./stepper": {
+      "types": "./dist/runtime/stepper/index.d.ts",
+      "import": "./dist/runtime/stepper/index.js",
+      "require": "./dist/runtime/stepper/index.js"
+    },
+    "./stepper/*": "./dist/runtime/stepper/*",
+    "./stepper-item": {
+      "types": "./dist/runtime/stepper-item/index.d.ts",
+      "import": "./dist/runtime/stepper-item/index.js",
+      "require": "./dist/runtime/stepper-item/index.js"
+    },
+    "./stepper-item/*": "./dist/runtime/stepper-item/*",
     "./switch": {
       "types": "./dist/runtime/switch/index.d.ts",
       "import": "./dist/runtime/switch/index.js",
@@ -157,6 +169,8 @@
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
+    "@code-ui/stepper": "workspace:*",
+    "@code-ui/stepper-item": "workspace:*",
     "@code-ui/switch": "workspace:*",
     "@code-ui/textarea": "workspace:*",
     "@code-ui/utils": "workspace:*",

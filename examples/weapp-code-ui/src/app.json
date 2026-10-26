@@ -19,7 +19,8 @@
     "pages/badge/index",
     "pages/divider/index",
     "pages/skeleton/index",
-    "pages/qr-code/index"
+    "pages/qr-code/index",
+    "pages/stepper/index"
   ],
   "window": {},
   "style": "v2",

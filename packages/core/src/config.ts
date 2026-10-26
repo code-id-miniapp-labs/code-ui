@@ -95,6 +95,27 @@ export interface ComponentRegistry {
     | "description"
     | "help"
     | "error";
+  stepper:
+    | "root"
+    | "list"
+    | "item"
+    | "trigger"
+    | "indicator"
+    | "icon"
+    | "wrapper"
+    | "title"
+    | "description"
+    | "separator"
+    | "content";
+  stepperItem:
+    | "root"
+    | "trigger"
+    | "indicator"
+    | "icon"
+    | "wrapper"
+    | "title"
+    | "description"
+    | "separator";
   switch:
     | "root"
     | "base"

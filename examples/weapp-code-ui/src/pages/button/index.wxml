@@ -74,8 +74,8 @@
       <view class="flex flex-col gap-3">
         <c-button block="{{true}}" color="primary">Full Width Button</c-button>
         <view class="flex gap-2.5">
-          <c-button disabled="{{true}}" variant="solid">Disabled Solid</c-button>
-          <c-button disabled="{{true}}" variant="outline">Disabled Outline</c-button>
+          <c-button disabled="{{checked}}" variant="solid">Disabled Solid</c-button>
+          <c-button disabled="{{checked}}" variant="outline">Disabled Outline</c-button>
         </view>
       </view>
     </view>
