@@ -31,7 +31,11 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
    - In Step 5, import from `../_shared/base` and `../_shared/machine`:
      ```ts
      import { computedBehavior, createComponentOptions } from "../_shared/base";
-     import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+     import {
+       createMachineBehavior,
+       createProperties,
+       getApi,
+     } from "../_shared/machine";
      import { resolveSlots } from "../../utils/ui";
      import { tv } from "../../utils/variants";
      import themeConfig from "virtual:cui/theme/<name>";
@@ -42,7 +46,10 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
    - Import domain behavior plugins from dedicated subpaths in `@code-ui/miniapp/behaviors/<domain>`:
      ```ts
      import { withFormField } from "@code-ui/miniapp/behaviors/form";
-     import { withStepper, withStepperItem } from "@code-ui/miniapp/behaviors/stepper";
+     import {
+       withStepper,
+       withStepperItem,
+     } from "@code-ui/miniapp/behaviors/stepper";
      ```
    - **Rule**: Never import relation behaviors from the root `@code-ui/miniapp` entry. Subpath imports preserve separate chunking and keep domain logic out of `common.js`.
 
@@ -133,13 +140,14 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
      test: /[\\/]behaviors[\\/]<name>/,
    }
    ```
-   *(This guarantees domain behaviors are split into `behaviors/<name>.js` and never leak into `common.js`)*.
+   _(This guarantees domain behaviors are split into `behaviors/<name>.js` and never leak into `common.js`)_.
 
 ---
 
 ## Step 5: Create Runtime Component in `packages/components`
 
 1. Create `packages/components/src/runtime/<name>/index.json`:
+
    ```json
    {
      "component": true,
@@ -172,7 +180,7 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
          },
          behaviors: [computedBehavior],
          properties: {
-           class: { type: String, value: "" },
+           className: { type: String, value: "" },
            ui: { type: Object, value: {} },
            // ... props
          },
@@ -184,7 +192,7 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
                  size: this.data.size,
                }),
                this.data.ui,
-               this.data.class,
+               this.data.className,
              );
            },
          },
@@ -210,7 +218,7 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
          },
          behaviors: [computedBehavior],
          properties: {
-           class: { type: String, value: "" },
+           className: { type: String, value: "" },
            ui: { type: Object, value: {} },
            ...createProperties(<name>Anatomy),
          },
@@ -229,7 +237,7 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
                  size: this.data.size,
                }),
                this.data.ui,
-               this.data.class,
+               this.data.className,
              );
            },
          },
