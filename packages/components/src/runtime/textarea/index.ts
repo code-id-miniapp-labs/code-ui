@@ -1,10 +1,6 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   textareaMachine,
@@ -20,7 +16,7 @@ const textareaBehavior = createMachineBehavior({
   machine: textareaMachine,
   connect: connectTextarea,
   key: "textarea",
-  formField: true,
+  plugins: [withFormField()],
   exportApi: true,
 });
 

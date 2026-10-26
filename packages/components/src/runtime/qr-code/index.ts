@@ -1,10 +1,5 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { resolveSlots } from "../../utils/ui";
 import {
   qrCodeMachine,

@@ -1,23 +1,2 @@
-export {
-  createMachineBehavior,
-  createProperties,
-  cuiFormParentBehavior,
-  cuiFormFieldBehavior,
-  cuiFormFieldWrapperBehavior,
-  cuiRadioGroupBehavior,
-  cuiRadioGroupParentBehavior,
-  cuiRadioItemBehavior,
-  cuiCheckboxGroupBehavior,
-  cuiCheckboxGroupParentBehavior,
-  cuiCheckboxItemBehavior,
-  cuiStepperBehavior,
-  cuiStepperParentBehavior,
-  cuiStepperItemBehavior,
-  wxButtonBehavior,
-  computedBehavior,
-  createComponentOptions,
-} from "@code-ui/miniapp";
-
-export function getApi<T = any>(instance: any, key: string): T | undefined {
-  return instance.__codeUiApi ?? instance.data[key];
-}
+export * from "./base";
+export * from "./machine";

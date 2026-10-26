@@ -1,10 +1,6 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import { inputMachine, connectInput, defaultInputProps } from "@code-ui/input";
 import themeConfig from "virtual:cui/theme/input";
@@ -16,7 +12,7 @@ const inputBehavior = createMachineBehavior({
   machine: inputMachine,
   connect: connectInput,
   key: "input",
-  formField: true,
+  plugins: [withFormField()],
   exportApi: true,
 });
 

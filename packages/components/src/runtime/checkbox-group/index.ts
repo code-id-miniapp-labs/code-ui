@@ -1,10 +1,7 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withCheckboxGroup } from "@code-ui/miniapp/behaviors/checkbox";
+import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   checkboxGroupMachine,
@@ -20,8 +17,7 @@ const checkboxGroupBehavior = createMachineBehavior({
   machine: checkboxGroupMachine,
   connect: connectCheckboxGroup,
   key: "cCheckboxGroup",
-  formField: true,
-  checkboxGroup: true,
+  plugins: [withFormField(), withCheckboxGroup()],
   exportApi: true,
 });
 

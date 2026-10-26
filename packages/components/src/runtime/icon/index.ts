@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import { getIcon } from "@code-ui/core";
 import themeConfig from "virtual:cui/theme/icon";

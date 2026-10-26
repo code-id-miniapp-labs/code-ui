@@ -5,7 +5,22 @@ import {
   createProperties,
   cuiFormParentBehavior,
   cuiFormFieldBehavior,
-} from "../src/behavior";
+  withFormParent,
+  withFormField,
+  withFormFieldWrapper,
+  withRadioGroup,
+  withRadioItem,
+  cuiRadioGroupBehavior,
+  cuiRadioItemBehavior,
+  withCheckboxGroup,
+  withCheckboxItem,
+  cuiCheckboxGroupBehavior,
+  cuiCheckboxItemBehavior,
+  withStepper,
+  withStepperItem,
+  cuiStepperBehavior,
+  cuiStepperItemBehavior,
+} from "../src";
 
 // Mock global Behavior for Node test environment
 let behaviorRegistry: any[] = [];
@@ -30,7 +45,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
   it("configures cuiFormParentBehavior and cuiFormField relations on formParent", () => {
     const parentBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formParent: true,
+      plugins: [withFormParent()],
     });
 
     expect(parentBehavior.behaviors).toContain(cuiFormParentBehavior);
@@ -43,7 +58,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
   it("configures cuiFormFieldBehavior and cuiFormParent relations on formField", () => {
     const fieldBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formField: true,
+      plugins: [withFormField()],
     });
 
     expect(fieldBehavior.behaviors).toContain(cuiFormFieldBehavior);
@@ -57,11 +72,11 @@ describe("createMachineBehavior - formParent & formField relations", () => {
   it("links child field to parent formBus via relations.linked", () => {
     const parentBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formParent: true,
+      plugins: [withFormParent()],
     });
     const fieldBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formField: true,
+      plugins: [withFormField()],
     });
 
     const mockBus = { emit: vi.fn(), on: vi.fn() };
@@ -97,7 +112,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
   it("respects explicit form prop matching parent ID", () => {
     const parentBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formParent: true,
+      plugins: [withFormParent()],
     });
 
     const mockBus1 = { id: "bus-1" };
@@ -133,7 +148,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
   it("dynamically propagates disabled=false from formFieldWrapper to children during runtime", () => {
     const wrapperBehavior = createMachineBehavior({
       machine: dummyMachine,
-      formFieldWrapper: true,
+      plugins: [withFormFieldWrapper()],
       syncProps: ["disabled", "size"] as any,
     });
 
@@ -236,6 +251,59 @@ describe("createMachineBehavior - formParent & formField relations", () => {
       expect(mockMachine.updateProps).toHaveBeenCalledWith({
         value: "Antigravity UI",
       });
+    });
+  });
+
+  describe("createMachineBehavior - domain plugins", () => {
+    const dummyMachine = createMachine({
+      props: () => ({ value: "" }),
+      initialState: () => "idle",
+      states: { idle: {} },
+    });
+
+    it("configures withRadioGroup and withRadioItem", () => {
+      const group = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withRadioGroup()],
+      });
+      const item = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withRadioItem()],
+      });
+
+      expect(group.behaviors).toContain(cuiRadioGroupBehavior);
+      expect(group.relations?.cuiRadioChild).toBeDefined();
+      expect(item.behaviors).toContain(cuiRadioItemBehavior);
+    });
+
+    it("configures withCheckboxGroup and withCheckboxItem", () => {
+      const group = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withCheckboxGroup()],
+      });
+      const item = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withCheckboxItem()],
+      });
+
+      expect(group.behaviors).toContain(cuiCheckboxGroupBehavior);
+      expect(group.relations?.cuiCheckboxChild).toBeDefined();
+      expect(item.behaviors).toContain(cuiCheckboxItemBehavior);
+    });
+
+    it("configures withStepper and withStepperItem", () => {
+      const stepper = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withStepper()],
+      });
+      const item = createMachineBehavior({
+        machine: dummyMachine,
+        plugins: [withStepperItem()],
+      });
+
+      expect(stepper.behaviors).toContain(cuiStepperBehavior);
+      expect(stepper.relations?.cuiStepperChild).toBeDefined();
+      expect(item.behaviors).toContain(cuiStepperItemBehavior);
     });
   });
 });

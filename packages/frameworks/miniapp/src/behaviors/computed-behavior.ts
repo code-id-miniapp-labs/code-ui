@@ -440,6 +440,10 @@ function propertyDefault(def: unknown): unknown {
  * Determines whether a component property definition can hold an Object or Array
  * (requiring `propKey.**` deep path observation) vs. a primitive (`propKey`).
  */
+function isComplexType(t: unknown): boolean {
+  return t === Object || t === Array || t === null || t === undefined;
+}
+
 function isDeepObservableProp(def: unknown): boolean {
   if (def === null || def === undefined) return true;
   if (typeof def === "function") {
@@ -450,8 +454,6 @@ function isDeepObservableProp(def: unknown): boolean {
       type?: unknown;
       optionalTypes?: unknown[];
     };
-    const isComplexType = (t: unknown) =>
-      t === Object || t === Array || t === null || t === undefined;
     if (isComplexType(type)) return true;
     if (Array.isArray(optionalTypes) && optionalTypes.some(isComplexType)) {
       return true;
@@ -778,7 +780,7 @@ export function setupComputed(
     Object.defineProperty(self, key, {
       configurable: true,
       enumerable: true,
-      get: () => computedSignals[key]!(),
+      get: () => computedSignals[key]?.(),
       set: (val) => writeComputed(key, val),
     });
     definedKeys.push(key);
@@ -796,7 +798,9 @@ export function setupComputed(
     pauseTracking();
     try {
       for (const key of computedKeys) {
-        const val = computedSignals[key]!();
+        const signalFn = computedSignals[key];
+        if (!signalFn) continue;
+        const val = signalFn();
         if (!isEqual(cache[key], val)) {
           cache[key] = cloneValue(val);
           if (!updates) updates = {};
@@ -1007,7 +1011,7 @@ export function setupComputed(
 
   const stopScope = effectScope(() => {
     effect(() => {
-      for (const key of computedKeys) computedSignals[key]!();
+      for (const key of computedKeys) computedSignals[key]?.();
       if (!mounted || disposed || applyingWrites) return;
       scheduleEmit();
     });

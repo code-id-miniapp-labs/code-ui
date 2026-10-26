@@ -28,14 +28,18 @@ packages/
    - One reference component of the same category:
      - **Presentational / Container** (no FSM needed): `packages/components/src/runtime/card/` or `chip/`
      - **Interactive / Stateful** (uses FSM in `packages/machines/<name>`): `packages/components/src/runtime/button/`, `drawer/`, or `pin-input/`
-2. **When to create a Machine (`packages/machines/<name>`)**:
-   - **YES**: Components with multi-state lifecycle, focus management, keyboard/touch coordination, or controlled/uncontrolled value state (`button`, `drawer`, `pin-input`, `dialog`, `tabs`, `select`, `checkbox`, `switch`, `slider`, etc.).
-   - **NO**: Pure layout/display components (`card`, `chip`, `badge`, `avatar`, `separator`, `skeleton`, `kbd`, `alert`). These only need:
-     1. A theme definition in `packages/core/src/theme/definitions/<name>.ts`
-     2. A MiniApp runtime component in `packages/components/src/runtime/<name>/`
+2. **When to create a Machine (`packages/machines/<name>`) & Runtime Tiering**:
+   - **Presentational / Container** (`card`, `chip`, `badge`, `avatar`, `divider`, `skeleton`, `icon`, `kbd`, `alert`):
+     - No machine needed. Only theme in `packages/core` and runtime in `packages/components`.
+     - Runtime imports **strictly from `../_shared/base`** (only `computedBehavior` + `createComponentOptions`). NEVER import `../_shared/machine`.
+   - **Interactive / Stateful** (`button`, `drawer`, `pin-input`, `qr-code`, `tabs`, `dialog`, etc.):
+     - Uses FSM in `packages/machines/<name>`.
+     - Runtime imports from `../_shared/base` AND `../_shared/machine`.
+   - **Domain Relations / Form Controls** (`checkbox`, `radio`, `stepper`, `form`, `input`, etc.):
+     - Import relation behaviors strictly from dedicated subpaths like `@code-ui/miniapp/behaviors/<domain>` (never from the root miniapp package) to prevent bundling into `common.js`.
 3. **Styling & Theming Convention (Nuxt UI v4)**:
    - All themes live in `packages/core/src/theme/definitions/<name>.ts` using `defineTheme({ slots, variants, compoundVariants, defaultVariants })`.
-   - Runtime components import their pre-compiled theme via `import themeConfig from "virtual:cui/theme/<name>";`, instantiate `const <name>Theme = tv(themeConfig);` (from `../utils/variants`), and resolve slots via `resolveSlots(themeFns, ui, this.data.class)` inside `computedBehavior`.
+   - Runtime components import their pre-compiled theme via `import themeConfig from "virtual:cui/theme/<name>";`, instantiate `const <name>Theme = tv(themeConfig);` (from `../../utils/variants`), and resolve slots via `resolveSlots(themeFns, this.data.ui, this.data.class)` inside `computedBehavior`.
    - Always support the `ui` prop (`type: Object, value: {}`) and `class` prop (`type: String, value: ""`) so users can override any slot's classes per instance.
 4. **TypeScript & Linter Constraints**:
    - `tsconfig.base.json` sets `"exactOptionalPropertyTypes": true`.

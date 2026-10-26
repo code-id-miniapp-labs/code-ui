@@ -1,9 +1,6 @@
-import {
-  computedBehavior,
-  createComponentOptions,
-  createMachineBehavior,
-  createProperties,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties } from "../_shared/machine";
+import { withFormField, withFormFieldWrapper } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/form-field";
 import { tv } from "../../utils/variants";
@@ -19,9 +16,7 @@ const formFieldBehavior = createMachineBehavior({
   machine: formFieldMachine,
   connect: connectFormField,
   key: "formField",
-  formField: true,
-  formFieldWrapper: true,
-  nativeFormField: false,
+  plugins: [withFormField({ native: false }), withFormFieldWrapper()],
   exportApi: true,
 });
 

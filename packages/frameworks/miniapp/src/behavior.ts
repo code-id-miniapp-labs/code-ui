@@ -3,6 +3,24 @@ import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
 import type { Machine, MachineSchema } from "@code-ui/core";
 import { isObject, runIfFn } from "@code-ui/utils";
+import type { MachinePlugin } from "./plugin";
+
+const instanceIds = new WeakMap<object, string>();
+let instanceCounter = 0;
+
+function getComponentId(instance: object, explicitId?: string): string {
+  if (explicitId) return explicitId;
+  let id = instanceIds.get(instance);
+  if (!id) {
+    id = `cui-${++instanceCounter}`;
+    instanceIds.set(instance, id);
+  }
+  return id;
+}
+
+function cleanupComponentId(instance: object): void {
+  instanceIds.delete(instance);
+}
 
 export interface CreateMachineBehaviorOptions<
   T extends MachineSchema,
@@ -26,87 +44,22 @@ export interface CreateMachineBehaviorOptions<
    */
   syncProps?: Array<keyof T["props"]>;
   /**
-   * Automatically include WeChat native form-field behavior (`'wx://form-field'`)
-   * and link to ancestor Code UI form via `cuiFormParentBehavior`.
-   * Required for custom form controls like Switch, Checkbox, Slider to work with `<form bindsubmit>`
-   */
-  formField?: boolean;
-  /**
-   * Whether to include WeChat native `'wx://form-field'` behavior.
-   * Defaults to true when `formField` is true, but can be set to false for wrapper
-   * components like `<c-form-field>` that only link to ancestor form via relations.
-   * @default true
-   */
-  nativeFormField?: boolean;
-  /**
-   * Mark this component as a form field wrapper (`<c-form-field>`), automatically
-   * linking slotted form controls and passing down disabled and size state.
-   */
-  formFieldWrapper?: boolean;
-  /**
-   * Mark this component as a Form parent (`<c-form>`), automatically linking
-   * slotted form fields via `cuiFormFieldBehavior`.
-   */
-  formParent?: boolean;
-  /**
-   * Mark this component as a Radio Group parent (`<c-radio-group>`),
-   * automatically wiring relations for descendant `<c-radio>` items.
-   */
-  radioGroup?: boolean;
-  /**
-   * Mark this component as a Radio item (`<c-radio>`),
-   * automatically wiring relations to link with ancestor `<c-radio-group>`.
-   */
-  radioItem?: boolean;
-  /**
-   * Mark this component as a Checkbox Group parent (`<c-checkbox-group>`),
-   * automatically wiring relations for descendant `<c-checkbox>` items.
-   */
-  checkboxGroup?: boolean;
-  /**
-   * Mark this component as a Checkbox item (`<c-checkbox>`),
-   * automatically wiring relations to link with ancestor `<c-checkbox-group>`.
-   */
-  checkboxItem?: boolean;
-  /**
-   * Mark this component as a Stepper parent (`<c-stepper>`),
-   * automatically wiring relations for descendant `<c-stepper-item>` items.
-   */
-  stepper?: boolean;
-  /**
-   * Mark this component as a Stepper item (`<c-stepper-item>`),
-   * automatically wiring relations to link with ancestor `<c-stepper>`.
-   */
-  stepperItem?: boolean;
-  /**
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
   exportApi?: boolean;
   /**
    * Delay `machine.start()` until the first `send()` call.
-   *
-   * Use this for components that are rendered but rarely interacted with
-   * (e.g. a disabled button in a long list). The machine is constructed immediately
-   * so `updateProps` observers work, but the 3 alien-signals `effect()` watchers
-   * (state + context + watch) are only activated on first user interaction.
-   *
-   * ⚠️  Do NOT set on components that drive visible reactive state on mount
-   * (e.g. Drawer, which must sync `drawer.open` to the template immediately).
-   *
    * @default false
    */
   deferred?: boolean;
+  /**
+   * Composable plugins that extend component relations and lifecycle coordination.
+   */
+  plugins?: MachinePlugin<T>[];
 }
 
 /**
  * Creates a WeChat MiniProgram component properties schema from default props
- *
- * @example
- * ```ts
- * properties: createProperties(defaultDrawerProps, {
- *   customProp: { type: String, value: "" }
- * })
- * ```
  */
 export function createProperties<T extends Record<string, any>>(
   defaultProps: T,
@@ -115,510 +68,51 @@ export function createProperties<T extends Record<string, any>>(
   const properties: Record<string, any> = {};
   for (const [propKey, val] of Object.entries(defaultProps)) {
     if (val === undefined) continue;
-    const type =
-      val === null
-        ? null
-        : typeof val === "boolean"
-          ? Boolean
-          : typeof val === "number"
-            ? Number
-            : typeof val === "string"
-              ? String
-              : Array.isArray(val)
-                ? Array
-                : Object;
-    properties[propKey] = {
-      type,
-      value: val,
-    };
-  }
-  return { ...properties, ...extraProps };
-}
 
-/**
- * Creates a reactive WeChat MiniProgram Behavior wired to a state machine
- *
- * @example
- * ```ts
- * const dialogBehavior = createMachineBehavior({
- *   machine: dialogMachine,
- *   connect: connectDialog,
- *   key: "dialog",
- *   exportApi: true,
- * });
- *
- * Component({
- *   behaviors: [dialogBehavior],
- *   properties: createProperties(defaultDialogProps),
- *   methods: {
- *     handleOpen() {
- *       this.send({ type: "OPEN" });
- *     },
- *   },
- * });
- * ```
- */
-const instanceIds = new WeakMap<object, string>();
-let instanceCounter = 0;
-
-function getComponentId(instance: object, explicitId?: string): string {
-  if (explicitId) return explicitId;
-  let id = instanceIds.get(instance);
-  if (!id) {
-    id = `cui-${++instanceCounter}`;
-    instanceIds.set(instance, id);
-  }
-  return id;
-}
-
-/**
- * Shared Behavior reference for `<c-form>` parent components.
- * Used as relations.target to link descendant form fields natively
- * without file paths or tree-shaking hazards.
- */
-export const cuiFormParentBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-
-/**
- * Shared Behavior reference for `<c-radio-group>` parent components.
- * Used as relations.target to link descendant <c-radio> components natively
- * without file paths or tree-shaking hazards.
- */
-export const cuiRadioGroupBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-export const cuiRadioGroupParentBehavior: any = cuiRadioGroupBehavior;
-
-function linkRadioToParentGroup(group: any, radio: any) {
-  const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
-  radio.__codeUiRadioGroupBus = bus;
-  if (radio.__codeUiMachine) {
-    const ctx = service?.context;
-    radio.__codeUiMachine.updateProps({
-      groupBus: bus,
-      groupValue: ctx?.get("value"),
-      groupDisabled: ctx?.get("disabled"),
-      groupInvalid: ctx?.get("invalid"),
-      groupSize: ctx?.get("size"),
-      groupColor: ctx?.get("color"),
-      groupVariant: ctx?.get("variant"),
-    });
-  } else {
-    radio.__codeUiPendingRadioGroup = group;
-  }
-}
-
-function unlinkRadioFromParentGroup(_group: any, radio: any) {
-  radio.__codeUiRadioGroupBus = undefined;
-  if (radio.__codeUiMachine) {
-    radio.__codeUiMachine.updateProps({
-      groupBus: undefined,
-      groupValue: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupColor: undefined,
-      groupVariant: undefined,
-    });
-  }
-}
-
-/**
- * Shared Behavior reference for `<c-radio>` child components.
- * Automatically links to ancestor `<c-radio-group>`.
- */
-export const cuiRadioItemBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiRadioGroupParent: {
-            type: "ancestor",
-            target: cuiRadioGroupBehavior,
-            linked(this: any, target: any) {
-              linkRadioToParentGroup(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkRadioFromParentGroup(target, this);
-            },
-          },
-        },
-      })
-    : {};
-
-/**
- * Shared Behavior reference for `<c-checkbox-group>` parent components.
- * Used as relations.target to link descendant <c-checkbox> components natively
- * without file paths or tree-shaking hazards.
- */
-export const cuiCheckboxGroupBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-export const cuiCheckboxGroupParentBehavior: any = cuiCheckboxGroupBehavior;
-
-function linkCheckboxToParentGroup(group: any, checkbox: any) {
-  const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
-  checkbox.__codeUiCheckboxGroupBus = bus;
-  if (checkbox.__codeUiMachine) {
-    const ctx = service?.context;
-    checkbox.__codeUiMachine.updateProps({
-      groupBus: bus,
-      groupValue: ctx?.get("value"),
-      groupDisabled: ctx?.get("disabled"),
-      groupInvalid: ctx?.get("invalid"),
-      groupSize: ctx?.get("size"),
-      groupColor: ctx?.get("color"),
-      groupVariant: ctx?.get("variant"),
-    });
-  } else {
-    checkbox.__codeUiPendingCheckboxGroup = group;
-  }
-}
-
-function unlinkCheckboxFromParentGroup(_group: any, checkbox: any) {
-  checkbox.__codeUiCheckboxGroupBus = undefined;
-  if (checkbox.__codeUiMachine) {
-    checkbox.__codeUiMachine.updateProps({
-      groupBus: undefined,
-      groupValue: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupColor: undefined,
-      groupVariant: undefined,
-    });
-  }
-}
-
-/**
- * Shared Behavior reference for `<c-checkbox>` child components.
- * Automatically links to ancestor `<c-checkbox-group>`.
- */
-export const cuiCheckboxItemBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiCheckboxGroupParent: {
-            type: "ancestor",
-            target: cuiCheckboxGroupBehavior,
-            linked(this: any, target: any) {
-              linkCheckboxToParentGroup(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkCheckboxFromParentGroup(target, this);
-            },
-          },
-        },
-      })
-    : {};
-
-/**
- * Shared Behavior reference for `<c-stepper>` parent components.
- * Used as relations.target to link descendant <c-stepper-item> components natively.
- */
-export const cuiStepperBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-export const cuiStepperParentBehavior: any = cuiStepperBehavior;
-
-function syncStepperChildren(group: any) {
-  const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
-  const relationChildren =
-    typeof group.getRelationNodes === "function"
-      ? group.getRelationNodes("cuiStepperChild")
-      : undefined;
-  const templateChildren =
-    typeof group.selectAllComponents === "function"
-      ? group.selectAllComponents(".cui-stepper-item")
-      : undefined;
-  const children: any[] =
-    Array.isArray(relationChildren) && relationChildren.length > 0
-      ? relationChildren
-      : Array.isArray(templateChildren) && templateChildren.length > 0
-        ? templateChildren
-        : group.__codeUiStepperChildren || [];
-
-  const total = children.length;
-  if (group.__codeUiMachine) {
-    group.__codeUiMachine.updateProps({ linkedCount: total });
-  }
-
-  const groupId =
-    group.data?.id || group.id || group.__codeUiId || getComponentId(group);
-  group.__codeUiId = groupId;
-
-  const ctx = service?.context;
-  for (let i = 0; i < total; i++) {
-    const child = children[i];
-    if (!child) continue;
-    child.__codeUiStepperBus = bus;
-    child.__codeUiPendingStepper = group;
-    child.__codeUiStepperIndex = i;
-    child.__codeUiStepperIsLast = i === total - 1;
-    child.__codeUiStepperId = groupId;
-    if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({
-        stepperId: groupId,
-        groupBus: bus,
-        groupStep: ctx?.get("step"),
-        groupCount: total,
-        groupIndex: i,
-        groupIsLast: i === total - 1,
-        groupLinear: ctx?.get("linear"),
-        groupOrientation: ctx?.get("orientation"),
-        groupDisabled: ctx?.get("disabled"),
-        groupSize: ctx?.get("size"),
-        groupColor: ctx?.get("color"),
-        groupVariant: ctx?.get("variant"),
-      });
+    if (typeof val === "boolean") {
+      properties[propKey] = {
+        type: Boolean,
+        value: val,
+      };
+    } else if (typeof val === "number") {
+      properties[propKey] = {
+        type: Number,
+        value: val,
+      };
+    } else if (typeof val === "string") {
+      properties[propKey] = {
+        type: String,
+        value: val,
+      };
+    } else if (Array.isArray(val)) {
+      properties[propKey] = {
+        type: Array,
+        value: val,
+      };
+    } else if (isObject(val)) {
+      properties[propKey] = {
+        type: Object,
+        value: val,
+      };
+    } else {
+      properties[propKey] = {
+        type: null,
+        value: val,
+      };
     }
   }
 
-  if (bus && ctx) {
-    bus.emit("stepper:change", {
-      step: ctx.get("step"),
-      count: total,
-      linear: Boolean(ctx.get("linear")),
-      orientation: ctx.get("orientation") || "horizontal",
-      color: ctx.get("color") || "primary",
-      size: ctx.get("size") || "md",
-      variant: ctx.get("variant") || "subtle",
-      disabled: Boolean(ctx.get("disabled")),
-    });
+  if (extraProps) {
+    Object.assign(properties, extraProps);
   }
-}
 
-function linkStepperItemToParentGroup(group: any, item: any) {
-  group.__codeUiStepperChildren = group.__codeUiStepperChildren || [];
-  if (!group.__codeUiStepperChildren.includes(item)) {
-    group.__codeUiStepperChildren.push(item);
-  }
-  item.__codeUiPendingStepper = group;
-  syncStepperChildren(group);
-}
-
-function unlinkStepperItemFromParentGroup(group: any, item: any) {
-  if (Array.isArray(group.__codeUiStepperChildren)) {
-    group.__codeUiStepperChildren = group.__codeUiStepperChildren.filter(
-      (c: any) => c !== item,
-    );
-  }
-  item.__codeUiStepperBus = undefined;
-  item.__codeUiPendingStepper = undefined;
-  if (item.__codeUiMachine) {
-    item.__codeUiMachine.updateProps({
-      groupBus: undefined,
-      groupStep: undefined,
-      groupCount: undefined,
-      groupIndex: undefined,
-      groupIsLast: undefined,
-      groupLinear: undefined,
-      groupOrientation: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupColor: undefined,
-      groupVariant: undefined,
-    });
-  }
-  syncStepperChildren(group);
+  return properties;
 }
 
 /**
- * Shared Behavior reference for `<c-stepper-item>` child components.
- * Automatically links to ancestor `<c-stepper>`.
+ * Creates a domain-agnostic WeChat MiniProgram Behavior wrapping an FSM.
+ * Extend functionality (e.g. form fields, radio groups, steppers) via `options.plugins`.
  */
-export const cuiStepperItemBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiStepperParent: {
-            type: "ancestor",
-            target: cuiStepperBehavior,
-            linked(this: any, target: any) {
-              linkStepperItemToParentGroup(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkStepperItemFromParentGroup(target, this);
-            },
-          },
-        },
-      })
-    : {};
-
-function shouldLinkField(parent: any, child: any): boolean {
-  const childFormProp =
-    child.data?.form ?? child.__codeUiMachine?.service?.prop?.("form");
-  if (typeof childFormProp === "string" && childFormProp.trim().length > 0) {
-    const parentId =
-      parent.id ||
-      parent.data?.id ||
-      parent.data?.name ||
-      parent.__codeUiMachine?.service?.prop?.("name") ||
-      parent.__codeUiMachine?.service?.prop?.("id");
-    return childFormProp.trim() === String(parentId).trim();
-  }
-  if (typeof child.getRelationNodes === "function") {
-    const ancestors = child.getRelationNodes("cuiFormParent");
-    if (ancestors && ancestors.length > 0) {
-      return ancestors[0] === parent;
-    }
-  }
-  return true;
-}
-
-function getServiceBus(service: any): any {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
-
-function linkFieldToParentBus(parent: any, child: any, bus: any) {
-  if (!shouldLinkField(parent, child)) return;
-  child.__codeUiFormBus = bus;
-  if (child.__codeUiMachine) {
-    child.__codeUiMachine.updateProps({ formBus: bus });
-  }
-  if (typeof child.__codeUiBindFormBus === "function") {
-    child.__codeUiBindFormBus(bus);
-  }
-  if (child.__codeUiFieldChildren && Array.isArray(child.__codeUiFieldChildren)) {
-    for (const nested of child.__codeUiFieldChildren) {
-      updateChildFromFormFieldWrapper(child, nested);
-    }
-  }
-}
-
-function unlinkFieldFromParentBus(parent: any, child: any) {
-  const parentBus =
-    parent.__codeUiFormBus ?? getServiceBus(parent.__codeUiMachine?.service);
-  if (child.__codeUiFormBus && child.__codeUiFormBus === parentBus) {
-    child.__codeUiFormBus = undefined;
-    if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({ formBus: undefined });
-    }
-    if (typeof child.__codeUiUnlinkFormBus === "function") {
-      child.__codeUiUnlinkFormBus();
-    }
-  }
-}
-
-function getFormFieldWrapperDisabled(wrapper: any, snapshot?: any): boolean {
-  if (snapshot && typeof snapshot.disabled === "boolean") {
-    return snapshot.disabled;
-  }
-  if (wrapper.__codeUiMachine?.service?.context) {
-    const ctx = wrapper.__codeUiMachine.service.context;
-    return Boolean(ctx.get("disabled") || ctx.get("formDisabled"));
-  }
-  const api = (wrapper as any).__codeUiApi;
-  if (api && typeof api.disabled === "boolean") {
-    return api.disabled;
-  }
-  return Boolean(wrapper.data?.disabled);
-}
-
-function getFormFieldWrapperSize(
-  wrapper: any,
-  snapshot?: any,
-): string | undefined {
-  if (snapshot && snapshot.size) {
-    return snapshot.size;
-  }
-  if (wrapper.__codeUiMachine?.service?.context) {
-    return wrapper.__codeUiMachine.service.context.get("size");
-  }
-  const api = (wrapper as any).__codeUiApi;
-  if (api && api.size) {
-    return api.size;
-  }
-  return wrapper.data?.size;
-}
-
-function updateChildFromFormFieldWrapper(
-  wrapper: any,
-  child: any,
-  snapshot?: any,
-) {
-  const disabled = getFormFieldWrapperDisabled(wrapper, snapshot);
-  const size = getFormFieldWrapperSize(wrapper, snapshot);
-  const bus =
-    wrapper.__codeUiFormBus ??
-    getServiceBus(wrapper.__codeUiMachine?.service);
-  if (child.__codeUiMachine) {
-    const patch: Record<string, any> = {
-      fieldDisabled: disabled,
-      fieldSize: size,
-    };
-    if (bus && !child.__codeUiFormBus) {
-      child.__codeUiFormBus = bus;
-      patch.formBus = bus;
-    }
-    child.__codeUiMachine.updateProps(patch);
-  }
-}
-
-function linkFieldToWrapper(wrapper: any, child: any) {
-  if (child === wrapper) return;
-  if (child.__codeUiIsFormFieldWrapper) return;
-  if (!wrapper.__codeUiFieldChildren) {
-    wrapper.__codeUiFieldChildren = [];
-  }
-  if (!wrapper.__codeUiFieldChildren.includes(child)) {
-    wrapper.__codeUiFieldChildren.push(child);
-  }
-  child.__codeUiFieldWrapper = wrapper;
-  updateChildFromFormFieldWrapper(wrapper, child);
-}
-
-function unlinkFieldFromWrapper(wrapper: any, child: any) {
-  if (wrapper.__codeUiFieldChildren) {
-    const idx = wrapper.__codeUiFieldChildren.indexOf(child);
-    if (idx !== -1) wrapper.__codeUiFieldChildren.splice(idx, 1);
-  }
-  if (child.__codeUiFieldWrapper === wrapper) {
-    child.__codeUiFieldWrapper = undefined;
-    if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({
-        fieldDisabled: undefined,
-        fieldSize: undefined,
-      });
-    }
-  }
-}
-
-/**
- * Shared Behavior reference for `<c-form-field>` wrapper components.
- * Used as relations.target to link descendant form controls.
- */
-export const cuiFormFieldWrapperBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-
-/**
- * Shared Behavior reference for form control components.
- * Automatically wires relations.target to link to ancestor <c-form> and <c-form-field>.
- */
-export const cuiFormFieldBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiFormParent: {
-            type: "ancestor",
-            target: cuiFormParentBehavior,
-            linked(this: any, target: any) {
-              const bus =
-                target.__codeUiFormBus ??
-                getServiceBus(target.__codeUiMachine?.service);
-              if (bus) {
-                linkFieldToParentBus(target, this, bus);
-              } else {
-                target.__codeUiPendingFields =
-                  target.__codeUiPendingFields || [];
-                target.__codeUiPendingFields.push(this);
-              }
-            },
-            unlinked(this: any, target: any) {
-              unlinkFieldFromParentBus(target, this);
-            },
-          },
-        },
-      })
-    : {};
-
 export function createMachineBehavior<
   T extends MachineSchema,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
@@ -630,23 +124,12 @@ export function createMachineBehavior<
     machine: machineDef,
     connect,
     key,
-    syncProps: explicitSyncProps,
-    formField = false,
-    formFieldWrapper = false,
-    nativeFormField = true,
-    formParent = false,
-    radioGroup = false,
-    radioItem = false,
-    checkboxGroup = false,
-    checkboxItem = false,
-    stepper = false,
-    stepperItem = false,
     exportApi = false,
     deferred = false,
+    plugins = [],
   } = options;
 
   let discoveredProps: string[] = [];
-
   try {
     const defaultProps = runIfFn(machineDef.props, {
       props: {},
@@ -659,39 +142,14 @@ export function createMachineBehavior<
   } catch {}
 
   const syncProps = Array.from(
-    new Set([...discoveredProps, ...(explicitSyncProps ?? [])]),
+    new Set([...discoveredProps, ...(options.syncProps ?? [])]),
   ) as Array<keyof T["props"]>;
 
   const behaviors: any[] = [];
-  if (formField) {
-    if (nativeFormField) {
-      behaviors.push("wx://form-field");
+  for (const plugin of plugins) {
+    if (plugin.behaviors && Array.isArray(plugin.behaviors)) {
+      behaviors.push(...plugin.behaviors);
     }
-    behaviors.push(cuiFormFieldBehavior);
-  }
-  if (formFieldWrapper) {
-    behaviors.push(cuiFormFieldWrapperBehavior);
-  }
-  if (formParent) {
-    behaviors.push(cuiFormParentBehavior);
-  }
-  if (radioGroup) {
-    behaviors.push(cuiRadioGroupBehavior);
-  }
-  if (radioItem) {
-    behaviors.push(cuiRadioItemBehavior);
-  }
-  if (checkboxGroup) {
-    behaviors.push(cuiCheckboxGroupBehavior);
-  }
-  if (checkboxItem) {
-    behaviors.push(cuiCheckboxItemBehavior);
-  }
-  if (stepper) {
-    behaviors.push(cuiStepperBehavior);
-  }
-  if (stepperItem) {
-    behaviors.push(cuiStepperItemBehavior);
   }
   if (exportApi) behaviors.push("wx://component-export");
 
@@ -701,123 +159,15 @@ export function createMachineBehavior<
     observers[propKey as string] = function (this: any, val: any) {
       if (!this.__codeUiMachine) return;
       this.__codeUiMachine.updateProps({ [propKey as string]: val });
-      if (formFieldWrapper && (propKey === "disabled" || propKey === "size")) {
-        const children = this.__codeUiFieldChildren || [];
-        for (const child of children) {
-          updateChildFromFormFieldWrapper(this, child);
-        }
-      }
-      if (stepper) {
-        syncStepperChildren(this);
+      for (const plugin of plugins) {
+        plugin.onPropChanged?.(this, propKey as string, val);
       }
     };
   });
 
-  const relations: Record<string, WechatMiniprogram.Component.RelationOption> =
-    {};
-
-  if (formParent) {
-    relations.cuiFormField = {
-      type: "descendant",
-      target: cuiFormFieldBehavior,
-      linked(this: any, target: any) {
-        const bus =
-          this.__codeUiFormBus ?? getServiceBus(this.__codeUiMachine?.service);
-        if (!bus) {
-          this.__codeUiPendingFields = this.__codeUiPendingFields || [];
-          this.__codeUiPendingFields.push(target);
-          return;
-        }
-        linkFieldToParentBus(this, target, bus);
-      },
-      unlinked(this: any, target: any) {
-        unlinkFieldFromParentBus(this, target);
-      },
-    };
-  }
-
-  if (radioGroup) {
-    relations.cuiRadioChild = {
-      type: "descendant",
-      target: cuiRadioItemBehavior,
-      linked(this: any, target: any) {
-        linkRadioToParentGroup(this, target);
-      },
-      unlinked(this: any, target: any) {
-        unlinkRadioFromParentGroup(this, target);
-      },
-    };
-  }
-
-  if (checkboxGroup) {
-    relations.cuiCheckboxChild = {
-      type: "descendant",
-      target: cuiCheckboxItemBehavior,
-      linked(this: any, target: any) {
-        linkCheckboxToParentGroup(this, target);
-      },
-      unlinked(this: any, target: any) {
-        unlinkCheckboxFromParentGroup(this, target);
-      },
-    };
-  }
-
-  if (stepper) {
-    relations.cuiStepperChild = {
-      type: "descendant",
-      target: cuiStepperItemBehavior,
-      linked(this: any, target: any) {
-        linkStepperItemToParentGroup(this, target);
-      },
-      unlinked(this: any, target: any) {
-        unlinkStepperItemFromParentGroup(this, target);
-      },
-    };
-  }
-
-  if (formFieldWrapper) {
-    relations.cuiFormFieldChild = {
-      type: "descendant",
-      target: cuiFormFieldBehavior,
-      linked(this: any, target: any) {
-        linkFieldToWrapper(this, target);
-      },
-      unlinked(this: any, target: any) {
-        unlinkFieldFromWrapper(this, target);
-      },
-    };
-  }
-
-  if (formField) {
-    relations.cuiFormParent = {
-      type: "ancestor",
-      target: cuiFormParentBehavior,
-      linked(this: any, target: any) {
-        const bus =
-          target.__codeUiFormBus ??
-          getServiceBus(target.__codeUiMachine?.service);
-        if (bus) {
-          linkFieldToParentBus(target, this, bus);
-        } else {
-          target.__codeUiPendingFields = target.__codeUiPendingFields || [];
-          target.__codeUiPendingFields.push(this);
-        }
-      },
-      unlinked(this: any, target: any) {
-        unlinkFieldFromParentBus(target, this);
-      },
-    };
-
-    relations.cuiFormFieldWrapper = {
-      type: "ancestor",
-      target: cuiFormFieldWrapperBehavior,
-      linked(this: any, target: any) {
-        linkFieldToWrapper(target, this);
-      },
-      unlinked(this: any, target: any) {
-        unlinkFieldFromWrapper(target, this);
-      },
-    };
+  const relations: Record<string, WechatMiniprogram.Component.RelationOption> = {};
+  for (const plugin of plugins) {
+    plugin.setupRelations?.(relations);
   }
 
   const behaviorConfig: Record<string, any> = {
@@ -834,139 +184,8 @@ export function createMachineBehavior<
           ids: this.data?.ids,
         };
 
-        if (formField && typeof this.getRelationNodes === "function") {
-          const parents = this.getRelationNodes("cuiFormParent");
-          if (parents && parents.length > 0) {
-            const parent = parents[0];
-            const bus =
-              parent.__codeUiFormBus ??
-              getServiceBus(parent.__codeUiMachine?.service);
-            if (bus && shouldLinkField(parent, this)) {
-              initialProps.formBus = bus;
-              this.__codeUiFormBus = bus;
-            }
-          }
-        }
-
-        if (formField) {
-          const wrapper =
-            this.__codeUiFieldWrapper ??
-            (typeof this.getRelationNodes === "function"
-              ? this.getRelationNodes("cuiFormFieldWrapper")?.[0]
-              : undefined);
-          if (wrapper) {
-            initialProps.fieldDisabled = getFormFieldWrapperDisabled(wrapper);
-            const size = getFormFieldWrapperSize(wrapper);
-            if (size !== undefined) {
-              initialProps.fieldSize = size;
-            }
-            const wrapperBus =
-              wrapper.__codeUiFormBus ??
-              getServiceBus(wrapper.__codeUiMachine?.service);
-            if (wrapperBus && !initialProps.formBus) {
-              initialProps.formBus = wrapperBus;
-              this.__codeUiFormBus = wrapperBus;
-            }
-          }
-        }
-
-        if (radioItem) {
-          const parent =
-            this.__codeUiPendingRadioGroup ??
-            (typeof this.getRelationNodes === "function"
-              ? this.getRelationNodes("cuiRadioGroupParent")?.[0]
-              : undefined);
-          if (parent) {
-            const pService = parent.__codeUiMachine?.service;
-            const bus =
-              parent.__codeUiRadioGroupBus ??
-              getServiceBus(pService) ??
-              pService?.refs?.get?.("bus");
-            if (bus) {
-              initialProps.groupBus = bus;
-              this.__codeUiRadioGroupBus = bus;
-            }
-            if (pService) {
-              const ctx = pService.context;
-              initialProps.groupValue = ctx?.get("value");
-              initialProps.groupDisabled = ctx?.get("disabled");
-              initialProps.groupInvalid = ctx?.get("invalid");
-              initialProps.groupSize = ctx?.get("size");
-              initialProps.groupColor = ctx?.get("color");
-              initialProps.groupVariant = ctx?.get("variant");
-            }
-          }
-        }
-
-        if (checkboxItem) {
-          const parent =
-            this.__codeUiPendingCheckboxGroup ??
-            (typeof this.getRelationNodes === "function"
-              ? this.getRelationNodes("cuiCheckboxGroupParent")?.[0]
-              : undefined);
-          if (parent) {
-            const pService = parent.__codeUiMachine?.service;
-            const bus =
-              parent.__codeUiCheckboxGroupBus ??
-              getServiceBus(pService) ??
-              pService?.refs?.get?.("bus");
-            if (bus) {
-              initialProps.groupBus = bus;
-              this.__codeUiCheckboxGroupBus = bus;
-            }
-            if (pService) {
-              const ctx = pService.context;
-              initialProps.groupValue = ctx?.get("value");
-              initialProps.groupDisabled = ctx?.get("disabled");
-              initialProps.groupInvalid = ctx?.get("invalid");
-              initialProps.groupSize = ctx?.get("size");
-              initialProps.groupColor = ctx?.get("color");
-              initialProps.groupVariant = ctx?.get("variant");
-            }
-          }
-        }
-
-        if (stepperItem) {
-          const parent =
-            this.__codeUiPendingStepper ??
-            (typeof this.getRelationNodes === "function"
-              ? this.getRelationNodes("cuiStepperParent")?.[0]
-              : undefined);
-          if (parent) {
-            const pService = parent.__codeUiMachine?.service;
-            const bus =
-              parent.__codeUiStepperBus ??
-              getServiceBus(pService) ??
-              pService?.refs?.get?.("bus");
-            if (bus) {
-              initialProps.groupBus = bus;
-              this.__codeUiStepperBus = bus;
-            }
-            if (this.__codeUiStepperIndex !== undefined) {
-              initialProps.groupIndex = this.__codeUiStepperIndex;
-            }
-            if (this.__codeUiStepperIsLast !== undefined) {
-              initialProps.groupIsLast = this.__codeUiStepperIsLast;
-            }
-            const sid =
-              this.__codeUiStepperId ??
-              parent.data?.id ??
-              parent.id ??
-              parent.__codeUiId;
-            if (sid !== undefined) {
-              initialProps.stepperId = sid;
-            }
-            if (pService) {
-              const ctx = pService.context;
-              initialProps.groupStep = ctx?.get("step");
-              initialProps.groupLinear = ctx?.get("linear");
-              initialProps.groupOrientation = ctx?.get("orientation");
-              initialProps.groupDisabled = ctx?.get("disabled");
-              initialProps.groupSize = ctx?.get("size");
-              initialProps.groupColor = ctx?.get("color");
-              initialProps.groupVariant = ctx?.get("variant");
-            }
-          }
+        for (const plugin of plugins) {
+          plugin.onAttached?.(this, initialProps);
         }
 
         if (this.data) {
@@ -979,74 +198,15 @@ export function createMachineBehavior<
         }
 
         const machine = new MiniappMachine(machineDef, initialProps);
-
         this.__codeUiMachine = machine;
         this.__codeUiDeferred = deferred;
 
-        if (radioGroup && typeof this.getRelationNodes === "function") {
-          const children = this.getRelationNodes("cuiRadioChild");
-          if (children && children.length > 0) {
-            for (const child of children) {
-              linkRadioToParentGroup(this, child);
-            }
-          }
-        }
-
-        if (checkboxGroup && typeof this.getRelationNodes === "function") {
-          const children = this.getRelationNodes("cuiCheckboxChild");
-          if (children && children.length > 0) {
-            for (const child of children) {
-              linkCheckboxToParentGroup(this, child);
-            }
-          }
-        }
-
-        if (stepper) {
-          syncStepperChildren(this);
-        }
-
-        if (formFieldWrapper) {
-          this.__codeUiIsFormFieldWrapper = true;
-          this.__codeUiOnSnapshot = (snapshot: any) => {
-            if (this.__codeUiFieldChildren) {
-              for (const child of this.__codeUiFieldChildren) {
-                updateChildFromFormFieldWrapper(this, child, snapshot);
-              }
-            }
-          };
-          if (typeof this.getRelationNodes === "function") {
-            const children = this.getRelationNodes("cuiFormFieldChild") ?? [];
-            for (let i = 0; i < children.length; i++) {
-              linkFieldToWrapper(this, children[i]);
-            }
-          }
-        }
-
-        if (formParent) {
-          const bus = getServiceBus(machine.service);
-          if (bus) {
-            this.__codeUiFormBus = bus;
-          }
-
-          const pending = this.__codeUiPendingFields;
-          if (pending && Array.isArray(pending)) {
-            for (let i = 0; i < pending.length; i++) {
-              linkFieldToParentBus(this, pending[i], bus);
-            }
-            this.__codeUiPendingFields = [];
-          }
-
-          if (typeof this.getRelationNodes === "function") {
-            const fields = this.getRelationNodes("cuiFormField") ?? [];
-            for (let i = 0; i < fields.length; i++) {
-              linkFieldToParentBus(this, fields[i], bus);
-            }
-          }
+        for (const plugin of plugins) {
+          plugin.onMachineStarted?.(this, machine);
         }
 
         if (!deferred) {
           machine.start();
-
           if (connect) {
             this.__codeUiDispose = connectToComponent(
               machine,
@@ -1059,70 +219,16 @@ export function createMachineBehavior<
       },
 
       ready(this: any) {
-        if (radioGroup && typeof this.getRelationNodes === "function") {
-          const children = this.getRelationNodes("cuiRadioChild");
-          if (children && children.length > 0) {
-            for (const child of children) {
-              linkRadioToParentGroup(this, child);
-            }
-          }
-        }
-
-        if (checkboxGroup && typeof this.getRelationNodes === "function") {
-          const children = this.getRelationNodes("cuiCheckboxChild");
-          if (children && children.length > 0) {
-            for (const child of children) {
-              linkCheckboxToParentGroup(this, child);
-            }
-          }
-        }
-        if (radioItem && typeof this.getRelationNodes === "function") {
-          const parents = this.getRelationNodes("cuiRadioGroupParent");
-          if (parents && parents.length > 0) {
-            linkRadioToParentGroup(parents[0], this);
-          }
-        }
-        if (checkboxItem && typeof this.getRelationNodes === "function") {
-          const parents = this.getRelationNodes("cuiCheckboxGroupParent");
-          if (parents && parents.length > 0) {
-            linkCheckboxToParentGroup(parents[0], this);
-          }
-        }
-        if (stepper) {
-          syncStepperChildren(this);
-        }
-        if (stepperItem && typeof this.getRelationNodes === "function") {
-          const parents = this.getRelationNodes("cuiStepperParent");
-          if (parents && parents.length > 0) {
-            linkStepperItemToParentGroup(parents[0], this);
-          }
-        }
-        if (formParent && typeof this.getRelationNodes === "function") {
-          const bus =
-            this.__codeUiFormBus ??
-            getServiceBus(this.__codeUiMachine?.service);
-          if (bus) {
-            const fields = this.getRelationNodes("cuiFormField") ?? [];
-            for (let i = 0; i < fields.length; i++) {
-              linkFieldToParentBus(this, fields[i], bus);
-            }
-          }
+        for (const plugin of plugins) {
+          plugin.onReady?.(this);
         }
       },
 
       detached(this: any) {
-        if (formParent) {
-          this.__codeUiFormBus = undefined;
-          this.__codeUiPendingFields = [];
+        for (const plugin of plugins) {
+          plugin.onDetached?.(this);
         }
-        if (formField) {
-          this.__codeUiFormBus = undefined;
-        }
-        if (formFieldWrapper) {
-          this.__codeUiFieldChildren = [];
-          this.__codeUiOnSnapshot = undefined;
-        }
-        instanceIds.delete(this);
+        cleanupComponentId(this);
         this.__codeUiDispose?.();
         this.__codeUiMachine?.stop();
         this.__codeUiMachine = null;
@@ -1132,7 +238,6 @@ export function createMachineBehavior<
 
     methods: {
       send(this: any, event: T["event"]) {
-        // Lazy startup: boot the machine on first send() if deferred
         if (this.__codeUiDeferred && this.__codeUiMachine) {
           this.__codeUiDeferred = false;
           this.__codeUiMachine.start();
@@ -1150,7 +255,6 @@ export function createMachineBehavior<
       getMachine(this: any): MiniappMachine<T> | null {
         return this.__codeUiMachine ?? null;
       },
-      /** Get the current machine service */
       getService(this: any) {
         return this.__codeUiMachine?.service ?? null;
       },

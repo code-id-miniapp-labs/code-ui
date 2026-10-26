@@ -1,10 +1,6 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withRadioItem } from "@code-ui/miniapp/behaviors/radio";
 import { resolveSlots } from "../../utils/ui";
 import { radioMachine, connectRadio, defaultRadioProps } from "@code-ui/radio";
 import themeConfig from "virtual:cui/theme/radio";
@@ -16,7 +12,7 @@ const radioBehavior = createMachineBehavior({
   machine: radioMachine,
   connect: connectRadio,
   key: "cRadio",
-  radioItem: true,
+  plugins: [withRadioItem()],
   exportApi: true,
 });
 

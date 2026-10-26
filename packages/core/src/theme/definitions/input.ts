@@ -1,6 +1,5 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
@@ -23,7 +22,14 @@ export default function inputTheme(options: ThemeOptions = {}) {
         "cursor-pointer pointer-events-auto transition-colors hover:text-neutral-700",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.fromEntries(
+        (colors as readonly string[]).map((color) => [
+          color,
+          {
+            base: `focus:border-${color} focus:ring-2 focus:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+          },
+        ]),
+      ),
       variant: {
         outline: {
           base: "bg-white text-neutral-900 border-neutral-300",
@@ -35,10 +41,10 @@ export default function inputTheme(options: ThemeOptions = {}) {
           base: "bg-neutral-100 text-neutral-900 border-neutral-300",
         },
         ghost: {
-          base: "bg-transparent text-neutral-900 border-transparent",
+          base: "bg-transparent text-neutral-900 border-transparent focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
         none: {
-          base: "bg-transparent text-neutral-900 border-0",
+          base: "bg-transparent text-neutral-900 border-0 focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
       },
       size: {
@@ -196,22 +202,13 @@ export default function inputTheme(options: ThemeOptions = {}) {
           base: "pe-11",
         },
       },
-      ...(colors as readonly string[]).flatMap((color) => [
-        {
-          color: color as (typeof colors)[number],
-          variant: ["outline", "subtle", "soft"] as any,
-          class: {
-            base: `focus:border-${color} focus:ring-2 focus:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
-          },
+      ...(colors as readonly string[]).map((color) => ({
+        color: color as (typeof colors)[number],
+        highlight: true as const,
+        class: {
+          base: `border-${color} ring-2 ring-${color}/20`,
         },
-        {
-          color: color as (typeof colors)[number],
-          highlight: true as const,
-          class: {
-            base: `border-${color} ring-2 ring-${color}/20`,
-          },
-        },
-      ]),
+      })),
       {
         invalid: true as const,
         class: {

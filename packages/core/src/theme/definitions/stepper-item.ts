@@ -12,14 +12,14 @@ function createStepperColorVariants<const C extends readonly string[]>(
     if (color === "neutral") {
       result[color] = {
         trigger:
-          "group-data-[state=completed]:bg-neutral-900 group-data-[state=current]:bg-neutral-900 group-data-[state=active]:bg-neutral-900 group-data-[state=completed]:text-white group-data-[state=current]:text-white group-data-[state=active]:text-white outline-neutral-900/25",
+          "group-data-[state=completed]:bg-neutral-900 group-data-[state=current]:bg-neutral-900 group-data-[state=active]:bg-neutral-900 outline-neutral-900/25",
         title:
           "group-data-[state=current]:text-neutral-900 group-data-[state=active]:text-neutral-900",
         separator: "group-data-[state=completed]:bg-neutral-900",
       };
     } else {
       result[color] = {
-        trigger: `group-data-[state=completed]:bg-${color}-500 group-data-[state=current]:bg-${color}-500 group-data-[state=active]:bg-${color}-500 group-data-[state=completed]:text-white group-data-[state=current]:text-white group-data-[state=active]:text-white outline-${color}-500/25`,
+        trigger: `group-data-[state=completed]:bg-${color}-500 group-data-[state=current]:bg-${color}-500 group-data-[state=active]:bg-${color}-500 outline-${color}-500/25`,
         title: `group-data-[state=current]:text-${color}-600 group-data-[state=active]:text-${color}-600`,
         separator: `group-data-[state=completed]:bg-${color}-500`,
       };

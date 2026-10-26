@@ -1,6 +1,5 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
@@ -26,7 +25,14 @@ export default function textareaTheme(options: ThemeOptions = {}) {
         "absolute end-0 bottom-0 flex items-center text-neutral-400 pointer-events-none tabular-nums",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.fromEntries(
+        (colors as readonly string[]).map((color) => [
+          color,
+          {
+            root: `focus-within:border-${color} focus-within:ring-2 focus-within:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+          },
+        ]),
+      ),
       variant: {
         outline: {
           root: "bg-white text-neutral-900 border-neutral-300",
@@ -38,10 +44,10 @@ export default function textareaTheme(options: ThemeOptions = {}) {
           root: "bg-neutral-100 text-neutral-900 border-neutral-300",
         },
         ghost: {
-          root: "bg-transparent text-neutral-900 border-transparent",
+          root: "bg-transparent text-neutral-900 border-transparent focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
         none: {
-          root: "bg-transparent text-neutral-900 border-0",
+          root: "bg-transparent text-neutral-900 border-0 focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
       },
       size: {
@@ -267,26 +273,17 @@ export default function textareaTheme(options: ThemeOptions = {}) {
           root: "pb-9",
         },
       },
-      ...(colors as readonly string[]).flatMap((color) => [
-        {
-          color: color as (typeof colors)[number],
-          variant: ["outline", "subtle", "soft"] as any,
-          class: {
-            root: `focus-within:border-${color} focus-within:ring-2 focus-within:ring-${color}/20 data-[state=focused]:border-${color} data-[state=focused]:ring-2 data-[state=focused]:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
-          },
+      ...(colors as readonly string[]).map((color) => ({
+        color: color as (typeof colors)[number],
+        highlight: true as const,
+        class: {
+          root: `border-${color} ring-2 ring-${color}/20`,
         },
-        {
-          color: color as (typeof colors)[number],
-          highlight: true as const,
-          class: {
-            root: `border-${color} ring-2 ring-${color}/20`,
-          },
-        },
-      ]),
+      })),
       {
         invalid: true as const,
         class: {
-          root: `border-${errorColor} ring-2 ring-${errorColor}/20 focus-within:border-${errorColor} focus-within:ring-2 focus-within:ring-${errorColor}/20 data-[state=focused]:border-${errorColor} data-[state=focused]:ring-2 data-[state=focused]:ring-${errorColor}/20 data-[focused=true]:border-${errorColor} data-[focused=true]:ring-2 data-[focused=true]:ring-${errorColor}/20`,
+          root: `border-${errorColor} ring-2 ring-${errorColor}/20 focus-within:border-${errorColor} focus-within:ring-2 focus-within:ring-${errorColor}/20 data-[focused=true]:border-${errorColor} data-[focused=true]:ring-2 data-[focused=true]:ring-${errorColor}/20`,
         },
       },
     ],

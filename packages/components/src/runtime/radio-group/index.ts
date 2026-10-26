@@ -1,10 +1,7 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withRadioGroup } from "@code-ui/miniapp/behaviors/radio";
+import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   radioGroupMachine,
@@ -20,8 +17,7 @@ const radioGroupBehavior = createMachineBehavior({
   machine: radioGroupMachine,
   connect: connectRadioGroup,
   key: "cRadioGroup",
-  formField: true,
-  radioGroup: true,
+  plugins: [withFormField(), withRadioGroup()],
   exportApi: true,
 });
 

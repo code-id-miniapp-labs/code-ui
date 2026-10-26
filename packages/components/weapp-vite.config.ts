@@ -142,7 +142,14 @@ function syncWxsFiles(): Plugin {
         }
         for (const file of wxsFiles) {
           const fileName = path.basename(file);
-          fs.copyFileSync(file, path.join(targetDir, fileName));
+          const raw = fs.readFileSync(file, "utf8");
+          const minified = raw
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/(^|[^:])\/\/.*/g, "$1")
+            .replace(/\s+/g, " ")
+            .replace(/\s*([;{}(),=+\-*\/?:<>!])\s*/g, "$1")
+            .trim();
+          fs.writeFileSync(path.join(targetDir, fileName), minified, "utf8");
         }
       }
 
@@ -186,7 +193,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: false,
-    minify: "terser",
+    minify: true,
     cssMinify: "lightningcss",
     sourcemap: false,
     terserOptions: {
@@ -208,6 +215,28 @@ export default defineConfig({
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
+      },
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "behaviors/stepper",
+              test: /[\\/]behaviors[\\/]stepper/,
+            },
+            {
+              name: "behaviors/radio",
+              test: /[\\/]behaviors[\\/]radio/,
+            },
+            {
+              name: "behaviors/checkbox",
+              test: /[\\/]behaviors[\\/]checkbox/,
+            },
+            {
+              name: "behaviors/form",
+              test: /[\\/]behaviors[\\/]form/,
+            },
+          ],
+        },
       },
     },
   },

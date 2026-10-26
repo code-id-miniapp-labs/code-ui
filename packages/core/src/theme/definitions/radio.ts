@@ -1,6 +1,5 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
@@ -25,7 +24,15 @@ export default function radioTheme(options: ThemeOptions = {}) {
           root: "p-3 rounded-xl border border-neutral-200 bg-white shadow-xs transition-all w-full",
         },
       },
-      color: createColorVariants(colors),
+      color: Object.fromEntries(
+        (colors as readonly string[]).map((color) => [
+          color,
+          {
+            base: `border-${color} text-${color}`,
+            indicator: `bg-${color}`,
+          },
+        ]),
+      ),
       size: {
         xs: {
           base: "w-3.5 h-3.5",
@@ -82,26 +89,21 @@ export default function radioTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...(colors as readonly string[]).flatMap((color) => [
-        {
-          color: color as (typeof colors)[number],
-          checked: true,
-          class: {
-            base: `border-${color} text-${color}`,
-            indicator: `bg-${color}`,
-          },
+      {
+        checked: false,
+        invalid: false,
+        class: {
+          base: "border-neutral-300 text-transparent",
         },
-        {
-          variant: "card" as const,
-          color: color as (typeof colors)[number],
-          checked: true,
-          class: {
-            root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
-            base: `border-${color} text-${color}`,
-            indicator: `bg-${color}`,
-          },
+      },
+      ...(colors as readonly string[]).map((color) => ({
+        variant: "card" as const,
+        color: color as (typeof colors)[number],
+        checked: true,
+        class: {
+          root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
         },
-      ]),
+      })),
       {
         variant: "card" as const,
         invalid: true,
