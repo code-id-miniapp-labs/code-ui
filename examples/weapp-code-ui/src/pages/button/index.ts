@@ -4,6 +4,7 @@ Page({
     customButtonUI: {
       root: "shadow-md ring-2 ring-emerald-400 ring-offset-2",
     },
+    checked: false,
   },
 
   handleTap() {
@@ -20,6 +21,11 @@ Page({
         });
         resolve();
       }, 1500);
+    });
+  },
+  onControlledChange(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      checked: e.detail.checked,
     });
   },
 });

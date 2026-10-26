@@ -46,6 +46,14 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/radio-group/src",
       ),
+      "@code-ui/stepper": resolve(
+        import.meta.dirname,
+        "packages/machines/stepper/src",
+      ),
+      "@code-ui/stepper-item": resolve(
+        import.meta.dirname,
+        "packages/machines/stepper-item/src",
+      ),
       "@code-ui/switch": resolve(
         import.meta.dirname,
         "packages/machines/switch/src",

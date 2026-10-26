@@ -112,6 +112,18 @@ declare module "virtual:cui/theme/skeleton" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/stepper" {
+  import type { default as stepperTheme } from "@code-ui/core/src/theme/definitions/stepper";
+  const theme: ReturnType<typeof stepperTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/stepper-item" {
+  import type { default as stepperItemTheme } from "@code-ui/core/src/theme/definitions/stepper-item";
+  const theme: ReturnType<typeof stepperItemTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;

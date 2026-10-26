@@ -16,6 +16,8 @@ export { default as qrCode } from "./qr-code";
 export { default as radio } from "./radio";
 export { default as radioGroup } from "./radio-group";
 export { default as skeleton } from "./skeleton";
+export { default as stepper } from "./stepper";
+export { default as stepperItem } from "./stepper-item";
 export { default as switch } from "./switch";
 export { default as textarea } from "./textarea";
 

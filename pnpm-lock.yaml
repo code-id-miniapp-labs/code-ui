@@ -54,6 +54,12 @@ importers:
       '@code-ui/radio-group':
         specifier: workspace:*
         version: link:../../packages/machines/radio-group
+      '@code-ui/stepper':
+        specifier: workspace:*
+        version: link:../../packages/machines/stepper
+      '@code-ui/stepper-item':
+        specifier: workspace:*
+        version: link:../../packages/machines/stepper-item
       '@egoist/tailwindcss-icons':
         specifier: ^1.9.2
         version: 1.9.2(tailwindcss@4.3.3)
@@ -181,6 +187,12 @@ importers:
       '@code-ui/radio-group':
         specifier: workspace:*
         version: link:../machines/radio-group
+      '@code-ui/stepper':
+        specifier: workspace:*
+        version: link:../machines/stepper
+      '@code-ui/stepper-item':
+        specifier: workspace:*
+        version: link:../machines/stepper-item
       '@code-ui/switch':
         specifier: workspace:*
         version: link:../machines/switch
@@ -585,6 +597,59 @@ importers:
       '@code-ui/form':
         specifier: workspace:*
         version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/stepper:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^1.0.4
+        version: 1.0.13
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/stepper-item:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/stepper':
+        specifier: workspace:*
+        version: link:../stepper
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../../utils

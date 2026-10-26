@@ -34,6 +34,11 @@ import type {
   RadioGroupValueChangeDetails,
 } from "@code-ui/radio-group";
 import type { RadioProps } from "@code-ui/radio";
+import type {
+  StepperProps,
+  StepperStepChangeDetails,
+} from "@code-ui/stepper";
+import type { StepperItemProps } from "@code-ui/stepper-item";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
   TextareaProps,
@@ -431,6 +436,52 @@ export interface CuiQrCodeElementProps extends CuiCommonElementProps {
   rootStyle?: string;
   onChange?: (
     event: WechatMiniprogram.CustomEvent<QrCodeValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiStepperElementProps extends CuiCommonElementProps {
+  ui?: StepperProps["ui"];
+  step?: number | null;
+  value?: number | null;
+  modelValue?: number | null;
+  defaultStep?: number;
+  count?: number;
+  linear?: boolean;
+  orientation?: StepperProps["orientation"];
+  color?: StepperProps["color"];
+  size?: StepperProps["size"];
+  variant?: StepperProps["variant"];
+  disabled?: boolean;
+  hasContent?: boolean;
+  items?: StepperProps["items"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<StepperStepChangeDetails>,
+  ) => void;
+  onComplete?: (
+    event: WechatMiniprogram.CustomEvent<{ step: number }>,
+  ) => void;
+}
+
+export interface CuiStepperItemElementProps extends CuiCommonElementProps {
+  ui?: StepperItemProps["ui"];
+  index?: number | null;
+  title?: string;
+  description?: string;
+  icon?: string;
+  disabled?: boolean;
+  value?: string | number;
+  isLast?: boolean | null;
+  orientation?: StepperItemProps["orientation"];
+  color?: StepperItemProps["color"];
+  size?: StepperItemProps["size"];
+  variant?: StepperItemProps["variant"];
+  customIndicator?: boolean;
+  onClick?: (
+    event: WechatMiniprogram.CustomEvent<{
+      index: number;
+      value: string | number;
+      status: string;
+    }>,
   ) => void;
 }
 

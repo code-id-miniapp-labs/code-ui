@@ -69,6 +69,16 @@ export interface CreateMachineBehaviorOptions<
    */
   checkboxItem?: boolean;
   /**
+   * Mark this component as a Stepper parent (`<c-stepper>`),
+   * automatically wiring relations for descendant `<c-stepper-item>` items.
+   */
+  stepper?: boolean;
+  /**
+   * Mark this component as a Stepper item (`<c-stepper-item>`),
+   * automatically wiring relations to link with ancestor `<c-stepper>`.
+   */
+  stepperItem?: boolean;
+  /**
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
   exportApi?: boolean;
@@ -299,6 +309,139 @@ export const cuiCheckboxItemBehavior: any =
       })
     : {};
 
+/**
+ * Shared Behavior reference for `<c-stepper>` parent components.
+ * Used as relations.target to link descendant <c-stepper-item> components natively.
+ */
+export const cuiStepperBehavior: any =
+  typeof Behavior !== "undefined" ? Behavior({}) : {};
+export const cuiStepperParentBehavior: any = cuiStepperBehavior;
+
+function syncStepperChildren(group: any) {
+  const service = group.__codeUiMachine?.service;
+  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  const relationChildren =
+    typeof group.getRelationNodes === "function"
+      ? group.getRelationNodes("cuiStepperChild")
+      : undefined;
+  const templateChildren =
+    typeof group.selectAllComponents === "function"
+      ? group.selectAllComponents(".cui-stepper-item")
+      : undefined;
+  const children: any[] =
+    Array.isArray(relationChildren) && relationChildren.length > 0
+      ? relationChildren
+      : Array.isArray(templateChildren) && templateChildren.length > 0
+        ? templateChildren
+        : group.__codeUiStepperChildren || [];
+
+  const total = children.length;
+  if (group.__codeUiMachine) {
+    group.__codeUiMachine.updateProps({ linkedCount: total });
+  }
+
+  const groupId =
+    group.data?.id || group.id || group.__codeUiId || getComponentId(group);
+  group.__codeUiId = groupId;
+
+  const ctx = service?.context;
+  for (let i = 0; i < total; i++) {
+    const child = children[i];
+    if (!child) continue;
+    child.__codeUiStepperBus = bus;
+    child.__codeUiPendingStepper = group;
+    child.__codeUiStepperIndex = i;
+    child.__codeUiStepperIsLast = i === total - 1;
+    child.__codeUiStepperId = groupId;
+    if (child.__codeUiMachine) {
+      child.__codeUiMachine.updateProps({
+        stepperId: groupId,
+        groupBus: bus,
+        groupStep: ctx?.get("step"),
+        groupCount: total,
+        groupIndex: i,
+        groupIsLast: i === total - 1,
+        groupLinear: ctx?.get("linear"),
+        groupOrientation: ctx?.get("orientation"),
+        groupDisabled: ctx?.get("disabled"),
+        groupSize: ctx?.get("size"),
+        groupColor: ctx?.get("color"),
+        groupVariant: ctx?.get("variant"),
+      });
+    }
+  }
+
+  if (bus && ctx) {
+    bus.emit("stepper:change", {
+      step: ctx.get("step"),
+      count: total,
+      linear: Boolean(ctx.get("linear")),
+      orientation: ctx.get("orientation") || "horizontal",
+      color: ctx.get("color") || "primary",
+      size: ctx.get("size") || "md",
+      variant: ctx.get("variant") || "subtle",
+      disabled: Boolean(ctx.get("disabled")),
+    });
+  }
+}
+
+function linkStepperItemToParentGroup(group: any, item: any) {
+  group.__codeUiStepperChildren = group.__codeUiStepperChildren || [];
+  if (!group.__codeUiStepperChildren.includes(item)) {
+    group.__codeUiStepperChildren.push(item);
+  }
+  item.__codeUiPendingStepper = group;
+  syncStepperChildren(group);
+}
+
+function unlinkStepperItemFromParentGroup(group: any, item: any) {
+  if (Array.isArray(group.__codeUiStepperChildren)) {
+    group.__codeUiStepperChildren = group.__codeUiStepperChildren.filter(
+      (c: any) => c !== item,
+    );
+  }
+  item.__codeUiStepperBus = undefined;
+  item.__codeUiPendingStepper = undefined;
+  if (item.__codeUiMachine) {
+    item.__codeUiMachine.updateProps({
+      groupBus: undefined,
+      groupStep: undefined,
+      groupCount: undefined,
+      groupIndex: undefined,
+      groupIsLast: undefined,
+      groupLinear: undefined,
+      groupOrientation: undefined,
+      groupDisabled: undefined,
+      groupSize: undefined,
+      groupColor: undefined,
+      groupVariant: undefined,
+    });
+  }
+  syncStepperChildren(group);
+}
+
+/**
+ * Shared Behavior reference for `<c-stepper-item>` child components.
+ * Automatically links to ancestor `<c-stepper>`.
+ */
+export const cuiStepperItemBehavior: any =
+  typeof Behavior !== "undefined"
+    ? Behavior({
+        relations: {
+          cuiStepperParent: {
+            type: "ancestor",
+            target: cuiStepperBehavior,
+            linked(this: any, target: any) {
+              linkStepperItemToParentGroup(target, this);
+            },
+            unlinked(this: any, target: any) {
+              unlinkStepperItemFromParentGroup(target, this);
+            },
+          },
+        },
+      })
+    : {};
+
 function shouldLinkField(parent: any, child: any): boolean {
   const childFormProp =
     child.data?.form ?? child.__codeUiMachine?.service?.prop?.("form");
@@ -496,6 +639,8 @@ export function createMachineBehavior<
     radioItem = false,
     checkboxGroup = false,
     checkboxItem = false,
+    stepper = false,
+    stepperItem = false,
     exportApi = false,
     deferred = false,
   } = options;
@@ -542,6 +687,12 @@ export function createMachineBehavior<
   if (checkboxItem) {
     behaviors.push(cuiCheckboxItemBehavior);
   }
+  if (stepper) {
+    behaviors.push(cuiStepperBehavior);
+  }
+  if (stepperItem) {
+    behaviors.push(cuiStepperItemBehavior);
+  }
   if (exportApi) behaviors.push("wx://component-export");
 
   const observers: Record<string, (...args: any[]) => void> = {};
@@ -555,6 +706,9 @@ export function createMachineBehavior<
         for (const child of children) {
           updateChildFromFormFieldWrapper(this, child);
         }
+      }
+      if (stepper) {
+        syncStepperChildren(this);
       }
     };
   });
@@ -604,6 +758,19 @@ export function createMachineBehavior<
       },
       unlinked(this: any, target: any) {
         unlinkCheckboxFromParentGroup(this, target);
+      },
+    };
+  }
+
+  if (stepper) {
+    relations.cuiStepperChild = {
+      type: "descendant",
+      target: cuiStepperItemBehavior,
+      linked(this: any, target: any) {
+        linkStepperItemToParentGroup(this, target);
+      },
+      unlinked(this: any, target: any) {
+        unlinkStepperItemFromParentGroup(this, target);
       },
     };
   }
@@ -660,6 +827,7 @@ export function createMachineBehavior<
     lifetimes: {
       attached(this: any) {
         const id = getComponentId(this, this.id || this.data?.id);
+        this.__codeUiId = id;
         const initialProps: Record<string, any> = {
           component: this,
           id,
@@ -758,6 +926,49 @@ export function createMachineBehavior<
           }
         }
 
+        if (stepperItem) {
+          const parent =
+            this.__codeUiPendingStepper ??
+            (typeof this.getRelationNodes === "function"
+              ? this.getRelationNodes("cuiStepperParent")?.[0]
+              : undefined);
+          if (parent) {
+            const pService = parent.__codeUiMachine?.service;
+            const bus =
+              parent.__codeUiStepperBus ??
+              getServiceBus(pService) ??
+              pService?.refs?.get?.("bus");
+            if (bus) {
+              initialProps.groupBus = bus;
+              this.__codeUiStepperBus = bus;
+            }
+            if (this.__codeUiStepperIndex !== undefined) {
+              initialProps.groupIndex = this.__codeUiStepperIndex;
+            }
+            if (this.__codeUiStepperIsLast !== undefined) {
+              initialProps.groupIsLast = this.__codeUiStepperIsLast;
+            }
+            const sid =
+              this.__codeUiStepperId ??
+              parent.data?.id ??
+              parent.id ??
+              parent.__codeUiId;
+            if (sid !== undefined) {
+              initialProps.stepperId = sid;
+            }
+            if (pService) {
+              const ctx = pService.context;
+              initialProps.groupStep = ctx?.get("step");
+              initialProps.groupLinear = ctx?.get("linear");
+              initialProps.groupOrientation = ctx?.get("orientation");
+              initialProps.groupDisabled = ctx?.get("disabled");
+              initialProps.groupSize = ctx?.get("size");
+              initialProps.groupColor = ctx?.get("color");
+              initialProps.groupVariant = ctx?.get("variant");
+            }
+          }
+        }
+
         if (this.data) {
           syncProps.forEach((propKey) => {
             const keyStr = propKey as string;
@@ -788,6 +999,10 @@ export function createMachineBehavior<
               linkCheckboxToParentGroup(this, child);
             }
           }
+        }
+
+        if (stepper) {
+          syncStepperChildren(this);
         }
 
         if (formFieldWrapper) {
@@ -871,6 +1086,15 @@ export function createMachineBehavior<
           const parents = this.getRelationNodes("cuiCheckboxGroupParent");
           if (parents && parents.length > 0) {
             linkCheckboxToParentGroup(parents[0], this);
+          }
+        }
+        if (stepper) {
+          syncStepperChildren(this);
+        }
+        if (stepperItem && typeof this.getRelationNodes === "function") {
+          const parents = this.getRelationNodes("cuiStepperParent");
+          if (parents && parents.length > 0) {
+            linkStepperItemToParentGroup(parents[0], this);
           }
         }
         if (formParent && typeof this.getRelationNodes === "function") {
