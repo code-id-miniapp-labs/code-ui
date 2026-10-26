@@ -1,10 +1,6 @@
-import {
-  createMachineBehavior,
-  wxButtonBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties } from "../_shared/machine";
+import { wxButtonBehavior } from "./wx-button";
 import { resolveSlots } from "../../utils/ui";
 import {
   buttonMachine,

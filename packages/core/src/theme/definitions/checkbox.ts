@@ -1,6 +1,5 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
@@ -27,7 +26,14 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
           root: "p-3 rounded-xl border border-neutral-200 bg-white shadow-xs transition-all w-full",
         },
       },
-      color: createColorVariants(colors),
+      color: Object.fromEntries(
+        (colors as readonly string[]).map((color) => [
+          color,
+          {
+            base: `border-${color} bg-${color} text-white`,
+          },
+        ]),
+      ),
       size: {
         xs: {
           base: "w-3.5 h-3.5 rounded-xs",
@@ -71,11 +77,15 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
         },
       },
       checked: {
-        true: {},
+        true: {
+          indicator: "opacity-100",
+        },
         false: {},
       },
       indeterminate: {
-        true: {},
+        true: {
+          indicator: "opacity-100",
+        },
         false: {},
       },
       disabled: {
@@ -102,6 +112,7 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
       {
         checked: false,
         indeterminate: false,
+        invalid: false,
         class: {
           base: "border-neutral-300 bg-white",
           indicator: "opacity-0",
@@ -109,29 +120,11 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
       },
       ...(colors as readonly string[]).flatMap((color) => [
         {
-          color: color as (typeof colors)[number],
-          checked: true,
-          class: {
-            base: `border-${color} bg-${color} text-white`,
-            indicator: "opacity-100",
-          },
-        },
-        {
-          color: color as (typeof colors)[number],
-          indeterminate: true,
-          class: {
-            base: `border-${color} bg-${color} text-white`,
-            indicator: "opacity-100",
-          },
-        },
-        {
           variant: "card" as const,
           color: color as (typeof colors)[number],
           checked: true,
           class: {
             root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
-            base: `border-${color} bg-${color} text-white`,
-            indicator: "opacity-100",
           },
         },
         {
@@ -140,8 +133,6 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
           indeterminate: true,
           class: {
             root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
-            base: `border-${color} bg-${color} text-white`,
-            indicator: "opacity-100",
           },
         },
       ]),

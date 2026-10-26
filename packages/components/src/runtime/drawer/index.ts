@@ -1,9 +1,5 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties } from "../_shared/machine";
 import { resolveSlots } from "../../utils/ui";
 
 import {

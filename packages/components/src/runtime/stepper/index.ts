@@ -1,10 +1,6 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-  getApi,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import { withStepper } from "@code-ui/miniapp/behaviors/stepper";
 import { resolveSlots } from "../../utils/ui";
 import {
   stepperMachine,
@@ -20,7 +16,7 @@ const stepperBehavior = createMachineBehavior({
   machine: stepperMachine,
   connect: connectStepper,
   key: "stepper",
-  stepper: true,
+  plugins: [withStepper()],
   exportApi: true,
 });
 

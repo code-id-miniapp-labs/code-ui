@@ -192,7 +192,7 @@ describe("tree-shake", () => {
       );
       fs.writeFileSync(
         path.join(compDir, "index.js"),
-        `Component({});`,
+        `const common = require("../../common.js");\nComponent({});`,
         "utf-8",
       );
     }
@@ -235,6 +235,104 @@ describe("tree-shake", () => {
     expect(fs.readFileSync(path.join(distLibDir, "common.js"), "utf-8")).toBe(
       `module.exports = { version: 2 };`,
     );
+  });
+
+  it("purges unreferenced chunks and restores them when components are re-added", () => {
+    fs.writeFileSync(
+      path.join(libDir, "computed-behavior.js"),
+      `module.exports = { computed: true };`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(libDir, "stepper.js"),
+      `module.exports = { stepper: true };`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(distLibDir, "computed-behavior.js"),
+      `module.exports = { computed: true };`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(distLibDir, "stepper.js"),
+      `module.exports = { stepper: true };`,
+      "utf-8",
+    );
+
+    // drawer requires computed-behavior.js
+    fs.writeFileSync(
+      path.join(libDir, "runtime", "drawer", "index.js"),
+      `const comp = require("../../computed-behavior.js"); Component({});`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(distLibDir, "runtime", "drawer", "index.js"),
+      `const comp = require("../../computed-behavior.js"); Component({});`,
+      "utf-8",
+    );
+
+    // button requires stepper.js
+    fs.writeFileSync(
+      path.join(libDir, "runtime", "button", "index.js"),
+      `const stp = require("../../stepper.js"); Component({});`,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(distLibDir, "runtime", "button", "index.js"),
+      `const stp = require("../../stepper.js"); Component({});`,
+      "utf-8",
+    );
+
+    // Run tree-shake with ONLY drawer used
+    const bundleOnlyDrawer = {
+      "pages/index/index.json": {
+        type: "asset",
+        source: JSON.stringify({
+          usingComponents: {
+            "c-drawer": "@code-ui/components/runtime/drawer/index",
+          },
+        }),
+      },
+    };
+
+    handleTreeShake(
+      { enable: true },
+      tmpRoot,
+      { build: { outDir: "dist" } },
+      bundleOnlyDrawer,
+    );
+
+    // Button should be purged
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(false);
+    // computed-behavior.js is required by drawer so it stays
+    expect(fs.existsSync(path.join(distLibDir, "computed-behavior.js"))).toBe(true);
+    // stepper.js was only required by button so it is purged
+    expect(fs.existsSync(path.join(distLibDir, "stepper.js"))).toBe(false);
+
+    // Now re-add button
+    const bundleWithButton = {
+      "pages/index/index.json": {
+        type: "asset",
+        source: JSON.stringify({
+          usingComponents: {
+            "c-drawer": "@code-ui/components/runtime/drawer/index",
+            "c-button": "@code-ui/components/runtime/button/index",
+          },
+        }),
+      },
+    };
+
+    handleTreeShake(
+      { enable: true },
+      tmpRoot,
+      { build: { outDir: "dist" } },
+      bundleWithButton,
+    );
+
+    // Button should be restored
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(true);
+    // stepper.js should be restored!
+    expect(fs.existsSync(path.join(distLibDir, "stepper.js"))).toBe(true);
   });
 });
 

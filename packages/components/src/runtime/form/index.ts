@@ -1,9 +1,6 @@
-import {
-  createMachineBehavior,
-  createProperties,
-  computedBehavior,
-  createComponentOptions,
-} from "../_shared";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { createMachineBehavior, createProperties } from "../_shared/machine";
+import { withFormParent } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   formMachine,
@@ -21,7 +18,7 @@ const formBehavior = createMachineBehavior({
   machine: formMachine,
   connect: connectForm,
   key: "form",
-  formParent: true,
+  plugins: [withFormParent()],
   exportApi: true,
 });
 

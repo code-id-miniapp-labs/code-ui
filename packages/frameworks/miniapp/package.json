@@ -15,6 +15,36 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./computed": {
+      "types": "./dist/behaviors/computed-behavior.d.ts",
+      "import": "./dist/behaviors/computed-behavior.js",
+      "require": "./dist/behaviors/computed-behavior.cjs"
+    },
+    "./behavior": {
+      "types": "./dist/behavior.d.ts",
+      "import": "./dist/behavior.js",
+      "require": "./dist/behavior.cjs"
+    },
+    "./behaviors/form": {
+      "types": "./dist/behaviors/form.d.ts",
+      "import": "./dist/behaviors/form.js",
+      "require": "./dist/behaviors/form.cjs"
+    },
+    "./behaviors/radio": {
+      "types": "./dist/behaviors/radio.d.ts",
+      "import": "./dist/behaviors/radio.js",
+      "require": "./dist/behaviors/radio.cjs"
+    },
+    "./behaviors/checkbox": {
+      "types": "./dist/behaviors/checkbox.d.ts",
+      "import": "./dist/behaviors/checkbox.js",
+      "require": "./dist/behaviors/checkbox.cjs"
+    },
+    "./behaviors/stepper": {
+      "types": "./dist/behaviors/stepper.d.ts",
+      "import": "./dist/behaviors/stepper.js",
+      "require": "./dist/behaviors/stepper.cjs"
     }
   },
   "scripts": {

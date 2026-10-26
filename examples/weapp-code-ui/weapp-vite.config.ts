@@ -44,5 +44,9 @@ export default defineConfig(({ mode }) => {
         treeShake: mode === "production",
       }),
     ],
+    build: {
+      minify: mode === "production",
+      cssMinify: mode === "production" ? "lightningcss" : false,
+    },
   };
 });

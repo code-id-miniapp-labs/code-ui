@@ -11,6 +11,65 @@ import { copyDirFresh, getDirSize, resolveLibrarySourceDir } from "./utils";
 const utf8Decoder = new TextDecoder();
 const WXS_TAG_RE = /<wxs[^>]+src=["']([^"']+)["'][^>]*>/g;
 const WXS_REQUIRE_RE = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+const REQUIRE_JS_RE = /require\s*\(\s*['"](\.[^'"]+)['"]\s*\)/g;
+
+function resolveJsRequireTarget(
+  baseDir: string,
+  reqPath: string,
+): string | null {
+  const target = path.resolve(baseDir, reqPath);
+  const directStat = fs.statSync(target, { throwIfNoEntry: false });
+  if (directStat && directStat.isFile()) {
+    return target;
+  }
+  if (!target.endsWith(".js")) {
+    const withJs = `${target}.js`;
+    const jsStat = fs.statSync(withJs, { throwIfNoEntry: false });
+    if (jsStat && jsStat.isFile()) return withJs;
+
+    const indexJs = path.join(target, "index.js");
+    const indexStat = fs.statSync(indexJs, { throwIfNoEntry: false });
+    if (indexStat && indexStat.isFile()) return indexJs;
+  }
+  return null;
+}
+
+function collectTransitiveJsDeps(
+  entryFile: string,
+  rootDir: string,
+  visited: Set<string> = new Set(),
+): Set<string> {
+  if (visited.has(entryFile)) return visited;
+  visited.add(entryFile);
+
+  if (!fs.existsSync(entryFile)) return visited;
+
+  try {
+    const content = fs.readFileSync(entryFile, "utf-8");
+    REQUIRE_JS_RE.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = REQUIRE_JS_RE.exec(content)) !== null) {
+      const relTarget = match[1];
+      if (relTarget) {
+        const resolved = resolveJsRequireTarget(
+          path.dirname(entryFile),
+          relTarget,
+        );
+        if (
+          resolved &&
+          resolved.startsWith(rootDir) &&
+          !visited.has(resolved)
+        ) {
+          collectTransitiveJsDeps(resolved, rootDir, visited);
+        }
+      }
+    }
+  } catch {
+    // ignore read error
+  }
+
+  return visited;
+}
 
 interface LibraryDependencyGraph {
   sourceDir: string;
@@ -47,7 +106,7 @@ function getLibraryDependencyGraph(
     try {
       const entries = fs.readdirSync(srcRuntimeDir, { withFileTypes: true });
       for (const entry of entries) {
-        if (entry.isDirectory()) {
+        if (entry.isDirectory() && !entry.name.startsWith("_")) {
           allComponentDirs.push(`runtime/${entry.name}`);
         }
       }
@@ -271,11 +330,53 @@ function syncLibraryRootFiles(
   }
 }
 
+function syncSharedRuntimeDirs(
+  librarySourceDir: string,
+  miniprogramNpmPath: string,
+): void {
+  const srcRuntime = path.join(librarySourceDir, "runtime");
+  if (!fs.existsSync(srcRuntime)) return;
+  try {
+    const entries = fs.readdirSync(srcRuntime, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name.startsWith("_")) {
+        const srcDir = path.join(srcRuntime, entry.name);
+        const destDir = path.join(miniprogramNpmPath, "runtime", entry.name);
+        if (isComponentDirOutdated(srcDir, destDir)) {
+          copyDirFresh(srcDir, destDir);
+        }
+      }
+    }
+  } catch {
+    // ignore error
+  }
+}
+
 function hasMissingOrOutdatedLibraryFiles(
   miniprogramNpmPath: string,
   librarySourceDir: string,
   graph: LibraryDependencyGraph,
 ): boolean {
+  const srcRuntime = path.join(librarySourceDir, "runtime");
+  if (fs.existsSync(srcRuntime)) {
+    try {
+      const entries = fs.readdirSync(srcRuntime, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory() && entry.name.startsWith("_")) {
+          if (
+            isComponentDirOutdated(
+              path.join(srcRuntime, entry.name),
+              path.join(miniprogramNpmPath, "runtime", entry.name),
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
   for (const relDir of graph.allComponentDirs) {
     if (
       isComponentDirOutdated(
@@ -334,6 +435,8 @@ export function handleTreeShake(
     miniprogramNpmPath,
     Boolean(treeShakeOpts.enable),
   );
+
+  syncSharedRuntimeDirs(librarySourceDir, miniprogramNpmPath);
 
   const graph = getLibraryDependencyGraph(treeLibrary, librarySourceDir);
 
@@ -455,8 +558,10 @@ export function handleTreeShake(
 
   let restoredComponents = 0;
   let restoredWxs = 0;
+  let restoredChunks = 0;
   let removedComponents = 0;
   let removedWxs = 0;
+  let removedChunks = 0;
   let savedBytes = 0;
 
   const targetComponentDirs = treeShakeOpts.enable
@@ -508,9 +613,51 @@ export function handleTreeShake(
     }
   }
 
-  if (restoredComponents > 0 || restoredWxs > 0) {
+  const targetJsChunks = new Set<string>();
+  for (const relDir of targetComponentDirs) {
+    const srcDir = path.join(librarySourceDir, relDir);
+    if (!fs.existsSync(srcDir)) continue;
+    try {
+      const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isFile() && entry.name.endsWith(".js")) {
+          const fullJs = path.join(srcDir, entry.name);
+          const deps = collectTransitiveJsDeps(fullJs, librarySourceDir);
+          for (const dep of deps) {
+            const relDep = path
+              .relative(librarySourceDir, dep)
+              .replace(/\\/g, "/");
+            if (!relDep.startsWith("runtime/") || relDep.includes("/_")) {
+              targetJsChunks.add(relDep);
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore read error
+    }
+  }
+
+  for (const relChunk of targetJsChunks) {
+    const destFile = path.join(miniprogramNpmPath, relChunk);
+    const srcFile = path.join(librarySourceDir, relChunk);
+    if (fs.existsSync(srcFile) && isFileOutdated(srcFile, destFile)) {
+      try {
+        fs.mkdirSync(path.dirname(destFile), { recursive: true });
+        fs.copyFileSync(srcFile, destFile);
+        restoredChunks++;
+      } catch (err) {
+        console.warn(
+          `[code-ui:tree-shake] Failed to restore chunk "${relChunk}":`,
+          err,
+        );
+      }
+    }
+  }
+
+  if (restoredComponents > 0 || restoredWxs > 0 || restoredChunks > 0) {
     console.log(
-      `\n\x1b[36mℹ [code-ui:tree-shake] Restored ${restoredComponents} component(s) and ${restoredWxs} WXS script(s) that are in use again.\x1b[0m\n`,
+      `\n\x1b[36mℹ [code-ui:tree-shake] Restored ${restoredComponents} component(s), ${restoredWxs} WXS script(s), and ${restoredChunks} chunk(s) that are in use again.\x1b[0m\n`,
     );
   }
 
@@ -522,6 +669,9 @@ export function handleTreeShake(
       const entries = fs.readdirSync(runtimeDir, { withFileTypes: true });
       for (const entry of entries) {
         if (entry.isDirectory()) {
+          if (entry.name.startsWith("_")) {
+            continue;
+          }
           const relToLib = `runtime/${entry.name}`;
           if (!usedComponentDirs.has(relToLib)) {
             const compDir = path.join(runtimeDir, entry.name);
@@ -597,10 +747,81 @@ export function handleTreeShake(
       }
     }
 
-    if (removedComponents > 0 || removedWxs > 0) {
+    const usedChunks = new Set<string>();
+    if (fs.existsSync(runtimeDir)) {
+      function scanRemainingRuntimeJs(dir: string) {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            scanRemainingRuntimeJs(fullPath);
+          } else if (entry.isFile() && entry.name.endsWith(".js")) {
+            const deps = collectTransitiveJsDeps(fullPath, miniprogramNpmPath);
+            for (const dep of deps) {
+              const relDep = path
+                .relative(miniprogramNpmPath, dep)
+                .replace(/\\/g, "/");
+              usedChunks.add(relDep);
+            }
+          }
+        }
+      }
+      scanRemainingRuntimeJs(runtimeDir);
+    }
+
+    function purgeUnusedChunksInDir(dir: string): boolean {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      let remainingEntries = 0;
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === "runtime" || entry.name === "wxs") {
+            remainingEntries++;
+            continue;
+          }
+          const isEmpty = purgeUnusedChunksInDir(fullPath);
+          if (isEmpty) {
+            try {
+              fs.rmdirSync(fullPath);
+            } catch {
+              remainingEntries++;
+            }
+          } else {
+            remainingEntries++;
+          }
+        } else if (entry.isFile()) {
+          const relToLib = path
+            .relative(miniprogramNpmPath, fullPath)
+            .replace(/\\/g, "/");
+          if (entry.name === "app.js" || entry.name === "app.json") {
+            remainingEntries++;
+            continue;
+          }
+          if (entry.name.endsWith(".js") && !usedChunks.has(relToLib)) {
+            try {
+              savedBytes += fs.statSync(fullPath).size;
+              fs.rmSync(fullPath, { force: true });
+              removedChunks++;
+            } catch (err) {
+              remainingEntries++;
+              console.warn(
+                `[code-ui:tree-shake] Failed to purge chunk "${relToLib}":`,
+                err,
+              );
+            }
+          } else {
+            remainingEntries++;
+          }
+        }
+      }
+      return remainingEntries === 0;
+    }
+    purgeUnusedChunksInDir(miniprogramNpmPath);
+
+    if (removedComponents > 0 || removedWxs > 0 || removedChunks > 0) {
       const kb = (savedBytes / 1024).toFixed(2);
       console.log(
-        `\n\x1b[32m✔ [code-ui:tree-shake] Purged ${removedComponents} unused components and ${removedWxs} WXS scripts. Saved ${kb} KB.\x1b[0m\n`,
+        `\n\x1b[32m✔ [code-ui:tree-shake] Purged ${removedComponents} unused components, ${removedWxs} WXS scripts, and ${removedChunks} unreferenced chunks. Saved ${kb} KB.\x1b[0m\n`,
       );
     }
   }

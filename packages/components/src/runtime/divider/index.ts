@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/index";
+import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
 import themeConfig from "virtual:cui/theme/divider";
