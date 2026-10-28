@@ -1,98 +1,31 @@
-<view
-  id="{{cStepperItem.itemProps.id}}"
-  class="cui-stepper-item {{classes.root}}"
-  data-scope="stepper"
-  data-part="item"
-  data-index="{{cStepperItem.resolvedIndex}}"
-  data-state="{{cStepperItem.status}}"
-  data-orientation="{{cStepperItem.orientation}}"
-  data-disabled="{{cStepperItem.itemProps['data-disabled']}}"
->
-  <view
-    class="cui-stepper-item__container {{classes.container}}"
-    data-scope="stepper"
-    data-part="container"
-  >
-    <view
-      id="{{cStepperItem.triggerProps.id}}"
-      class="{{classes.trigger}}"
-      role="tab"
-      aria-selected="{{cStepperItem.isCurrent}}"
-      aria-disabled="{{cStepperItem.triggerProps['aria-disabled']}}"
-      data-scope="stepper"
-      data-part="trigger"
-      data-index="{{cStepperItem.resolvedIndex}}"
-      data-state="{{cStepperItem.status}}"
-      data-orientation="{{cStepperItem.orientation}}"
-      data-disabled="{{cStepperItem.triggerProps['data-disabled']}}"
-      bind:tap="handleTap"
-    >
-      <view
-        id="{{cStepperItem.indicatorProps.id}}"
-        class="{{classes.indicator}}"
-        aria-hidden="true"
-        data-scope="stepper"
-        data-part="indicator"
-        data-index="{{cStepperItem.resolvedIndex}}"
-        data-state="{{cStepperItem.status}}"
-      >
-        <slot name="indicator" />
-        <block wx:if="{{!customIndicator}}">
-          <c-icon
-            wx:if="{{cStepperItem.isCompleted && !(cStepperItem.icon || icon)}}"
-            name="check"
-            className="{{classes.icon}}"
-          />
-          <c-icon
-            wx:elif="{{cStepperItem.icon || icon}}"
-            name="{{cStepperItem.icon || icon}}"
-            className="{{classes.icon}}"
-          />
-          <text wx:else>{{cStepperItem.resolvedIndex + 1}}</text>
+<view id="{{cStepperItem.itemProps.id}}" class="cui-stepper-item {{classes.root}}" data-scope="stepper" data-part="item" data-index="{{cStepperItem.resolvedIndex}}" data-state="{{cStepperItem.status}}" data-orientation="{{cStepperItem.orientation}}" data-disabled="{{cStepperItem.itemProps['data-disabled']}}">
+  <view class="{{classes.container}}" data-scope="stepper" data-part="container">
+    <view id="{{cStepperItem.triggerProps.id}}" class="{{classes.trigger}}" role="tab" aria-selected="{{cStepperItem.isCurrent}}" aria-disabled="{{cStepperItem.triggerProps['aria-disabled']}}" data-scope="stepper" data-part="trigger" data-index="{{cStepperItem.resolvedIndex}}" data-state="{{cStepperItem.status}}" data-orientation="{{cStepperItem.orientation}}" data-disabled="{{cStepperItem.triggerProps['data-disabled']}}" bind:tap="handleTap">
+      <view id="{{cStepperItem.indicatorProps.id}}" class="{{classes.indicator}}" aria-hidden="true" data-scope="stepper" data-part="indicator" data-index="{{cStepperItem.resolvedIndex}}" data-state="{{cStepperItem.status}}">
+        <block wx:if="{{cStepperItem.isCompleted}}">
+          <slot name="completed-indicator" />
+          <c-icon wx:if="{{!customCompletedIndicator}}" name="{{cStepperItem.completedIcon}}" className="{{classes.icon}}" />
+        </block>
+        <block wx:else>
+          <slot name="indicator" />
+          <block wx:if="{{!customIndicator}}">
+            <c-icon wx:if="{{cStepperItem.icon || icon}}" name="{{cStepperItem.icon}}" className="{{classes.icon}}" />
+            <view wx:else>{{cStepperItem.resolvedIndex + 1}}</view>
+          </block>
         </block>
       </view>
     </view>
-
-    <view
-      wx:if="{{!cStepperItem.resolvedIsLast}}"
-      id="{{cStepperItem.separatorProps.id}}"
-      class="{{classes.separator}}"
-      role="separator"
-      aria-orientation="{{cStepperItem.orientation}}"
-      data-scope="stepper"
-      data-part="separator"
-      data-index="{{cStepperItem.resolvedIndex}}"
-      data-orientation="{{cStepperItem.orientation}}"
-      data-state="{{cStepperItem.isCompleted ? 'completed' : 'incomplete'}}"
-    />
+    <view wx:if="{{!cStepperItem.resolvedIsLast}}" id="{{cStepperItem.separatorProps.id}}" class="{{classes.separator}}" role="separator" aria-orientation="{{cStepperItem.orientation}}" data-scope="stepper" data-part="separator" data-index="{{cStepperItem.resolvedIndex}}" data-orientation="{{cStepperItem.orientation}}" data-state="{{cStepperItem.isCompleted ? 'completed' : 'incomplete'}}" />
   </view>
-
-  <view
-    class="{{classes.wrapper}}"
-    data-scope="stepper"
-    data-part="wrapper"
-    bind:tap="handleTap"
-  >
-    <text
-      wx:if="{{cStepperItem.title || title}}"
-      id="{{cStepperItem.titleProps.id}}"
-      class="{{classes.title}}"
-      data-scope="stepper"
-      data-part="title"
-      data-state="{{cStepperItem.status}}"
-    >{{cStepperItem.title || title}}</text>
+  <view class="{{classes.wrapper}}" data-scope="stepper" data-part="wrapper" bind:tap="handleTap">
+    <view wx:if="{{cStepperItem.title}}" id="{{cStepperItem.titleProps.id}}" class="{{classes.title}}" data-scope="stepper" data-part="title" data-state="{{cStepperItem.status}}">
+      {{cStepperItem.title }}
+    </view>
     <slot wx:else name="title" />
-
-    <text
-      wx:if="{{cStepperItem.description || description}}"
-      id="{{cStepperItem.descriptionProps.id}}"
-      class="{{classes.description}}"
-      data-scope="stepper"
-      data-part="description"
-      data-state="{{cStepperItem.status}}"
-    >{{cStepperItem.description || description}}</text>
+    <view wx:if="{{cStepperItem.description}}" id="{{cStepperItem.descriptionProps.id}}" class="{{classes.description}}" data-scope="stepper" data-part="description" data-state="{{cStepperItem.status}}">
+      {{cStepperItem.description}}
+    </view>
     <slot wx:else name="description" />
-
     <slot />
   </view>
 </view>

@@ -2,6 +2,7 @@ Page({
   data: {
     // 1. Controlled Standalone Checkbox
     controlledChecked: false,
+    disabled: false,
 
     // 2. Indeterminate State
     notificationChannels: [
@@ -253,6 +254,11 @@ Page({
     this.setData({
       formStatus: "Error",
       formMessage: `Validation failed: ${JSON.stringify(e.detail.errors || "Please complete all required fields")}`,
+    });
+  },
+  onToggleDisabled(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      disabled: e.detail.checked,
     });
   },
 });

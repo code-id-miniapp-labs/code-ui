@@ -126,11 +126,26 @@ export function defineTheme<
 }
 
 /**
- * Type extractor that derives variant unions and slot keys from a theme definition.
+ * Extract the slot union from a theme definition or theme factory function.
  *
  * @example
  * ```ts
- * type ButtonTheme = ComponentTheme<typeof buttonThemeConfig>;
+ * type ButtonSlots = ExtractSlots<typeof buttonTheme>;
+ * // 'root' | 'label' | 'icon' | 'spinner' | 'leadingIcon' | 'trailingIcon'
+ * ```
+ */
+export type ExtractSlots<T> = T extends (...args: any[]) => { slots: infer S }
+  ? keyof S
+  : T extends { slots: infer S }
+    ? keyof S
+    : string;
+
+/**
+ * Type extractor that derives variant unions and slot keys from a theme definition or theme factory function.
+ *
+ * @example
+ * ```ts
+ * type ButtonTheme = ComponentTheme<typeof buttonTheme>;
  * export type ButtonVariant = ButtonTheme["variants"]["variant"];
  * export type ButtonColor = ButtonTheme["variants"]["color"];
  * export type ButtonSize = ButtonTheme["variants"]["size"];
@@ -138,13 +153,35 @@ export function defineTheme<
  * ```
  */
 export type ComponentTheme<
-  T extends {
-    variants?: Record<string, Record<string, any>>;
-    slots?: Record<string, any>;
-  },
-> = {
-  variants: {
-    [K in keyof T["variants"]]: VariantPropValue<T["variants"], K>;
-  };
-  slots: keyof T["slots"];
-};
+  T extends
+    | {
+        variants?: Record<string, Record<string, any>>;
+        slots?: Record<string, any>;
+      }
+    | ((...args: any[]) => {
+        variants?: Record<string, Record<string, any>>;
+        slots?: Record<string, any>;
+      }),
+> = T extends (...args: any[]) => infer R
+  ? R extends {
+      variants?: Record<string, Record<string, any>>;
+      slots?: Record<string, any>;
+    }
+    ? {
+        variants: {
+          [K in keyof R["variants"]]: VariantPropValue<R["variants"], K>;
+        };
+        slots: keyof R["slots"];
+      }
+    : never
+  : T extends {
+        variants?: Record<string, Record<string, any>>;
+        slots?: Record<string, any>;
+      }
+    ? {
+        variants: {
+          [K in keyof T["variants"]]: VariantPropValue<T["variants"], K>;
+        };
+        slots: keyof T["slots"];
+      }
+    : never;

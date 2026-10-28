@@ -9,6 +9,7 @@ import type { anatomy } from "./drawer.anatomy";
 
 export type Placement = "top" | "bottom" | "left" | "right";
 export type DrawerState = "open" | "closed" | "closing" | "dragging";
+export type DrawerTag = "open" | "closed" | "dragging" | "closing";
 
 export type DrawerAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type DrawerUI = ComponentUI<typeof anatomy>;
@@ -56,29 +57,44 @@ export type DrawerEvent =
   | { type: "DRAG_START" }
   | { type: "DRAG_END"; passed: boolean }
   | { type: "ANIMATION_END" }
-  | { type: "KEYBOARD_CHANGE"; height: number };
+  | { type: "KEYBOARD_CHANGE"; height: number }
+  | { type: "CONTROLLED.CLOSE" }
+  | { type: "CONTROLLED.OPEN" };
 
 export interface DrawerContext {
-  open: boolean;
   keyboardHeight: number;
   ui: DrawerUI;
 }
 
 export interface DrawerComputed {
   isOpen: boolean;
+  isVisible: boolean;
   placement: Placement;
 }
 
+export type DrawerAction =
+  | "invokeOnOpen"
+  | "invokeOnClose"
+  | "setKeyboardHeight"
+  | "resetKeyboardHeight";
+
+export type DrawerGuard =
+  | "closeOnBackdropClick"
+  | "isDismissible"
+  | "dragPassed";
+
+export type DrawerEffect = "waitForCloseAnimation";
+
 export interface DrawerSchema extends MachineSchema {
   state: DrawerState;
-  tag: "open" | "closed" | "dragging";
+  tag: DrawerTag;
   event: DrawerEvent;
   props: DrawerProps;
   context: DrawerContext;
   computed: DrawerComputed;
-  action: string;
-  effect: string;
-  guard: string;
+  action: DrawerAction;
+  effect: DrawerEffect;
+  guard: DrawerGuard;
 }
 
 export type DrawerMachine = Machine<DrawerSchema>;
@@ -88,6 +104,8 @@ export type DrawerParams = Params<DrawerSchema>;
 export interface DrawerApi {
   /** Whether the drawer is open */
   open: boolean;
+  /** Whether the drawer is mounted/visible (true during 'open', 'dragging', and 'closing') */
+  visible: boolean;
   /** Current machine state ('open' | 'closed' | 'closing' | 'dragging') */
   state: DrawerState;
   /** Placement ('bottom' | 'top' | 'left' | 'right') */

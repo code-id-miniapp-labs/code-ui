@@ -149,7 +149,7 @@
   "devDependencies": {
     "@code-ui/plugin-vite": "workspace:*",
     "@types/node": "^26.2.0",
-    "alien-signals": "^1.0.4",
+    "alien-signals": "^3.2.1",
     "miniprogram-api-typings": "^5.2.3",
     "typescript": "^5.5.4",
     "vite": "^5.4.21",
@@ -177,6 +177,6 @@
     "@weapp-tailwindcss/escape": "^0.0.2"
   },
   "peerDependencies": {
-    "alien-signals": ">=1.0.0"
+    "alien-signals": ">=3.0.0"
   }
 }

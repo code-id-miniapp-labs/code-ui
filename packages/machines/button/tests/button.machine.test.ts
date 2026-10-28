@@ -503,6 +503,56 @@ describe("Button Machine", () => {
       machine.stop();
     });
 
+    it("syncs context and computed when controlled loading prop is dynamically updated via updateProps", async () => {
+      const machine = new MiniappMachine(buttonMachine, { loading: false });
+      machine.start();
+
+      expect(machine.context.get("loading")).toBe(false);
+      expect(machine.computed("isLoading")).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(true);
+
+      machine.updateProps({ loading: true });
+      await flush();
+
+      expect(machine.context.get("loading")).toBe(true);
+      expect(machine.computed("isLoading")).toBe(true);
+      expect(machine.computed("isInteractive")).toBe(false);
+
+      machine.updateProps({ loading: false });
+      await flush();
+
+      expect(machine.context.get("loading")).toBe(false);
+      expect(machine.computed("isLoading")).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(true);
+
+      machine.stop();
+    });
+
+    it("syncs context and computed when controlled disabled prop is dynamically updated via updateProps", async () => {
+      const machine = new MiniappMachine(buttonMachine, { disabled: false });
+      machine.start();
+
+      expect(machine.context.get("disabled")).toBe(false);
+      expect(machine.computed("isDisabled")).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(true);
+
+      machine.updateProps({ disabled: true });
+      await flush();
+
+      expect(machine.context.get("disabled")).toBe(true);
+      expect(machine.computed("isDisabled")).toBe(true);
+      expect(machine.computed("isInteractive")).toBe(false);
+
+      machine.updateProps({ disabled: false });
+      await flush();
+
+      expect(machine.context.get("disabled")).toBe(false);
+      expect(machine.computed("isDisabled")).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(true);
+
+      machine.stop();
+    });
+
     it("loadingAuto works properly even when initialized with explicit loading: false and disabled: false (MiniApp default props)", async () => {
       let resolvePromise!: () => void;
       const asyncAction = vi.fn(

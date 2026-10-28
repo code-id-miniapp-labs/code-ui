@@ -7,6 +7,7 @@ export const defaultStepperItemProps: StepperItemProps = {
   title: "",
   description: "",
   icon: "",
+  completedIcon: "check",
   disabled: false,
   completed: null,
   status: "",

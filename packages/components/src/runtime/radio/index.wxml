@@ -1,43 +1,13 @@
-<view
-  id="{{cRadio.rootProps.id}}"
-  class="{{classes.root}}"
-  data-scope="radio"
-  data-part="root"
-  data-state="{{cRadio.rootProps['data-state']}}"
-  data-disabled="{{cRadio.rootProps['data-disabled']}}"
-  data-readonly="{{cRadio.rootProps['data-readonly']}}"
-  data-invalid="{{cRadio.rootProps['data-invalid']}}"
-  bind:tap="handleTap"
->
-  <view
-    id="{{cRadio.baseProps.id}}"
-    class="{{classes.base}}"
-    data-scope="radio"
-    data-part="base"
-    data-state="{{cRadio.baseProps['data-state']}}"
-    data-checked="{{cRadio.baseProps['data-checked']}}"
-    data-disabled="{{cRadio.baseProps['data-disabled']}}"
-    data-readonly="{{cRadio.baseProps['data-readonly']}}"
-    data-invalid="{{cRadio.baseProps['data-invalid']}}"
-    role="radio"
-    aria-checked="{{cRadio.baseProps['aria-checked']}}"
-    aria-disabled="{{cRadio.baseProps['aria-disabled']}}"
-  >
+<view id="{{cRadio.rootProps.id}}" class="{{classes.root}}" data-scope="radio" data-part="root" data-state="{{cRadio.rootProps['data-state']}}" data-disabled="{{cRadio.rootProps['data-disabled']}}" data-readonly="{{cRadio.rootProps['data-readonly']}}" data-invalid="{{cRadio.rootProps['data-invalid']}}" bind:tap="handleTap">
+  <view id="{{cRadio.baseProps.id}}" class="{{classes.base}}" data-scope="radio" data-part="base" data-state="{{cRadio.baseProps['data-state']}}" data-checked="{{cRadio.baseProps['data-checked']}}" data-disabled="{{cRadio.baseProps['data-disabled']}}" data-readonly="{{cRadio.baseProps['data-readonly']}}" data-invalid="{{cRadio.baseProps['data-invalid']}}" role="radio" aria-checked="{{cRadio.baseProps['aria-checked']}}" aria-disabled="{{cRadio.baseProps['aria-disabled']}}">
     <slot name="indicator" />
-    <view
-      wx:if="{{!customIndicator}}"
-      id="{{cRadio.indicatorProps.id}}"
-      class="{{classes.indicator}} {{cRadio.checked ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}}"
-      data-scope="radio"
-      data-part="indicator"
-      data-state="{{cRadio.indicatorProps['data-state']}}"
-      data-disabled="{{cRadio.indicatorProps['data-disabled']}}"
-    />
+    <view wx:if="{{!customIndicator}}" id="{{cRadio.indicatorProps.id}}" class="{{classes.indicator}} {{cRadio.checked ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}}" data-scope="radio" data-part="indicator" data-state="{{cRadio.indicatorProps['data-state']}}" data-disabled="{{cRadio.indicatorProps['data-disabled']}}" />
   </view>
-
-  <view wx:if="{{cRadio.label || label || cRadio.description || description}}" class="{{classes.wrapper}}">
-    <text wx:if="{{cRadio.label || label}}" class="{{classes.label}}">{{cRadio.label || label}}</text>
-    <text wx:if="{{cRadio.description || description}}" class="{{classes.description}}">{{cRadio.description || description}}</text>
+  <view wx:if="{{cRadio.label || cRadio.description }}" class="{{classes.wrapper}}">
+    <view wx:if="{{cRadio.label}}" class="{{classes.label}}">{{cRadio.label}}</view>
+    <view wx:if="{{cRadio.description}}" class="{{classes.description}}">
+      {{cRadio.description}}
+    </view>
   </view>
   <slot wx:else />
 </view>

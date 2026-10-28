@@ -1,8 +1,4 @@
-import type {
-  InputApi,
-  InputService,
-  InputSize,
-} from "./input.types";
+import type { InputApi, InputService } from "./input.types";
 import { parts } from "./input.anatomy";
 import * as dom from "./input.dom";
 
@@ -12,20 +8,11 @@ export function connectInput(service: InputService): InputApi {
   const currentState = state.get();
   const isFocused = currentState === "focused";
   const value = context.get("value") ?? "";
-  const disabled = Boolean(
-    context.get("disabled") ||
-    context.get("formDisabled") ||
-    context.get("fieldDisabled"),
-  );
+  const disabled = computed("isDisabled");
   const readOnly = Boolean(
     context.get("readOnly") || context.get("formReadOnly"),
   );
-  const rawSize = context.get("size");
-  const fieldSize = context.get("fieldSize");
-  const size =
-    rawSize && rawSize !== "md"
-      ? rawSize
-      : ((fieldSize || rawSize || "md") as InputSize);
+  const size = computed("effectiveSize");
   const invalid = Boolean(context.get("invalid"));
   const variant = context.get("variant");
   const color = context.get("color");

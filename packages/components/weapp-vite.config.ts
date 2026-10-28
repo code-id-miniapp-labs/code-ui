@@ -196,21 +196,21 @@ export default defineConfig({
     minify: true,
     cssMinify: "lightningcss",
     sourcemap: false,
-    terserOptions: {
-      toplevel: true,
-      compress: {
-        drop_debugger: true,
-        drop_console: true,
-        passes: 3,
-        module: true,
-      },
-      mangle: {
-        toplevel: true,
-      },
-      format: {
-        comments: false,
-      },
-    },
+    // terserOptions: {
+    //   toplevel: true,
+    //   compress: {
+    //     drop_debugger: true,
+    //     drop_console: true,
+    //     passes: 3,
+    //     module: true,
+    //   },
+    //   mangle: {
+    //     toplevel: true,
+    //   },
+    //   format: {
+    //     comments: false,
+    //   },
+    // },
     rolldownOptions: {
       treeshake: {
         moduleSideEffects: false,

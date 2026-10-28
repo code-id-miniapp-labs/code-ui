@@ -4,11 +4,18 @@ import {
   effect,
   effectScope,
   endBatch,
-  pauseTracking,
-  resumeTracking,
+  setActiveSub,
   signal,
   startBatch,
 } from "alien-signals";
+
+const pauseStack: Array<any> = [];
+function pauseTracking(): void {
+  pauseStack.push(setActiveSub(undefined));
+}
+function resumeTracking(): void {
+  setActiveSub(pauseStack.pop());
+}
 
 export type ComputedGetter<T = any, TThis = any> = (this: TThis) => T;
 export type ComputedSetter<T = any, TThis = any> = (

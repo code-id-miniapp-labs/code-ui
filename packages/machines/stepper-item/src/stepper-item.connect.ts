@@ -28,6 +28,7 @@ export function connectStepperItem(
   const title = context.get("title") ?? "";
   const description = context.get("description") ?? "";
   const icon = context.get("icon") ?? "";
+  const completedIcon = context.get("completedIcon") ?? "";
   const rawVal = context.get("value");
   const value = rawVal !== "" && rawVal !== undefined ? rawVal : resolvedIndex;
   const stepperId = context.get("stepperId") || "";
@@ -106,6 +107,7 @@ export function connectStepperItem(
     title,
     description,
     icon,
+    completedIcon,
     value,
     status,
     isCompleted,

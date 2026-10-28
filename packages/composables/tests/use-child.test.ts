@@ -358,4 +358,40 @@ describe("useChild composable", () => {
     expect(snap2).toEqual({ count: 0 });
     expect(computeCount).toBe(1);
   });
+
+  it("does not throw circular structure error when serialized to JSON or assigned to page.data", async () => {
+    const { compInstance, exportProxy } = createMockChildComponent("c1");
+    // Simulate circular reference between component and machine/scope
+    const circularScope: any = { id: "test", component: compInstance };
+    compInstance.__codeUiMachine.paramsCache = { scope: circularScope };
+    circularScope.component = compInstance;
+
+    const parent = createMockParentInstance({ "#counter": exportProxy });
+
+    const child = useChild(parent as any, "#counter", {
+      key: "counter",
+      connect: (service) => ({ count: service.context.get("count") }),
+    });
+
+    // 1. Direct JSON serialization of useChild return object
+    expect(() => JSON.stringify(child)).not.toThrow();
+    expect(JSON.stringify(child)).toBeUndefined();
+
+    // 2. Simulated accidental assignment to parent.data
+    await Promise.resolve();
+    parent.data.counterChild = child;
+    let serialized: string | undefined;
+    expect(() => {
+      serialized = JSON.stringify(parent.data);
+    }).not.toThrow();
+
+    // counterChild is safely omitted from JSON
+    const parsed = JSON.parse(serialized as string);
+    expect(parsed.counterChild).toBeUndefined();
+    expect(parsed.counter).toEqual({ count: 0 });
+
+    // 3. service property is non-enumerable
+    expect(Object.keys(child)).not.toContain("service");
+    expect(child.service).toBeDefined();
+  });
 });

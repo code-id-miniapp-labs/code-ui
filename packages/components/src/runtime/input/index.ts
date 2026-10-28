@@ -1,5 +1,9 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import { inputMachine, connectInput, defaultInputProps } from "@code-ui/input";
@@ -36,34 +40,22 @@ Component(
     computed: {
       classes() {
         const api = this.data.input;
-        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size;
-        const variant = api?.variant ?? this.data.variant;
-        const color = api?.color ?? this.data.color;
-        const highlight = Boolean(api?.highlight ?? this.data.highlight);
-        const hasLeading = Boolean(this.data.leading || this.data.leadingIcon);
-        const hasTrailing = Boolean(
-          this.data.trailing ||
-          this.data.trailingIcon ||
-          api?.isClearable ||
-          this.data.clearable ||
-          this.data.loading,
-        );
-        const ui = this.data.ui;
-
         const themeFns = inputTheme({
-          variant,
-          color,
-          size,
-          highlight,
-          invalid: isInvalid,
-          disabled,
-          leading: hasLeading,
-          trailing: hasTrailing,
+          variant: api?.variant,
+          color: api?.color,
+          size: api?.size,
+          highlight: api?.highlight,
+          invalid: api?.invalid,
+          disabled: api?.disabled,
+          leading: Boolean(this.data.leading || this.data.leadingIcon),
+          trailing: Boolean(
+            this.data.trailing ||
+              this.data.trailingIcon ||
+              api?.isClearable ||
+              this.data.loading,
+          ),
         });
-
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 

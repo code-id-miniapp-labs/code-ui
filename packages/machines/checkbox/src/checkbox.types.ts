@@ -168,6 +168,7 @@ export interface CheckboxComputed {
   isInteractive: boolean;
   isDisabled: boolean;
   isInvalid: boolean;
+  isReadOnly: boolean;
   effectiveSize: CheckboxSize;
   effectiveColor: CheckboxColor;
 }
@@ -255,4 +256,13 @@ export interface CheckboxApi {
   descriptionProps: Record<string, any>;
   /** Props for hidden input */
   hiddenInputProps: Record<string, any>;
+}
+
+export interface GroupStateSnapshot {
+  value?: string[] | undefined;
+  disabled?: boolean | undefined;
+  invalid?: boolean | undefined;
+  color?: CheckboxColor | "" | undefined;
+  size?: CheckboxSize | "" | undefined;
+  variant?: string | undefined;
 }

@@ -25,6 +25,12 @@ export interface DOMQueryHelpers {
 export function createQuery(
   component?: MiniAppComponent,
 ): WechatMiniprogram.SelectorQuery {
+  if (
+    component &&
+    typeof (component as any).createSelectorQuery === "function"
+  ) {
+    return (component as any).createSelectorQuery();
+  }
   const q = wx.createSelectorQuery();
   return component ? q.in(component) : q;
 }

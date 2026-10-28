@@ -1,4 +1,6 @@
 import { defu } from "@code-ui/utils";
+import type { ExtractSlots } from "./theme";
+import type * as componentThemes from "./theme/definitions";
 
 export type SlotClassReplacer = (defaults: string) => string;
 export type SlotClass = string | SlotClassReplacer;
@@ -13,128 +15,19 @@ export interface ComponentVariantsConfig<TSlots extends string = string> {
   [customVariantKey: string]: Record<string, SlotRecord<TSlots>> | undefined;
 }
 
-export interface ComponentRegistry {
-  button:
-    | "root"
-    | "label"
-    | "icon"
-    | "spinner"
-    | "leadingIcon"
-    | "trailingIcon";
-  card: "root" | "header" | "title" | "description" | "body" | "footer";
-  checkbox:
-    | "root"
-    | "base"
-    | "indicator"
-    | "icon"
-    | "wrapper"
-    | "label"
-    | "description";
-  checkboxGroup:
-    | "root"
-    | "fieldset"
-    | "legend"
-    | "item"
-    | "base"
-    | "indicator"
-    | "wrapper"
-    | "label"
-    | "description"
-    | "help"
-    | "error";
-  avatar: "root" | "image" | "fallback" | "icon";
-  badge: "root" | "text";
-  divider: "root" | "container" | "icon" | "label";
-  skeleton: "root";
-  chip: "root" | "base";
-  drawer:
-    | "root"
-    | "backdrop"
-    | "content"
-    | "grabber"
-    | "grabberBar"
-    | "header"
-    | "title"
-    | "description"
-    | "closeTrigger"
-    | "body"
-    | "footer";
-  form: "root" | "errors" | "error";
-  formField:
-    | "root"
-    | "wrapper"
-    | "labelWrapper"
-    | "label"
-    | "container"
-    | "description"
-    | "error"
-    | "hint"
-    | "help"
-    | "required";
-  icon: "root" | "icon" | "image";
-  input:
-    | "root"
-    | "base"
-    | "leading"
-    | "leadingIcon"
-    | "trailing"
-    | "trailingIcon"
-    | "clear";
-  pinInput: "root" | "label" | "control" | "input" | "separator" | "error";
-  qrCode: "root" | "frame" | "pattern" | "overlay";
-  radio: "root" | "base" | "indicator" | "wrapper" | "label" | "description";
-  radioGroup:
-    | "root"
-    | "fieldset"
-    | "legend"
-    | "item"
-    | "base"
-    | "indicator"
-    | "wrapper"
-    | "label"
-    | "description"
-    | "help"
-    | "error";
-  stepper:
-    | "root"
-    | "list"
-    | "item"
-    | "trigger"
-    | "indicator"
-    | "icon"
-    | "wrapper"
-    | "title"
-    | "description"
-    | "separator"
-    | "content";
-  stepperItem:
-    | "root"
-    | "trigger"
-    | "indicator"
-    | "icon"
-    | "wrapper"
-    | "title"
-    | "description"
-    | "separator";
-  switch:
-    | "root"
-    | "base"
-    | "container"
-    | "thumb"
-    | "icon"
-    | "wrapper"
-    | "label"
-    | "description";
-  textarea:
-    | "root"
-    | "base"
-    | "placeholder"
-    | "leading"
-    | "leadingIcon"
-    | "trailing"
-    | "trailingIcon"
-    | "clear"
-    | "count";
+type KebabCase<S extends string> = S extends `${infer T}${infer U}`
+  ? U extends Uncapitalize<U>
+    ? `${Lowercase<T>}${KebabCase<U>}`
+    : `${Lowercase<T>}-${KebabCase<Uncapitalize<U>>}`
+  : S;
+
+export type BuiltinComponentRegistry = {
+  [K in keyof typeof componentThemes as K | KebabCase<string & K>]: ExtractSlots<
+    (typeof componentThemes)[K]
+  >;
+};
+
+export interface ComponentRegistry extends BuiltinComponentRegistry {
   [componentName: string]: string;
 }
 

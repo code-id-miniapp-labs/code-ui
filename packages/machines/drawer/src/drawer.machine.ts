@@ -1,8 +1,10 @@
 import { createMachine } from "@code-ui/core";
-import type { DrawerMachine, DrawerSchema } from "./drawer.types";
+import type { DrawerMachine, DrawerSchema, DrawerUI } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
 import * as dom from "./drawer.dom";
-import { isNotEmpty } from "@code-ui/utils";
+import { isNotNull } from "@code-ui/utils";
+
+const DEFAULT_ANIMATION_DURATION = 300;
 
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
@@ -12,64 +14,50 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
   initialState: ({ prop }) => {
     const rawOpen = prop("open");
-    const isOpen =
-      rawOpen !== undefined && rawOpen !== null
-        ? Boolean(rawOpen)
-        : Boolean(prop("defaultOpen") ?? false);
+    const isOpen = isNotNull(rawOpen)
+      ? Boolean(rawOpen)
+      : Boolean(prop("defaultOpen") ?? false);
     return isOpen ? "open" : "closed";
   },
 
   context: ({ prop, bindable }) => ({
-    open: bindable<boolean>(() => {
-      const rawOpen = prop("open");
-      return {
-        value: isNotEmpty(rawOpen) ? Boolean(rawOpen) : undefined,
-        defaultValue: Boolean(prop("defaultOpen") ?? false),
-        onChange: (open) => {
-          prop("component")?.setData?.({ open });
-          if (!open) {
-            prop("onClose")?.();
-          }
-        },
-      };
-    }),
     keyboardHeight: bindable<number>(() => ({
       defaultValue: 0,
     })),
-    ui: bindable<any>(() => ({
+    ui: bindable<DrawerUI>(() => ({
       value: prop("ui") ?? {},
       defaultValue: {},
     })),
   }),
 
   computed: {
-    isOpen: ({ context }) => context.get("open"),
+    isOpen: ({ state }) => state.hasTag("open"),
+    isVisible: ({ state }) => state.hasTag("open") || state.hasTag("closing"),
     placement: ({ prop }) => prop("placement") ?? "bottom",
   },
 
-  watch: ({ prop, state, send }) => {
+  watch: ({ prop, send }) => {
     const rawOpen = prop("open");
-    if (rawOpen !== undefined && rawOpen !== null) {
-      const controlledOpen = Boolean(rawOpen);
-      if (controlledOpen && !state.matches("open", "dragging")) {
-        send({ type: "OPEN" });
-      } else if (!controlledOpen && state.matches("open", "dragging")) {
-        send({ type: "CLOSE" });
-      }
-    }
+    if (!isNotNull(rawOpen)) return;
+
+    send({ type: rawOpen ? "CONTROLLED.OPEN" : "CONTROLLED.CLOSE" });
   },
 
   states: {
     closed: {
       tags: ["closed"],
+      entry: ["resetKeyboardHeight"],
       on: {
+        "CONTROLLED.OPEN": {
+          target: "open",
+        },
         OPEN: {
           target: "open",
-          actions: ["setOpenContext"],
+          actions: ["invokeOnOpen"],
         },
         TOGGLE: {
           target: "open",
-          actions: ["setOpenContext"],
+          actions: ["invokeOnOpen"],
         },
       },
     },
@@ -77,22 +65,25 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     open: {
       tags: ["open"],
       on: {
+        "CONTROLLED.CLOSE": {
+          target: "closing",
+        },
         CLOSE: {
           target: "closing",
-          actions: ["setClosedContext"],
+          actions: ["invokeOnClose"],
         },
         TOGGLE: {
           target: "closing",
-          actions: ["setClosedContext"],
+          actions: ["invokeOnClose"],
         },
         "BACKDROP.TAP": {
           target: "closing",
           guard: "closeOnBackdropClick",
-          actions: ["setClosedContext"],
+          actions: ["invokeOnClose"],
         },
         "CLOSE_TRIGGER.TAP": {
           target: "closing",
-          actions: ["setClosedContext"],
+          actions: ["invokeOnClose"],
         },
         DRAG_START: {
           target: "dragging",
@@ -107,11 +98,14 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     dragging: {
       tags: ["open", "dragging"],
       on: {
+        "CONTROLLED.CLOSE": {
+          target: "closing",
+        },
         DRAG_END: [
           {
             target: "closing",
             guard: "dragPassed",
-            actions: ["setClosedContext"],
+            actions: ["invokeOnClose"],
           },
           {
             target: "open",
@@ -122,21 +116,28 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         },
         CLOSE: {
           target: "closing",
-          actions: ["setClosedContext"],
+          actions: ["invokeOnClose"],
         },
       },
     },
 
     closing: {
-      tags: ["closed"],
+      tags: ["closing"],
       effects: ["waitForCloseAnimation"],
       on: {
         ANIMATION_END: {
           target: "closed",
         },
+        "CONTROLLED.OPEN": {
+          target: "open",
+        },
         OPEN: {
           target: "open",
-          actions: ["setOpenContext"],
+          actions: ["invokeOnOpen"],
+        },
+        TOGGLE: {
+          target: "open",
+          actions: ["invokeOnOpen"],
         },
       },
     },
@@ -147,56 +148,66 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick") ?? true,
       isDismissible: ({ prop }) => prop("dismissible") ?? true,
       dragPassed: ({ event }) =>
-        "passed" in event && (event as any).passed === true,
+        event.type === "DRAG_END" && event.passed === true,
     },
 
     actions: {
-      setOpenContext: ({ context }) => {
-        context.set("open", true);
+      invokeOnOpen: ({ prop }) => {
+        prop("onOpenChange")?.({ open: true });
       },
-      setClosedContext: ({ context }) => {
-        context.set("open", false);
+      invokeOnClose: ({ prop }) => {
+        prop("onOpenChange")?.({ open: false });
+        prop("onClose")?.();
       },
       setKeyboardHeight: ({ context, event }) => {
-        if ("height" in event) {
+        if (event.type === "KEYBOARD_CHANGE") {
           context.set("keyboardHeight", event.height);
         }
+      },
+      resetKeyboardHeight: ({ context }) => {
+        context.set("keyboardHeight", 0);
       },
     },
 
     effects: {
       waitForCloseAnimation: ({ send, scope, prop }) => {
-        let timer: any;
+        let timer: ReturnType<typeof setTimeout> | undefined;
         let cancelled = false;
 
-        const explicitDuration = prop("duration");
-        if (typeof explicitDuration === "number" && explicitDuration > 0) {
+        const cleanup = () => {
+          cancelled = true;
+          if (timer !== undefined) {
+            clearTimeout(timer);
+            timer = undefined;
+          }
+        };
+
+        const scheduleEnd = (ms: number) => {
+          if (cancelled) return;
           timer = setTimeout(() => {
-            send({ type: "ANIMATION_END" });
-          }, explicitDuration);
-          return () => clearTimeout(timer);
+            if (!cancelled) send({ type: "ANIMATION_END" });
+          }, ms);
+        };
+
+        const explicitDuration = prop("duration");
+        if (typeof explicitDuration === "number" && explicitDuration >= 0) {
+          scheduleEnd(explicitDuration);
+          return cleanup;
         }
 
         scope.dom
           .animationDuration(dom.getContentSelector(scope))
           .then((duration) => {
             if (cancelled) return;
-            const delay = duration > 0 ? duration : 300;
-            timer = setTimeout(() => {
-              send({ type: "ANIMATION_END" });
-            }, delay);
+            const delay = duration > 0 ? duration : DEFAULT_ANIMATION_DURATION;
+            scheduleEnd(delay);
           })
           .catch(() => {
             if (cancelled) return;
-            timer = setTimeout(() => {
-              send({ type: "ANIMATION_END" });
-            }, explicitDuration);
+            scheduleEnd(DEFAULT_ANIMATION_DURATION);
           });
 
-        return () => {
-          cancelled = true;
-          if (timer) clearTimeout(timer);
-        };
+        return cleanup;
       },
     },
   },

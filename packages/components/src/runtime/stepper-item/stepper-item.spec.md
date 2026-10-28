@@ -31,28 +31,29 @@ _Implemented in `packages/machines/stepper-item/` (`@code-ui/stepper-item`)_
 
 ### Context (`StepperItemContext`)
 
-| Property | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `index` | `number \| null` | `null` | Explicit 0-based step index (assigned automatically if omitted). |
-| `title` | `string` | `""` | Step title. |
-| `description` | `string` | `""` | Step description subtext. |
-| `icon` | `string` | `""` | Optional icon name. |
-| `disabled` | `boolean` | `false` | Whether this specific step item is disabled. |
-| `completed` | `boolean \| null` | `null` | Explicit completion override. |
-| `status` | `StepperStatus \| ""` | `""` | Explicit status override (`"completed"`, `"current"`, `"upcoming"`, `"disabled"`). |
-| `value` | `string \| number` | `""` | Custom step identifier or value. |
-| `isLast` | `boolean \| null` | `null` | Whether this is the final step (suppresses separator). |
-| `orientation` | `StepperOrientation \| ""` | `""` | Layout direction override. |
-| `color` | `StepperColor \| ""` | `""` | Color variant override. |
-| `size` | `StepperSize \| ""` | `""` | Size variant override. |
-| `stepperId` | `string` | `""` | Parent stepper unique ID. |
-| `groupStep` | `number` | `0` | Active step index broadcast from parent stepper. |
-| `groupCount` | `number` | `0` | Total step count broadcast from parent stepper. |
-| `groupLinear` | `boolean` | `false` | Linear mode flag broadcast from parent stepper. |
-| `groupOrientation` | `StepperOrientation \| ""` | `""` | Orientation broadcast from parent stepper. |
-| `groupDisabled` | `boolean` | `false` | Global disabled flag broadcast from parent stepper. |
-| `groupColor` | `StepperColor \| ""` | `""` | Color broadcast from parent stepper. |
-| `groupSize` | `StepperSize \| ""` | `""` | Size scale broadcast from parent stepper. |
+| Property           | Type                       | Default | Description                                                                        |
+| :----------------- | :------------------------- | :------ | :--------------------------------------------------------------------------------- |
+| `index`            | `number \| null`           | `null`  | Explicit 0-based step index (assigned automatically if omitted).                   |
+| `title`            | `string`                   | `""`    | Step title.                                                                        |
+| `description`      | `string`                   | `""`    | Step description subtext.                                                          |
+| `icon`             | `string`                   | `""`    | Optional icon name for current/upcoming states.                                    |
+| `completedIcon`    | `string`                   | `""`    | Optional icon name shown automatically when step is completed (default: `"check"`). |
+| `disabled`         | `boolean`                  | `false` | Whether this specific step item is disabled.                                       |
+| `completed`        | `boolean \| null`          | `null`  | Explicit completion override.                                                      |
+| `status`           | `StepperStatus \| ""`      | `""`    | Explicit status override (`"completed"`, `"current"`, `"upcoming"`, `"disabled"`). |
+| `value`            | `string \| number`         | `""`    | Custom step identifier or value.                                                   |
+| `isLast`           | `boolean \| null`          | `null`  | Whether this is the final step (suppresses separator).                             |
+| `orientation`      | `StepperOrientation \| ""` | `""`    | Layout direction override.                                                         |
+| `color`            | `StepperColor \| ""`       | `""`    | Color variant override.                                                            |
+| `size`             | `StepperSize \| ""`        | `""`    | Size variant override.                                                             |
+| `stepperId`        | `string`                   | `""`    | Parent stepper unique ID.                                                          |
+| `groupStep`        | `number`                   | `0`     | Active step index broadcast from parent stepper.                                   |
+| `groupCount`       | `number`                   | `0`     | Total step count broadcast from parent stepper.                                    |
+| `groupLinear`      | `boolean`                  | `false` | Linear mode flag broadcast from parent stepper.                                    |
+| `groupOrientation` | `StepperOrientation \| ""` | `""`    | Orientation broadcast from parent stepper.                                         |
+| `groupDisabled`    | `boolean`                  | `false` | Global disabled flag broadcast from parent stepper.                                |
+| `groupColor`       | `StepperColor \| ""`       | `""`    | Color broadcast from parent stepper.                                               |
+| `groupSize`        | `StepperSize \| ""`        | `""`    | Size scale broadcast from parent stepper.                                          |
 
 ### Computed Values
 
@@ -68,7 +69,9 @@ _Implemented in `packages/machines/stepper-item/` (`@code-ui/stepper-item`)_
 - **`effectiveSize`**: `size || groupSize || "md"`.
 
 ### Event Bus Synchronization
+
 Each `<c-stepper-item>` subscribes to the parent stepper machine's `stepper:change` event via `refs.bus`:
+
 - Automatically synchronizes `groupStep`, `groupCount`, `groupLinear`, `groupOrientation`, `groupDisabled`, `groupColor`, and `groupSize`.
 - On user tap, dispatches `bus.emit("item:tap", { index: resolvedIndex, value })` to the parent stepper machine, which validates progression via its state guards (`canNavigateStep`).
 
@@ -119,16 +122,18 @@ slots: {
 
 #### `size` Matrix (MiniProgram `rpx` calibrated)
 
-| Size | Trigger | Icon | Title | Description | Wrapper Margin |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `xs` | `size-5 text-[20rpx]` | `size-2.5` | `text-[20rpx]` | `text-[18rpx]` | `mt-1` |
-| `sm` | `size-6 text-xs` | `size-3` | `text-xs` | `text-[20rpx]` | `mt-1.5` |
-| `md` | `size-7 text-xs` | `size-3.5` | `text-xs font-semibold` | `text-[22rpx]` | `mt-2` |
-| `lg` | `size-8 text-sm` | `size-4` | `text-sm font-semibold` | `text-xs` | `mt-2.5` |
-| `xl` | `size-10 text-base` | `size-5` | `text-base font-semibold` | `text-sm` | `mt-3` |
+| Size | Trigger               | Icon       | Title                     | Description    | Wrapper Margin |
+| :--- | :-------------------- | :--------- | :------------------------ | :------------- | :------------- |
+| `xs` | `size-5 text-[20rpx]` | `size-2.5` | `text-[20rpx]`            | `text-[18rpx]` | `mt-1`         |
+| `sm` | `size-6 text-xs`      | `size-3`   | `text-xs`                 | `text-[20rpx]` | `mt-1.5`       |
+| `md` | `size-7 text-xs`      | `size-3.5` | `text-xs font-semibold`   | `text-[22rpx]` | `mt-2`         |
+| `lg` | `size-8 text-sm`      | `size-4`   | `text-sm font-semibold`   | `text-xs`      | `mt-2.5`       |
+| `xl` | `size-10 text-base`   | `size-5`   | `text-base font-semibold` | `text-sm`      | `mt-3`         |
 
 #### `color` Theme Matrix
+
 Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `info`, `warning`, `danger`, `neutral`):
+
 - `trigger`: `group-data-[state=completed]:bg-${color}-500 group-data-[state=current]:bg-${color}-500 outline-${color}-500/25`
 - `title`: `group-data-[state=current]:text-${color}-600`
 - `separator`: `group-data-[state=completed]:bg-${color}-500`
@@ -136,6 +141,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 #### Compound Variants (`orientation` $\times$ `size`)
 
 ##### 5 Horizontal Sizes:
+
 - `xs`: `{ separator: "start-[calc(50%+28rpx)] end-[calc(-50%+28rpx)]" }`
 - `sm`: `{ separator: "start-[calc(50%+32rpx)] end-[calc(-50%+32rpx)]" }`
 - `md`: `{ separator: "start-[calc(50%+40rpx)] end-[calc(-50%+40rpx)]" }`
@@ -143,6 +149,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 - `xl`: `{ separator: "start-[calc(50%+56rpx)] end-[calc(-50%+56rpx)]" }`
 
 ##### 5 Vertical Sizes:
+
 - `xs`: `{ separator: "top-[48rpx]" }`
 - `sm`: `{ separator: "top-[56rpx]" }`
 - `md`: `{ separator: "top-[64rpx]" }`
@@ -157,35 +164,38 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 
 #### Properties
 
-| Prop | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `ui` | `Object` | `{}` | Slot overrides for item parts (`trigger`, `indicator`, `icon`, `separator`, `wrapper`, `title`, `description`). |
-| `class` / `className` | `String` | `""` | Custom classes on the step item root `<view>`. |
-| `index` | `Number` | `null` | 0-based step index (assigned automatically by parent relations if omitted). |
-| `title` | `String` | `""` | Step title text. |
-| `description` | `String` | `""` | Step description text. |
-| `icon` | `String` | `""` | Custom icon name. |
-| `disabled` | `Boolean` | `false` | Disables this individual step item. |
-| `completed` | `Boolean` | `null` | Explicit completed override. |
-| `status` | `String` | `""` | Explicit status override (`"completed"`, `"current"`, `"upcoming"`, `"disabled"`). |
-| `value` | `String \| Number` | `""` | Custom step value. |
-| `isLast` | `Boolean` | `null` | Whether this is the final step. |
-| `orientation` | `String` | `""` | Orientation override (`"horizontal"` or `"vertical"`). |
-| `color` | `String` | `""` | Semantic color override. |
-| `size` | `String` | `""` | Size override (`"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`). |
-| `customIndicator` | `Boolean` | `false` | When `true`, suppresses default number/icon rendering to allow pure custom markup via `<slot name="indicator" />`. |
+| Prop                  | Type               | Default | Description                                                                                                        |
+| :-------------------- | :----------------- | :------ | :----------------------------------------------------------------------------------------------------------------- |
+| `ui`                  | `Object`           | `{}`    | Slot overrides for item parts (`trigger`, `indicator`, `icon`, `separator`, `wrapper`, `title`, `description`).    |
+| `class` / `className` | `String`           | `""`    | Custom classes on the step item root `<view>`.                                                                     |
+| `index`               | `Number`           | `null`  | 0-based step index (assigned automatically by parent relations if omitted).                                        |
+| `title`               | `String`           | `""`    | Step title text.                                                                                                   |
+| `description`         | `String`           | `""`    | Step description text.                                                                                             |
+| `icon`                | `String`           | `""`    | Custom icon name when incomplete or active.                                                        |
+| `completedIcon`       | `String`           | `""`    | Custom icon name when step is completed (defaults to `"check"` if omitted).                         |
+| `disabled`            | `Boolean`          | `false` | Disables this individual step item.                                                                                |
+| `completed`           | `Boolean`          | `null`  | Explicit completed override.                                                                                       |
+| `status`              | `String`           | `""`    | Explicit status override (`"completed"`, `"current"`, `"upcoming"`, `"disabled"`).                                 |
+| `value`               | `String \| Number` | `""`    | Custom step value.                                                                                                 |
+| `isLast`              | `Boolean`          | `null`  | Whether this is the final step.                                                                                    |
+| `orientation`         | `String`           | `""`    | Orientation override (`"horizontal"` or `"vertical"`).                                                             |
+| `color`               | `String`           | `""`    | Semantic color override.                                                                                           |
+| `size`                | `String`           | `""`    | Size override (`"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`).                                                            |
+| `customIndicator`     | `Boolean`          | `false` | When `true`, suppresses default number/icon rendering to allow pure custom markup via `<slot name="indicator" />`. |
+| `customCompletedIndicator` | `Boolean`     | `false` | When `true`, suppresses default check/completedIcon rendering to allow pure custom markup via `<slot name="completed-indicator" />`. |
 
 #### Slots
 
-- **`indicator`**: Custom markup inside the circular indicator bubble (e.g. custom icon, avatar, emoji).
+- **`indicator`**: Custom markup inside the circular indicator bubble when incomplete/active (e.g. custom icon, avatar, emoji).
+- **`completed-indicator`**: Custom markup inside the circular indicator bubble when step is completed.
 - **`title`**: Custom markup for the step title (e.g. title with badge or tags).
 - **`description`**: Custom markup for the step description.
 - **`default`**: Additional custom content appended inside the step wrapper.
 
 #### Events
 
-| Event | Detail | Description |
-| :--- | :--- | :--- |
+| Event        | Detail                                          | Description                                     |
+| :----------- | :---------------------------------------------- | :---------------------------------------------- |
 | `bind:click` | `{ index: number, value: any, status: string }` | Emitted when this step item trigger is clicked. |
 
 #### Template (`packages/components/src/runtime/stepper-item/index.wxml`)
@@ -202,7 +212,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
   data-disabled="{{cStepperItem.itemProps['data-disabled']}}"
 >
   <view
-    class="cui-stepper-item__container {{classes.container}}"
+    class="{{classes.container}}"
     data-scope="stepper"
     data-part="container"
   >
@@ -229,19 +239,24 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
         data-index="{{cStepperItem.resolvedIndex}}"
         data-state="{{cStepperItem.status}}"
       >
-        <slot name="indicator" />
-        <block wx:if="{{!customIndicator}}">
+        <block wx:if="{{cStepperItem.isCompleted}}">
+          <slot name="completed-indicator" />
           <c-icon
-            wx:if="{{cStepperItem.isCompleted && !(cStepperItem.icon || icon)}}"
-            name="check"
+            wx:if="{{!customCompletedIndicator}}"
+            name="{{cStepperItem.completedIcon || completedIcon || 'check'}}"
             className="{{classes.icon}}"
           />
-          <c-icon
-            wx:elif="{{cStepperItem.icon || icon}}"
-            name="{{cStepperItem.icon || icon}}"
-            className="{{classes.icon}}"
-          />
-          <text wx:else>{{cStepperItem.resolvedIndex + 1}}</text>
+        </block>
+        <block wx:else>
+          <slot name="indicator" />
+          <block wx:if="{{!customIndicator}}">
+            <c-icon
+              wx:if="{{cStepperItem.icon || icon}}"
+              name="{{cStepperItem.icon || icon}}"
+              className="{{classes.icon}}"
+            />
+            <view wx:else>{{cStepperItem.resolvedIndex + 1}}</view>
+          </block>
         </block>
       </view>
     </view>
@@ -296,11 +311,13 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 ## 6. Usage Examples
 
 ### Example 1: Standard Step Item
+
 ```xml
 <c-stepper-item title="Personal Info" description="Enter your name & email" />
 ```
 
 ### Example 2: Step with Custom Icon Slot
+
 ```xml
 <c-stepper-item title="Profile" description="Add avatar & bio">
   <c-icon slot="indicator" name="i-lucide-user" />
@@ -308,6 +325,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 ```
 
 ### Example 3: Step with Title Badge
+
 ```xml
 <c-stepper-item description="Verify phone & email">
   <view slot="title" class="flex items-center gap-1.5">
@@ -320,6 +338,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 ```
 
 ### Example 4: Vertical Timeline Item
+
 ```xml
 <c-stepper-item
   title="Shipped with SF Express"

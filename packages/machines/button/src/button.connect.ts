@@ -5,10 +5,10 @@ import * as dom from "./button.dom";
 export function connectButton(service: ButtonService): ButtonApi {
   const { state, send, context, computed, scope } = service;
 
-  const currentState = state.get();
   const loading = computed("isLoading");
-  const internalLoading = Boolean(context.get("internalLoading"));
   const disabled = computed("isDisabled");
+  const currentState = state.get();
+  const internalLoading = Boolean(context.get("internalLoading"));
   const variant = context.get("variant");
   const color = context.get("color");
   const size = context.get("size");

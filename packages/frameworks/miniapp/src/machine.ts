@@ -3,8 +3,7 @@ import {
   effect,
   effectScope,
   endBatch,
-  pauseTracking,
-  resumeTracking,
+  setActiveSub,
   signal,
   startBatch,
 } from "alien-signals";
@@ -85,11 +84,11 @@ export function nextTick(fn: VoidFunction) {
 
 /** Runs `fn` without registering signal reads on the active subscriber. */
 function untracked<R>(fn: () => R): R {
-  pauseTracking();
+  const prevSub = setActiveSub(undefined);
   try {
     return fn();
   } finally {
-    resumeTracking();
+    setActiveSub(prevSub);
   }
 }
 
@@ -402,6 +401,7 @@ export class MiniappMachine<T extends MachineSchema> {
       computed: this.computed,
       event: this.eventView,
       getStatus: this.getStatus,
+      toJSON: () => undefined,
     } as Service<T>);
   }
 
@@ -449,7 +449,9 @@ export class MiniappMachine<T extends MachineSchema> {
     this.rawProps = { ...this.rawProps, ...patch };
     this.batch(() => {
       this.userPropsSignal(this.rawProps);
-      this.notify();
+      if (this.status !== MachineStatus.Started) {
+        this.notify();
+      }
     });
   }
 
@@ -469,16 +471,17 @@ export class MiniappMachine<T extends MachineSchema> {
     const refsLen = refs.length;
 
     this.disposeScope = effectScope(() => {
-      effect(() => {
-        this.state.ref.get();
-        for (let i = 0; i < refsLen; i++) refs[i]?.get();
-        if (!initialRun) this.notify();
-      });
-
       const watch = this.machine.watch;
       if (watch) {
         effect(() => watch(this.getParams()));
       }
+
+      effect(() => {
+        this.userPropsSignal();
+        this.state.ref.get();
+        for (let i = 0; i < refsLen; i++) refs[i]?.get();
+        if (!initialRun) this.notify();
+      });
     });
     initialRun = false;
     this.notify();

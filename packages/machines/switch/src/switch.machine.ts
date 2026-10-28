@@ -127,18 +127,6 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
         send({ type: "SET_CHECKED", checked: false });
       }
     }
-    const controlledInvalid = prop("invalid");
-    if (isNotNull(controlledInvalid)) {
-      context.set("invalid", Boolean(controlledInvalid));
-    }
-    const controlledFieldDisabled = prop("fieldDisabled");
-    if (controlledFieldDisabled !== undefined) {
-      context.set("fieldDisabled", controlledFieldDisabled);
-    }
-    const controlledFieldSize = prop("fieldSize");
-    if (controlledFieldSize !== undefined) {
-      context.set("fieldSize", controlledFieldSize);
-    }
     const nextForm = prop("form") ?? "";
     const nextName = prop("name") ?? "";
     if (nextForm !== context.get("form") || nextName !== context.get("name")) {

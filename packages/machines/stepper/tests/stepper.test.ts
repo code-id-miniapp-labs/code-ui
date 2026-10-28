@@ -526,5 +526,60 @@ describe("Stepper Machine", () => {
       itemDone.stop();
       parentMachine.stop();
     });
+
+    it("measures DOM elements via scope.dom and calculates scroll offset", async () => {
+      const childItem0 = {
+        createSelectorQuery: () => ({
+          select: () => ({
+            boundingClientRect: (cb: any) => {
+              cb({ left: 10, right: 110, width: 100 });
+              return { exec: () => {} };
+            },
+          }),
+        }),
+      };
+      const childItem1 = {
+        createSelectorQuery: () => ({
+          select: () => ({
+            boundingClientRect: (cb: any) => {
+              cb({ left: 120, right: 220, width: 100 });
+              return { exec: () => {} };
+            },
+          }),
+        }),
+      };
+
+      const mockComponent = {
+        createSelectorQuery: () => ({
+          select: () => ({
+            fields: (_: any, cb: any) => {
+              cb({ left: 0, width: 200, scrollLeft: 0 });
+              return { exec: () => {} };
+            },
+          }),
+        }),
+        getRelationNodes: () => [childItem0, childItem1],
+        setData: vi.fn(),
+        triggerEvent: vi.fn(),
+      };
+
+      const machine = new MiniappMachine(stepperMachine, {
+        component: mockComponent,
+        count: 2,
+        defaultStep: 0,
+      });
+      machine.start();
+
+      expect(machine.context.get("scrollLeft")).toBe(0);
+
+      // Navigate to step 1
+      machine.send({ type: "STEP.NEXT" });
+      await flush();
+      await flush();
+
+      // Based on: targetOffsetRight (220) - listWidth (200) + 16 = 36
+      expect(machine.context.get("scrollLeft")).toBe(36);
+      machine.stop();
+    });
   });
 });

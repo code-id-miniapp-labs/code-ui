@@ -18,10 +18,12 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       defaultValue: false,
     })),
     loading: bindable<boolean>(() => ({
-      defaultValue: Boolean(prop("loading")),
+      value: prop("loading"),
+      defaultValue: defaultButtonProps.loading,
     })),
     disabled: bindable<boolean>(() => ({
-      defaultValue: Boolean(prop("disabled")),
+      value: prop("disabled"),
+      defaultValue: defaultButtonProps.disabled,
     })),
     variant: bindable<any>(() => ({
       value: prop("variant"),
@@ -46,14 +48,17 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
   }),
 
   computed: {
-    isLoading: ({ context, state }) =>
-      state.matches("loading") ||
+    isLoading: ({ context }) =>
       Boolean(context.get("loading") || context.get("internalLoading")),
     isDisabled: ({ context }) => Boolean(context.get("disabled")),
-    isInteractive: ({ context, state, computed }) =>
-      !state.matches("loading") &&
-      !context.get("disabled") &&
-      !computed("isLoading"),
+    isInteractive: ({ computed }) =>
+      !computed("isDisabled") && !computed("isLoading"),
+  },
+
+  on: {
+    SET_DISABLED: {
+      actions: ["setDisabledContext"],
+    },
   },
 
   states: {
@@ -74,9 +79,6 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
           target: "loading",
           guard: "isLoadingTrue",
           actions: ["setLoadingContext"],
-        },
-        SET_DISABLED: {
-          actions: ["setDisabledContext"],
         },
       },
     },
@@ -122,6 +124,11 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
             target: "idle",
           },
         ],
+        SET_LOADING: {
+          target: "loading",
+          guard: "isLoadingTrue",
+          actions: ["setLoadingContext"],
+        },
         RESET: {
           target: "idle",
         },
@@ -146,6 +153,11 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
             target: "idle",
           },
         ],
+        SET_LOADING: {
+          target: "loading",
+          guard: "isLoadingTrue",
+          actions: ["setLoadingContext"],
+        },
         RESET: {
           target: "idle",
         },
@@ -155,34 +167,14 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
   implementations: {
     guards: {
-      isInteractive: ({ context, state, computed }) => {
-        if (state.matches("loading")) return false;
-        if (
-          context.get("disabled") ||
-          context.get("loading") ||
-          context.get("internalLoading")
-        )
-          return false;
-        if (computed("isLoading") || !computed("isInteractive")) return false;
-        return true;
-      },
+      isInteractive: ({ computed }) => computed("isInteractive"),
       isLoadingTrue: ({ event }) =>
         "loading" in event && event.loading === true,
       isLoadingFalse: ({ event }) =>
         "loading" in event && event.loading === false,
-      isInteractiveAndHasAsyncHandler: ({ context, state, prop, computed }) => {
-        if (state.matches("loading")) return false;
-        if (
-          context.get("disabled") ||
-          context.get("loading") ||
-          context.get("internalLoading")
-        )
-          return false;
-        if (computed("isLoading") || !computed("isInteractive")) return false;
-        return Boolean(
-          prop("loadingAuto") && (prop("onTap") || prop("onClick")),
-        );
-      },
+      isInteractiveAndHasAsyncHandler: ({ computed, prop }) =>
+        computed("isInteractive") &&
+        Boolean(prop("loadingAuto") && (prop("onTap") || prop("onClick"))),
     },
 
     actions: {

@@ -1,5 +1,9 @@
 import { createMachine, getColors } from "@code-ui/core";
-import { encode, type QrCodeGenerateOptions, type QrCodeGenerateResult } from "uqr";
+import {
+  encode,
+  type QrCodeGenerateOptions,
+  type QrCodeGenerateResult,
+} from "uqr";
 import type {
   QrCodeColor,
   QrCodeEcc,
@@ -12,38 +16,69 @@ import { defaultQrCodeProps } from "./qr-code.props";
 
 const VALID_ECC = new Set<QrCodeEcc>(["L", "M", "Q", "H"]);
 
-const DEFAULT_COLOR_PALETTES: Record<string, string> = {
-  neutral: "#171717",
-  primary: "#10b981",
-  secondary: "#6366f1",
-  success: "#10b981",
-  warning: "#f59e0b",
-  danger: "#ef4444",
-  info: "#3b82f6",
-};
-
-function resolveColor(color: unknown): string {
-  if (typeof color === "string") {
-    const trimmed = color.trim();
-    if (
-      trimmed.startsWith("#") ||
-      trimmed.startsWith("rgb") ||
-      trimmed.startsWith("hsl")
-    ) {
-      return trimmed;
-    }
-    try {
-      const activeColors = getColors();
-      const matched = activeColors[trimmed];
-      if (matched) {
-        return String(matched);
-      }
-    } catch {}
-    if (DEFAULT_COLOR_PALETTES[trimmed]) {
-      return DEFAULT_COLOR_PALETTES[trimmed];
+function extractColorString(val: unknown): string | undefined {
+  if (typeof val === "string") {
+    return val;
+  }
+  if (val && typeof val === "object") {
+    const dict = val as Record<string, unknown>;
+    const candidate =
+      dict["500"] ?? dict[500] ?? dict["default"] ?? Object.values(dict)[0];
+    if (typeof candidate === "string") {
+      return candidate;
     }
   }
-  return "#171717";
+  return undefined;
+}
+
+export function resolveColor(color: unknown): string {
+  if (typeof color !== "string") {
+    return "#000000";
+  }
+
+  const trimmed = color.trim();
+  if (!trimmed) {
+    return "#000000";
+  }
+
+  if (
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("rgb") ||
+    trimmed.startsWith("hsl") ||
+    trimmed.startsWith("oklch")
+  ) {
+    return trimmed;
+  }
+
+  const lower = trimmed.toLowerCase();
+
+  if (lower === "black") return "#000000";
+  if (lower === "white") return "#ffffff";
+
+  let targetColor = lower;
+  try {
+    const activeColors = getColors() as Record<string, unknown>;
+    const visited = new Set<string>();
+
+    while (targetColor && !visited.has(targetColor)) {
+      visited.add(targetColor);
+      const matched = extractColorString(activeColors[targetColor]);
+      if (!matched) break;
+
+      const trimmedMatched = matched.trim();
+      if (
+        trimmedMatched.startsWith("#") ||
+        trimmedMatched.startsWith("rgb") ||
+        trimmedMatched.startsWith("hsl") ||
+        trimmedMatched.startsWith("oklch")
+      ) {
+        return trimmedMatched;
+      }
+      targetColor = trimmedMatched.toLowerCase();
+    }
+  } catch {}
+
+  return "#000000";
 }
 
 function normalizeEcc(ecc: unknown): QrCodeEcc {
@@ -82,13 +117,6 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
 
   initialState: () => "idle",
 
-  refs: ({ prop }) => ({
-    prevValueProp: prop("value"),
-    prevEccProp: prop("ecc"),
-    prevBorderProp: prop("border"),
-    prevEncodingProp: prop("encoding"),
-  }),
-
   context: ({ prop, bindable }) => {
     const rawVal = prop("value");
     const rawDefault = prop("defaultValue");
@@ -101,6 +129,10 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
 
     return {
       value: bindable<string>(() => ({
+        value:
+          prop("value") !== undefined && prop("value") !== null
+            ? String(prop("value"))
+            : undefined,
         defaultValue: initialValue,
         onChange: (nextVal) => {
           prop("onValueChange")?.({ value: nextVal });
@@ -110,17 +142,20 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       })),
 
       ecc: bindable<QrCodeEcc>(() => ({
-        defaultValue: normalizeEcc(prop("ecc") ?? defaultQrCodeProps.ecc),
+        value: normalizeEcc(prop("ecc") ?? defaultQrCodeProps.ecc),
+        defaultValue: normalizeEcc(defaultQrCodeProps.ecc),
       })),
 
       border: bindable<number>(() => ({
-        defaultValue: normalizeBorder(
+        value: normalizeBorder(
           prop("border") ?? defaultQrCodeProps.border,
         ),
+        defaultValue: normalizeBorder(defaultQrCodeProps.border),
       })),
 
       encoding: bindable<QrCodeEncodingOptions>(() => ({
-        defaultValue: prop("encoding") ?? {},
+        value: prop("encoding") ?? defaultQrCodeProps.encoding ?? {},
+        defaultValue: defaultQrCodeProps.encoding ?? {},
       })),
 
       pixelSize: bindable<number>(() => ({
@@ -131,12 +166,12 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       })),
 
       size: bindable<QrCodeSize>(() => ({
-        value: prop("size") ?? defaultQrCodeProps.size ?? "md",
+        value: prop("size") ?? defaultQrCodeProps.size,
         defaultValue: "md",
       })),
 
       color: bindable<QrCodeColor>(() => ({
-        value: prop("color") ?? defaultQrCodeProps.color ?? "neutral",
+        value: prop("color") ?? defaultQrCodeProps.color,
         defaultValue: "neutral",
       })),
 
@@ -155,32 +190,6 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
         defaultValue: {},
       })),
     };
-  },
-
-  watch: ({ prop, context, refs }) => {
-    const nextValueProp = prop("value");
-    if (nextValueProp !== refs.get("prevValueProp")) {
-      refs.set("prevValueProp", nextValueProp);
-      context.set("value", String(nextValueProp ?? ""));
-    }
-
-    const nextEccProp = prop("ecc");
-    if (nextEccProp !== refs.get("prevEccProp")) {
-      refs.set("prevEccProp", nextEccProp);
-      context.set("ecc", normalizeEcc(nextEccProp));
-    }
-
-    const nextBorderProp = prop("border");
-    if (nextBorderProp !== refs.get("prevBorderProp")) {
-      refs.set("prevBorderProp", nextBorderProp);
-      context.set("border", normalizeBorder(nextBorderProp));
-    }
-
-    const nextEncodingProp = prop("encoding");
-    if (nextEncodingProp !== refs.get("prevEncodingProp")) {
-      refs.set("prevEncodingProp", nextEncodingProp);
-      context.set("encoding", nextEncodingProp ?? {});
-    }
   },
 
   computed: {

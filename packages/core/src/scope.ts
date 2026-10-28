@@ -26,5 +26,8 @@ export function createScope(props: ScopeProps = {}): Scope {
     ids: props.ids,
     component: props.component,
     dom: createDOM(props.component),
+    toJSON() {
+      return { id: props.id, ids: props.ids };
+    },
   };
 }

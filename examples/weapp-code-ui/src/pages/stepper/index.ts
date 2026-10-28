@@ -1,7 +1,10 @@
+import { useChild, type UseChildReturn } from "@code-ui/composables";
+
 Page({
   data: {
     // 1. Interactive Demo
     activeStep: 0,
+    stepper: {} as Record<string, any>,
     linear: true,
     color: "primary",
     colorOptions: [
@@ -22,21 +25,38 @@ Page({
         title: "Account",
         description: "Credentials",
         value: "account",
+        icon: "i-lucide-user",
+        completedIcon: "i-lucide-check",
       },
       {
         title: "Personal",
         description: "Name & contact",
         value: "personal",
+        icon: "i-lucide-file-text",
+        completedIcon: "i-lucide-eye",
       },
       {
         title: "Review",
         description: "Confirmation",
         value: "review",
+        icon: "i-lucide-send",
+        completedIcon: "i-lucide-flame",
       },
     ],
 
     // 3. Vertical Order Tracking
     orderStep: 2,
+  },
+
+  stepperChild: null as UseChildReturn<any, any | null> | null,
+
+  onReady() {
+    this.stepperChild = useChild(this, "#stepper-controlled", {
+      key: "stepper",
+      onChange: (snapshot) => {
+        console.log(snapshot);
+      },
+    });
   },
 
   onStepChange(e: WechatMiniprogram.CustomEvent) {

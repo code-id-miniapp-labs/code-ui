@@ -124,25 +124,6 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
   },
 
   watch: ({ prop, context, refs }) => {
-    const controlledVal = prop("value");
-    if (isNotNull(controlledVal)) {
-      const stringVal = String(controlledVal);
-      if (context.get("value") !== stringVal) {
-        context.set("value", stringVal);
-      }
-    }
-    const controlledInvalid = prop("invalid");
-    if (isNotNull(controlledInvalid)) {
-      context.set("invalid", Boolean(controlledInvalid));
-    }
-    const controlledFieldDisabled = prop("fieldDisabled");
-    if (controlledFieldDisabled !== undefined) {
-      context.set("fieldDisabled", controlledFieldDisabled);
-    }
-    const controlledFieldSize = prop("fieldSize");
-    if (controlledFieldSize !== undefined) {
-      context.set("fieldSize", controlledFieldSize);
-    }
     const nextForm = prop("form") ?? "";
     const nextName = prop("name") ?? "";
     if (nextForm !== context.get("form") || nextName !== context.get("name")) {

@@ -43,10 +43,31 @@
 	},
 	"appid": "touristappid",
 	"TCSASappid": "touristId",
-	"projectname": "weapp-code-ui-icon",
+	"projectname": "weapp-code-ui-dev",
 	"scripts": {},
 	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"current": -1,
+			"list": []
+		},
+		"gamePlugin": {
+			"current": -1,
+			"list": []
+		},
 		"miniprogram": {
+			"current": -1,
 			"list": []
 		}
 	}

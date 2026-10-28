@@ -62,7 +62,7 @@ export interface InputProps {
   /** Semantic color */
   color?: InputColor | undefined;
   /** Size variant */
-  size?: InputSize | undefined;
+  size?: InputSize | "" | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
   /** Form field wrapper size override */
@@ -95,6 +95,8 @@ export interface InputProps {
   loading?: boolean | undefined;
   /** Whether leading slot/icon is shown */
   leading?: boolean | undefined;
+  /** custom loading Icon */
+  loadingIcon?: string;
   /** Whether trailing slot/icon is shown */
   trailing?: boolean | undefined;
   /** Leading icon class */
@@ -166,8 +168,12 @@ export interface InputContext {
 
 export interface InputComputed {
   isEmpty: boolean;
+  isDisabled: boolean;
   isFilled: boolean;
   isClearable: boolean;
+  isInteractive: boolean;
+  isReadOnly: boolean;
+  effectiveSize: InputSize;
 }
 
 export interface InputRefs {
@@ -178,6 +184,20 @@ export interface InputRefs {
   busDisposers?: Array<() => void> | undefined;
 }
 
+export type InputAction =
+  | "setupFormField"
+  | "cleanupFormField"
+  | "handleInputChange"
+  | "notifyFormChange"
+  | "handleFocus"
+  | "handleBlur"
+  | "handleConfirm"
+  | "setValue"
+  | "clearValue"
+  | "resetValue";
+
+export type InputGuard = "isInteractive";
+
 export interface InputSchema extends MachineSchema {
   state: InputState;
   tag: "focused" | "disabled" | "idle";
@@ -186,9 +206,9 @@ export interface InputSchema extends MachineSchema {
   context: InputContext;
   computed: InputComputed;
   refs: InputRefs;
-  action: string;
+  action: InputAction;
   effect: string;
-  guard: string;
+  guard: InputGuard;
 }
 
 export type InputMachine = Machine<InputSchema>;

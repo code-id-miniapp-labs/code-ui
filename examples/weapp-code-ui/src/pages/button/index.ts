@@ -4,12 +4,19 @@ Page({
     customButtonUI: {
       root: "shadow-md ring-2 ring-emerald-400 ring-offset-2",
     },
+    disabled: false,
     checked: false,
   },
 
   handleTap() {
     this.setData({
       count: this.data.count + 1,
+    });
+  },
+
+  toggleDisabled(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      disabled: e.detail.checked,
     });
   },
 

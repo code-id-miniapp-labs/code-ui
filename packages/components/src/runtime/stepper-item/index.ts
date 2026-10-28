@@ -39,6 +39,10 @@ Component(
         type: Boolean,
         value: false,
       },
+      customCompletedIndicator: {
+        type: Boolean,
+        value: false,
+      },
     }),
 
     computed: {

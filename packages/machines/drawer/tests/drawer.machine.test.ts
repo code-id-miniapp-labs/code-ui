@@ -24,10 +24,12 @@ describe("Drawer Machine", () => {
 
       expect(machine.state.get()).toBe("closed");
       expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(false);
       expect(machine.computed("placement")).toBe("bottom");
 
       const api = connectDrawer(machine.service);
       expect(api.open).toBe(false);
+      expect(api.visible).toBe(false);
       expect(api.state).toBe("closed");
       expect(api.placement).toBe("bottom");
       expect(api.threshold).toBe(80);
@@ -42,9 +44,11 @@ describe("Drawer Machine", () => {
 
       expect(machine.state.get()).toBe("open");
       expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       const api = connectDrawer(machine.service);
       expect(api.open).toBe(true);
+      expect(api.visible).toBe(true);
       expect(api.state).toBe("open");
 
       machine.stop();
@@ -56,6 +60,7 @@ describe("Drawer Machine", () => {
 
       expect(machine.state.get()).toBe("open");
       expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -78,26 +83,32 @@ describe("Drawer Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("closed");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(false);
 
       // Open
       machine.send({ type: "OPEN" });
       await flush();
 
       expect(machine.state.get()).toBe("open");
-      expect(machine.context.get("open")).toBe(true);
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       // Close -> enters closing state
       machine.send({ type: "CLOSE" });
       await flush();
 
       expect(machine.state.get()).toBe("closing");
-      expect(machine.context.get("open")).toBe(false);
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       // Animation timer finishes
       vi.advanceTimersByTime(250);
       await flush();
 
       expect(machine.state.get()).toBe("closed");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(false);
 
       machine.stop();
     });
@@ -110,16 +121,22 @@ describe("Drawer Machine", () => {
       machine.send({ type: "TOGGLE" });
       await flush();
       expect(machine.state.get()).toBe("open");
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       // Open -> Closing
       machine.send({ type: "TOGGLE" });
       await flush();
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       // Closing -> Closed
       vi.advanceTimersByTime(200);
       await flush();
       expect(machine.state.get()).toBe("closed");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(false);
 
       machine.stop();
     });
@@ -134,6 +151,8 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -149,6 +168,8 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -164,6 +185,8 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("open");
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -178,12 +201,15 @@ describe("Drawer Machine", () => {
       machine.send({ type: "CLOSE" });
       await flush();
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       // Re-open before animation finishes
       machine.send({ type: "OPEN" });
       await flush();
       expect(machine.state.get()).toBe("open");
-      expect(machine.context.get("open")).toBe(true);
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -203,6 +229,8 @@ describe("Drawer Machine", () => {
       expect(machine.state.get()).toBe("dragging");
       expect(machine.service.state.hasTag("open")).toBe(true);
       expect(machine.service.state.hasTag("dragging")).toBe(true);
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -218,6 +246,7 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("open");
+      expect(machine.computed("isOpen")).toBe(true);
 
       machine.stop();
     });
@@ -236,7 +265,8 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("closing");
-      expect(machine.context.get("open")).toBe(false);
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -255,7 +285,8 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("open");
-      expect(machine.context.get("open")).toBe(true);
+      expect(machine.computed("isOpen")).toBe(true);
+      expect(machine.computed("isVisible")).toBe(true);
 
       machine.stop();
     });
@@ -274,14 +305,97 @@ describe("Drawer Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+      expect(machine.computed("isVisible")).toBe(true);
+
+      machine.stop();
+    });
+  });
+
+  describe("Callbacks (onOpenChange & onClose)", () => {
+    it("invokes onOpenChange when opening", async () => {
+      const onOpenChange = vi.fn();
+      const machine = new MiniappMachine(drawerMachine, { onOpenChange });
+      machine.start();
+
+      machine.send({ type: "OPEN" });
+      await flush();
+
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledWith({ open: true });
+
+      machine.stop();
+    });
+
+    it("invokes onOpenChange and onClose when closing via CLOSE event", async () => {
+      const onOpenChange = vi.fn();
+      const onClose = vi.fn();
+      const machine = new MiniappMachine(drawerMachine, {
+        defaultOpen: true,
+        onOpenChange,
+        onClose,
+      });
+      machine.start();
+
+      machine.send({ type: "CLOSE" });
+      await flush();
+
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledWith({ open: false });
+      expect(onClose).toHaveBeenCalledTimes(1);
+
+      machine.stop();
+    });
+
+    it("invokes onOpenChange and onClose on successful drag close", async () => {
+      const onOpenChange = vi.fn();
+      const onClose = vi.fn();
+      const machine = new MiniappMachine(drawerMachine, {
+        defaultOpen: true,
+        onOpenChange,
+        onClose,
+      });
+      machine.start();
+
+      machine.send({ type: "DRAG_START" });
+      await flush();
+      machine.send({ type: "DRAG_END", passed: true } as any);
+      await flush();
+
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledWith({ open: false });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(machine.state.get()).toBe("closing");
+
+      machine.stop();
+    });
+
+    it("does not invoke onClose when drag snaps back to open", async () => {
+      const onClose = vi.fn();
+      const machine = new MiniappMachine(drawerMachine, {
+        defaultOpen: true,
+        onClose,
+      });
+      machine.start();
+
+      machine.send({ type: "DRAG_START" });
+      await flush();
+      machine.send({ type: "DRAG_END", passed: false } as any);
+      await flush();
+
+      expect(onClose).not.toHaveBeenCalled();
+      expect(machine.state.get()).toBe("open");
 
       machine.stop();
     });
   });
 
   describe("Keyboard Height Tracking", () => {
-    it("updates keyboardHeight in open and dragging states", async () => {
-      const machine = new MiniappMachine(drawerMachine, { defaultOpen: true });
+    it("updates keyboardHeight in open and dragging states and resets on closed", async () => {
+      const machine = new MiniappMachine(drawerMachine, {
+        defaultOpen: true,
+        duration: 100,
+      });
       machine.start();
 
       expect(machine.context.get("keyboardHeight")).toBe(0);
@@ -295,59 +409,100 @@ describe("Drawer Machine", () => {
       machine.send({ type: "DRAG_START" });
       await flush();
 
-      machine.send({ type: "KEYBOARD_CHANGE", height: 0 } as any);
+      machine.send({ type: "KEYBOARD_CHANGE", height: 150 } as any);
       await flush();
+      expect(machine.context.get("keyboardHeight")).toBe(150);
+
+      // Close and wait for animation to complete -> enters closed state
+      machine.send({ type: "CLOSE" });
+      await flush();
+      vi.advanceTimersByTime(100);
+      await flush();
+
+      expect(machine.state.get()).toBe("closed");
       expect(machine.context.get("keyboardHeight")).toBe(0);
 
       machine.stop();
     });
   });
 
-  describe("onClose Callback", () => {
-    it("fires onClose when open context transitions from true to false", async () => {
-      const onClose = vi.fn();
-      const machine = new MiniappMachine(drawerMachine, {
-        defaultOpen: true,
-        onClose,
-      });
-      machine.start();
-
-      expect(onClose).not.toHaveBeenCalled();
-
-      machine.send({ type: "CLOSE" });
-      await flush();
-
-      expect(onClose).toHaveBeenCalledTimes(1);
-
-      machine.stop();
-    });
-  });
-
   describe("Controlled Open Prop (watch)", () => {
-    it("syncs state when controlled open prop is dynamically updated via updateProps", async () => {
-      const machine = new MiniappMachine(drawerMachine, { open: false });
+    it("syncs state across multiple open -> close -> open cycles via updateProps", async () => {
+      const machine = new MiniappMachine(drawerMachine, {
+        open: false,
+        duration: 200,
+      });
       machine.start();
 
       expect(machine.state.get()).toBe("closed");
 
-      // Parent sets open = true
+      // 1st open
       machine.updateProps({ open: true });
       await flush();
 
       expect(machine.state.get()).toBe("open");
+      expect(machine.computed("isOpen")).toBe(true);
 
-      // Parent sets open = false
+      // 1st close
       machine.updateProps({ open: false });
       await flush();
 
       expect(machine.state.get()).toBe("closing");
+      expect(machine.computed("isOpen")).toBe(false);
+
+      vi.advanceTimersByTime(200);
+      await flush();
+      expect(machine.state.get()).toBe("closed");
+
+      // 2nd open (re-open)
+      machine.updateProps({ open: true });
+      await flush();
+
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("isOpen")).toBe(true);
+
+      machine.stop();
+    });
+
+    it("can re-open via controlled prop after closing via backdrop tap or drag", async () => {
+      const machine = new MiniappMachine(drawerMachine, {
+        open: false,
+        duration: 200,
+        onClose: () => {
+          machine.updateProps({ open: false });
+        },
+      });
+      machine.start();
+
+      // Open
+      machine.updateProps({ open: true });
+      await flush();
+      expect(machine.state.get()).toBe("open");
+
+      // Close via drag
+      machine.send({ type: "DRAG_START" });
+      await flush();
+      expect(machine.state.get()).toBe("dragging");
+
+      machine.send({ type: "DRAG_END", passed: true } as any);
+      await flush();
+      expect(machine.state.get()).toBe("closing");
+
+      vi.advanceTimersByTime(200);
+      await flush();
+      expect(machine.state.get()).toBe("closed");
+
+      // Re-open
+      machine.updateProps({ open: true });
+      await flush();
+      expect(machine.state.get()).toBe("open");
 
       machine.stop();
     });
   });
 
   describe("Connected API Props & Anatomy", () => {
-    it("provides connected methods and DOM attribute bindings", async () => {
+    it("provides connected methods and DOM attribute bindings in closed state", () => {
       const machine = new MiniappMachine(drawerMachine, {
         id: "payment-sheet",
         placement: "bottom",
@@ -358,22 +513,48 @@ describe("Drawer Machine", () => {
 
       const api = connectDrawer(machine.service);
 
+      expect(api.open).toBe(false);
+      expect(api.visible).toBe(false);
+      expect(api.state).toBe("closed");
+      expect(api.placement).toBe("bottom");
+      expect(api.threshold).toBe(100);
+      expect(api.duration).toBe(400);
+
       expect(api.rootProps.id).toBe("drawer:payment-sheet:root");
       expect(api.rootProps["data-state"]).toBe("closed");
       expect(api.rootProps["data-placement"]).toBe("bottom");
+      expect(api.rootProps.hidden).toBe(true);
 
       expect(api.backdropProps.id).toBe("drawer:payment-sheet:backdrop");
       expect(api.backdropProps["data-state"]).toBe("closed");
+      expect(api.backdropProps["data-transition-state"]).toBe("closed");
       expect(api.backdropProps["aria-hidden"]).toBe(true);
+      expect(api.backdropProps.hidden).toBe(true);
 
       expect(api.contentProps.id).toBe("drawer:payment-sheet:content");
       expect(api.contentProps.role).toBe("dialog");
       expect(api.contentProps["aria-modal"]).toBe("true");
       expect(api.contentProps["aria-hidden"]).toBe(true);
+      expect(api.contentProps.hidden).toBe(true);
+      expect(api.contentProps["data-keyboard-height"]).toBe(0);
 
       expect(api.grabberProps.id).toBe("drawer:payment-sheet:grabber");
-      expect(api.closeTriggerProps.id).toBe("drawer:payment-sheet:close-trigger");
+      expect(api.closeTriggerProps.id).toBe(
+        "drawer:payment-sheet:close-trigger",
+      );
       expect(api.closeTriggerProps["aria-label"]).toBe("Close");
+
+      machine.stop();
+    });
+
+    it("updates attributes when opened, closed, and during keyboard change", async () => {
+      const machine = new MiniappMachine(drawerMachine, {
+        id: "sheet",
+        duration: 300,
+      });
+      machine.start();
+
+      const api = connectDrawer(machine.service);
 
       // openDrawer via API
       api.openDrawer();
@@ -381,11 +562,23 @@ describe("Drawer Machine", () => {
 
       const openApi = connectDrawer(machine.service);
       expect(openApi.open).toBe(true);
+      expect(openApi.visible).toBe(true);
       expect(openApi.state).toBe("open");
       expect(openApi.rootProps["data-state"]).toBe("open");
+      expect(openApi.rootProps.hidden).toBe(false);
       expect(openApi.backdropProps["data-state"]).toBe("open");
-      expect(openApi.backdropProps["aria-hidden"]).toBe(false);
+      expect(openApi.backdropProps["data-transition-state"]).toBe("open");
+      expect(openApi.backdropProps["aria-hidden"]).toBe(true);
+      expect(openApi.backdropProps.hidden).toBe(false);
       expect(openApi.contentProps["aria-hidden"]).toBe(false);
+      expect(openApi.contentProps.hidden).toBe(false);
+
+      // Keyboard change while open
+      machine.send({ type: "KEYBOARD_CHANGE", height: 260 } as any);
+      await flush();
+      const kbApi = connectDrawer(machine.service);
+      expect(kbApi.contentProps["data-keyboard-height"]).toBe(260);
+      expect(kbApi.contentProps.style).toBe("--keyboard-height: 260px;");
 
       // closeDrawer via API
       openApi.closeDrawer();
@@ -393,6 +586,11 @@ describe("Drawer Machine", () => {
 
       const closingApi = connectDrawer(machine.service);
       expect(closingApi.state).toBe("closing");
+      expect(closingApi.open).toBe(false);
+      expect(closingApi.visible).toBe(true);
+      expect(closingApi.backdropProps["data-state"]).toBe("closed");
+      expect(closingApi.backdropProps["data-transition-state"]).toBe("closing");
+      expect(closingApi.contentProps.style).toBe("--keyboard-height: 260px;");
 
       // setOpen via API
       api.setOpen(true);

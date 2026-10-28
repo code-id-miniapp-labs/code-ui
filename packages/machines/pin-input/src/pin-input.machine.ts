@@ -1,6 +1,9 @@
 import { createMachine } from "@code-ui/core";
-import { setupFormFieldSync, cleanupFormFieldSync } from "@code-ui/form/context";
-import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
+import {
+  setupFormFieldSync,
+  cleanupFormFieldSync,
+} from "@code-ui/form/context";
+import { isEmpty, isNotEmpty } from "@code-ui/utils";
 import type {
   PinInputColor,
   PinInputMachine,
@@ -165,34 +168,20 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     },
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
+    isReadOnly: ({ context }) =>
+      context.get("formReadOnly") || context.get("readOnly"),
+    isDisabled: ({ context }) =>
+      context.get("formDisabled") ||
+      context.get("fieldDisabled") ||
+      context.get("disabled"),
+    effectiveSize: ({ context }) =>
+      context.get("size") || context.get("fieldSize") || "md",
+
+    isInteractive: ({ computed }) =>
+      !computed("isDisabled") && !computed("isReadOnly"),
   },
 
   watch: ({ prop, context, refs }) => {
-    const controlledVal = prop("value");
-    if (controlledVal !== undefined && controlledVal !== null) {
-      const len = context.get("length") ?? prop("length") ?? 4;
-      const normalized = normalizePinValue(controlledVal, len);
-      const current = context.get("value");
-      const isSame =
-        Array.isArray(current) &&
-        current.length === normalized.length &&
-        current.every((c, i) => c === normalized[i]);
-      if (!isSame) {
-        context.set("value", normalized);
-      }
-    }
-    const controlledInvalid = prop("invalid");
-    if (isNotNull(controlledInvalid)) {
-      context.set("invalid", Boolean(controlledInvalid));
-    }
-    const controlledFieldDisabled = prop("fieldDisabled");
-    if (controlledFieldDisabled !== undefined) {
-      context.set("fieldDisabled", controlledFieldDisabled);
-    }
-    const controlledFieldSize = prop("fieldSize");
-    if (controlledFieldSize !== undefined) {
-      context.set("fieldSize", controlledFieldSize);
-    }
     const nextForm = prop("form") ?? "";
     const nextName = prop("name") ?? "";
     if (nextForm !== context.get("form") || nextName !== context.get("name")) {
@@ -330,12 +319,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               context.set("focusedIndex", targetIdx);
             },
             getValidateOn: () => prop("validateOn"),
-            isDisabled: () =>
-              Boolean(
-                context.get("disabled") ||
-                context.get("formDisabled") ||
-                context.get("fieldDisabled"),
-              ),
+            isDisabled: () => computed("isDisabled"),
             onValidationChange: (isValid) => {
               context.set("invalid", !isValid);
             },
@@ -371,13 +355,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         computed,
         prop,
       }) => {
-        if (
-          context.get("disabled") ||
-          context.get("formDisabled") ||
-          context.get("fieldDisabled") ||
-          context.get("readOnly") ||
-          context.get("formReadOnly")
-        ) {
+        if (!computed("isInteractive")) {
           return;
         }
         const len = context.get("length");
@@ -431,13 +409,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       },
 
       handleInputChange: ({ context, prop, computed, event, refs }) => {
-        if (
-          context.get("disabled") ||
-          context.get("formDisabled") ||
-          context.get("fieldDisabled") ||
-          context.get("readOnly") ||
-          context.get("formReadOnly")
-        ) {
+        if (!computed("isInteractive")) {
           return;
         }
 

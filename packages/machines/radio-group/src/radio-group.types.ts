@@ -150,7 +150,21 @@ export type RadioGroupEvent =
 
 export interface RadioGroupComputed {
   isInteractive: boolean;
+  isDisabled: boolean;
+  isReadOnly: boolean;
 }
+
+export type RadioGroupGuard = "isInteractive";
+
+export type RadioGroupAction =
+  | "setValue"
+  | "clearValue"
+  | "setInvalid"
+  | "setupFormField"
+  | "resetValue"
+  | "setupGroupBus"
+  | "cleanupFormField"
+  | "cleanupGroupBus";
 
 export interface RadioGroupRefs {
   initialValue?: string | null | undefined;
@@ -168,9 +182,9 @@ export interface RadioGroupSchema extends MachineSchema {
   context: RadioGroupContext;
   computed: RadioGroupComputed;
   refs: RadioGroupRefs;
-  action: string;
+  action: RadioGroupAction;
   effect: string;
-  guard: string;
+  guard: RadioGroupGuard;
 }
 
 export type RadioGroupService = Service<RadioGroupSchema>;
@@ -209,11 +223,25 @@ export interface RadioGroupApi {
   /** Tap handler for precomputed wx:for items */
   handleItemTap: (e?: any) => void;
   /** Get accessible props for an item container */
-  getItemProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Get accessible props for an item outer circle (base / control) */
-  getItemControlProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemControlProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Get accessible props for an item inner indicator (dot) */
-  getItemIndicatorProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemIndicatorProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Underlying bound FormField if registered with `<c-form>` */
   formField?: BoundFormField | undefined;
+}
+
+export interface FieldStateSnapshot {
+  disabled?: boolean | undefined;
+  size?: RadioGroupSize | "" | undefined;
 }

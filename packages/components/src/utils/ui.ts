@@ -14,6 +14,7 @@ export function clearThemeCache(): void {
 
 const DEFAULT_SEMANTIC_COLORS = new Set([
   "primary",
+  "secondary",
   "neutral",
   "danger",
   "success",

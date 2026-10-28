@@ -51,6 +51,7 @@ export const stepperItemMachine: StepperItemMachine =
         title: b<string>("title", ""),
         description: b<string>("description", ""),
         icon: b<string>("icon", ""),
+        completedIcon: b<string>("completedIcon", ""),
         disabled: b<boolean>("disabled", false),
         completed: bindable<boolean | null>(() => {
           const raw = prop("completed");

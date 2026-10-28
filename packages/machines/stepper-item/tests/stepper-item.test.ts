@@ -2,10 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { createEventBus } from "@code-ui/utils";
 import type { StepperBusEvents } from "@code-ui/stepper";
-import {
-  stepperItemMachine,
-  connectStepperItem,
-} from "../src";
+import { stepperItemMachine, connectStepperItem } from "../src";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
@@ -161,5 +158,17 @@ describe("StepperItem Machine", () => {
     const api2 = connectStepperItem(itemCustomStatus.service);
     expect(api2.status).toBe("completed");
     itemCustomStatus.stop();
+  });
+
+  it("exposes icon and completedIcon in connect api", () => {
+    const item = new MiniappMachine(stepperItemMachine, {
+      index: 0,
+      icon: "i-lucide-user",
+    });
+    item.start();
+    const api = connectStepperItem(item.service);
+    expect(api.icon).toBe("i-lucide-user");
+    expect(api.completedIcon).toBe("check");
+    item.stop();
   });
 });

@@ -1,17 +1,21 @@
-<view id="{{input.rootProps.id}}" class="{{classes.root}}" data-scope="input" data-part="root" data-state="{{input.state}}" data-disabled="{{input.rootProps['data-disabled']}}" data-readonly="{{input.rootProps['data-readonly']}}" data-invalid="{{input.rootProps['data-invalid']}}" role="group" aria-disabled="{{input.rootProps['aria-disabled']}}" aria-invalid="{{input.rootProps['aria-invalid']}}">
-  <view wx:if="{{leading || leadingIcon}}" id="{{input.leadingProps.id}}" class="{{classes.leading}}" data-scope="input" data-part="leading">
-    <slot name="leading" />
-    <c-icon wx:if="{{leadingIcon}}" name="{{leadingIcon}}" className="{{classes.leadingIcon}}" />
+<view id="{{input.rootProps.id}}" class="{{classes.root}}" data-scope="input" data-part="root" data-state="{{input.rootProps['data-state']}}" data-empty="{{input.rootProps['data-empty']}}" data-disabled="{{input.rootProps['data-disabled']}}" data-readonly="{{input.rootProps['data-readonly']}}" data-invalid="{{input.rootProps['data-invalid']}}" role="group" aria-disabled="{{input.rootProps['aria-disabled']}}" aria-invalid="{{input.rootProps['aria-invalid']}}">
+  <view wx:if="{{leading || leadingIcon}}" id="{{input.leadingProps.id}}" class="{{classes.leading}}" data-scope="input" data-part="leading" aria-hidden="true">
+    <slot name="leading"></slot>
+    <view wx:if="{{leadingIcon}}" class="{{classes.leadingIcon}}">
+      <c-icon name="{{leadingIcon}}" className="w-full h-full block"></c-icon>
+    </view>
   </view>
-  <input id="{{input.inputProps.id}}" name="{{name}}" class="{{classes.base}}" data-scope="input" data-part="base" data-state="{{input.state}}" data-focused="{{input.inputProps['data-focused']}}" data-disabled="{{input.inputProps['data-disabled']}}" data-readonly="{{input.inputProps['data-readonly']}}" data-invalid="{{input.inputProps['data-invalid']}}" value="{{input.value}}" focus="{{input.inputProps.focus}}" disabled="{{input.inputProps.disabled}}" type="{{type}}" password="{{password}}" placeholder="{{placeholder}}" placeholder-class="{{placeholderClass}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" cursor-spacing="{{cursorSpacing}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" cursor="{{cursor}}" selection-start="{{selectionStart}}" selection-end="{{selectionEnd}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" aria-invalid="{{input.inputProps['aria-invalid']}}" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" bindkeyboardheightchange="handleKeyboardHeightChange" />
-  <view wx:if="{{trailing || trailingIcon || clearable || loading}}" id="{{input.trailingProps.id}}" class="{{classes.trailing}}" data-scope="input" data-part="trailing">
+  <input id="{{input.inputProps.id}}" name="{{input.inputProps.name}}" class="{{classes.base}}" value="{{input.value}}" focus="{{input.inputProps.focus}}" disabled="{{input.inputProps.disabled}}" type="{{input.inputProps.type}}" password="{{input.inputProps.password}}" placeholder="{{input.inputProps.placeholder}}" placeholder-class="{{placeholderClass}}" placeholder-style="{{placeholderStyle}}" maxlength="{{input.inputProps.maxlength}}" cursor-spacing="{{cursorSpacing}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" cursor="{{cursor}}" selection-start="{{selectionStart}}" selection-end="{{selectionEnd}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" role="textbox" aria-invalid="{{input.inputProps['aria-invalid']}}" data-scope="input" data-part="base" data-state="{{input.inputProps['data-state']}}" data-empty="{{input.inputProps['data-empty']}}" data-focused="{{input.inputProps['data-focused']}}" data-disabled="{{input.inputProps['data-disabled']}}" data-readonly="{{input.inputProps['data-readonly']}}" data-invalid="{{input.inputProps['data-invalid']}}" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" bindkeyboardheightchange="handleKeyboardHeightChange"></input>
+  <view wx:if="{{trailing || trailingIcon || input.isClearable || loading}}" id="{{input.trailingProps.id}}" class="{{classes.trailing}}" data-scope="input" data-part="trailing" aria-hidden="true">
     <view wx:if="{{loading}}" class="{{classes.trailingIcon}}">
-      <c-icon name="loading" className="w-full h-full animate-spin" />
+      <c-icon name="{{loadingIcon}}" className="w-full h-full block animate-spin"></c-icon>
     </view>
-    <view wx:elif="{{clearable && input.isClearable}}" id="{{input.clearButtonProps.id}}" class="{{classes.clear}}" data-scope="input" data-part="clear" catchtap="handleClear">
-      <c-icon name="{{clearIcon || 'close'}}" className="size-3.5" />
+    <view wx:elif="{{input.isClearable}}" id="{{input.clearButtonProps.id}}" class="{{classes.trailingIcon}} {{classes.trailingIcon}}" data-scope="input" data-part="clear" role="button" aria-label="Clear input" catchtap="handleClear">
+      <c-icon name="{{clearIcon}}" className="w-full h-full block"></c-icon>
     </view>
-    <c-icon wx:elif="{{trailingIcon}}" name="{{trailingIcon}}" className="{{classes.trailingIcon}}" />
-    <slot name="trailing" />
+    <view wx:elif="{{trailingIcon}}" class="{{classes.trailingIcon}}">
+      <c-icon name="{{trailingIcon}}" className="w-full h-full block"></c-icon>
+    </view>
+    <slot name="trailing"></slot>
   </view>
 </view>

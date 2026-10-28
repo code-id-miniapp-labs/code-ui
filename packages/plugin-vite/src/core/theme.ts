@@ -81,6 +81,19 @@ export const PALETTE_FALLBACKS: Record<string, Record<number, string>> = {
     900: "#171717",
     950: "#0a0a0a",
   },
+  stone: {
+    50: "#fafaf9",
+    100: "#f5f5f4",
+    200: "#e7e5e4",
+    300: "#d6d3d1",
+    400: "#a8a29e",
+    500: "#78716c",
+    600: "#57534e",
+    700: "#44403c",
+    800: "#292524",
+    900: "#1c1917",
+    950: "#0c0a09",
+  },
   slate: {
     50: "#f8fafc",
     100: "#f1f5f9",
@@ -174,6 +187,35 @@ export const PALETTE_FALLBACKS: Record<string, Record<number, string>> = {
   },
 };
 
+export const TAILWIND_500_FALLBACKS: Record<string, string> = {
+  slate: "#64748b",
+  gray: "#6b7280",
+  zinc: "#71717a",
+  neutral: "#737373",
+  stone: "#78716c",
+  red: "#ef4444",
+  orange: "#f97316",
+  amber: "#f59e0b",
+  yellow: "#eab308",
+  lime: "#84cc16",
+  green: "#22c55e",
+  emerald: "#10b981",
+  teal: "#14b8a6",
+  cyan: "#06b6d4",
+  sky: "#0ea5e9",
+  blue: "#3b82f6",
+  indigo: "#6366f1",
+  violet: "#8b5cf6",
+  purple: "#a855f7",
+  fuchsia: "#d946ef",
+  pink: "#ec4899",
+  rose: "#f43f5e",
+  mauve: "#717079",
+  olive: "#6f746d",
+  mist: "#667479",
+  taupe: "#7b7268",
+};
+
 export const RADIUS_FACTORS: Array<[string, number]> = [
   ["xs", 0.5],
   ["sm", 1],
@@ -187,7 +229,7 @@ export const RADIUS_FACTORS: Array<[string, number]> = [
 const RAW_COLOR_FN_RE = /^(?:rgb|rgba|hsl|hsla|oklch|color)\(/i;
 const WHITESPACE_RE = /\s+/;
 
-const DEFAULT_COLORS: Record<string, string> = {
+export const DEFAULT_COLORS: Record<string, string> = {
   primary: "red",
   secondary: "stone",
   neutral: "zinc",

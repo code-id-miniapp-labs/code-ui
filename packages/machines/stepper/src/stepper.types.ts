@@ -56,6 +56,7 @@ export interface StepperItem {
   title?: string | undefined;
   description?: string | undefined;
   icon?: string | undefined;
+  completedIcon?: string | undefined;
   disabled?: boolean | undefined;
   value?: string | number | undefined;
   ui?: Record<string, any> | undefined;
@@ -68,6 +69,7 @@ export interface StepItemComputed {
   title: string;
   description: string;
   icon: string;
+  completedIcon?: string | undefined;
   status: StepperStatus;
   isCurrent: boolean;
   isCompleted: boolean;
@@ -277,9 +279,10 @@ export interface StepperApi {
   /** Get props for list */
   getListProps: () => Record<string, any>;
   /** Get props for content */
-  getContentProps: (props?: { index?: number | undefined }) => Record<string, any>;
+  getContentProps: (props?: {
+    index?: number | undefined;
+  }) => Record<string, any>;
   /** Get props for step item */
-  getItemProps: (props: { index: number }) => Record<string, any>;
   /** Get props for step trigger */
   getTriggerProps: (props: { index: number }) => Record<string, any>;
   /** Get props for step indicator */
@@ -291,4 +294,3 @@ export interface StepperApi {
   /** Get props for step description */
   getDescriptionProps: (props: { index: number }) => Record<string, any>;
 }
-

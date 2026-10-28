@@ -1,8 +1,7 @@
-<view id="{{qrCode.rootProps.id}}" class="{{classes.root}}" style="{{rootStyle || qrCode.rootProps.style}}" data-scope="qr-code" data-part="root" data-state="{{qrCode.state}}" data-size="{{qrCode.size || 'md'}}" data-color="{{qrCode.color || 'neutral'}}" data-ecc="{{qrCode.ecc || 'M'}}" role="img" aria-label="{{qrCode.rootProps['aria-label']}}">
+<view id="{{qrCode.rootProps.id}}" class="{{classes.root}}" style="{{rootStyle || qrCode.rootProps.style}}" data-scope="qr-code" data-part="root" data-state="{{qrCode.state}}" data-size="{{qrCode.size}}" data-color="{{qrCode.color}}" data-ecc="{{qrCode.ecc}}" role="img" aria-label="{{qrCode.rootProps['aria-label']}}">
   <image id="{{qrCode.frameProps.id}}" class="{{classes.frame}}" data-scope="qr-code" data-part="frame" src="{{qrCode.dataUrl}}" mode="aspectFit" />
-
-  <view wx:if="{{qrCode.showOverlay || qrCode.overlaySrc || overlaySrc || showOverlay}}" id="{{qrCode.overlayProps.id}}" class="{{classes.overlay}}" data-scope="qr-code" data-part="overlay">
-    <image wx:if="{{qrCode.overlaySrc || overlaySrc}}" src="{{qrCode.overlaySrc || overlaySrc}}" class="w-full h-full rounded" mode="aspectFit" />
+  <view wx:if="{{qrCode.showOverlay || qrCode.overlaySrc}}" id="{{qrCode.overlayProps.id}}" class="{{classes.overlay}}" data-scope="qr-code" data-part="overlay">
+    <image wx:if="{{qrCode.overlaySrc}}" src="{{qrCode.overlaySrc}}" class="w-full h-full rounded" mode="aspectFit" />
     <slot name="overlay" />
   </view>
 </view>

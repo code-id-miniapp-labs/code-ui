@@ -453,7 +453,8 @@ describe("Input Machine", () => {
         component: formComp,
         rules: {
           email: [
-            (val: string) => (val && val.includes("@") ? true : "Invalid email"),
+            (val: string) =>
+              val && val.includes("@") ? true : "Invalid email",
           ],
         },
       });

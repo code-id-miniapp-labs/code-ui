@@ -114,9 +114,7 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     },
 
     isDisabled: ({ context }) => {
-      return Boolean(
-        context.get("disabled") || context.get("groupDisabled"),
-      );
+      return Boolean(context.get("groupDisabled") || context.get("disabled"));
     },
 
     isInteractive: ({ computed, context }) => {
@@ -128,16 +126,15 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     },
 
     effectiveSize: ({ context }) => {
-      return (context.get("size") || context.get("groupSize") || "md") as RadioSize;
+      return context.get("groupSize") || context.get("size") || "md";
     },
 
     effectiveColor: ({ context }) => {
-      return (context.get("color") || context.get("groupColor") || "primary") as RadioColor;
+      return context.get("groupColor") || context.get("color") || "primary";
     },
 
     effectiveVariant: ({ context }) => {
-      const v = context.get("variant");
-      return (v !== "outline" ? v : (context.get("groupVariant") || "outline")) as RadioVariant;
+      return context.get("groupVariant") || context.get("variant") || "outline";
     },
   },
 
@@ -150,7 +147,8 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       const unsub = bus.on("group:change", (gState: any) => {
         context.set("groupValue", gState.value);
         context.set("groupDisabled", Boolean(gState.disabled));
-        if (gState.invalid !== undefined) context.set("groupInvalid", Boolean(gState.invalid));
+        if (gState.invalid !== undefined)
+          context.set("groupInvalid", Boolean(gState.invalid));
         if (gState.size) context.set("groupSize", gState.size);
         if (gState.color) context.set("groupColor", gState.color);
         if (gState.variant) context.set("groupVariant", gState.variant);
@@ -271,7 +269,8 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
           const unsub = bus.on("group:change", (gState: any) => {
             context.set("groupValue", gState.value);
             context.set("groupDisabled", Boolean(gState.disabled));
-            if (gState.invalid !== undefined) context.set("groupInvalid", Boolean(gState.invalid));
+            if (gState.invalid !== undefined)
+              context.set("groupInvalid", Boolean(gState.invalid));
             if (gState.size) context.set("groupSize", gState.size);
             if (gState.color) context.set("groupColor", gState.color);
             if (gState.variant) context.set("groupVariant", gState.variant);

@@ -103,6 +103,122 @@ describe("Checkbox Machine", () => {
       machine.stop();
     });
 
+    it("toggles state when initialized with defaultChecked = true", async () => {
+      const machine = new MiniappMachine(checkboxMachine, {
+        defaultChecked: true,
+      });
+      machine.start();
+
+      let api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(true);
+      expect(machine.state.get()).toBe("checked");
+
+      // First toggle: checked -> unchecked
+      api.handleTap();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(machine.state.get()).toBe("unchecked");
+
+      // Second toggle: unchecked -> checked
+      api.handleTap();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(true);
+      expect(machine.state.get()).toBe("checked");
+
+      // Third toggle: checked -> unchecked
+      api.toggle();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(machine.state.get()).toBe("unchecked");
+
+      machine.stop();
+    });
+
+    it("supports WXML boolean attributes for defaultChecked (empty string and string boolean)", async () => {
+      // Empty string attribute (e.g. <c-checkbox defaultChecked />)
+      const machineEmpty = new MiniappMachine(checkboxMachine, {
+        defaultChecked: "",
+      });
+      machineEmpty.start();
+
+      const apiEmpty = connectCheckbox(machineEmpty.service);
+      expect(apiEmpty.checked).toBe(true);
+      expect(machineEmpty.state.get()).toBe("checked");
+
+      apiEmpty.handleTap();
+      await flush();
+      expect(connectCheckbox(machineEmpty.service).checked).toBe(false);
+      expect(machineEmpty.state.get()).toBe("unchecked");
+
+      machineEmpty.stop();
+
+      // String boolean (e.g. defaultChecked="true")
+      const machineString = new MiniappMachine(checkboxMachine, {
+        defaultChecked: "true",
+      });
+      machineString.start();
+
+      const apiString = connectCheckbox(machineString.service);
+      expect(apiString.checked).toBe(true);
+      expect(machineString.state.get()).toBe("checked");
+
+      apiString.handleTap();
+      await flush();
+      expect(connectCheckbox(machineString.service).checked).toBe(false);
+      expect(machineString.state.get()).toBe("unchecked");
+
+      machineString.stop();
+    });
+
+    it("toggles repeatedly without falling into false controlled lock when component observer runs", async () => {
+      const comp = {
+        data: { defaultChecked: true, checked: null },
+        setData(d: any) {
+          Object.assign(this.data, d);
+          if (d.checked !== undefined) {
+            machine.updateProps({ checked: d.checked });
+          }
+        },
+        triggerEvent: vi.fn(),
+      };
+
+      const machine = new MiniappMachine(checkboxMachine, {
+        component: comp,
+        defaultChecked: true,
+        checked: null,
+      });
+      machine.start();
+
+      let api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(true);
+
+      // Tap 1 -> unchecked
+      api.handleTap();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(machine.state.get()).toBe("unchecked");
+
+      // Tap 2 -> checked
+      api.handleTap();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(true);
+      expect(machine.state.get()).toBe("checked");
+
+      // Tap 3 -> unchecked
+      api.handleTap();
+      await flush();
+      api = connectCheckbox(machine.service);
+      expect(api.checked).toBe(false);
+      expect(machine.state.get()).toBe("unchecked");
+
+      machine.stop();
+    });
+
     it("transitions from indeterminate to checked when toggled", async () => {
       const machine = new MiniappMachine(checkboxMachine, {
         defaultIndeterminate: true,

@@ -5,6 +5,9 @@ import {
   createColorCompoundVariants,
   defineTheme,
   type ComponentTheme,
+  type ExtractSlots,
+  type ComponentRegistry,
+  buttonTheme,
 } from "../src";
 
 describe("@code-ui/core color generation", () => {
@@ -225,5 +228,42 @@ describe("@code-ui/core color generation", () => {
       disabled: false,
       checked: false,
     });
+  });
+
+  it("extracts slots dynamically via ExtractSlots and ComponentRegistry", () => {
+    // 1. From theme factory function directly
+    const btn = buttonTheme();
+    expect(btn.slots).toHaveProperty("root");
+    type ButtonSlots = ExtractSlots<typeof buttonTheme>;
+    const btnSlot1: ButtonSlots = "root";
+    const btnSlot2: ButtonSlots = "label";
+    const btnSlot3: ButtonSlots = "spinner";
+    expect([btnSlot1, btnSlot2, btnSlot3]).toBeDefined();
+
+    // 2. From defineTheme definition object
+    const customTheme = defineTheme({
+      slots: {
+        root: "root-cls",
+        header: "header-cls",
+        content: "content-cls",
+      },
+      variants: {},
+    });
+    type CustomSlots = ExtractSlots<typeof customTheme>;
+    const customSlot: CustomSlots = "header";
+    expect(customSlot).toBe("header");
+
+    // 3. ComponentRegistry has both camelCase and kebab-case keys automatically mapped
+    type StepperSlots = ComponentRegistry["stepper"];
+    type StepperItemSlots = ComponentRegistry["stepperItem"];
+    type StepperItemKebabSlots = ComponentRegistry["stepper-item"];
+    type CheckboxGroupKebabSlots = ComponentRegistry["checkbox-group"];
+
+    const sSlot: StepperSlots = "header";
+    const siSlot: StepperItemSlots = "indicator";
+    const sikSlot: StepperItemKebabSlots = "indicator";
+    const cgkSlot: CheckboxGroupKebabSlots = "legend";
+
+    expect([sSlot, siSlot, sikSlot, cgkSlot]).toBeDefined();
   });
 });

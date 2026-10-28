@@ -6,13 +6,14 @@
       Trigger actions with finite state machine, async auto-loading.
     </view>
   </view>
+  <c-switch value="{{disabled}}" bind:change="toggleDisabled" />
   <view class="px-5 flex flex-col gap-6">
     <!-- Variants -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Variants</view>
       <view class="text-xs text-neutral-400 mb-4">solid, outline, ghost, soft, secondary</view>
       <view class="flex flex-wrap gap-2.5 items-center">
-        <c-button variant="solid">Solid</c-button>
+        <c-button variant="solid" disabled="{{disabled}}">Solid</c-button>
         <c-button variant="outline">Outline</c-button>
         <c-button variant="ghost">Ghost</c-button>
         <c-button variant="soft">Soft</c-button>

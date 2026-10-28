@@ -808,4 +808,82 @@ describe("MiniappMachine › performance", () => {
     expect(m.prop("n")).toBe(499);
     expect(propsFn).toHaveBeenCalledTimes(1);
   });
+
+  it("memoizes bindable props() factory across get(), set(), and unrelated updateProps()", () => {
+    const bindablePropsSpy = vi.fn((prop: any) => ({
+      value: prop("count"),
+      defaultValue: 0,
+    }));
+
+    const m = new MiniappMachine(
+      createMachine({
+        initialState: () => "idle",
+        context: ({ bindable, prop }) => ({
+          count: bindable<number>(() => bindablePropsSpy(prop)),
+        }),
+        states: { idle: {} },
+      }),
+      { count: 1, other: "a" },
+    );
+
+    // Evaluated once on initialization
+    expect(bindablePropsSpy).toHaveBeenCalledTimes(1);
+
+    // Repeated get() and set() calls do not re-run the bindable props() factory
+    for (let i = 0; i < 100; i++) {
+      m.context.get("count");
+    }
+    m.context.set("count", 42);
+    expect(m.context.get("count")).toBe(42);
+    expect(bindablePropsSpy).toHaveBeenCalledTimes(1);
+
+    // Unrelated prop updates do not re-run the bindable props() factory
+    m.updateProps({ other: "b" });
+    expect(m.context.get("count")).toBe(42);
+    expect(bindablePropsSpy).toHaveBeenCalledTimes(1);
+
+    // Updating the bound prop re-evaluates the factory once and syncs the new value
+    m.updateProps({ count: 99 });
+    expect(m.context.get("count")).toBe(99);
+    expect(bindablePropsSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps bindable signal in sync across updateProps() and internal set() without duplicate notifications", () => {
+    const m = new MiniappMachine(
+      createMachine({
+        initialState: () => "idle",
+        context: ({ bindable, prop }) => ({
+          count: bindable<number>(() => ({
+            value: prop("count"),
+            defaultValue: 0,
+          })),
+        }),
+        states: { idle: {} },
+      }),
+      { count: 0 },
+    );
+    m.start();
+
+    // Sequential updateProps without intermediate context.get() reads still syncs
+    m.context.set("count", 5);
+    m.updateProps({ count: 5 });
+    m.updateProps({ count: 0 });
+    expect(m.context.get("count")).toBe(0);
+
+    // Subscribe and verify single notification per updateProps and set()
+    const sub = vi.fn((s: any) => s.context.get("count"));
+    m.subscribe(sub);
+
+    // Prop changes 0 -> 10: notifies once
+    m.updateProps({ count: 10 });
+    expect(m.context.get("count")).toBe(10);
+    expect(sub).toHaveBeenCalledTimes(1);
+
+    // Internal set() back to 0 (matching the pre-prop signal value): still updates and notifies once
+    m.context.set("count", 0);
+    expect(m.context.get("count")).toBe(0);
+    expect(sub).toHaveBeenCalledTimes(2);
+
+    m.stop();
+  });
 });

@@ -69,6 +69,7 @@ export type {
   UIRadiusConfig,
   ComponentConfig,
   ComponentVariantsConfig,
+  BuiltinComponentRegistry,
   ComponentRegistry,
   KnownComponentSlots,
   SlotRecord,
@@ -93,6 +94,7 @@ export {
   createColorCompoundVariants,
 } from "./theme";
 export type {
+  ExtractSlots,
   ComponentTheme,
   ThemeDefinition,
   ThemeSlots,

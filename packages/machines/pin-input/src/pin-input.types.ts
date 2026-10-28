@@ -63,7 +63,7 @@ export interface PinInputProps {
   /** Semantic color */
   color?: PinInputColor | undefined;
   /** Size variant */
-  size?: PinInputSize | undefined;
+  size?: PinInputSize | "" | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
   /** Form field wrapper size override */
@@ -153,6 +153,10 @@ export interface PinInputComputed {
   isValueComplete: boolean;
   isEmpty: boolean;
   isFilled: boolean;
+  isDisabled: boolean;
+  effectiveSize: PinInputSize;
+  isInteractive: boolean;
+  isReadOnly: boolean;
 }
 
 export interface PinInputRefs {

@@ -7,7 +7,7 @@ export const defaultPinInputProps: PinInputProps = {
   type: "numeric",
   variant: "outline" as const,
   color: "primary" as const,
-  size: "md" as const,
+  size: "",
   highlight: false,
   name: "",
   mask: false,

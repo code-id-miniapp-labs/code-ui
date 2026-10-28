@@ -9,6 +9,7 @@ export interface Scope {
   component?: MiniAppComponent | undefined;
   /** Full DOM query helpers from @code-ui/utils — rect, allRects, fields, etc. */
   dom: DOMQueryHelpers;
+  toJSON?: () => { id?: string | undefined; ids?: Record<string, any> | undefined } | undefined;
 }
 
 export interface PropFn<T extends Dict> {
@@ -463,6 +464,7 @@ export type Service<T extends MachineSchema> = {
     current: () => EventType<T["event"]>;
     previous: () => EventType<T["event"]>;
   };
+  toJSON?: () => undefined;
 };
 
 export enum MachineStatus {

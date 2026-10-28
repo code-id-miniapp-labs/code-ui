@@ -126,12 +126,7 @@ export interface QrCodeComputed {
   dataUrl: string;
 }
 
-export interface QrCodeRefs {
-  prevValueProp: string | undefined;
-  prevEccProp: QrCodeEcc | undefined;
-  prevBorderProp: number | undefined;
-  prevEncodingProp: QrCodeEncodingOptions | undefined;
-}
+export interface QrCodeRefs {}
 
 export interface QrCodeSchema extends MachineSchema {
   state: QrCodeState;

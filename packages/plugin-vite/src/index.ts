@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
+import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import {
   APP_ENTRY_RE,
   APP_SCRIPT_SUFFIX_RE,
@@ -42,7 +42,11 @@ export { defineConfig } from "@code-ui/core";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
 export type { AutoImportOptions, CodeUIVitePluginOptions, TreeShakeOptions };
 
-export { generateThemeCSS, SHADES, TAILWIND_PALETTES } from "./core/theme";
+export {
+  generateThemeCSS,
+  SHADES,
+  TAILWIND_PALETTES,
+} from "./core/theme";
 export {
   cleanKeyframes,
   compileComponentTheme,
@@ -52,11 +56,46 @@ export {
 } from "./core/utils";
 export { compatMiniProgramTransforms } from "./core/transforms";
 
+function isVirtualTarget(id: string): boolean {
+  return (
+    id === RESOLVED_VIRTUAL_MODULE_ID ||
+    id === RESOLVED_VIRTUAL_MODULE_SHORT ||
+    id === RESOLVED_VIRTUAL_THEME_ID ||
+    id === VIRTUAL_MODULE_ID ||
+    id === VIRTUAL_MODULE_SHORT ||
+    id === VIRTUAL_THEME_ID ||
+    id.startsWith(RESOLVED_VIRTUAL_THEME_PREFIX) ||
+    id.startsWith(VIRTUAL_THEME_PREFIX)
+  );
+}
+
 function invalidateVirtualModules(
   server: ViteDevServer,
   projectRoot: string,
-): void {
+): ModuleNode[] {
   const { moduleGraph } = server;
+  const affected = new Set<ModuleNode>();
+
+  const invalidateWithImporters = (node: ModuleNode, depth = 0): void => {
+    if (affected.has(node) && depth > 0) return;
+    moduleGraph.invalidateModule(node);
+    affected.add(node);
+    if (depth < 3) {
+      for (const imp of node.importers) {
+        invalidateWithImporters(imp, depth + 1);
+      }
+    }
+  };
+
+  const isAppStyle = (id: string): boolean => {
+    const qIdx = id.indexOf("?");
+    const cleanId = qIdx === -1 ? id : id.slice(0, qIdx);
+    return (
+      STYLE_EXT_RE.test(cleanId) &&
+      APP_STYLE_RE.test(path.relative(projectRoot, cleanId).replace(/\\/g, "/"))
+    );
+  };
+
   const staticIds = [
     RESOLVED_VIRTUAL_MODULE_ID,
     RESOLVED_VIRTUAL_MODULE_SHORT,
@@ -65,27 +104,30 @@ function invalidateVirtualModules(
 
   for (const id of staticIds) {
     const mod = moduleGraph.getModuleById(id);
-    if (mod) moduleGraph.invalidateModule(mod);
+    if (mod) {
+      invalidateWithImporters(mod);
+    }
   }
 
-  if (!moduleGraph.idToModuleMap) return;
-
-  for (const [modId, mod] of moduleGraph.idToModuleMap) {
-    if (modId && modId.startsWith(RESOLVED_VIRTUAL_THEME_PREFIX)) {
-      moduleGraph.invalidateModule(mod);
-    } else if (mod.id) {
-      const qIdx = mod.id.indexOf("?");
-      const cleanModId = qIdx === -1 ? mod.id : mod.id.slice(0, qIdx);
-      if (
-        STYLE_EXT_RE.test(cleanModId) &&
-        APP_STYLE_RE.test(
-          path.relative(projectRoot, cleanModId).replace(/\\/g, "/"),
-        )
-      ) {
-        moduleGraph.invalidateModule(mod);
+  if (moduleGraph.idToModuleMap) {
+    for (const [modId, mod] of moduleGraph.idToModuleMap) {
+      if (!mod || !modId) continue;
+      if (isVirtualTarget(modId) || (mod.id && isVirtualTarget(mod.id))) {
+        invalidateWithImporters(mod);
+      } else if (mod.id && isAppStyle(mod.id)) {
+        invalidateWithImporters(mod);
       }
     }
   }
+
+  return Array.from(affected);
+}
+
+function isCuiConfigFile(filePath: string, configPath: string | null): boolean {
+  if (configPath && path.resolve(filePath) === path.resolve(configPath)) {
+    return true;
+  }
+  return /(?:^|[\\/])cui\.config\.(?:ts|js|mjs|cjs|json)$/.test(filePath);
 }
 
 export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
@@ -114,18 +156,29 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       server = devServer;
 
       if (configManager.configPath) {
-        const resolvedConfigPath = path.resolve(configManager.configPath);
         devServer.watcher.add(configManager.configPath);
-        devServer.watcher.on("change", async (changedPath) => {
-          if (path.resolve(changedPath) === resolvedConfigPath) {
-            await configManager.reload(devServer.config.root);
-            if (server) {
-              invalidateVirtualModules(server, projectRoot);
-              server.ws.send({ type: "full-reload" });
-            }
-          }
-        });
       }
+      devServer.watcher.add(path.resolve(projectRoot, "cui.config.*"));
+
+      devServer.watcher.on("change", async (changedPath) => {
+        if (isCuiConfigFile(changedPath, configManager.configPath)) {
+          await configManager.reload(devServer.config.root);
+          if (server) {
+            invalidateVirtualModules(server, projectRoot);
+            server.ws.send({ type: "full-reload" });
+          }
+        }
+      });
+    },
+
+    async handleHotUpdate(ctx) {
+      if (isCuiConfigFile(ctx.file, configManager.configPath)) {
+        await configManager.reload(projectRoot);
+        const affected = invalidateVirtualModules(ctx.server, projectRoot);
+        ctx.server.ws.send({ type: "full-reload" });
+        return affected;
+      }
+      return undefined;
     },
 
     resolveId(id) {
@@ -141,11 +194,11 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       if (id.endsWith(".wxml")) {
         invalidateWxmlTagCache(id);
       }
-      if (
-        configManager.configPath &&
-        path.resolve(id) === path.resolve(configManager.configPath)
-      ) {
+      if (isCuiConfigFile(id, configManager.configPath)) {
         await configManager.reload(projectRoot);
+        if (server) {
+          invalidateVirtualModules(server, projectRoot);
+        }
       }
     },
 

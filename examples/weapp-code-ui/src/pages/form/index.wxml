@@ -21,7 +21,7 @@
           </c-form-field>
           <!-- Field 3: Security PIN (c-pin-input) -->
           <c-form-field name="pin" label="4-Digit Security PIN" description="Required for authorization and payout requests" rules="{{pinRules}}" required="{{true}}">
-            <c-pin-input name="pin" length="{{4}}" mask="{{true}}" placeholder="○" />
+            <c-pin-input length="{{4}}" mask="{{true}}" placeholder="○" />
           </c-form-field>
           <!-- Field 4: Newsletter (c-switch controlled) -->
           <c-form-field name="newsletter">
@@ -73,7 +73,7 @@
       <c-form id="transfer-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleTransferSubmit" bind:error="handleTransferError">
         <view class="flex flex-col gap-4">
           <c-form-field name="transferPin" label="6-Digit Transfer PIN" description="Instant transfer authorization ($250.00)" required="{{true}}">
-            <c-pin-input name="transferPin" length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" />
+            <c-pin-input name="transferPin" mask length="{{6}}" separator="{{3}}" variant="subtle" placeholder="○" />
           </c-form-field>
           <view class="flex flex-wrap gap-2 pt-1">
             <c-button variant="solid" color="success" size="sm" bind:tap="submitTransfer">

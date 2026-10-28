@@ -10,16 +10,16 @@ export default function inputTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "relative inline-flex items-center w-full",
-      base: "w-full rounded-lg border text-neutral-900 transition-colors focus:outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400",
+      root: "relative flex items-center w-full",
+      base: "w-full box-border rounded-lg border text-neutral-900 transition-colors focus:outline-none placeholder:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400",
       leading:
-        "absolute inset-y-0 start-0 flex items-center justify-center pointer-events-none text-neutral-400",
-      leadingIcon: "shrink-0",
+        "absolute top-0 bottom-0 left-0 z-10 flex items-center justify-center pointer-events-none text-neutral-400",
+      leadingIcon:
+        "inline-flex items-center justify-center shrink-0 leading-none",
       trailing:
-        "absolute inset-y-0 end-0 flex items-center justify-center text-neutral-400",
-      trailingIcon: "shrink-0",
-      clear:
-        "cursor-pointer pointer-events-auto transition-colors hover:text-neutral-700",
+        "absolute top-0 bottom-0 right-0 z-10 flex items-center justify-center gap-1 text-neutral-400",
+      trailingIcon:
+        "inline-flex items-center justify-center shrink-0 leading-none",
     },
     variants: {
       color: Object.fromEntries(
@@ -50,68 +50,51 @@ export default function inputTheme(options: ThemeOptions = {}) {
       size: {
         xs: {
           base: "h-7 text-xs px-2",
-          leading: "ps-2",
-          trailing: "pe-2",
-          leadingIcon: "w-3.5 h-3.5",
-          trailingIcon: "w-3.5 h-3.5",
-          clear: "text-xs",
+          leading: "pl-2",
+          trailing: "pr-2",
+          leadingIcon: "size-3",
+          trailingIcon: "size-3",
         },
         sm: {
           base: "h-8 text-xs px-2.5",
-          leading: "ps-2.5",
-          trailing: "pe-2.5",
-          leadingIcon: "w-4 h-4",
-          trailingIcon: "w-4 h-4",
-          clear: "text-xs",
+          leading: "pl-2.5",
+          trailing: "pr-2.5",
+          leadingIcon: "size-4",
+          trailingIcon: "size-4",
         },
         md: {
           base: "h-9 text-sm px-3",
-          leading: "ps-3",
-          trailing: "pe-3",
-          leadingIcon: "w-4 h-4",
-          trailingIcon: "w-4 h-4",
-          clear: "text-sm",
+          leading: "pl-3",
+          trailing: "pr-3",
+          leadingIcon: "size-4",
+          trailingIcon: "size-4",
         },
         lg: {
           base: "h-10 text-base px-3.5",
-          leading: "ps-3.5",
-          trailing: "pe-3.5",
-          leadingIcon: "w-5 h-5",
-          trailingIcon: "w-5 h-5",
-          clear: "text-base",
+          leading: "pl-3.5",
+          trailing: "pr-3.5",
+          leadingIcon: "size-5",
+          trailingIcon: "size-5",
         },
         xl: {
           base: "h-11 text-lg px-4",
-          leading: "ps-4",
-          trailing: "pe-4",
-          leadingIcon: "w-5 h-5",
-          trailingIcon: "w-5 h-5",
-          clear: "text-base",
+          leading: "pl-4",
+          trailing: "pr-4",
+          leadingIcon: "size-5",
+          trailingIcon: "size-5",
         },
       },
       leading: {
-        true: {
-          base: "",
-        },
-        false: {
-          base: "",
-        },
+        true: { base: "" },
+        false: { base: "" },
       },
       trailing: {
-        true: {
-          base: "",
-        },
-        false: {
-          base: "",
-        },
+        true: { base: "" },
+        false: { base: "" },
       },
       highlight: {
-        true: {
-          base: "",
-        },
-        false: {
-          base: "",
-        },
+        true: { base: "" },
+        false: { base: "" },
       },
       disabled: {
         true: {
@@ -123,84 +106,60 @@ export default function inputTheme(options: ThemeOptions = {}) {
         },
       },
       invalid: {
-        true: {
-          base: "",
-        },
-        false: {
-          base: "",
-        },
+        true: { base: "" },
+        false: { base: "" },
       },
     },
     compoundVariants: [
       {
         leading: true,
         size: "xs",
-        class: {
-          base: "ps-7",
-        },
+        class: { base: "pl-7" },
       },
       {
         leading: true,
         size: "sm",
-        class: {
-          base: "ps-8",
-        },
+        class: { base: "pl-8" },
       },
       {
         leading: true,
         size: "md",
-        class: {
-          base: "ps-9",
-        },
+        class: { base: "pl-9" },
       },
       {
         leading: true,
         size: "lg",
-        class: {
-          base: "ps-10",
-        },
+        class: { base: "pl-10" },
       },
       {
         leading: true,
         size: "xl",
-        class: {
-          base: "ps-11",
-        },
+        class: { base: "pl-11" },
       },
       {
         trailing: true,
         size: "xs",
-        class: {
-          base: "pe-7",
-        },
+        class: { base: "pr-7" },
       },
       {
         trailing: true,
         size: "sm",
-        class: {
-          base: "pe-8",
-        },
+        class: { base: "pr-8" },
       },
       {
         trailing: true,
         size: "md",
-        class: {
-          base: "pe-9",
-        },
+        class: { base: "pr-9" },
       },
       {
         trailing: true,
         size: "lg",
-        class: {
-          base: "pe-10",
-        },
+        class: { base: "pr-10" },
       },
       {
         trailing: true,
         size: "xl",
-        class: {
-          base: "pe-11",
-        },
+        class: { base: "pr-11" },
       },
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],

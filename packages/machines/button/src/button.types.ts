@@ -79,10 +79,7 @@ export interface ButtonComputed {
   isInteractive: boolean;
 }
 
-export interface ButtonRefs {
-  prevLoading: boolean | undefined;
-  prevDisabled: boolean | undefined;
-}
+export interface ButtonRefs {}
 
 export interface ButtonSchema extends MachineSchema {
   state: ButtonState;

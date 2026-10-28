@@ -15,10 +15,12 @@ import type {
 } from "../types";
 import {
   compileComponentTheme,
+  DEFAULT_COLORS,
   extractClassesFromThemeConfig,
   generateThemeCSS,
   isPlainObject,
   mergeComponentConfig,
+  TAILWIND_500_FALLBACKS,
 } from "./theme";
 import { serializeConfig } from "./serialize";
 
@@ -204,8 +206,33 @@ export class PluginConfigManager {
     if (this.cachedVirtualConfigCode !== null) {
       return this.cachedVirtualConfigCode;
     }
+    const effectiveColors: Record<string, any> = {
+      ...DEFAULT_COLORS,
+      ...this.resolvedConfig.ui?.colors,
+    };
+    const resolvedPalettes: Record<string, string> = {};
+    for (const val of Object.values(effectiveColors)) {
+      if (typeof val === "string") {
+        const lower = val.trim().toLowerCase();
+        const fallback = TAILWIND_500_FALLBACKS[lower];
+        if (fallback) {
+          resolvedPalettes[lower] = fallback;
+        }
+      }
+    }
+    const finalUiColors = {
+      ...resolvedPalettes,
+      ...effectiveColors,
+    };
+    const finalConfig = {
+      ...this.resolvedConfig,
+      ui: {
+        ...this.resolvedConfig.ui,
+        colors: finalUiColors,
+      },
+    };
     const code = `
-const config = ${serializeConfig(this.resolvedConfig)};
+const config = ${serializeConfig(finalConfig)};
 const g = typeof globalThis !== "undefined"
   ? globalThis
   : typeof window !== "undefined"
@@ -215,6 +242,9 @@ const g = typeof globalThis !== "undefined"
       : {};
 
 g.__CODE_UI_GLOBAL_CONFIG__ = Object.assign(g.__CODE_UI_GLOBAL_CONFIG__ || {}, config);
+if (config && config.ui) {
+  g.__CODE_UI_GLOBAL_CONFIG__.ui = config.ui;
+}
 
 export default config;
 
@@ -299,9 +329,7 @@ if (import.meta.hot) {
     for (const col of collections) {
       if (col in ICON_COLLECTION_PRESETS) {
         const preset =
-          ICON_COLLECTION_PRESETS[
-            col as keyof typeof ICON_COLLECTION_PRESETS
-          ];
+          ICON_COLLECTION_PRESETS[col as keyof typeof ICON_COLLECTION_PRESETS];
         allThemeClasses.add(`${prefix}-${col}-${preset.check}`);
         allThemeClasses.add(`${prefix}-${col}-${preset.minus}`);
         allThemeClasses.add(`${prefix}-${col}-${preset.close}`);

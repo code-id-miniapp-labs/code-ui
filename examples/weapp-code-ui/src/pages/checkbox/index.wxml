@@ -6,6 +6,7 @@
       Accessible checkbox and multi-select groups with indeterminate state, card variants, min/max limits, zero-bloat icons, and Form validation.
     </view>
   </view>
+  <c-switch value="{{disabled}}" bind:change="onToggleDisabled" />
   <view class="px-5 flex flex-col gap-6">
     <!-- 1. Standalone Controlled Checkbox -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -14,7 +15,7 @@
         Declarative two-way sync via checked prop and bind:change event.
       </view>
       <view class="flex flex-col gap-4">
-        <c-checkbox checked="{{controlledChecked}}" label="Enable push notifications" description="Receive real-time alerts on your device" bind:change="onControlledChange" />
+        <c-checkbox checked="{{controlledChecked}}" disabled="{{disabled}}" label="Enable push notifications" description="Receive real-time alerts on your device" bind:change="onControlledChange" />
         <view class="flex items-center justify-between text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200">
           <text class="text-neutral-500">Checked Status:</text>
           <text class="font-bold {{controlledChecked ? 'text-primary' : 'text-neutral-400'}} font-mono">

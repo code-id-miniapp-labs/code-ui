@@ -32,6 +32,7 @@ export interface StepperItemProps {
   title?: string | undefined;
   description?: string | undefined;
   icon?: string | undefined;
+  completedIcon?: string | undefined;
   disabled?: boolean | undefined;
   completed?: boolean | null | undefined;
   status?: StepperStatus | "" | undefined;
@@ -66,6 +67,7 @@ export interface StepperItemContext {
   title: string;
   description: string;
   icon: string;
+  completedIcon: string;
   disabled: boolean;
   completed: boolean | null;
   status: StepperStatus | "";
@@ -134,6 +136,7 @@ export interface StepperItemApi {
   title: string;
   description: string;
   icon: string;
+  completedIcon: string;
   value: string | number;
   status: StepperStatus;
   isCompleted: boolean;

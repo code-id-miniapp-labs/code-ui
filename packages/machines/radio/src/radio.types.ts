@@ -59,7 +59,7 @@ export interface RadioProps {
   defaultChecked?: boolean | undefined;
   invalid?: boolean | null | undefined;
   color?: RadioColor | "" | undefined;
-  size?: RadioSize | "" | undefined;
+  size?: RadioSize | undefined;
   variant?: RadioVariant | undefined;
   customIndicator?: boolean | undefined;
   groupValue?: string | null | undefined;

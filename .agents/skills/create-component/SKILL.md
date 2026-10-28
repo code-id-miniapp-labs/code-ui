@@ -110,7 +110,7 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
    - **Theme Size Optimization**: Avoid duplicating redundant text color or focus ring definitions across multiple variant states. Keep atomic utility class strings concise.
 2. Export `{ default as <camelName> } from "./<name>"` in `packages/core/src/theme/definitions/index.ts`.
 3. Export `{ default as <camelName>Theme } from "./theme/definitions/<name>"` in `packages/core/src/index.ts`.
-4. Add `<camelName>: "root" | ...` to `ComponentRegistry` in `packages/core/src/config.ts`.
+   *(Slots are automatically extracted by `ComponentRegistry` from `defineTheme` via `ExtractSlots` — no manual slot registration needed in `packages/core/src/config.ts`).*
 
 ---
 

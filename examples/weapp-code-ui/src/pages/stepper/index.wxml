@@ -84,36 +84,22 @@
             </block>
           </view>
         </view>
-
       </view>
     </view>
     <!-- 2. Custom Slots in Compound Items -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Custom Slots in Stepper Items</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Custom indicator icons and title badges rendered directly into dedicated item slots.
-      </view>
+      <view class="text-xs text-neutral-400 mb-4"></view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-stepper value="{{1}}" color="primary" size="md">
-          <!-- Step 1: Custom emoji indicator -->
-          <c-stepper-item title="Personal Info" description="Basic details">
-            <c-icon slot="indicator" name="i-lucide-user" />
-          </c-stepper-item>
-          <!-- Step 2: Custom title slot with badge -->
-          <c-stepper-item description="Verify phone & email">
-            <c-icon slot="indicator" name="i-lucide-key" />
-            <view slot="title" class="flex items-center gap-1.5">
-              <text class="font-medium text-xs">Security</text>
-              <text class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1 py-0.2 rounded">
-                Required
-              </text>
-            </view>
-          </c-stepper-item>
-          <!-- Step 3: Custom indicator with star -->
-          <c-stepper-item title="Completed" description="Ready to launch">
-            <c-icon slot="indicator" name="i-lucide-star" />
-          </c-stepper-item>
+        <c-stepper value="{{activeStep}}" bind:change="onStepChange" color="primary" size="md">
+          <block wx:for="{{stepsData}}" wx:for-item="stepItem" wx:key="index">
+            <c-stepper-item title="{{stepItem.title}}" description="{{stepItem.description}}" customIndicator customCompletedIndicator>
+              <c-icon slot="indicator" name="{{stepItem.icon}}" />
+              <c-icon slot="completed-indicator" name="{{stepItem.completedIcon}}" />
+            </c-stepper-item>
+          </block>
         </c-stepper>
+        {{activeStep}}
       </view>
     </view>
     <!-- 3. Data-Driven Mode (items array) -->
@@ -123,7 +109,7 @@
         Pass an array of step objects to auto-generate steps without declarative children.
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-stepper value="{{dataStep}}" items="{{stepsData}}" color="success" size="sm" bind:change="onDataStepChange" />
+        <c-stepper id="stepper-data" value="{{dataStep}}" items="{{stepsData}}" color="success" size="sm" bind:change="onDataStepChange"></c-stepper>
       </view>
     </view>
     <!-- 4. Vertical Stepper (Timeline / Order Tracking) -->

@@ -10,7 +10,7 @@ export const defaultRadioProps: RadioProps = {
   readOnly: false,
   invalid: null,
   color: "",
-  size: "",
+  size: undefined,
   variant: "outline" as const,
   customIndicator: false,
   ui: {},

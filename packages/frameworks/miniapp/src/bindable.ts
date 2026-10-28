@@ -1,56 +1,73 @@
-import { signal } from "alien-signals";
+import { computed, signal } from "alien-signals";
 import { isFunction } from "@code-ui/utils";
 import type { Bindable, BindableFn, BindableParams } from "@code-ui/core";
 
-type SignalFn<T> = { (): T; (value: T): void };
-
 export const bindable: BindableFn = Object.assign(
   function bindable<T>(props: () => BindableParams<T>): Bindable<T> {
-    const initial = props().value ?? props().defaultValue;
-    const eq = props().isEqual ?? Object.is;
+    const _params = computed(() => props());
+    const init = _params();
+    const initial = init.value ?? init.defaultValue;
+    const eq = init.isEqual ?? Object.is;
 
-    if (props().debug) {
-      console.log(`[bindable > ${props().debug}] initial`, initial);
+    if (init.debug) {
+      console.log(`[bindable > ${init.debug}] initial`, initial);
     }
 
-    const _signal = signal<T>(initial as T) as SignalFn<T>;
+    const _signal = signal<T>(initial as T);
+    let lastSeenProp: T | undefined = init.value;
 
-    const controlled = () =>
-      props().value !== undefined && props().value !== null;
+    const syncProp = () => {
+      const p = _params();
+      const currentProp = p.value;
+      if (
+        currentProp !== undefined &&
+        currentProp !== null &&
+        !eq(currentProp as T, lastSeenProp as T)
+      ) {
+        lastSeenProp = currentProp as T;
+        _signal(currentProp as T);
+      }
+    };
 
     return {
-      initial,
+      initial: initial as T,
 
-      ref: { get: () => _signal() },
+      ref: {
+        get: () => {
+          syncProp();
+          return _signal();
+        },
+      },
 
       get(): T {
-        if (controlled()) return props().value as T;
+        syncProp();
         return _signal();
       },
 
       set(nextValue: T | ((prev: T) => T)): void {
-        const prev = controlled() ? (props().value as T) : _signal();
+        syncProp();
+        const prev = _signal();
         const next = isFunction(nextValue)
           ? (nextValue as (prev: T) => T)(prev)
           : (nextValue as T);
 
-        if (props().debug) {
-          console.log(`[bindable > ${props().debug}] setValue`, { next, prev });
+        if (init.debug) {
+          console.log(`[bindable > ${init.debug}] setValue`, { next, prev });
         }
 
         _signal(next);
 
         if (!eq(next, prev)) {
-          props().onChange?.(next, prev);
+          _params().onChange?.(next, prev);
         }
       },
 
       invoke(nextValue: T, prevValue: T): void {
-        props().onChange?.(nextValue, prevValue);
+        _params().onChange?.(nextValue, prevValue);
       },
 
       hash(value: T): string {
-        return props().hash?.(value) ?? String(value);
+        return _params().hash?.(value) ?? String(value);
       },
     };
   },

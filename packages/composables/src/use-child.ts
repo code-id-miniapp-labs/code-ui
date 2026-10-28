@@ -80,6 +80,8 @@ export interface UseChildReturn<
   readonly service: Service<T> | undefined;
   /** Stop the subscription and dispose reactive bindings */
   stop: () => void;
+  /** Safe JSON serialization preventing circular structure errors if assigned to data */
+  toJSON?: () => undefined;
 }
 
 const LISTENER_SET_KEY = "__codeUiSnapshotListeners";
@@ -466,16 +468,29 @@ export function useChild<
     );
   };
 
-  return {
+  const returnObj = {
     getSnapshot: () => latestSnapshot ?? computeSnapshot(),
     get snapshot() {
       return latestSnapshot ?? computeSnapshot();
     },
     api: apiProxy as unknown as UseChildApi<Data>,
     send,
-    get service() {
+    stop,
+  } as UseChildReturn<T, Data>;
+
+  Object.defineProperty(returnObj, "service", {
+    get() {
       return getChildService<T>(ensureChild());
     },
-    stop,
-  };
+    enumerable: false,
+    configurable: true,
+  });
+
+  Object.defineProperty(returnObj, "toJSON", {
+    value: () => undefined,
+    enumerable: false,
+    configurable: true,
+  });
+
+  return returnObj;
 }

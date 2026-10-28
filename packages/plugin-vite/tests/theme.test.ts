@@ -262,5 +262,31 @@ describe("codeUI virtual themes", () => {
     expect(directive).toContain("i-tabler-check");
     expect(directive).toContain("i-tabler-loader-2");
   });
+
+  it("resolves configured UI colors and Tailwind 500 shade fallbacks into virtual config code", () => {
+    const configManager = new PluginConfigManager({
+      ui: {
+        colors: {
+          primary: "stone",
+          secondary: "#ff3366",
+          brand: "rgb(239, 68, 68)",
+        },
+      },
+    });
+
+    const virtualCode = configManager.getVirtualConfigCode();
+    expect(virtualCode).toContain('"stone": "#78716c"');
+    expect(virtualCode).toContain('"primary": "stone"');
+    expect(virtualCode).toContain('"secondary": "#ff3366"');
+    expect(virtualCode).toContain('"brand": "rgb(239, 68, 68)"');
+    expect(virtualCode).toContain('"success": "green"');
+    expect(virtualCode).toContain('"green": "#22c55e"');
+    expect(virtualCode).toContain('"warning": "amber"');
+    expect(virtualCode).toContain('"amber": "#f59e0b"');
+    expect(virtualCode).toContain('"info": "blue"');
+    expect(virtualCode).toContain('"blue": "#3b82f6"');
+    expect(virtualCode).toContain('"neutral": "zinc"');
+    expect(virtualCode).toContain('"zinc": "#71717a"');
+  });
 });
 
