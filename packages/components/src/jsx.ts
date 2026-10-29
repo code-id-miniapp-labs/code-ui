@@ -495,5 +495,25 @@ export interface CuiStepperItemElementProps extends CuiCommonElementProps {
   ) => void;
 }
 
+export interface CuiAvatarElementProps extends CuiCommonElementProps {
+  src?: string;
+  alt?: string;
+  mode?: string;
+  lazyLoad?: boolean;
+  color?: string;
+  icon?: string;
+  text?: string;
+  size?: string;
+  ui?: Record<string, string>;
+  isGroupCounter?: boolean;
+}
+
+export interface CuiAvatarGroupElementProps extends CuiCommonElementProps {
+  size?: string;
+  max?: number;
+  ui?: Record<string, string>;
+}
+
+
 
 

@@ -30,6 +30,18 @@
       "require": "./dist/runtime/button/index.js"
     },
     "./button/*": "./dist/runtime/button/*",
+    "./avatar": {
+      "types": "./dist/runtime/avatar/index.d.ts",
+      "import": "./dist/runtime/avatar/index.js",
+      "require": "./dist/runtime/avatar/index.js"
+    },
+    "./avatar/*": "./dist/runtime/avatar/*",
+    "./avatar-group": {
+      "types": "./dist/runtime/avatar-group/index.d.ts",
+      "import": "./dist/runtime/avatar-group/index.js",
+      "require": "./dist/runtime/avatar-group/index.js"
+    },
+    "./avatar-group/*": "./dist/runtime/avatar-group/*",
     "./card": {
       "types": "./dist/runtime/card/index.d.ts",
       "import": "./dist/runtime/card/index.js",

@@ -100,6 +100,12 @@ declare module "virtual:cui/theme/avatar" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/avatar-group" {
+  import type { default as avatarGroupTheme } from "@code-ui/core/src/theme/definitions/avatar-group";
+  const theme: ReturnType<typeof avatarGroupTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/badge" {
   import type { default as badgeTheme } from "@code-ui/core/src/theme/definitions/badge";
   const theme: ReturnType<typeof badgeTheme>;

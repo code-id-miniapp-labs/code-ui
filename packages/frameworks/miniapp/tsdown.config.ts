@@ -10,6 +10,7 @@ export default defineConfig({
     "src/behaviors/checkbox.ts",
     "src/behaviors/stepper.ts",
     "src/behaviors/app.ts",
+    "src/behaviors/avatar-group.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

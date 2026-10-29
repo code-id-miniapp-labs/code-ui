@@ -50,6 +50,11 @@
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",
       "require": "./dist/behaviors/app.cjs"
+    },
+    "./behaviors/avatar-group": {
+      "types": "./dist/behaviors/avatar-group.d.ts",
+      "import": "./dist/behaviors/avatar-group.js",
+      "require": "./dist/behaviors/avatar-group.cjs"
     }
   },
   "scripts": {
