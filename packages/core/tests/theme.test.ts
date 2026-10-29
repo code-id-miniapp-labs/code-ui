@@ -206,7 +206,8 @@ describe("@code-ui/core color generation", () => {
     expect(input.slots).toHaveProperty("base");
     expect(input.slots).toHaveProperty("leading");
     expect(input.slots).toHaveProperty("trailing");
-    expect(input.slots).toHaveProperty("clear");
+    expect(input.slots).toHaveProperty("leadingIcon");
+    expect(input.slots).toHaveProperty("trailingIcon");
     expect(input.defaultVariants).toMatchObject({
       variant: "outline",
       color: "primary",

@@ -7,7 +7,7 @@ export default defineConfig({
   },
   ui: {
     colors: {
-      primary: "zinc",
+      primary: "stone",
       secondary: "amber",
       danger: "red",
     },

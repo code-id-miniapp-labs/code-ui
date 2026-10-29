@@ -235,6 +235,10 @@ export default defineConfig({
               name: "behaviors/form",
               test: /[\\/]behaviors[\\/]form/,
             },
+            {
+              name: "behaviors/app",
+              test: /[\\/]behaviors[\\/]app/,
+            },
           ],
         },
       },

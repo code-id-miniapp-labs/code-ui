@@ -73,6 +73,14 @@ export interface CuiButtonElementProps extends CuiCommonElementProps {
   onChooseAvatar?: (event?: any) => void;
 }
 
+export interface CuiAppElementProps extends CuiCommonElementProps {
+  ui?: Partial<Record<"root", string>>;
+  /** Apply safe-area padding. Defaults to `"none"`. */
+  safeArea?: "none" | "top" | "bottom" | "both";
+  /** Declaratively lock page scroll. */
+  lockScroll?: boolean;
+}
+
 export interface CuiCardElementProps extends CuiCommonElementProps {
   ui?: Partial<
     Record<
@@ -128,6 +136,8 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   ui?: DrawerProps["ui"];
   open?: boolean;
   placement?: DrawerProps["placement"];
+  /** Lock page scroll through `<cui-app>` while the drawer is visible. Defaults to `true`. */
+  lockScroll?: boolean;
   closeOnBackdropClick?: boolean;
   dismissible?: boolean;
   threshold?: number;

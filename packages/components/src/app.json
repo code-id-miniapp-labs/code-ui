@@ -4,6 +4,7 @@
   "style": "v2",
   "componentFramework": "glass-easel",
   "usingComponents": {
+    "cui-app": "runtime/app/index",
     "cui-button": "runtime/button/index",
     "cui-card": "runtime/card/index",
     "cui-avatar": "runtime/avatar/index",

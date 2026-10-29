@@ -3,9 +3,11 @@ import path from "node:path";
 import type {
   AutoImportOptions,
   OutputBundleLike,
+  ResolvedAppWrapperOptions,
   ResolvedAutoImportOptions,
 } from "../types";
 import { isBundleAsset } from "../types";
+import { getAppPages, isPageFile } from "./app-wrapper";
 import { resolveAutoImportOptions } from "./config";
 
 const utf8Decoder = new TextDecoder();
@@ -94,6 +96,8 @@ export function transformAutoImport(
   code: string,
   id: string,
   autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
+  projectRoot?: string,
+  appWrapperOpts?: ResolvedAppWrapperOptions,
 ): { code: string; map: null } | null {
   const resolved = toResolvedOptions(autoImportOpts);
   if (!resolved.enable) return null;
@@ -107,8 +111,18 @@ export function transformAutoImport(
   const wxmlPath = cleanId.slice(0, -5) + ".wxml";
 
   try {
-    const uniqueTags = extractTagsFromWxml(wxmlPath, resolved.tagRegex);
-    if (!uniqueTags || uniqueTags.length === 0) return null;
+    const extracted = extractTagsFromWxml(wxmlPath, resolved.tagRegex);
+    const tagsSet = new Set<string>(extracted ?? []);
+    if (
+      projectRoot &&
+      appWrapperOpts &&
+      appWrapperOpts.enable &&
+      isPageFile(cleanId, projectRoot, getAppPages(projectRoot), appWrapperOpts)
+    ) {
+      tagsSet.add(appWrapperOpts.tag);
+    }
+    const uniqueTags = Array.from(tagsSet);
+    if (uniqueTags.length === 0) return null;
 
     let isExportDefault = false;
     let isStringExport = false;
@@ -171,12 +185,14 @@ export function generateBundleAutoImport(
   bundle: OutputBundleLike,
   autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
   projectRoot: string,
+  appWrapperOpts?: ResolvedAppWrapperOptions,
 ): Set<string> {
   const updatedFiles = new Set<string>();
   const resolved = toResolvedOptions(autoImportOpts);
   if (!resolved.enable) return updatedFiles;
 
   const srcRoot = path.resolve(projectRoot, "src");
+  const pages = appWrapperOpts?.enable ? getAppPages(projectRoot) : undefined;
 
   for (const [fileName, item] of Object.entries(bundle)) {
     if (!fileName.endsWith(".json") || !isBundleAsset(item)) continue;
@@ -201,13 +217,24 @@ export function generateBundleAutoImport(
       uniqueTags = extractTagsFromWxml(candidateInRoot, resolved.tagRegex);
     }
 
-    if (!uniqueTags || uniqueTags.length === 0) continue;
+    const tagsSet = new Set<string>(uniqueTags ?? []);
+    if (pages && appWrapperOpts) {
+      const candidateFile = fs.existsSync(candidateInSrc)
+        ? candidateInSrc
+        : path.resolve(projectRoot, relWxml);
+      if (isPageFile(candidateFile, projectRoot, pages, appWrapperOpts)) {
+        tagsSet.add(appWrapperOpts.tag);
+      }
+    }
+
+    const finalTags = Array.from(tagsSet);
+    if (finalTags.length === 0) continue;
 
     try {
       const json = JSON.parse(source);
       if (!json || typeof json !== "object" || Array.isArray(json)) continue;
 
-      if (injectUsingComponents(json, uniqueTags, resolved)) {
+      if (injectUsingComponents(json, finalTags, resolved)) {
         item.source = JSON.stringify(json, null, 2);
       }
     } catch (err) {
@@ -226,11 +253,13 @@ export function syncDiskAutoImport(
   autoImportOpts: AutoImportOptions | ResolvedAutoImportOptions,
   projectRoot: string,
   skipRelPaths?: ReadonlySet<string>,
+  appWrapperOpts?: ResolvedAppWrapperOptions,
 ): void {
   const resolved = toResolvedOptions(autoImportOpts);
   if (!resolved.enable || !fs.existsSync(distRoot)) return;
 
   const srcRoot = path.resolve(projectRoot, "src");
+  const pages = appWrapperOpts?.enable ? getAppPages(projectRoot) : undefined;
 
   function scanDir(dir: string): void {
     let entries: fs.Dirent[];
@@ -262,7 +291,18 @@ export function syncDiskAutoImport(
           uniqueTags = extractTagsFromWxml(candidateInRoot, resolved.tagRegex);
         }
 
-        if (!uniqueTags || uniqueTags.length === 0) continue;
+        const tagsSet = new Set<string>(uniqueTags ?? []);
+        if (pages && appWrapperOpts) {
+          const candidateFile = fs.existsSync(candidateInSrc)
+            ? candidateInSrc
+            : path.resolve(projectRoot, relWxml);
+          if (isPageFile(candidateFile, projectRoot, pages, appWrapperOpts)) {
+            tagsSet.add(appWrapperOpts.tag);
+          }
+        }
+
+        const finalTags = Array.from(tagsSet);
+        if (finalTags.length === 0) continue;
 
         try {
           const content = fs.readFileSync(fullPath, "utf-8");
@@ -271,7 +311,7 @@ export function syncDiskAutoImport(
             continue;
           }
 
-          if (injectUsingComponents(json, uniqueTags, resolved)) {
+          if (injectUsingComponents(json, finalTags, resolved)) {
             fs.writeFileSync(fullPath, JSON.stringify(json, null, 2), "utf-8");
           }
         } catch (err) {

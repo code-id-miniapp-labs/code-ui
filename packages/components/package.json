@@ -36,6 +36,12 @@
       "require": "./dist/runtime/card/index.js"
     },
     "./card/*": "./dist/runtime/card/*",
+    "./app": {
+      "types": "./dist/runtime/app/index.d.ts",
+      "import": "./dist/runtime/app/index.js",
+      "require": "./dist/runtime/app/index.js"
+    },
+    "./app/*": "./dist/runtime/app/*",
     "./checkbox": {
       "types": "./dist/runtime/checkbox/index.d.ts",
       "import": "./dist/runtime/checkbox/index.js",
@@ -132,6 +138,17 @@
       "require": "./dist/runtime/textarea/index.js"
     },
     "./textarea/*": "./dist/runtime/textarea/*",
+    "./behaviors/app": {
+      "types": "./dist/behaviors/app.d.ts",
+      "import": "./dist/behaviors/app.js",
+      "require": "./dist/behaviors/app.js"
+    },
+    "./behaviors/*": "./dist/behaviors/*",
+    "./utils/app": {
+      "types": "./dist/behaviors/app.d.ts",
+      "import": "./dist/behaviors/app.js",
+      "require": "./dist/behaviors/app.js"
+    },
     "./runtime/*": "./dist/runtime/*",
     "./dist/*": "./dist/*",
     "./themes/*": "./dist/themes/*",
