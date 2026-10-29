@@ -9,6 +9,13 @@ Page({
         path: "/pages/avatar/index",
       },
       {
+        id: "avatar-group",
+        name: "AvatarGroup",
+        desc: "Stack multiple avatars with overlapping offsets, border rings, and overflow counter (+N).",
+        badge: "Display",
+        path: "/pages/avatar-group/index",
+      },
+      {
         id: "badge",
         name: "Badge",
         desc: "-",

@@ -72,5 +72,26 @@
         <c-avatar src="https://invalid-url.com/avatar.jpg" alt="Broken Image" color="warning" size="lg" />
       </view>
     </view>
+    <!-- Avatar Group Preview -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="flex items-center justify-between mb-1">
+        <view class="text-sm font-bold text-neutral-900">Avatar Group</view>
+        <navigator url="/pages/avatar-group/index" class="text-xs font-semibold text-emerald-600">
+          View Full Showcase ›
+        </navigator>
+      </view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Stacking multiple avatars together with negative margin, border ring separation, and max limit.
+      </view>
+      <view class="flex flex-col gap-4">
+        <c-avatar-group max="{{3}}" size="lg">
+          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
+          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" />
+          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Milo" />
+          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bella" />
+          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver" />
+        </c-avatar-group>
+      </view>
+    </view>
   </view>
 </view>

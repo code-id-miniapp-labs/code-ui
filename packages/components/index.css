@@ -1,6 +1,7 @@
 @import "./keyframes.wxss";
 
 @theme {
+  --color-bg: var(--ui-bg, var(--color-white, #ffffff));
   --color-elevated: var(--color-neutral-100);
   --color-accented: var(--color-neutral-200);
   --color-inverted: var(--color-neutral-900);

@@ -3,6 +3,7 @@
   "pages": [
     "pages/index/index",
     "pages/avatar/index",
+    "pages/avatar-group/index",
     "pages/button/index",
     "pages/card/index",
     "pages/chip/index",
