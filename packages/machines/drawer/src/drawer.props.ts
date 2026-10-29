@@ -8,5 +8,8 @@ export const defaultDrawerProps: DrawerProps = {
   dismissible: true,
   threshold: 80,
   duration: 300,
+  shouldScaleBackground: false,
+  scaleFactor: 0.94,
+  scaleBackground: "bg-black",
   ui: {},
 };

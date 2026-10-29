@@ -18,5 +18,6 @@ export * from "@code-ui/miniapp";
 export * from "@code-ui/core";
 export * from "@code-ui/anatomy";
 export * from "./jsx";
+export * from "./utils/app";
 
 

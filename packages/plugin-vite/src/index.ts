@@ -22,7 +22,14 @@ import {
   transformAutoImport,
 } from "./core/auto-import";
 import {
+  generateBundleAppWrapper,
+  invalidateAppPagesCache,
+  syncDiskAppWrapper,
+  transformAppWrapper,
+} from "./core/app-wrapper";
+import {
   PluginConfigManager,
+  resolveAppWrapperOptions,
   resolveAutoImportOptions,
   resolveTreeShakeOptions,
 } from "./core/config";
@@ -32,15 +39,30 @@ import { transformAppStyle } from "./core/style-inject";
 import { handleTreeShake } from "./core/tree-shake";
 import {
   isBundleAsset,
+  type AppWrapperOptions,
   type AutoImportOptions,
   type CodeUIVitePluginOptions,
   type OutputBundleLike,
+  type ResolvedAppWrapperOptions,
   type TreeShakeOptions,
 } from "./types";
 
 export { defineConfig } from "@code-ui/core";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
-export type { AutoImportOptions, CodeUIVitePluginOptions, TreeShakeOptions };
+export type {
+  AppWrapperOptions,
+  AutoImportOptions,
+  CodeUIVitePluginOptions,
+  ResolvedAppWrapperOptions,
+  TreeShakeOptions,
+};
+
+export {
+  getAppPages,
+  invalidateAppPagesCache,
+  isPageFile,
+  wrapPageWxml,
+} from "./core/app-wrapper";
 
 export {
   generateThemeCSS,
@@ -136,6 +158,10 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
   const autoSource = options.autoSource !== false;
   const autoImportOpts = resolveAutoImportOptions(options.autoImport);
   const treeShakeOpts = resolveTreeShakeOptions(options.treeShake);
+  const appWrapperOpts = resolveAppWrapperOptions(
+    options.appWrapper,
+    autoImportOpts.prefix,
+  );
 
   let server: ViteDevServer | null = null;
   let viteConfigObj: ResolvedConfig | null = null;
@@ -159,8 +185,13 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         devServer.watcher.add(configManager.configPath);
       }
       devServer.watcher.add(path.resolve(projectRoot, "cui.config.*"));
+      devServer.watcher.add(path.resolve(projectRoot, "src/app.json"));
+      devServer.watcher.add(path.resolve(projectRoot, "app.json"));
 
       devServer.watcher.on("change", async (changedPath) => {
+        if (changedPath.endsWith("app.json")) {
+          invalidateAppPagesCache(projectRoot);
+        }
         if (isCuiConfigFile(changedPath, configManager.configPath)) {
           await configManager.reload(devServer.config.root);
           if (server) {
@@ -172,6 +203,9 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
     },
 
     async handleHotUpdate(ctx) {
+      if (ctx.file.endsWith("app.json")) {
+        invalidateAppPagesCache(projectRoot);
+      }
       if (isCuiConfigFile(ctx.file, configManager.configPath)) {
         await configManager.reload(projectRoot);
         const affected = invalidateVirtualModules(ctx.server, projectRoot);
@@ -193,6 +227,9 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
     async watchChange(id) {
       if (id.endsWith(".wxml")) {
         invalidateWxmlTagCache(id);
+      }
+      if (id.endsWith("app.json")) {
+        invalidateAppPagesCache(projectRoot);
       }
       if (isCuiConfigFile(id, configManager.configPath)) {
         await configManager.reload(projectRoot);
@@ -243,7 +280,13 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       // 1. JSON usingComponents auto-import
       if (cleanId.endsWith(".json")) {
         if (!autoImportOpts.enable) return null;
-        const autoImportResult = transformAutoImport(code, id, autoImportOpts);
+        const autoImportResult = transformAutoImport(
+          code,
+          id,
+          autoImportOpts,
+          projectRoot,
+          appWrapperOpts,
+        );
         if (autoImportResult) {
           const wxmlPath = cleanId.slice(0, -5) + ".wxml";
           this?.addWatchFile?.(wxmlPath);
@@ -251,9 +294,15 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         return autoImportResult;
       }
 
+      // 2. WXML page auto-wrapper
+      if (cleanId.endsWith(".wxml")) {
+        if (!appWrapperOpts.enable) return null;
+        return transformAppWrapper(code, cleanId, projectRoot, appWrapperOpts);
+      }
+
       if (cleanId.includes("node_modules")) return null;
 
-      // 2. App stylesheet @source & @theme CSS injection
+      // 3. App stylesheet @source & @theme CSS injection
       if (
         autoSource &&
         STYLE_EXT_RE.test(cleanId) &&
@@ -274,7 +323,7 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         }
       }
 
-      // 3. App script entry virtual:cui/config auto-injection
+      // 4. App script entry virtual:cui/config auto-injection
       if (autoInject && APP_SCRIPT_SUFFIX_RE.test(cleanId)) {
         const relPath = path.relative(projectRoot, cleanId).replace(/\\/g, "/");
         if (
@@ -300,16 +349,19 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         const distRoot = path.resolve(projectRoot, outDir);
         const typedBundle = bundle as unknown as OutputBundleLike;
 
+        generateBundleAppWrapper(typedBundle, appWrapperOpts, projectRoot);
         const updatedInBundle = generateBundleAutoImport(
           typedBundle,
           autoImportOpts,
           projectRoot,
+          appWrapperOpts,
         );
         syncDiskAutoImport(
           distRoot,
           autoImportOpts,
           projectRoot,
           updatedInBundle,
+          appWrapperOpts,
         );
         handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, typedBundle);
 
@@ -331,7 +383,14 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
     closeBundle() {
       const outDir = viteConfigObj?.build?.outDir || "dist";
       const distRoot = path.resolve(projectRoot, outDir);
-      syncDiskAutoImport(distRoot, autoImportOpts, projectRoot);
+      syncDiskAppWrapper(distRoot, appWrapperOpts, projectRoot);
+      syncDiskAutoImport(
+        distRoot,
+        autoImportOpts,
+        projectRoot,
+        undefined,
+        appWrapperOpts,
+      );
       handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
       cleanKeyframesInDir(distRoot, cleanedBundleCssPaths);
       cleanedBundleCssPaths.clear();

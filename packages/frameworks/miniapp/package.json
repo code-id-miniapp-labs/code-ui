@@ -45,6 +45,11 @@
       "types": "./dist/behaviors/stepper.d.ts",
       "import": "./dist/behaviors/stepper.js",
       "require": "./dist/behaviors/stepper.cjs"
+    },
+    "./behaviors/app": {
+      "types": "./dist/behaviors/app.d.ts",
+      "import": "./dist/behaviors/app.js",
+      "require": "./dist/behaviors/app.cjs"
     }
   },
   "scripts": {

@@ -46,6 +46,12 @@ export interface DrawerProps {
   threshold?: number;
   /** Explicit transition duration in ms (auto-computed from CSS if omitted) */
   duration?: number;
+  /** Whether opening this drawer scales down the background (<c-app>) */
+  shouldScaleBackground?: boolean;
+  /** Scale factor when scaled (default: 0.94) */
+  scaleFactor?: number;
+  /** Background canvas color or class when scaled (default: "bg-black") */
+  scaleBackground?: string;
 }
 
 export type DrawerEvent =
@@ -114,6 +120,12 @@ export interface DrawerApi {
   threshold: number;
   /** Close animation duration in ms — synced to WXS exit animation */
   duration: number;
+  /** Whether opening this drawer scales down the background */
+  shouldScaleBackground: boolean;
+  /** Scale factor */
+  scaleFactor: number;
+  /** Scale background */
+  scaleBackground: string;
   /** Open or close the drawer */
   setOpen(open: boolean): void;
   /** Open the drawer */

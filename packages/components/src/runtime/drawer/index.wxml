@@ -1,11 +1,11 @@
 <wxs src="../../.wxs/machines/drawer/src/wxs/drawer-gesture.wxs" module="gesture" />
 <view id="{{drawer.rootProps.id}}" class="{{ classes.root }}" data-scope="drawer" data-part="root" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" wx:if="{{drawer.state !== 'closed'}}">
-  <view id="{{drawer.backdropProps.id}}" class="{{ classes.backdrop }}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{drawer.backdropProps['aria-hidden']}}" bindtap="handleBackdropTap" catchtouchmove="noop" />
-  <view id="{{drawer.contentProps.id}}" class="{{ classes.content }}" data-scope="drawer" data-part="content" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" role="{{drawer.contentProps.role}}" aria-modal="{{drawer.contentProps['aria-modal']}}" aria-hidden="{{drawer.contentProps['aria-hidden']}}" data-keyboard-height="{{drawer.contentProps['data-keyboard-height']}}" style="{{data.contentProps.style}}">
-    <view id="{{drawer.grabberProps.id}}" class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{drawer.placement}}" data-threshold="{{drawer.threshold}}" data-duration="{{drawer.duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" wx:if="{{drawer.placement === 'bottom' || drawer.placement === 'top'}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
+  <view id="{{drawer.backdropProps.id}}" class="{{ classes.backdrop }}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{drawer.backdropProps['aria-hidden']}}" bindtap="handleBackdropTap" catchtouchmove="{{gesture.preventTouchMove}}" />
+  <view id="{{drawer.contentProps.id}}" class="{{ classes.content }}" data-scope="drawer" data-part="content" data-state="{{drawer.state}}" data-placement="{{drawer.placement}}" role="{{drawer.contentProps.role}}" aria-modal="{{drawer.contentProps['aria-modal']}}" aria-hidden="{{drawer.contentProps['aria-hidden']}}" data-keyboard-height="{{drawer.contentProps['data-keyboard-height']}}" style="{{drawer.contentProps.style}}">
+    <view id="{{drawer.grabberProps.id}}" class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{drawer.placement}}" data-threshold="{{drawer.threshold}}" data-duration="{{drawer.duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" data-should-scale="{{drawer.shouldScaleBackground}}" data-scale-factor="{{drawer.scaleFactor}}" wx:if="{{drawer.placement === 'bottom' || drawer.placement === 'top'}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
       <view class="{{ classes.grabberBar }}" />
     </view>
-    <view class="{{ classes.header }}" catchtouchmove="noop">
+    <view class="{{ classes.header }}" catchtouchmove="{{gesture.preventTouchMove}}">
       <view class="flex-1">
         <slot name="header" />
       </view>
@@ -13,10 +13,10 @@
         <c-icon name="close" className="size-4" />
       </view>
     </view>
-    <scroll-view scroll-y class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}">
+    <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" style="box-sizing: border-box; width: 100%;">
       <slot />
     </scroll-view>
-    <view class="{{ classes.footer }}" catchtouchmove="noop">
+    <view class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">
       <slot name="footer" />
     </view>
   </view>

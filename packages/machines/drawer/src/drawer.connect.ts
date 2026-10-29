@@ -11,6 +11,9 @@ export function connectDrawer(service: DrawerService): DrawerApi {
   const placement = computed("placement");
   const threshold = prop("threshold") ?? 80;
   const duration = prop("duration") ?? 300;
+  const shouldScaleBackground = Boolean(prop("shouldScaleBackground"));
+  const scaleFactor = prop("scaleFactor") ?? 0.94;
+  const scaleBackground = prop("scaleBackground") ?? "bg-black";
   const keyboardHeight = context.get("keyboardHeight");
 
   return {
@@ -20,6 +23,9 @@ export function connectDrawer(service: DrawerService): DrawerApi {
     placement,
     threshold,
     duration,
+    shouldScaleBackground,
+    scaleFactor,
+    scaleBackground,
 
     setOpen(nextOpen: boolean) {
       if (computed("isOpen") === nextOpen) return;
@@ -73,6 +79,8 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       ...parts.grabber.attrs,
       "data-state": currentState,
       "data-placement": placement,
+      "data-should-scale": shouldScaleBackground,
+      "data-scale-factor": scaleFactor,
     },
 
     closeTriggerProps: {

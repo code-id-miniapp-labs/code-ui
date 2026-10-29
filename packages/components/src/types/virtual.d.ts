@@ -1,3 +1,9 @@
+declare module "virtual:cui/theme/app" {
+  import type { default as appTheme } from "@code-ui/core/src/theme/definitions/app";
+  const theme: ReturnType<typeof appTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/button" {
   import type { default as buttonTheme } from "@code-ui/core/src/theme/definitions/button";
   const theme: ReturnType<typeof buttonTheme>;

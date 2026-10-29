@@ -107,6 +107,7 @@ export type {
   ColorVariantRule,
 } from "./theme";
 export * as componentThemes from "./theme/definitions";
+export { default as appTheme } from "./theme/definitions/app";
 export { default as avatarTheme } from "./theme/definitions/avatar";
 export { default as badgeTheme } from "./theme/definitions/badge";
 export { default as buttonTheme } from "./theme/definitions/button";
