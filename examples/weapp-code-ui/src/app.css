@@ -15,3 +15,7 @@
   --color-testing-900: rgb(127, 29, 29);
   --color-testing-950: rgb(69, 10, 10);
 }
+
+* {
+  box-sizing: border-box;
+}

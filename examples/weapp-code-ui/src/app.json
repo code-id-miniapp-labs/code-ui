@@ -3,6 +3,7 @@
   "pages": [
     "pages/index/index",
     "pages/avatar/index",
+    "pages/avatar-group/index",
     "pages/button/index",
     "pages/card/index",
     "pages/chip/index",
@@ -25,5 +26,6 @@
   "window": {},
   "style": "v2",
   "componentFramework": "glass-easel",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "renderer": "skyline"
 }

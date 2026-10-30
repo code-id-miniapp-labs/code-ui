@@ -3,10 +3,17 @@ var dom = require('./dom.wxs');
 var startX = 0;
 var startY = 0;
 var lastOffset = 0;
+var lastCallOffset = 0;
 var isDragging = false;
 
 var _contentEl = null;
 var _backdropEl = null;
+
+var _throttledCallMove = dom.throttle(function(ownerInstance, data) {
+  if (ownerInstance) {
+    ownerInstance.callMethod('handleTouchMove', data);
+  }
+}, 16);
 
 function _computeOffset(currentX, currentY, placement) {
   var delta = 0;
@@ -71,7 +78,12 @@ function onTouchStart(event, ownerInstance) {
   startX = touch.clientX;
   startY = touch.clientY;
   lastOffset = 0;
+  lastCallOffset = 0;
   isDragging = false;
+
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
 
   // Cache refs once — avoids querying the tree on every touchmove frame
   // IDs are passed via dataset so we don't depend on any class names
@@ -103,13 +115,14 @@ function onTouchMove(event, ownerInstance) {
   if (_contentEl)  _contentEl.setStyle(_buildTransform(offset, placement));
   if (_backdropEl) _backdropEl.setStyle(_buildBackdropOpacity(offset, dataset.threshold));
 
-  if (ownerInstance) {
-    ownerInstance.callMethod('handleTouchMove', {
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      offset: offset
-    });
-  }
+  // Bridge notification to logic thread throttled via dom.throttle (16ms ~ 60fps)
+  _throttledCallMove(ownerInstance, {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+    offset: offset
+  });
+
+  return false;
 }
 
 function onTouchEnd(event, ownerInstance) {
@@ -142,10 +155,15 @@ function onTouchEnd(event, ownerInstance) {
     if (_backdropEl) _backdropEl.setStyle('');
   }
 
-  _contentEl  = null;
-  _backdropEl = null;
-  isDragging  = false;
-  lastOffset  = 0;
+  _contentEl     = null;
+  _backdropEl    = null;
+  isDragging     = false;
+  lastOffset     = 0;
+  lastCallOffset = 0;
+
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
 
   ownerInstance.callMethod('handleTouchEnd', {
     passed: passed,
@@ -153,9 +171,14 @@ function onTouchEnd(event, ownerInstance) {
   });
 }
 
+function preventTouchMove(event, ownerInstance) {
+  return false;
+}
+
 module.exports = {
-  onTouchStart: onTouchStart,
-  onTouchMove:  onTouchMove,
-  onTouchEnd:   onTouchEnd,
+  onTouchStart:     onTouchStart,
+  onTouchMove:      onTouchMove,
+  onTouchEnd:       onTouchEnd,
+  preventTouchMove: preventTouchMove,
 };
 

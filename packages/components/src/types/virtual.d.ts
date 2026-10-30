@@ -1,3 +1,9 @@
+declare module "virtual:cui/theme/app" {
+  import type { default as appTheme } from "@code-ui/core/src/theme/definitions/app";
+  const theme: ReturnType<typeof appTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/button" {
   import type { default as buttonTheme } from "@code-ui/core/src/theme/definitions/button";
   const theme: ReturnType<typeof buttonTheme>;
@@ -91,6 +97,12 @@ declare module "virtual:cui/theme/switch" {
 declare module "virtual:cui/theme/avatar" {
   import type { default as avatarTheme } from "@code-ui/core/src/theme/definitions/avatar";
   const theme: ReturnType<typeof avatarTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/avatar-group" {
+  import type { default as avatarGroupTheme } from "@code-ui/core/src/theme/definitions/avatar-group";
+  const theme: ReturnType<typeof avatarGroupTheme>;
   export default theme;
 }
 

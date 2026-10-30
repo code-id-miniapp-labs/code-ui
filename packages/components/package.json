@@ -30,12 +30,30 @@
       "require": "./dist/runtime/button/index.js"
     },
     "./button/*": "./dist/runtime/button/*",
+    "./avatar": {
+      "types": "./dist/runtime/avatar/index.d.ts",
+      "import": "./dist/runtime/avatar/index.js",
+      "require": "./dist/runtime/avatar/index.js"
+    },
+    "./avatar/*": "./dist/runtime/avatar/*",
+    "./avatar-group": {
+      "types": "./dist/runtime/avatar-group/index.d.ts",
+      "import": "./dist/runtime/avatar-group/index.js",
+      "require": "./dist/runtime/avatar-group/index.js"
+    },
+    "./avatar-group/*": "./dist/runtime/avatar-group/*",
     "./card": {
       "types": "./dist/runtime/card/index.d.ts",
       "import": "./dist/runtime/card/index.js",
       "require": "./dist/runtime/card/index.js"
     },
     "./card/*": "./dist/runtime/card/*",
+    "./app": {
+      "types": "./dist/runtime/app/index.d.ts",
+      "import": "./dist/runtime/app/index.js",
+      "require": "./dist/runtime/app/index.js"
+    },
+    "./app/*": "./dist/runtime/app/*",
     "./checkbox": {
       "types": "./dist/runtime/checkbox/index.d.ts",
       "import": "./dist/runtime/checkbox/index.js",
@@ -132,6 +150,17 @@
       "require": "./dist/runtime/textarea/index.js"
     },
     "./textarea/*": "./dist/runtime/textarea/*",
+    "./behaviors/app": {
+      "types": "./dist/behaviors/app.d.ts",
+      "import": "./dist/behaviors/app.js",
+      "require": "./dist/behaviors/app.js"
+    },
+    "./behaviors/*": "./dist/behaviors/*",
+    "./utils/app": {
+      "types": "./dist/behaviors/app.d.ts",
+      "import": "./dist/behaviors/app.js",
+      "require": "./dist/behaviors/app.js"
+    },
     "./runtime/*": "./dist/runtime/*",
     "./dist/*": "./dist/*",
     "./themes/*": "./dist/themes/*",

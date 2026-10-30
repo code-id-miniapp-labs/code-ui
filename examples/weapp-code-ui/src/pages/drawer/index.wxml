@@ -1,58 +1,148 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-20">
   <!-- Page Header -->
   <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Drawer</view>
+    <view class="flex items-center gap-2">
+      <view class="text-xl font-extrabold text-neutral-950">Drawer</view>
+      <c-badge color="primary" variant="subtle" size="xs">FSM</c-badge>
+    </view>
     <view class="text-xs text-neutral-500 mt-1">
-      Gesture-driven modal drawer with backdrop dimming and bottom/top/left/right placements.
+      Gesture-driven modal drawer with backdrop dimming, 4 edge placements, inner scrolling, and host scroll-lock integration.
     </view>
   </view>
   <view class="px-5 flex flex-col gap-6">
-    <!-- Placements -->
+    <!-- 1. Settings & Status -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+      <view class="flex items-center justify-between">
+        <view class="text-sm font-bold text-neutral-900">Drawer Configuration</view>
+        <c-badge color="{{drawerOpen ? 'primary' : 'neutral'}}" variant="solid" size="xs">
+          {{drawerOpen ? 'Open (' + placement + ')' : 'Closed'}}
+        </c-badge>
+      </view>
+      <view class="flex flex-col gap-3 pt-1">
+        <c-switch size="sm" checked="{{lockScroll}}" label="Lock Background Scroll" description="Coordinates with <c-app> to prevent page scrolling when drawer is open." bind:change="onLockScrollChange" />
+        <c-divider />
+        <c-switch size="sm" checked="{{shouldScaleBackground}}" label="Scale Background (iOS Sheet)" description="Smoothly scales down page with rounded corners and canvas backdrop." bind:change="onScaleBackgroundChange" />
+        <view wx:if="{{shouldScaleBackground}}" class="flex items-center justify-between pt-1">
+          <view class="text-xs text-neutral-600">Canvas Color</view>
+          <view class="flex items-center gap-2">
+            <view class="px-2.5 py-1 rounded text-[11px] font-medium border {{scaleBackground === 'bg-black' ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}}" data-color="bg-black" bind:tap="onSelectScaleColor">
+              Black
+            </view>
+            <view class="px-2.5 py-1 rounded text-[11px] font-medium border {{scaleBackground === 'bg-neutral-950' ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}}" data-color="bg-neutral-950" bind:tap="onSelectScaleColor">
+              Neutral 950
+            </view>
+            <view class="px-2.5 py-1 rounded text-[11px] font-medium border {{scaleBackground === 'bg-slate-900' ? 'bg-slate-900 text-white border-slate-900' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}}" data-color="bg-slate-900" bind:tap="onSelectScaleColor">
+              Slate 900
+            </view>
+          </view>
+        </view>
+        <c-divider />
+        <c-switch size="sm" checked="{{closeOnBackdropClick}}" label="Dismiss on Backdrop Tap" description="Tap the semi-transparent overlay to dismiss the drawer." bind:change="onBackdropCloseChange" />
+      </view>
+    </view>
+    <!-- 2. Placements -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Placements</view>
-      <view class="text-xs text-neutral-400 mb-4">Open drawer from different screen edges.</view>
-      <view class="flex flex-wrap gap-2.5">
-        <c-button color="primary" data-placement="bottom" bind:tap="openDrawer">
-          Bottom Drawer
+      <view class="text-xs text-neutral-400 mb-4">Open drawer from any screen edge.</view>
+      <view class="grid grid-cols-2 gap-2.5">
+        <c-button color="primary" data-placement="bottom" bind:tap="openPlacement">
+          Bottom Sheet
         </c-button>
-        <c-button variant="outline" color="neutral" data-placement="top" bind:tap="openDrawer">
+        <c-button variant="outline" color="neutral" data-placement="top" bind:tap="openPlacement">
           Top Drawer
         </c-button>
-        <c-button variant="outline" color="neutral" data-placement="left" bind:tap="openDrawer">
+        <c-button variant="outline" color="neutral" data-placement="left" bind:tap="openPlacement">
           Left Drawer
         </c-button>
-        <c-button variant="outline" color="neutral" data-placement="right" bind:tap="openDrawer">
+        <c-button variant="outline" color="neutral" data-placement="right" bind:tap="openPlacement">
           Right Drawer
         </c-button>
       </view>
     </view>
-    <!-- State Indicator -->
+    <!-- 3. Preset Scenarios -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Drawer State</view>
-      <view class="text-xs text-neutral-500">
-        Current status:
-        <text class="font-bold text-neutral-800">
-          {{drawerOpen ? 'Open (' + placement + ')' : 'Closed'}}
-        </text>
-      </view>
-    </view>
-  </view>
-  <!-- The Drawer Instance -->
-  <c-drawer open="{{drawerOpen}}" placement="{{placement}}" bind:close="onDrawerClose">
-    <view class="p-6 flex flex-col gap-4">
-      <view class="flex items-center justify-between">
-        <view class="text-base font-bold text-neutral-900">Drawer Title</view>
-        <c-button size="xs" variant="ghost" color="neutral" bind:tap="closeDrawer">✕</c-button>
-      </view>
-      <view class="text-xs text-neutral-600 leading-relaxed">
-        This is a modal drawer rendered via Code UI's.
-        Swipe to dismiss, tap the backdrop, or click the close button.
-      </view>
-      <view class="pt-2 flex gap-2">
-        <c-button block="{{true}}" color="primary" size="sm" bind:tap="closeDrawer">
-          Confirm Action
+      <view class="text-sm font-bold text-neutral-900 mb-1">Scenarios</view>
+      <view class="text-xs text-neutral-400 mb-4">Common patterns & layout slot usage.</view>
+      <view class="flex flex-col gap-2.5">
+        <c-button variant="soft" color="primary" block="{{true}}" bind:tap="openScrollable">
+          Scrollable Content Drawer (15 items)
+        </c-button>
+        <c-button variant="soft" color="warning" block="{{true}}" bind:tap="openModal">
+          Strict Modal Drawer (Backdrop Tap Disabled)
         </c-button>
       </view>
     </view>
-  </c-drawer>
+    <!-- 4. Scroll Verification Cards -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        Page Scroll Verification
+      </view>
+      <view class="text-xs text-neutral-500 px-1 mb-1">
+        Scroll down through these cards and open any drawer to verify that background scrolling is fully locked when lockScroll is enabled.
+      </view>
+      <block wx:for="{{pageItems}}" wx:key="id">
+        <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex items-center justify-between">
+          <view class="flex flex-col gap-0.5">
+            <view class="text-sm font-semibold text-neutral-800">{{item.title}}</view>
+            <view class="text-xs text-neutral-400">{{item.desc}}</view>
+          </view>
+          <c-button size="xs" variant="ghost" color="primary" data-placement="bottom" bind:tap="openPlacement">
+            Open
+          </c-button>
+        </view>
+      </block>
+    </view>
+  </view>
 </view>
+<c-drawer slot="overlay" open="{{drawerOpen}}" placement="{{placement}}" lockScroll="{{lockScroll}}" shouldScaleBackground="{{shouldScaleBackground}}" scaleBackground="{{scaleBackground}}" scaleFactor="{{scaleFactor}}" closeOnBackdropClick="{{closeOnBackdropClick}}" bind:close="onDrawerClose">
+  <!-- Header Slot -->
+  <view slot="header" class="flex items-center gap-2">
+    <view class="text-base font-bold text-neutral-900">{{drawerTitle}}</view>
+    <c-badge size="xs" color="primary" variant="subtle">{{placement}}</c-badge>
+  </view>
+  <!-- Body Content: Standard Scenario -->
+  <view wx:if="{{scenario === 'standard'}}" class="flex flex-col gap-4 py-2">
+    <view class="text-xs text-neutral-600 leading-relaxed">{{drawerDescription}}</view>
+    <view class="bg-neutral-50 p-3.5 rounded-xl border border-neutral-200 flex flex-col gap-2">
+      <view class="text-xs font-bold text-neutral-800">Gesture Support</view>
+      <view class="text-xs text-neutral-500">
+        On top and bottom drawers, swipe gesture is enabled on the grabber bar for natural dismissal.
+      </view>
+    </view>
+  </view>
+  <!-- Body Content: Scrollable Scenario -->
+  <view wx:if="{{scenario === 'scrollable'}}" class="flex flex-col gap-2 py-1">
+    <view class="text-xs text-neutral-500 mb-2">
+      Scroll through the items below. Notice the drawer body scrolls independently while the background page remains locked.
+    </view>
+    <block wx:for="{{scrollItems}}" wx:key="id">
+      <view class="py-2.5 px-3 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-between">
+        <view class="flex flex-col">
+          <text class="text-xs font-bold text-neutral-800">{{item.title}}</text>
+          <text class="text-[11px] text-neutral-400">{{item.desc}}</text>
+        </view>
+        <c-badge size="xs" variant="outline" color="neutral">#{{item.id}}</c-badge>
+      </view>
+    </block>
+  </view>
+  <!-- Body Content: Modal Scenario -->
+  <view wx:if="{{scenario === 'modal'}}" class="flex flex-col gap-3 py-2">
+    <view class="text-xs text-neutral-600 leading-relaxed">
+      This is a strict modal drawer. Tapping the backdrop is disabled. You must explicitly tap one of the action buttons below or the close trigger to dismiss.
+    </view>
+    <view class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800">
+      Notice:
+      <text class="font-bold">closeOnBackdropClick=false</text>
+      protects important confirmation steps from accidental dismissal.
+    </view>
+  </view>
+  <!-- Sticky Footer Slot -->
+  <view slot="footer" class="w-full flex gap-2.5">
+    <c-button block="{{true}}" variant="outline" color="neutral" size="sm" bind:tap="closeDrawer">
+      Cancel
+    </c-button>
+    <c-button block="{{true}}" color="primary" size="sm" bind:tap="onConfirmAction">
+      Confirm
+    </c-button>
+  </view>
+</c-drawer>

@@ -39,6 +39,46 @@ export interface IconsPluginOptions {
   extraProperties?: Record<string, string>;
 }
 
+export interface AppWrapperOptions {
+  /**
+   * Whether to enable automatic <c-app> page wrapping.
+   * Default: true
+   */
+  enable?: boolean;
+  /**
+   * Component tag name to wrap page content with.
+   * Default: `${prefix}-app` (e.g. "c-app")
+   */
+  tag?: string;
+  /**
+   * Whether to auto-inject <page-meta page-style="{{ cuiPageStyle }}" />
+   * Default: false
+   */
+  pageMeta?: boolean;
+  /**
+   * Default props to attach to the root app wrapper tag.
+   * Example: { "safe-area": "both", "className": "min-h-screen bg-neutral-50" }
+   */
+  defaultProps?: Record<string, string | boolean | number>;
+  /**
+   * Relative page paths, regexes, or globs to exclude from auto-wrapping.
+   */
+  exclude?: (string | RegExp)[];
+  /**
+   * Relative page paths, regexes, or globs to explicitly include.
+   */
+  include?: (string | RegExp)[];
+}
+
+export interface ResolvedAppWrapperOptions {
+  enable: boolean;
+  tag: string;
+  pageMeta: boolean;
+  defaultProps?: Record<string, string | boolean | number> | undefined;
+  exclude: (string | RegExp)[];
+  include?: (string | RegExp)[] | undefined;
+}
+
 export interface CodeUIVitePluginOptions {
   cwd?: string;
   configFile?: string;
@@ -50,6 +90,11 @@ export interface CodeUIVitePluginOptions {
   autoSource?: boolean;
   autoImport?: boolean | AutoImportOptions;
   treeShake?: boolean | TreeShakeOptions;
+  /**
+   * Auto-inject <c-app> wrapper into WeChat MiniProgram pages.
+   * Default: true
+   */
+  appWrapper?: boolean | AppWrapperOptions;
   icons?: CodeUIConfig["icons"] | boolean | IconsPluginOptions;
   ui?: CodeUIConfig["ui"];
   components?: CodeUIConfig["components"];

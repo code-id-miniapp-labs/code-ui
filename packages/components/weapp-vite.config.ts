@@ -235,6 +235,14 @@ export default defineConfig({
               name: "behaviors/form",
               test: /[\\/]behaviors[\\/]form/,
             },
+            {
+              name: "behaviors/app",
+              test: /[\\/]behaviors[\\/]app/,
+            },
+            {
+              name: "behaviors/avatar-group",
+              test: /[\\/]behaviors[\\/]avatar-group/,
+            },
           ],
         },
       },

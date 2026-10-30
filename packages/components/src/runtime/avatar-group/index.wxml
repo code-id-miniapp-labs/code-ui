@@ -1,0 +1,11 @@
+<view class="{{classes.root}}">
+  <c-avatar
+    wx:if="{{overflowCount > 0}}"
+    isGroupCounter="{{true}}"
+    text="+{{overflowCount}}"
+    size="{{size}}"
+    className="{{classes.base}}"
+    ui="{{counterUi}}"
+  />
+  <slot />
+</view>

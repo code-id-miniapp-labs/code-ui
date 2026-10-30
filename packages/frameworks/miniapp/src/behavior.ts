@@ -42,7 +42,7 @@ export interface CreateMachineBehaviorOptions<
    * Component property names to automatically observe and forward to `machine.updateProps`.
    * If omitted, all properties from the machine's default props are automatically observed.
    */
-  syncProps?: Array<keyof T["props"]>;
+  syncProps?: Array<keyof T["props"] | (string & {})>;
   /**
    * Export the machine's public API for parent `this.selectComponent(...)` calls via `'wx://component-export'`
    */
@@ -173,6 +173,7 @@ export function createMachineBehavior<
   const behaviorConfig: Record<string, any> = {
     behaviors,
     observers,
+    relations,
 
     lifetimes: {
       attached(this: any) {

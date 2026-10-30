@@ -1,0 +1,19 @@
+<view
+  class="{{ classes.root }}"
+  style="{{ rootStyle }}"
+  data-scope="app"
+  data-part="root"
+  data-locked="{{ locked }}"
+  data-scaled="{{ scaled }}"
+  data-safe-area="{{ safeArea || 'none' }}"
+>
+  <view
+    id="cui-page-scale"
+    class="{{ classes.scaleWrapper }}"
+    style="{{ scaleWrapperStyle }}"
+    data-part="scale-wrapper"
+  >
+    <slot />
+  </view>
+  <slot name="overlay" />
+</view>

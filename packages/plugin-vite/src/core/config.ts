@@ -6,9 +6,11 @@ import {
   type CodeUIConfig,
 } from "@code-ui/core";
 import type {
+  AppWrapperOptions,
   AutoImportOptions,
   CodeUIVitePluginOptions,
   IconsPluginOptions,
+  ResolvedAppWrapperOptions,
   ResolvedAutoImportOptions,
   ResolvedTreeShakeOptions,
   TreeShakeOptions,
@@ -125,6 +127,32 @@ export function resolveTreeShakeOptions(
   return {
     enable: Boolean(raw.enable),
     library: raw.library || "@code-ui/components",
+  };
+}
+
+export function resolveAppWrapperOptions(
+  appWrapper?: boolean | AppWrapperOptions,
+  prefix: string = "c",
+): ResolvedAppWrapperOptions {
+  const raw: AppWrapperOptions =
+    typeof appWrapper === "boolean"
+      ? { enable: appWrapper }
+      : appWrapper || { enable: true };
+
+  const enable = raw.enable !== false;
+  const tag = raw.tag || `${prefix}-app`;
+  const pageMeta = raw.pageMeta === true;
+  const defaultProps = raw.defaultProps;
+  const exclude = raw.exclude || [];
+  const include = raw.include;
+
+  return {
+    enable,
+    tag,
+    pageMeta,
+    defaultProps,
+    exclude,
+    include,
   };
 }
 
