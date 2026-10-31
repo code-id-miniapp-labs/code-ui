@@ -115,7 +115,6 @@ export type PinInputEvent =
   | { type: "INPUT.FOCUS"; index: number; force?: boolean | undefined }
   | { type: "INPUT.BLUR"; index?: number | undefined }
   | { type: "INPUT.CLEAR" }
-  | { type: "INPUT.PASTE"; index: number; value: string }
   | { type: "SET_VALUE"; value: string[] | string }
   | { type: "CLEAR_VALUE" }
   | { type: "RESET_VALUE" };
@@ -160,11 +159,9 @@ export interface PinInputComputed {
 }
 
 export interface PinInputRefs {
-  prevValue?: string[] | undefined;
   initialValue?: string[] | undefined;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface PinInputSchema extends MachineSchema {

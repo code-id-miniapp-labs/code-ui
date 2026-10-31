@@ -158,6 +158,8 @@ export type CheckboxGroupEvent =
   | { type: "SET_INVALID"; invalid: boolean };
 
 export interface CheckboxGroupComputed {
+  isDisabled: boolean;
+  isReadOnly: boolean;
   isInteractive: boolean;
 }
 

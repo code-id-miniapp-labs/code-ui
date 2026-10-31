@@ -31,11 +31,10 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       initialValue: initial,
       formField: undefined,
       currentFormBus: prop("formBus"),
-      busDisposers: [],
     };
   },
 
-  context: ({ prop, bindable }) => {
+  context: ({ prop, bindable, getRefs }) => {
     const propBindable = <K extends keyof InputContext & keyof InputProps>(
       key: K,
       defaultValue: InputContext[K],
@@ -65,6 +64,12 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
             prop("onValueChange")?.({ value: nextVal });
             prop("component")?.triggerEvent?.("change", { value: nextVal });
             prop("component")?.setData?.({ value: nextVal });
+
+            const formField = getRefs().get("formField");
+            if (formField) {
+              formField.emitInput(nextVal);
+              formField.emitChange(nextVal);
+            }
           },
         };
       }),
@@ -127,15 +132,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       context.get("fieldSize") || context.get("size") || "md",
   },
 
-  watch: ({ prop, context, refs }) => {
-    const nextForm = prop("form") ?? "";
-    const nextName = prop("name") ?? "";
-    if (nextForm !== context.get("form") || nextName !== context.get("name")) {
-      context.set("form", nextForm);
-      context.set("name", nextName);
-      refs.get("formField")?.rebind();
-    }
-
+  watch: ({ prop, refs }) => {
     const nextFormBus = prop("formBus");
     if (nextFormBus !== refs.get("currentFormBus")) {
       refs.set("currentFormBus", nextFormBus);
@@ -149,20 +146,20 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
   on: {
     "INPUT.CHANGE": {
       guard: "isInteractive",
-      actions: ["handleInputChange", "notifyFormChange"],
+      actions: ["setValue"],
     },
     "INPUT.CONFIRM": {
       actions: ["handleConfirm"],
     },
     "INPUT.CLEAR": {
       guard: "isInteractive",
-      actions: ["clearValue", "notifyFormChange"],
+      actions: ["clearValue"],
     },
     SET_VALUE: {
-      actions: ["setValue", "notifyFormChange"],
+      actions: ["setValue"],
     },
     CLEAR_VALUE: {
-      actions: ["clearValue", "notifyFormChange"],
+      actions: ["clearValue"],
     },
     RESET_VALUE: {
       target: "idle",
@@ -250,20 +247,6 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
 
       cleanupFormField: ({ refs }) => {
         cleanupFormFieldSync(refs);
-      },
-
-      handleInputChange: ({ context, event }) => {
-        const nextVal = toStringValue((event as any).value) ?? "";
-        context.set("value", nextVal);
-      },
-
-      notifyFormChange: ({ context, refs }) => {
-        const formField = refs.get("formField");
-        if (formField) {
-          const val = context.get("value");
-          formField.emitInput(val);
-          formField.emitChange(val);
-        }
       },
 
       handleFocus: ({ context, prop, refs }) => {

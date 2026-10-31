@@ -50,12 +50,14 @@ export function applyGroupState(
   { context, state }: Pick<CheckboxParams, "context" | "state">,
   g: GroupStateSnapshot,
 ) {
-  if (Array.isArray(g.value) && !isEqual(g.value, context.get("groupValue"))) {
-    context.set("groupValue", g.value);
+  if (Array.isArray(g.value)) {
+    if (!isEqual(g.value, context.get("groupValue"))) {
+      context.set("groupValue", g.value);
+    }
     const targetState = g.value.includes(context.get("value"))
       ? "checked"
       : "unchecked";
-    if (state.get() !== targetState) {
+    if (!state.matches(targetState)) {
       state.set(targetState);
     }
   }

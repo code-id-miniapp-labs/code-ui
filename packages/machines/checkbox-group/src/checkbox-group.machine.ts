@@ -6,14 +6,34 @@ import {
 import { createEventBus, isEqual, isNotEmpty } from "@code-ui/utils";
 import type {
   CheckboxGroupBusEvents,
-  CheckboxGroupColor,
+  CheckboxGroupContext,
   CheckboxGroupMachine,
-  CheckboxGroupOrientation,
+  CheckboxGroupParams,
+  CheckboxGroupProps,
   CheckboxGroupSchema,
-  CheckboxGroupSize,
-  CheckboxGroupVariant,
 } from "./checkbox-group.types";
 import { defaultCheckboxGroupProps } from "./checkbox-group.props";
+
+function emitGroupChange(
+  {
+    refs,
+    context,
+    computed,
+  }: Pick<CheckboxGroupParams, "refs" | "context" | "computed">,
+  overrides?: Partial<CheckboxGroupBusEvents["group:change"]>,
+): void {
+  const bus = refs.get("bus");
+  if (!bus) return;
+  bus.emit("group:change", {
+    value: context.get("value") ?? [],
+    disabled: computed("isDisabled"),
+    invalid: Boolean(context.get("invalid")),
+    size: context.get("size") || "md",
+    color: context.get("color") || "primary",
+    variant: context.get("variant") || "outline",
+    ...overrides,
+  });
+}
 
 export const checkboxGroupMachine: CheckboxGroupMachine =
   createMachine<CheckboxGroupSchema>({
@@ -41,9 +61,25 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
       };
     },
 
-    context: ({ prop, bindable, getRefs }) => {
-      const b = <T>(key: any, defaultValue: T) =>
-        bindable<T>(() => ({ value: prop(key), defaultValue }));
+    context: ({ prop, bindable, getRefs, getContext, getComputed }) => {
+      const propBindable = <
+        K extends keyof CheckboxGroupContext & keyof CheckboxGroupProps,
+      >(
+        key: K,
+        defaultValue: CheckboxGroupContext[K],
+      ) =>
+        bindable<CheckboxGroupContext[K]>(() => ({
+          value: prop(key) as CheckboxGroupContext[K] | undefined,
+          defaultValue,
+        }));
+
+      const stateBindable = <K extends keyof CheckboxGroupContext>(
+        _key: K,
+        defaultValue: CheckboxGroupContext[K],
+      ) =>
+        bindable<CheckboxGroupContext[K]>(() => ({
+          defaultValue,
+        }));
 
       return {
         value: bindable<string[]>(() => {
@@ -65,17 +101,14 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               });
               prop("component")?.setData?.({ value: nextVal });
 
-              const bus = getRefs().get("bus");
-              if (bus) {
-                bus.emit("group:change", {
-                  value: nextVal,
-                  disabled: Boolean(prop("disabled")),
-                  invalid: Boolean(prop("invalid")),
-                  size: prop("size") ?? "md",
-                  color: prop("color") ?? "primary",
-                  variant: prop("variant") ?? "outline",
-                });
-              }
+              emitGroupChange(
+                {
+                  refs: getRefs(),
+                  context: getContext(),
+                  computed: getComputed(),
+                },
+                { value: nextVal },
+              );
 
               const formField = getRefs().get("formField");
               if (formField) {
@@ -86,14 +119,14 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           };
         }),
 
-        name: b("name", ""),
-        form: b("form", ""),
-        disabled: b("disabled", false),
-        readOnly: b("readOnly", false),
-        formDisabled: b("formDisabled", false),
-        formReadOnly: b("formReadOnly", false),
-        fieldDisabled: b("fieldDisabled", false),
-        fieldSize: b<CheckboxGroupSize | "">("fieldSize", ""),
+        name: propBindable("name", ""),
+        form: propBindable("form", ""),
+        disabled: propBindable("disabled", false),
+        readOnly: propBindable("readOnly", false),
+        formDisabled: stateBindable("formDisabled", false),
+        formReadOnly: stateBindable("formReadOnly", false),
+        fieldDisabled: propBindable("fieldDisabled", false),
+        fieldSize: propBindable("fieldSize", ""),
 
         invalid: bindable<boolean>(() => {
           const rawInvalid = prop("invalid");
@@ -103,74 +136,56 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           };
         }),
 
-        required: b("required", false),
-        color: b<CheckboxGroupColor>("color", "primary"),
-        size: b<CheckboxGroupSize>("size", "md"),
-        orientation: b<CheckboxGroupOrientation>("orientation", "vertical"),
-        variant: b<CheckboxGroupVariant>("variant", "outline"),
-        legend: b("legend", ""),
-        min: b<number | null>("min", null),
-        max: b<number | null>("max", null),
-        items: b<any[]>("items", []),
-        ui: b("ui", {}),
+        required: propBindable("required", false),
+        color: propBindable("color", "primary"),
+        size: propBindable("size", "md"),
+        orientation: propBindable("orientation", "vertical"),
+        variant: propBindable("variant", "outline"),
+        legend: propBindable("legend", ""),
+        min: propBindable("min", null),
+        max: propBindable("max", null),
+        items: propBindable("items", []),
+        ui: propBindable("ui", {}),
       };
     },
 
     computed: {
-      isInteractive: ({ context }) => {
-        if (
+      isDisabled: ({ context }) =>
+        Boolean(
           context.get("disabled") ||
           context.get("formDisabled") ||
-          context.get("fieldDisabled")
-        ) {
-          return false;
-        }
-        if (context.get("readOnly") || context.get("formReadOnly")) {
-          return false;
-        }
-        return true;
-      },
+          context.get("fieldDisabled"),
+        ),
+      isReadOnly: ({ context }) =>
+        Boolean(context.get("readOnly") || context.get("formReadOnly")),
+      isInteractive: ({ computed }) =>
+        !computed("isDisabled") && !computed("isReadOnly"),
     },
 
-    watch: ({ prop, context, refs }) => {
-      const bus = refs.get("bus");
-      if (bus) {
-        bus.emit("group:change", {
-          value: context.get("value") ?? [],
-          disabled: Boolean(
-            context.get("disabled") ||
-            context.get("formDisabled") ||
-            context.get("fieldDisabled"),
-          ),
-          invalid: Boolean(context.get("invalid")),
-          size: context.get("size") || "md",
-          color: context.get("color") || "primary",
-          variant: context.get("variant") || "outline",
-        });
-      }
-
-      const nextForm = prop("form") ?? "";
-      const nextName = prop("name") ?? "";
-      if (
-        nextForm !== context.get("form") ||
-        nextName !== context.get("name")
-      ) {
-        context.set("form", nextForm);
-        context.set("name", nextName);
-        refs.get("formField")?.rebind();
-      }
-      const nextFormBus = prop("formBus");
-      const prevFormBus = refs.get("currentFormBus");
-      if (nextFormBus !== prevFormBus) {
-        refs.set("currentFormBus", nextFormBus);
-        refs.get("formField")?.rebind(nextFormBus ?? null);
-      }
-    },
-
+    effects: ["trackGroupProps"],
     entry: ["setupFormField", "setupGroupBus"],
     exit: ["cleanupFormField", "cleanupGroupBus"],
 
     on: {
+      SET_VALUE: {
+        guard: "isInteractive",
+        actions: ["setValue"],
+      },
+      TOGGLE_VALUE: {
+        guard: "isInteractive",
+        actions: ["toggleValue"],
+      },
+      SELECT_ALL: {
+        guard: "isInteractive",
+        actions: ["selectAll"],
+      },
+      CLEAR: {
+        guard: "isInteractive",
+        actions: ["clearValue"],
+      },
+      SET_INVALID: {
+        actions: ["setInvalid"],
+      },
       RESET_VALUE: {
         target: "idle",
         actions: ["resetValue"],
@@ -180,27 +195,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
     states: {
       idle: {
         tags: ["idle"],
-        on: {
-          SET_VALUE: {
-            guard: "isInteractive",
-            actions: ["setValue"],
-          },
-          TOGGLE_VALUE: {
-            guard: "isInteractive",
-            actions: ["toggleValue"],
-          },
-          SELECT_ALL: {
-            guard: "isInteractive",
-            actions: ["selectAll"],
-          },
-          CLEAR: {
-            guard: "isInteractive",
-            actions: ["clearValue"],
-          },
-          SET_INVALID: {
-            actions: ["setInvalid"],
-          },
-        },
       },
     },
 
@@ -282,19 +276,28 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           if (min !== null && min > 0) return;
           context.set("value", []);
         },
-        resetValue: ({ context, refs, prop }) => {
+        resetValue: ({ context, refs, prop, computed }) => {
           const rawDefault = prop("defaultValue");
           const fallback = Array.isArray(rawDefault) ? rawDefault : [];
           const initial: string[] = refs.get("initialValue") ?? fallback;
           context.set("value", initial);
           context.set("invalid", false);
+          emitGroupChange(
+            { refs, context, computed },
+            { value: initial, invalid: false },
+          );
         },
-        setInvalid: ({ context, event }) => {
+        setInvalid: ({ context, refs, computed, event }) => {
           if ("invalid" in event) {
-            context.set("invalid", Boolean(event.invalid));
+            const nextInvalid = Boolean(event.invalid);
+            context.set("invalid", nextInvalid);
+            emitGroupChange(
+              { refs, context, computed },
+              { invalid: nextInvalid },
+            );
           }
         },
-        setupGroupBus: ({ refs, send }) => {
+        setupGroupBus: ({ refs, context, computed, send }) => {
           const bus = refs.get("bus");
           if (bus) {
             const unsub = bus.on("checkbox:toggle", ({ value }) => {
@@ -303,6 +306,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
             const disposers = refs.get("busDisposers") || [];
             disposers.push(unsub);
             refs.set("busDisposers", disposers);
+            emitGroupChange({ refs, context, computed });
           }
         },
         cleanupGroupBus: ({ refs }) => {
@@ -310,7 +314,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           for (const unsub of disposers) unsub?.();
           refs.set("busDisposers", []);
         },
-        setupFormField: ({ context, prop, refs, scope }) => {
+        setupFormField: ({ context, prop, refs, scope, computed }) => {
           setupFormFieldSync(
             {
               component: prop("component"),
@@ -319,7 +323,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               getFormId: () => context.get("form") || prop("form") || "",
               getName: () => context.get("name") || prop("name") || "",
               getValue: () => context.get("value"),
-              setValue: (rawVal: any) => {
+              setValue: (rawVal: unknown) => {
                 context.set("value", Array.isArray(rawVal) ? rawVal : []);
               },
               resetValue: () => {
@@ -328,47 +332,20 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
                 const initial: string[] = refs.get("initialValue") ?? fallback;
                 context.set("value", initial);
                 context.set("invalid", false);
-                const bus = refs.get("bus");
-                if (bus) {
-                  bus.emit("group:change", {
-                    value: initial,
-                    disabled: Boolean(
-                      context.get("disabled") ||
-                      context.get("formDisabled") ||
-                      context.get("fieldDisabled"),
-                    ),
-                    invalid: false,
-                    size: context.get("size") || "md",
-                    color: context.get("color") || "primary",
-                    variant: context.get("variant") || "outline",
-                  });
-                }
+                emitGroupChange(
+                  { refs, context, computed },
+                  { value: initial, invalid: false },
+                );
               },
               focus: () => {},
               getValidateOn: () => prop("validateOn"),
-              isDisabled: () =>
-                Boolean(
-                  context.get("disabled") ||
-                  context.get("formDisabled") ||
-                  context.get("fieldDisabled"),
-                ),
+              isDisabled: () => computed("isDisabled"),
               onValidationChange: (isValid) => {
                 context.set("invalid", !isValid);
-                const bus = refs.get("bus");
-                if (bus) {
-                  bus.emit("group:change", {
-                    value: context.get("value") ?? [],
-                    disabled: Boolean(
-                      context.get("disabled") ||
-                      context.get("formDisabled") ||
-                      context.get("fieldDisabled"),
-                    ),
-                    invalid: !isValid,
-                    size: context.get("size") || "md",
-                    color: context.get("color") || "primary",
-                    variant: context.get("variant") || "outline",
-                  });
-                }
+                emitGroupChange(
+                  { refs, context, computed },
+                  { invalid: !isValid },
+                );
               },
               onStateChange: (s) => {
                 if (s.fieldDisabled !== undefined) {
@@ -383,6 +360,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
                 if (s.formReadOnly !== undefined) {
                   context.set("formReadOnly", Boolean(s.formReadOnly));
                 }
+                emitGroupChange({ refs, context, computed });
               },
             },
             refs,
@@ -390,6 +368,35 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
         },
         cleanupFormField: ({ refs }) => {
           cleanupFormFieldSync(refs);
+        },
+      },
+
+      effects: {
+        trackGroupProps: ({ prop, refs, context, computed, track }) => {
+          let initial = true;
+          track(
+            [
+              () => Boolean(prop("formBus")),
+              () => (context.get("value") ?? []).join(","),
+              () => computed("isDisabled"),
+              () => context.get("invalid"),
+              () => context.get("size"),
+              () => context.get("color"),
+              () => context.get("variant"),
+            ],
+            () => {
+              const nextFormBus = prop("formBus");
+              if (nextFormBus !== refs.get("currentFormBus")) {
+                refs.set("currentFormBus", nextFormBus);
+                refs.get("formField")?.rebind(nextFormBus ?? null);
+              }
+              if (initial) {
+                initial = false;
+                return;
+              }
+              emitGroupChange({ refs, context, computed });
+            },
+          );
         },
       },
     },

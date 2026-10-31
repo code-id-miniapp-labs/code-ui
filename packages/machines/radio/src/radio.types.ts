@@ -77,7 +77,6 @@ export interface RadioContext {
   description: string;
   disabled: boolean;
   readOnly: boolean;
-  checked: boolean;
   invalid: boolean;
   color: RadioColor | "";
   size: RadioSize | "";

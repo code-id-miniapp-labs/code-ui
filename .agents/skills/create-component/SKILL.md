@@ -57,6 +57,8 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
 
 ## Step 2: (Interactive Only) Create Machine in `packages/machines/<name>`
 
+Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and the `watch` policy.
+
 1. Create directory `packages/machines/<name>/src/`.
 2. Create `src/<name>.anatomy.ts` using `createAnatomy("<name>").parts(...)`.
 3. Create `src/<name>.types.ts` with `Props`, `Context`, `Event`, `State`, `Schema`, `Service`, and `Api`.

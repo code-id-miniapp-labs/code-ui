@@ -1,14 +1,12 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableRefs, PropFn } from "@code-ui/core";
 import { createEventBus, isEqual } from "@code-ui/utils";
 import type {
   AccordionBusEvents,
-  AccordionChangePayload,
   AccordionContext,
   AccordionMachine,
   AccordionProps,
   AccordionSchema,
-  AccordionSize,
-  AccordionVariant,
 } from "./accordion.types";
 import { defaultAccordionProps } from "./accordion.props";
 
@@ -20,14 +18,29 @@ function normalizeValue(
   return [String(raw)];
 }
 
-function resolveControlledValue(
-  prop: (key: any) => any,
-): string[] | undefined {
+function resolveControlledValue(prop: (key: any) => any): string[] | undefined {
   const raw = prop("value") ?? prop("modelValue");
   if (raw !== null && raw !== undefined) {
     return normalizeValue(raw);
   }
   return undefined;
+}
+
+function emitChange(
+  prop: PropFn<AccordionSchema>,
+  refs: BindableRefs<AccordionSchema>,
+  value: string[],
+): void {
+  const bus = refs.get("bus");
+  if (!bus) return;
+  bus.emit("accordion:change", {
+    value,
+    multiple: Boolean(prop("multiple")),
+    collapsible: prop("collapsible") !== false,
+    disabled: Boolean(prop("disabled")),
+    size: prop("size") ?? "md",
+    variant: prop("variant") ?? "outline",
+  });
 }
 
 export const accordionMachine: AccordionMachine =
@@ -39,17 +52,11 @@ export const accordionMachine: AccordionMachine =
 
     initialState: () => "idle",
 
-    refs: ({ prop }) => {
+    refs: () => {
       const bus = createEventBus<AccordionBusEvents>();
-      const controlled = resolveControlledValue(prop);
-      const initial =
-        controlled ?? normalizeValue(prop("defaultValue"));
       return {
-        initialValue: initial,
         bus,
         busDisposers: [],
-        syncingFromProps: false,
-        prevControlledValue: controlled,
       };
     },
 
@@ -69,19 +76,13 @@ export const accordionMachine: AccordionMachine =
         id: propBindable("id", ""),
         value: bindable<string[]>(() => {
           const controlledVal = resolveControlledValue(prop);
-          const initial =
-            controlledVal ?? normalizeValue(prop("defaultValue"));
+          const initial = controlledVal ?? normalizeValue(prop("defaultValue"));
 
           return {
             value: controlledVal,
             defaultValue: initial,
             isEqual,
             onChange: (nextValue) => {
-              const refs = getRefs();
-              if (refs.get("syncingFromProps")) {
-                return;
-              }
-
               const details = {
                 value: nextValue,
                 expanded: nextValue,
@@ -97,19 +98,7 @@ export const accordionMachine: AccordionMachine =
                 : (nextValue[0] ?? "");
               comp?.triggerEvent?.("update:modelValue", modelVal);
 
-              // Notify connected items via bus
-              const bus = refs.get("bus");
-              if (bus) {
-                const payload: AccordionChangePayload = {
-                  value: nextValue,
-                  multiple: Boolean(prop("multiple")),
-                  collapsible: prop("collapsible") !== false,
-                  disabled: Boolean(prop("disabled")),
-                  size: (prop("size") ?? "md") as AccordionSize,
-                  variant: (prop("variant") ?? "outline") as AccordionVariant,
-                };
-                bus.emit("accordion:change", payload);
-              }
+              emitChange(prop, getRefs(), nextValue);
             },
           };
         }),
@@ -144,71 +133,11 @@ export const accordionMachine: AccordionMachine =
 
     exit: ["cleanupBus"],
 
-    watch: ({ prop, context, refs, computed }) => {
-      const propCollapsible = prop("collapsible");
-      if (
-        propCollapsible !== undefined &&
-        context.get("collapsible") !== propCollapsible
-      ) {
-        context.set("collapsible", propCollapsible);
-      }
-      const propMultiple = prop("multiple");
-      if (
-        propMultiple !== undefined &&
-        context.get("multiple") !== propMultiple
-      ) {
-        context.set("multiple", propMultiple);
-      }
-      const propDisabled = prop("disabled");
-      if (
-        propDisabled !== undefined &&
-        context.get("disabled") !== propDisabled
-      ) {
-        context.set("disabled", propDisabled);
-      }
-
-      const controlled = resolveControlledValue(prop);
-      const prevControlled = refs.get("prevControlledValue");
-      if (
-        controlled !== undefined &&
-        !isEqual(controlled, prevControlled)
-      ) {
-        refs.set("prevControlledValue", controlled);
-        if (
-          !computed("isCollapsible") &&
-          controlled.length === 0 &&
-          (context.get("value") ?? []).length > 0
-        ) {
-          // Do not allow collapsing to empty when not collapsible
-        } else {
-          refs.set("syncingFromProps", true);
-          context.set("value", controlled);
-          refs.set("syncingFromProps", false);
-        }
-      }
-
-      const bus = refs.get("bus");
-      if (bus) {
-        const payload: AccordionChangePayload = {
-          value: context.get("value") ?? [],
-          multiple: Boolean(context.get("multiple")),
-          collapsible: context.get("collapsible") !== false,
-          disabled: Boolean(context.get("disabled")),
-          size: context.get("size") || "md",
-          variant: context.get("variant") || "outline",
-        };
-        bus.emit("accordion:change", payload);
-      }
-    },
-
     on: {
       "VALUE.SET": {
         actions: ["setValueAction"],
       },
       "VALUE.TOGGLE": {
-        actions: ["toggleValueAction"],
-      },
-      "ITEM.TOGGLE": {
         actions: ["toggleValueAction"],
       },
       EXPAND_ALL: {
@@ -227,7 +156,7 @@ export const accordionMachine: AccordionMachine =
 
     implementations: {
       actions: {
-        setupBus: ({ refs, send, context }) => {
+        setupBus: ({ refs, send, context, prop }) => {
           const bus = refs.get("bus");
           if (!bus) return;
           const unsub = bus.on("item:toggle", ({ value }) => {
@@ -235,15 +164,7 @@ export const accordionMachine: AccordionMachine =
           });
           refs.set("busDisposers", [unsub]);
 
-          const payload: AccordionChangePayload = {
-            value: context.get("value") ?? [],
-            multiple: Boolean(context.get("multiple")),
-            collapsible: Boolean(context.get("collapsible")),
-            disabled: Boolean(context.get("disabled")),
-            size: context.get("size") || "md",
-            variant: context.get("variant") || "outline",
-          };
-          bus.emit("accordion:change", payload);
+          emitChange(prop, refs, context.get("value") ?? []);
         },
 
         cleanupBus: ({ refs }) => {
@@ -266,7 +187,7 @@ export const accordionMachine: AccordionMachine =
         },
 
         toggleValueAction: ({ event, context, computed }) => {
-          if (event.type !== "VALUE.TOGGLE" && event.type !== "ITEM.TOGGLE") return;
+          if (event.type !== "VALUE.TOGGLE") return;
           if (computed("isDisabled")) return;
 
           const target = String(event.value);
@@ -299,8 +220,8 @@ export const accordionMachine: AccordionMachine =
         expandAllAction: ({ context, computed }) => {
           if (computed("isDisabled")) return;
           const items = context.get("items") ?? [];
-          const allValues: string[] = items.map(
-            (item, idx) => String(item.value ?? idx),
+          const allValues: string[] = items.map((item, idx) =>
+            String(item.value ?? idx),
           );
           context.set("value", allValues);
         },

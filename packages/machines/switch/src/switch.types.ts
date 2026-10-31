@@ -93,13 +93,10 @@ export interface SwitchProps {
 
 export type SwitchEvent =
   | { type: "TOGGLE" }
-  | { type: "CHECK" }
-  | { type: "UNCHECK" }
   | { type: "SET_CHECKED"; checked: boolean }
   | { type: "RESET_VALUE" };
 
 export interface SwitchContext {
-  checked: boolean;
   disabled: boolean;
   readOnly: boolean;
   formDisabled: boolean;
@@ -124,14 +121,16 @@ export interface SwitchContext {
 
 export interface SwitchComputed {
   isChecked: boolean;
+  isDisabled: boolean;
+  isReadOnly: boolean;
   isInteractive: boolean;
+  effectiveSize: SwitchSize;
 }
 
 export interface SwitchRefs {
   initialChecked?: boolean | undefined;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface SwitchSchema extends MachineSchema {

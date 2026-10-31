@@ -90,7 +90,7 @@ export interface StepperItemContext {
   ui: StepperItemUI;
 }
 
-export type StepperItemEvent = { type: "TAP" } | { type: "SELECT" };
+export type StepperItemEvent = { type: "TAP" };
 
 export interface StepperItemComputed {
   resolvedIndex: number;

@@ -155,13 +155,7 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
     if (rawName && rawName.trim().length > 0) return rawName;
     const hasRules = (options.getRules?.()?.length ?? 0) > 0;
     const hasExplicitForm = Boolean(options.getFormId?.()?.trim());
-    let hasDirectOwner = false;
-    try {
-      hasDirectOwner = Boolean(options.component?.selectOwnerComponent?.());
-    } catch {
-      hasDirectOwner = false;
-    }
-    if (options.bus || hasRules || hasExplicitForm || hasDirectOwner) {
+    if (hasRules || hasExplicitForm) {
       return options.id;
     }
     return "";
@@ -384,11 +378,20 @@ export function setupFormFieldSync(
     },
   });
 
-  const bus = bound.bus;
-  const disposers: Array<() => void> = [];
-  if (bus) {
+  let disposers: Array<() => void> = [];
+  const clearDisposers = () => {
+    for (let i = 0; i < disposers.length; i++) {
+      disposers[i]?.();
+    }
+    disposers = [];
+  };
+  const subscribeBusListeners = (
+    activeBus: EventBus<FormBusEvents> | undefined,
+  ) => {
+    clearDisposers();
+    if (!activeBus) return;
     disposers.push(
-      bus.on("field:state", (payload: any) => {
+      activeBus.on("field:state", (payload: any) => {
         const currentName = options.getName();
         if (!payload?.name || payload.name === currentName) {
           options.onStateChange?.({
@@ -397,25 +400,33 @@ export function setupFormFieldSync(
           });
         }
       }),
-    );
-    disposers.push(
-      bus.on("form:state", (payload: any) => {
+      activeBus.on("form:state", (payload: any) => {
         options.onStateChange?.({
           formDisabled: payload?.disabled,
           formReadOnly: payload?.readOnly,
         });
       }),
     );
-  }
-  refs.set("busDisposers", disposers);
+  };
+  subscribeBusListeners(bound.bus);
 
   const origEmitInput = bound.emitInput.bind(bound);
   const origEmitChange = bound.emitChange.bind(bound);
+  const origRebind = bound.rebind.bind(bound);
+  const origDispose = bound.dispose.bind(bound);
   bound.emitInput = (val: any) => {
     if (!suppressEmit) origEmitInput(val);
   };
   bound.emitChange = (val: any) => {
     if (!suppressEmit) origEmitChange(val);
+  };
+  bound.rebind = (newBus?: EventBus<FormBusEvents> | null) => {
+    origRebind(newBus);
+    subscribeBusListeners(bound.bus);
+  };
+  bound.dispose = () => {
+    clearDisposers();
+    origDispose();
   };
 
   refs.set("formField", bound);
@@ -426,9 +437,4 @@ export function cleanupFormFieldSync(refs: any) {
   refs.get("formField")?.dispose();
   refs.set("formField", undefined);
   refs.set("currentFormBus", undefined);
-  const disposers = refs.get("busDisposers") ?? [];
-  for (let i = 0; i < disposers.length; i++) {
-    disposers[i]?.();
-  }
-  refs.set("busDisposers", []);
 }

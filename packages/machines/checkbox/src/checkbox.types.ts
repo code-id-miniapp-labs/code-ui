@@ -127,15 +127,11 @@ export interface CheckboxProps {
 
 export type CheckboxEvent =
   | { type: "TOGGLE" }
-  | { type: "CHECK" }
-  | { type: "UNCHECK" }
   | { type: "SET_CHECKED"; checked: boolean }
   | { type: "SET_INDETERMINATE"; indeterminate: boolean }
   | { type: "RESET_VALUE" };
 
 export interface CheckboxContext {
-  checked: boolean;
-  indeterminate: boolean;
   disabled: boolean;
   readOnly: boolean;
   formDisabled: boolean;
@@ -176,8 +172,7 @@ export interface CheckboxComputed {
 export interface CheckboxRefs {
   initialChecked?: boolean | undefined;
   initialIndeterminate?: boolean | undefined;
-  prevControlledChecked?: boolean | undefined;
-  prevControlledIndeterminate?: boolean | undefined;
+  lastChecked?: boolean | undefined;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
   currentGroupBus?: EventBus<CheckboxGroupBusEvents> | undefined;

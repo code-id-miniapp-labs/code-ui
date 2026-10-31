@@ -6,6 +6,20 @@ import { isNotNull } from "@code-ui/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
+const closedTransitions = {
+  "CONTROLLED.OPEN": {
+    target: "open" as const,
+  },
+  OPEN: {
+    target: "open" as const,
+    actions: ["invokeOnOpen" as const],
+  },
+  TOGGLE: {
+    target: "open" as const,
+    actions: ["invokeOnOpen" as const],
+  },
+};
+
 export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   props: ({ props }) => ({
     ...defaultDrawerProps,
@@ -25,7 +39,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       defaultValue: 0,
     })),
     ui: bindable<DrawerUI>(() => ({
-      value: prop("ui") ?? {},
+      value: prop("ui"),
       defaultValue: {},
     })),
   }),
@@ -36,30 +50,24 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     placement: ({ prop }) => prop("placement") ?? "bottom",
   },
 
-  watch: ({ prop, send }) => {
+  watch: ({ prop, state, send }) => {
     const rawOpen = prop("open");
     if (!isNotNull(rawOpen)) return;
 
-    send({ type: rawOpen ? "CONTROLLED.OPEN" : "CONTROLLED.CLOSE" });
+    const shouldBeOpen = Boolean(rawOpen);
+    const isCurrentlyOpen = state.hasTag("open");
+    if (shouldBeOpen && !isCurrentlyOpen) {
+      send({ type: "CONTROLLED.OPEN" });
+    } else if (!shouldBeOpen && isCurrentlyOpen) {
+      send({ type: "CONTROLLED.CLOSE" });
+    }
   },
 
   states: {
     closed: {
       tags: ["closed"],
       entry: ["resetKeyboardHeight"],
-      on: {
-        "CONTROLLED.OPEN": {
-          target: "open",
-        },
-        OPEN: {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
-        TOGGLE: {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
-      },
+      on: closedTransitions,
     },
 
     open: {
@@ -128,17 +136,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         ANIMATION_END: {
           target: "closed",
         },
-        "CONTROLLED.OPEN": {
-          target: "open",
-        },
-        OPEN: {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
-        TOGGLE: {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
+        ...closedTransitions,
       },
     },
   },

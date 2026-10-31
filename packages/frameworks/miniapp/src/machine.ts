@@ -577,17 +577,22 @@ export class MiniappMachine<T extends MachineSchema> {
     );
     this.debug("transition", transition);
 
-    this.transition = transition;
-    try {
-      if (target !== current) {
+    if (target !== current) {
+      this.transition = transition;
+      try {
         this.state.set(target);
-      } else if (transition.reenter) {
-        this.state.invoke(current, current);
-      } else {
-        this.action(transition.actions);
+      } finally {
+        this.transition = null;
       }
-    } finally {
-      this.transition = null;
+    } else if (transition.reenter) {
+      this.transition = transition;
+      try {
+        this.state.invoke(current, current);
+      } finally {
+        this.transition = null;
+      }
+    } else {
+      this.action(transition.actions);
     }
   }
 
