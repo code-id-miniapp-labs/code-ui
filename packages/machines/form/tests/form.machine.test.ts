@@ -1009,7 +1009,7 @@ describe("formMachine & PinInput integration", () => {
 
     const form = createFormInstance({ component: formComp });
 
-    let val = "1234";
+    const val = "1234";
     const field = bindFormField({
       component: inputComp,
       id: "code-input",
@@ -1038,7 +1038,7 @@ describe("formMachine & PinInput integration", () => {
 
     const form = createFormInstance({ component: formComp });
 
-    let val = "iji";
+    const val = "iji";
     const field = bindFormField({
       component: inputComp,
       id: "test-input",
@@ -1056,6 +1056,26 @@ describe("formMachine & PinInput integration", () => {
     expect(form.api().errorBag).toEqual({});
 
     field.dispose();
+    form.machine.stop();
+  });
+
+  it("never sets undefined on form.values or form.fieldStates during setErrors, setValues, and reset", () => {
+    const formComp = createMockComponent();
+    const form = createFormInstance({ component: formComp });
+
+    // 1. Server error injected for a field not yet registered
+    form.api().setErrors({ pin: "Invalid PIN" });
+    expect(form.api().fieldStates.pin?.value).toBe("");
+    expect(form.api().fieldStates.pin?.initialValue).toBe("");
+
+    // 2. setValues followed by reset on an unregistered field
+    form.api().setValues({ pin: "2026" });
+    expect(form.api().values.pin).toBe("2026");
+
+    form.api().reset();
+    expect("pin" in form.api().values).toBe(false);
+    expect("pin" in form.api().fieldStates).toBe(false);
+
     form.machine.stop();
   });
 });

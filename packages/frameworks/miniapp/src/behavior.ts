@@ -186,10 +186,6 @@ export function createMachineBehavior<
           ids: this.data?.ids,
         };
 
-        for (const plugin of plugins) {
-          plugin.onAttached?.(this, initialProps);
-        }
-
         if (this.data) {
           syncProps.forEach((propKey) => {
             const keyStr = propKey as string;
@@ -197,6 +193,10 @@ export function createMachineBehavior<
               initialProps[keyStr] = this.data[keyStr];
             }
           });
+        }
+
+        for (const plugin of plugins) {
+          plugin.onAttached?.(this, initialProps);
         }
 
         const machine = new MiniappMachine(machineDef, initialProps);

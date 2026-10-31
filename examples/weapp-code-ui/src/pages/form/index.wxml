@@ -21,7 +21,7 @@
           </c-form-field>
           <!-- Field 3: Security PIN (c-pin-input) -->
           <c-form-field name="pin" label="4-Digit Security PIN" description="Required for authorization and payout requests" rules="{{pinRules}}" required="{{true}}">
-            <c-pin-input length="{{4}}" mask="{{true}}" placeholder="○" />
+            <c-pin-input name="pin" length="{{4}}" mask="{{true}}" placeholder="○" />
           </c-form-field>
           <!-- Field 4: Newsletter (c-switch controlled) -->
           <c-form-field name="newsletter">

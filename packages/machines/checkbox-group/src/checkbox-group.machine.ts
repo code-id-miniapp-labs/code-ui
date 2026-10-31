@@ -162,6 +162,14 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
         !computed("isDisabled") && !computed("isReadOnly"),
     },
 
+    watch: ({ prop, refs }) => {
+      const nextFormBus = prop("formBus");
+      if (nextFormBus !== refs.get("currentFormBus")) {
+        refs.set("currentFormBus", nextFormBus);
+        refs.get("formField")?.rebind(nextFormBus ?? null);
+      }
+    },
+
     effects: ["trackGroupProps"],
     entry: ["setupFormField", "setupGroupBus"],
     exit: ["cleanupFormField", "cleanupGroupBus"],
@@ -372,11 +380,10 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
       },
 
       effects: {
-        trackGroupProps: ({ prop, refs, context, computed, track }) => {
+        trackGroupProps: ({ refs, context, computed, track }) => {
           let initial = true;
           track(
             [
-              () => Boolean(prop("formBus")),
               () => (context.get("value") ?? []).join(","),
               () => computed("isDisabled"),
               () => context.get("invalid"),
@@ -385,11 +392,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               () => context.get("variant"),
             ],
             () => {
-              const nextFormBus = prop("formBus");
-              if (nextFormBus !== refs.get("currentFormBus")) {
-                refs.set("currentFormBus", nextFormBus);
-                refs.get("formField")?.rebind(nextFormBus ?? null);
-              }
               if (initial) {
                 initial = false;
                 return;

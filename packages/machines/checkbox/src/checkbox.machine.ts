@@ -4,7 +4,7 @@ import {
   setupFormFieldSync,
   cleanupFormFieldSync,
 } from "@code-ui/form/context";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type { EventBus } from "@code-ui/utils";
 import type {
   CheckboxContext,
@@ -129,7 +129,10 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       fieldDisabled: propBindable("fieldDisabled", false),
       fieldSize: propBindable("fieldSize", ""),
 
-      groupValue: stateBindable("groupValue", prop("groupValue")),
+      groupValue: bindable<CheckboxContext["groupValue"]>(() => ({
+        defaultValue: prop("groupValue"),
+        isEqual,
+      })),
       groupDisabled: stateBindable(
         "groupDisabled",
         Boolean(prop("groupDisabled")),
@@ -196,7 +199,67 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       context.get("groupColor") || context.get("color"),
   },
 
-  effects: ["trackProps"],
+  watch: ({ prop, context, refs, state }) => {
+    const nextFormBus = prop("formBus");
+    if (nextFormBus !== refs.get("currentFormBus")) {
+      refs.set("currentFormBus", nextFormBus);
+      refs.get("formField")?.rebind(nextFormBus ?? null);
+    }
+
+    const nextBus = prop("groupBus");
+    if (nextBus !== refs.get("currentGroupBus")) {
+      bindGroupBus(nextBus, context, state, refs);
+      if (nextBus) {
+        applyGroupState(
+          { context, state },
+          {
+            value: prop("groupValue"),
+            disabled: prop("groupDisabled"),
+            invalid: prop("groupInvalid"),
+            color: prop("groupColor"),
+            size: prop("groupSize"),
+            variant: prop("groupVariant"),
+          },
+        );
+      }
+      refs.get("formField")?.rebind();
+    }
+
+    if (nextBus) return;
+
+    const groupVal = prop("groupValue");
+    if (Array.isArray(groupVal)) {
+      context.set("groupValue", groupVal);
+      const targetState = groupVal.includes(prop("value") ?? "")
+        ? "checked"
+        : "unchecked";
+      if (!state.matches(targetState)) {
+        state.set(targetState);
+      }
+      return;
+    }
+
+    const controlledIndeterminate = prop("indeterminate");
+    if (isNotNull(controlledIndeterminate)) {
+      if (parseBooleanProp(controlledIndeterminate)) {
+        if (!state.matches("indeterminate")) state.set("indeterminate");
+      } else if (state.matches("indeterminate")) {
+        const chk = isNotNull(prop("checked"))
+          ? parseBooleanProp(prop("checked"))
+          : Boolean(refs.get("lastChecked"));
+        state.set(chk ? "checked" : "unchecked");
+      }
+    }
+
+    const controlledChecked = prop("checked");
+    if (isNotNull(controlledChecked) && !state.matches("indeterminate")) {
+      const targetState = parseBooleanProp(controlledChecked)
+        ? "checked"
+        : "unchecked";
+      if (!state.matches(targetState)) state.set(targetState);
+    }
+  },
+
   entry: ["setupFormField", "setupGroupBus"],
   exit: ["cleanupFormField", "cleanupGroupBus"],
 
@@ -386,97 +449,6 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
 
       cleanupGroupBus: ({ context, state, refs }) => {
         bindGroupBus(undefined, context, state, refs);
-      },
-    },
-
-    effects: {
-      trackProps: ({ prop, context, refs, state, track }) => {
-        let initial = true;
-        track(
-          [
-            () => Boolean(prop("formBus")),
-            () => Boolean(prop("groupBus")),
-            () =>
-              Array.isArray(prop("groupValue"))
-                ? (prop("groupValue") ?? []).join(",")
-                : undefined,
-            () => prop("groupDisabled"),
-            () => prop("groupInvalid"),
-            () => prop("groupColor"),
-            () => prop("groupSize"),
-            () => prop("groupVariant"),
-            () => prop("indeterminate"),
-            () => prop("checked"),
-          ],
-          () => {
-            if (initial) {
-              initial = false;
-              return;
-            }
-
-            const nextFormBus = prop("formBus");
-            if (nextFormBus !== refs.get("currentFormBus")) {
-              refs.set("currentFormBus", nextFormBus);
-              refs.get("formField")?.rebind(nextFormBus ?? null);
-            }
-
-            const nextBus = prop("groupBus");
-            if (nextBus !== refs.get("currentGroupBus")) {
-              bindGroupBus(nextBus, context, state, refs);
-              if (nextBus) {
-                applyGroupState(
-                  { context, state },
-                  {
-                    value: prop("groupValue"),
-                    disabled: prop("groupDisabled"),
-                    invalid: prop("groupInvalid"),
-                    color: prop("groupColor"),
-                    size: prop("groupSize"),
-                    variant: prop("groupVariant"),
-                  },
-                );
-              }
-              refs.get("formField")?.rebind();
-            }
-
-            if (nextBus) return;
-
-            const groupVal = prop("groupValue");
-            if (Array.isArray(groupVal)) {
-              context.set("groupValue", groupVal);
-              const targetState = groupVal.includes(prop("value") ?? "")
-                ? "checked"
-                : "unchecked";
-              if (!state.matches(targetState)) {
-                state.set(targetState);
-              }
-              return;
-            }
-
-            const controlledIndeterminate = prop("indeterminate");
-            if (isNotNull(controlledIndeterminate)) {
-              if (parseBooleanProp(controlledIndeterminate)) {
-                if (state.get() !== "indeterminate") state.set("indeterminate");
-              } else if (state.get() === "indeterminate") {
-                const chk = isNotNull(prop("checked"))
-                  ? parseBooleanProp(prop("checked"))
-                  : Boolean(refs.get("lastChecked"));
-                state.set(chk ? "checked" : "unchecked");
-              }
-            }
-
-            const controlledChecked = prop("checked");
-            if (
-              isNotNull(controlledChecked) &&
-              !state.matches("indeterminate")
-            ) {
-              const targetState = parseBooleanProp(controlledChecked)
-                ? "checked"
-                : "unchecked";
-              if (state.get() !== targetState) state.set(targetState);
-            }
-          },
-        );
       },
     },
   },

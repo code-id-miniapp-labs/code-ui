@@ -244,6 +244,18 @@ export const formFieldMachine: FormFieldMachine =
         ),
     },
 
+    watch: (params) => {
+      const nextBus = params.prop("formBus");
+      if (nextBus !== params.refs.get("currentFormBus")) {
+        bindBus(params);
+      }
+
+      const targetState = params.computed("displayError") ? "invalid" : "valid";
+      if (!params.state.matches(targetState)) {
+        params.state.set(targetState);
+      }
+    },
+
     effects: ["trackFieldProps"],
     entry: ["setupBus"],
     exit: ["cleanupBus"],
@@ -299,8 +311,6 @@ export const formFieldMachine: FormFieldMachine =
           let initial = true;
           params.track(
             [
-              () => Boolean(params.prop("formBus")),
-              () => params.prop("error"),
               () => params.prop("name"),
               () => params.prop("rules")?.length,
               () => params.prop("required"),
@@ -308,18 +318,6 @@ export const formFieldMachine: FormFieldMachine =
               () => params.prop("size"),
             ],
             () => {
-              const nextBus = params.prop("formBus");
-              if (nextBus !== params.refs.get("currentFormBus")) {
-                bindBus(params);
-              }
-
-              const targetState = params.computed("displayError")
-                ? "invalid"
-                : "valid";
-              if (!params.state.matches(targetState)) {
-                params.state.set(targetState);
-              }
-
               if (initial) {
                 initial = false;
                 return;

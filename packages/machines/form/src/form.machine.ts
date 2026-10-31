@@ -85,15 +85,18 @@ function makeFieldState(
     isValidating?: boolean;
   } = {},
 ): FormFieldState {
+  const safeValue = value === undefined ? "" : value;
+  const safeInitialValue =
+    initialValue === undefined ? safeValue : initialValue;
   return {
     name,
-    id,
-    value,
-    initialValue,
+    id: id || name,
+    value: safeValue,
+    initialValue: safeInitialValue,
     errors,
     errorMessage: errors[0] ?? "",
     isValid: errors.length === 0,
-    isDirty: flags.isDirty ?? !isEqual(value, initialValue),
+    isDirty: flags.isDirty ?? !isEqual(safeValue, safeInitialValue),
     isTouched: Boolean(flags.isTouched),
     isFocused: Boolean(flags.isFocused),
     isValidating: Boolean(flags.isValidating),
@@ -366,6 +369,9 @@ export function registerFormField(
     registration.setValue?.(presetVal);
     fieldValue = registration.getValue() ?? presetVal;
   }
+  if (fieldValue === undefined) {
+    fieldValue = "";
+  }
 
   const initialVal =
     existingInitials[name] !== undefined
@@ -485,17 +491,20 @@ export function handleFieldInteraction(
   const prevStates = service.context.get("fieldStates") ?? {};
   const prevState = prevStates[name];
 
-  const nextValue =
+  const rawNextValue =
     payload.value !== undefined
       ? payload.value
       : field
         ? field.getValue()
         : prevValues[name];
+  const nextValue = rawNextValue === undefined ? "" : rawNextValue;
 
-  const initialValue =
+  const rawInitialValue =
     initialValues[name] !== undefined
       ? initialValues[name]
       : prevState?.initialValue;
+  const initialValue =
+    rawInitialValue === undefined ? nextValue : rawInitialValue;
 
   let isDirty = prevState?.isDirty ?? false;
   let isTouched = prevState?.isTouched ?? false;
@@ -708,20 +717,29 @@ export function resetFormFields(
         ? cloneFieldValue(initialValues[name])
         : reg?.getValue();
 
-    nextValues[name] = restoredVal;
+    if (restoredVal !== undefined) {
+      nextValues[name] = restoredVal;
+    } else {
+      delete nextValues[name];
+    }
     delete nextErrorBag[name];
     nextDirty = nextDirty.filter((n) => n !== name);
     nextTouched = nextTouched.filter((n) => n !== name);
     nextValidating = nextValidating.filter((n) => n !== name);
 
-    const resetState = makeFieldState(
-      name,
-      reg?.id ?? prevFieldStates[name]?.id ?? name,
-      restoredVal,
-      cloneFieldValue(restoredVal),
-    );
-    nextFieldStates[name] = resetState;
-    notifyFieldValidation(reg, resetState);
+    if (reg || restoredVal !== undefined) {
+      const safeRestored = restoredVal === undefined ? "" : restoredVal;
+      const resetState = makeFieldState(
+        name,
+        reg?.id ?? prevFieldStates[name]?.id ?? name,
+        safeRestored,
+        cloneFieldValue(safeRestored),
+      );
+      nextFieldStates[name] = resetState;
+      notifyFieldValidation(reg, resetState);
+    } else {
+      delete nextFieldStates[name];
+    }
   }
 
   const nextErrors = buildErrorsList(nextErrorBag, fields);
@@ -800,9 +818,15 @@ export function setFormValues(
   let nextDirty = [...service.context.get("dirtyFields")];
 
   for (const [name, val] of Object.entries(values)) {
-    prevValues[name] = val;
+    if (val === undefined) {
+      delete prevValues[name];
+    } else {
+      prevValues[name] = val;
+    }
     const reg = fields.get(name);
-    reg?.setValue?.(val);
+    if (val !== undefined) {
+      reg?.setValue?.(val);
+    }
 
     const isDirty = !isEqual(val, initialValues[name]);
     nextDirty = toggleArrayItem(nextDirty, name, isDirty);

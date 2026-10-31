@@ -111,7 +111,19 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
     },
   },
 
-  effects: ["trackProps"],
+  watch: ({ prop, refs, state }) => {
+    const controlledChecked = prop("checked");
+    if (isNotNull(controlledChecked)) {
+      const targetState = controlledChecked ? "checked" : "unchecked";
+      if (!state.matches(targetState)) state.set(targetState);
+    }
+    const nextFormBus = prop("formBus");
+    if (nextFormBus !== refs.get("currentFormBus")) {
+      refs.set("currentFormBus", nextFormBus);
+      refs.get("formField")?.rebind(nextFormBus ?? null);
+    }
+  },
+
   entry: ["setupFormField"],
   exit: ["cleanupFormField"],
 
@@ -234,31 +246,6 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
 
       cleanupFormField: ({ refs }) => {
         cleanupFormFieldSync(refs);
-      },
-    },
-
-    effects: {
-      trackProps: ({ prop, refs, state, track }) => {
-        let initial = true;
-        track(
-          [() => Boolean(prop("formBus")), () => prop("checked")],
-          () => {
-            if (initial) {
-              initial = false;
-              return;
-            }
-            const controlledChecked = prop("checked");
-            if (isNotNull(controlledChecked)) {
-              const targetState = controlledChecked ? "checked" : "unchecked";
-              if (state.get() !== targetState) state.set(targetState);
-            }
-            const nextFormBus = prop("formBus");
-            if (nextFormBus !== refs.get("currentFormBus")) {
-              refs.set("currentFormBus", nextFormBus);
-              refs.get("formField")?.rebind(nextFormBus ?? null);
-            }
-          },
-        );
       },
     },
   },

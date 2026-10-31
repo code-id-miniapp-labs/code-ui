@@ -1,4 +1,4 @@
-import { isEqual, isNotNull } from "@code-ui/utils";
+import { isNotNull } from "@code-ui/utils";
 import type {
   CheckboxParams,
   CheckboxProps,
@@ -51,9 +51,7 @@ export function applyGroupState(
   g: GroupStateSnapshot,
 ) {
   if (Array.isArray(g.value)) {
-    if (!isEqual(g.value, context.get("groupValue"))) {
-      context.set("groupValue", g.value);
-    }
+    context.set("groupValue", g.value);
     const targetState = g.value.includes(context.get("value"))
       ? "checked"
       : "unchecked";

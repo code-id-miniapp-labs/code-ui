@@ -473,7 +473,20 @@ export class MiniappMachine<T extends MachineSchema> {
     this.disposeScope = effectScope(() => {
       const watch = this.machine.watch;
       if (watch) {
-        effect(() => watch(this.getParams()));
+        const baseParams = this.getParams();
+        const untrackedState: StateView<T> = {
+          ...baseParams.state,
+          get: () => untracked(() => this.state.get()),
+          matches: (...values: T["state"][]) =>
+            untracked(() => baseParams.state.matches(...values)),
+          hasTag: (tag: T["tag"]) =>
+            untracked(() => baseParams.state.hasTag(tag)),
+        };
+        const watchParams: Params<T> = {
+          ...baseParams,
+          state: untrackedState,
+        };
+        effect(() => watch(watchParams));
       }
 
       effect(() => {

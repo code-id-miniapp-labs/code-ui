@@ -106,8 +106,24 @@ const b = <T>(val: T, defaultValue: T) =>
 
 If a value is already in a `bindable`, **do not** `context.set` it from `watch`:
 1. **Lazy prop sync**: `bindable` tracks `lastSeenProp` and syncs prop changes lazily on `get` without invoking `onChange` (while still letting imperative bus listeners call `context.set` when the prop itself hasn't changed).
-2. **Self-subscription trap**: Inside `bindable.set`, `const prev = _signal()` **reads** the underlying signal before writing it. Calling `context.set` (or `applyGroupState`) inside `watch` subscribes the `watch` effect to those context signals, causing `watch` to re-run every time a bus listener or action mutates them.
-3. **Group/Form bus lifecycle**: Initialize `currentGroupBus: prop("groupBus")` in `refs`, subscribe in `entry` (which runs inside `untracked`), and in `watch` only rebind when `prop("groupBus") !== refs.get("currentGroupBus")` (without `if (nextBus && ...)` so unlinking to `undefined` still disposes the previous listener). Return early in `watch` when `nextBus` is active so `watch` only depends on `prop("groupBus")`.
+2. **Untracked writes & state guards in `watch`**:
+   - `bindable.set` (`context.set`, `state.set`) executes its internal signal reads inside `setActiveSub(undefined)` (`untracked`), so writing to context or state never subscribes the caller to that signal.
+   - `MiniappMachine` passes an untracked `state` view (`get`, `matches`, `hasTag`) to `watch`, so guarding transitions with `if (!state.matches(target)) state.set(target)` or `state.hasTag("open")` inside `watch` **never** subscribes `watch` to FSM state changes. `watch` only re-runs when the `prop(...)` (or `computed(...)`) signals it reads change.
+3. **Group/Form bus lifecycle**:
+   - Initialize `currentGroupBus: prop("groupBus")` in `refs`, subscribe in `entry` (which runs inside `untracked`), and in `watch` only rebind when `prop("groupBus") !== refs.get("currentGroupBus")` (without `if (nextBus && ...)` so unlinking to `undefined` still disposes the previous listener). Return early in `watch` when `nextBus` is active so `watch` only depends on `prop("groupBus")`.
+   - Child machines (`checkbox`, `radio`) whose `group*` values (`groupValue`, `groupDisabled`, `groupInvalid`, `groupColor`, `groupSize`, `groupVariant`) are driven by `groupBus` must use `stateBindable` (initialized from `prop("group*")`), **not** `propBindable`. `groupBus` is authoritative because states like `groupInvalid` and `groupDisabled` can be updated by `<c-form>` validation on the parent group without the parent's WXML props changing.
+
+## `watch` vs `effects` (`track`)
+
+Keep the roles of `watch` and `effects` distinct:
+
+| Mechanism | When to use | Examples |
+|---|---|---|
+| `watch: ({ prop, state, refs }) => void` | **Leaf / interactive machines**: prop → FSM state sync (`checked`, `indeterminate`, `open`, `error`) and imperative bus rebinding (`formBus`, `groupBus`). | `checkbox`, `radio`, `switch`, `drawer`, `input`, `textarea`, `pin-input`, `accordion-item`, `stepper-item`, `form-field` |
+| `states.<state>.effects: ["..."]` | **State-scoped side effects**: timers, animations, or async work active only while in a specific state; returns a cleanup function disposed on state exit. | `button` (`autoResetEffect` in `success`/`error`), `drawer` (`waitForCloseAnimation` in `closing`) |
+| Root `effects: ["track..."]` with `track([deps], fn)` | **Parent coordinator machines**: broadcasting parent prop/context changes (`disabled`, `readOnly`, `size`, `color`, `variant`, controlled `value`/`step`, `rules`) over an `EventBus` to registered children. | `form` (`trackFormState`), `form-field` (`trackFieldProps`), `checkbox-group` (`trackGroupProps`), `radio-group` (`trackGroupProps`), `stepper` (`trackControlledStep`) |
+
+Never move prop → FSM state sync or bus rebinding out of `watch` into `effects`; keep `watch` as the single place for prop-driven state sync and bus rebinding.
 
 ## State vs context
 
@@ -199,7 +215,9 @@ emitChange: ({ state, context, prop, refs }) => {
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
-| `applyGroupState` in `watch` | `bindable.set` reads `_signal()`, subscribing `watch` to bus writes | Use `propBindable` for `group*` props; call `applyGroupState` only in `bus.on(...)` |
+| `propBindable` for `group*` bus state | Stale WXML `groupInvalid` / `groupValue` props overwrite `groupBus` updates during validation | Use `stateBindable` initialized from `prop("group*")`; let `groupBus` (`applyGroupState`) own updates |
+| Reading `field.getValue()` during batched controlled input | Controlled prop `watch` flushes on `endBatch()`, so `field.getValue()` returns pre-toggle state during `emitInput`/`emitChange` | Pass `payload.value` (`valueOverride`) directly to `validateSingleField` / `applyFieldErrors` |
+| Moving `watch` logic into `effects` | Using `effects: ["trackProps"]` for prop → state sync or bus rebind | Keep prop → state sync & bus rebinding in `watch`; use `effects` only for state-scoped timers/animations or parent bus broadcasts |
 | Eager `prop()` outside `bindable` | `const b = (val, def) => bindable(() => ({ value: val }))` | Pass key and read `prop(key)` inside `bindable(() => ...)` |
 | Object literal fallback in `bindable.value` | `value: prop("encoding") ?? {}` creates a new `{}` on every `syncProp()`, overwriting `context.set` | Pass `value: prop("encoding")` and put `{}` in `defaultValue` |
 | Truthy guard on bus rebind | `if (bus && bus !== currentBus)` leaks listener on unlink | Check `if (nextBus !== currentBus)` so `undefined` disposes old listener |
