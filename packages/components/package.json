@@ -4,7 +4,8 @@
   "description": "Prebuilt native WeChat MiniProgram UI components for code-ui",
   "files": [
     "dist",
-    "index.css"
+    "index.css",
+    "keyframes.wxss"
   ],
   "type": "module",
   "miniprogram": "dist",
@@ -23,6 +24,7 @@
       "require": "./dist/app.js"
     },
     "./index.css": "./index.css",
+    "./keyframes.wxss": "./keyframes.wxss",
     "./theme": "./index.css",
     "./button": {
       "types": "./dist/runtime/button/index.d.ts",
@@ -30,6 +32,18 @@
       "require": "./dist/runtime/button/index.js"
     },
     "./button/*": "./dist/runtime/button/*",
+    "./accordion": {
+      "types": "./dist/runtime/accordion/index.d.ts",
+      "import": "./dist/runtime/accordion/index.js",
+      "require": "./dist/runtime/accordion/index.js"
+    },
+    "./accordion/*": "./dist/runtime/accordion/*",
+    "./accordion-item": {
+      "types": "./dist/runtime/accordion-item/index.d.ts",
+      "import": "./dist/runtime/accordion-item/index.js",
+      "require": "./dist/runtime/accordion-item/index.js"
+    },
+    "./accordion-item/*": "./dist/runtime/accordion-item/*",
     "./avatar": {
       "types": "./dist/runtime/avatar/index.d.ts",
       "import": "./dist/runtime/avatar/index.js",
@@ -183,6 +197,8 @@
     "typescript": "^5.5.4",
     "vite": "^5.4.21",
     "weapp-vite": "^7.3.0",
+    "@code-ui/accordion": "workspace:*",
+    "@code-ui/accordion-item": "workspace:*",
     "@code-ui/anatomy": "workspace:*",
     "@code-ui/button": "workspace:*",
     "@code-ui/checkbox": "workspace:*",

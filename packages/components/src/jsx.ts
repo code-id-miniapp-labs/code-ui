@@ -1,3 +1,11 @@
+import type {
+  AccordionProps,
+  AccordionValueChangeDetails,
+} from "@code-ui/accordion";
+import type {
+  AccordionItemProps,
+  AccordionItemOpenChangeDetails,
+} from "@code-ui/accordion-item";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -513,6 +521,49 @@ export interface CuiAvatarGroupElementProps extends CuiCommonElementProps {
   max?: number;
   ui?: Record<string, string>;
 }
+
+export interface CuiAccordionElementProps extends CuiCommonElementProps {
+  ui?: AccordionProps["ui"];
+  value?: AccordionProps["value"];
+  defaultValue?: AccordionProps["defaultValue"];
+  modelValue?: AccordionProps["modelValue"];
+  multiple?: boolean;
+  collapsible?: boolean;
+  disabled?: boolean;
+  size?: AccordionProps["size"];
+  variant?: AccordionProps["variant"];
+  items?: AccordionProps["items"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<AccordionValueChangeDetails>,
+  ) => void;
+  onValueChange?: (
+    event: WechatMiniprogram.CustomEvent<AccordionValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
+  ui?: AccordionItemProps["ui"];
+  value?: AccordionItemProps["value"];
+  label?: string;
+  description?: string;
+  content?: string;
+  icon?: string;
+  trailingIcon?: string;
+  disabled?: boolean;
+  open?: boolean | null;
+  defaultOpen?: boolean;
+  size?: AccordionItemProps["size"];
+  variant?: AccordionItemProps["variant"];
+  customTrailing?: boolean;
+  hasLeadingSlot?: boolean;
+  onClick?: (
+    event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
+  ) => void;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
+  ) => void;
+}
+
 
 
 

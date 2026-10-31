@@ -21,7 +21,8 @@
     "pages/divider/index",
     "pages/skeleton/index",
     "pages/qr-code/index",
-    "pages/stepper/index"
+    "pages/stepper/index",
+    "pages/accordion/index"
   ],
   "window": {},
   "style": "v2",

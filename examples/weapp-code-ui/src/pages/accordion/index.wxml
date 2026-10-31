@@ -1,0 +1,236 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="text-xl font-extrabold text-neutral-950">Accordion</view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Collapsible disclosure panels supporting single/multiple selection, compound slots, variants, and programmatically driven items.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Interactive Compound Accordion Demo -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="flex items-center justify-between mb-1">
+        <view class="text-sm font-bold text-neutral-900">Interactive Accordion</view>
+        <view class="text-[11px] font-mono px-2 py-0.5 bg-neutral-100 rounded text-neutral-600">
+          Open: {{activeValue.length ? activeValue : 'None'}}
+        </view>
+      </view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Toggle items, test single or multi-expansion, and switch variants in real-time.
+      </view>
+
+      <!-- Accordion Container -->
+      <view class="mb-5">
+        <c-accordion
+          value="{{activeValue}}"
+          multiple="{{multiple}}"
+          collapsible="{{collapsible}}"
+          size="{{size}}"
+          variant="{{variant}}"
+          bind:change="onAccordionChange"
+        >
+          <c-accordion-item
+            value="getting-started"
+            label="Getting Started"
+            description="Installation & setup instructions"
+            icon="i-lucide-rocket"
+          >
+            <view class="text-xs leading-relaxed text-neutral-600">
+              Install the package with <text class="font-mono bg-neutral-100 px-1 py-0.5 rounded text-neutral-800">pnpm add @code-ui/components</text> and register the plugin in your vite configuration. All components are auto-imported directly in your WXML templates.
+            </view>
+          </c-accordion-item>
+
+          <c-accordion-item
+            value="components"
+            label="Component Architecture"
+            description="FSM state machines & relation behaviors"
+            icon="i-lucide-box"
+          >
+            <view class="text-xs leading-relaxed text-neutral-600">
+              Code UI uses a three-tier runtime architecture. Presentational primitives remain lightweight in Tier 1, while interactive components leverage Zag.js-inspired state machines and WeChat MiniProgram relations in Tier 2 & Tier 3.
+            </view>
+          </c-accordion-item>
+
+          <c-accordion-item
+            value="theming"
+            label="Theming & Customization"
+            description="Nuxt UI v4 tokens and Tailwind CSS"
+            icon="i-lucide-palette"
+          >
+            <view class="text-xs leading-relaxed text-neutral-600">
+              Every component uses Tailwind utility classes configured with Nuxt UI v4 design tokens. Override slots anytime using the <text class="font-mono bg-neutral-100 px-1 py-0.5 rounded text-neutral-800">ui</text> prop for granular, instance-level control.
+            </view>
+          </c-accordion-item>
+        </c-accordion>
+      </view>
+
+      <!-- Controls & Settings -->
+      <view class="flex flex-col gap-4 pt-4 border-t border-neutral-100">
+        <!-- Quick Actions -->
+        <view class="flex gap-2">
+          <c-button size="xs" variant="outline" color="neutral" bind:tap="expandAll">
+            Expand All
+          </c-button>
+          <c-button size="xs" variant="outline" color="neutral" bind:tap="collapseAll">
+            Collapse All
+          </c-button>
+        </view>
+
+        <!-- Toggle Controls -->
+        <view class="flex flex-col gap-3">
+          <view class="flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-xs font-semibold text-neutral-800">Multiple Selection</text>
+              <text class="text-[11px] text-neutral-400">Allow multiple panels open simultaneously</text>
+            </view>
+            <c-switch checked="{{multiple}}" bind:change="toggleMultiple" size="sm" />
+          </view>
+
+          <view class="flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-xs font-semibold text-neutral-800">Collapsible</text>
+              <text class="text-[11px] text-neutral-400">Allow closing the only open item</text>
+            </view>
+            <c-switch checked="{{collapsible}}" bind:change="toggleCollapsible" size="sm" />
+          </view>
+        </view>
+
+        <!-- Size Selection -->
+        <view class="flex flex-col gap-1.5">
+          <text class="text-xs font-semibold text-neutral-600">Size:</text>
+          <view class="flex gap-2">
+            <block wx:for="{{sizeOptions}}" wx:key="*this">
+              <c-button
+                size="xs"
+                variant="{{size === item ? 'solid' : 'outline'}}"
+                color="neutral"
+                data-size="{{item}}"
+                bind:tap="selectSize"
+              >
+                {{item}}
+              </c-button>
+            </block>
+          </view>
+        </view>
+
+        <!-- Variant Selection -->
+        <view class="flex flex-col gap-1.5">
+          <text class="text-xs font-semibold text-neutral-600">Variant:</text>
+          <view class="flex flex-wrap gap-2">
+            <block wx:for="{{variantOptions}}" wx:key="*this">
+              <c-button
+                size="xs"
+                variant="{{variant === item ? 'solid' : 'outline'}}"
+                color="neutral"
+                data-variant="{{item}}"
+                bind:tap="selectVariant"
+              >
+                {{item}}
+              </c-button>
+            </block>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 2. Data-Driven Mode -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Data-Driven (Programmatic Items)</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Render accordion items programmatically by passing an <text class="font-mono text-neutral-600">items</text> array.
+      </view>
+
+      <c-accordion
+        items="{{dataItems}}"
+        value="{{dataValue}}"
+        multiple="{{true}}"
+        variant="subtle"
+        bind:change="onDataAccordionChange"
+      />
+    </view>
+
+    <!-- 3. Separated Cards Variant -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Separated Cards Variant</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Items rendered as distinct cards with individual borders, spacing, and subtle elevation.
+      </view>
+
+      <c-accordion
+        variant="separated"
+        value="{{separatedValue}}"
+        bind:change="onSeparatedChange"
+      >
+        <c-accordion-item
+          value="item-1"
+          label="What payment methods do you accept?"
+          icon="i-lucide-credit-card"
+        >
+          <view class="text-xs leading-relaxed text-neutral-600">
+            We accept WeChat Pay, Alipay, UnionPay credit and debit cards, as well as enterprise wire transfers.
+          </view>
+        </c-accordion-item>
+
+        <c-accordion-item
+          value="item-2"
+          label="Can I upgrade my subscription plan later?"
+          icon="i-lucide-trending-up"
+        >
+          <view class="text-xs leading-relaxed text-neutral-600">
+            Yes, plans can be upgraded or changed at any time from your account settings with prorated billing.
+          </view>
+        </c-accordion-item>
+
+        <c-accordion-item
+          value="item-3"
+          label="Where can I find support and documentation?"
+          icon="i-lucide-help-circle"
+        >
+          <view class="text-xs leading-relaxed text-neutral-600">
+            Our documentation is available online 24/7. Enterprise customers also have access to dedicated technical account managers.
+          </view>
+        </c-accordion-item>
+      </c-accordion>
+    </view>
+
+    <!-- 4. Custom Slots Demonstration -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Custom Slots & Rich Content</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Customize the header, trailing badges, or inject structured content into the disclosure body.
+      </view>
+
+      <c-accordion variant="outline">
+        <c-accordion-item value="custom-1" customTrailing="{{true}}">
+          <view slot="leading" class="size-6 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 me-2.5">
+            <c-icon name="i-lucide-shield-check" className="size-3.5" />
+          </view>
+
+          <view slot="label" class="flex-1 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-xs font-bold text-neutral-900">Security Audit Completed</text>
+              <text class="text-[10px] text-neutral-400">All checks passed</text>
+            </view>
+          </view>
+
+          <view slot="trailing" class="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-semibold rounded-full border border-green-200">
+            Verified
+          </view>
+
+          <view class="p-3 bg-neutral-50 rounded-lg border border-neutral-200 flex flex-col gap-2">
+            <view class="flex items-center justify-between text-xs">
+              <text class="text-neutral-500">Audit Status</text>
+              <text class="font-semibold text-neutral-900">100% Compliant</text>
+            </view>
+            <view class="flex items-center justify-between text-xs">
+              <text class="text-neutral-500">Certificate</text>
+              <text class="font-mono text-primary-600">CERT-2026-X99</text>
+            </view>
+          </view>
+        </c-accordion-item>
+      </c-accordion>
+    </view>
+  </view>
+</view>
+

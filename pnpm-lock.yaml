@@ -33,6 +33,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-vite
     devDependencies:
+      '@code-ui/accordion':
+        specifier: workspace:*
+        version: link:../../packages/machines/accordion
+      '@code-ui/accordion-item':
+        specifier: workspace:*
+        version: link:../../packages/machines/accordion-item
       '@code-ui/checkbox':
         specifier: workspace:*
         version: link:../../packages/machines/checkbox
@@ -139,6 +145,12 @@ importers:
 
   packages/components:
     devDependencies:
+      '@code-ui/accordion':
+        specifier: workspace:*
+        version: link:../machines/accordion
+      '@code-ui/accordion-item':
+        specifier: workspace:*
+        version: link:../machines/accordion-item
       '@code-ui/anatomy':
         specifier: workspace:*
         version: link:../anatomy
@@ -305,6 +317,59 @@ importers:
       miniprogram-api-typings:
         specifier: ^5.2.3
         version: 5.2.3
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/accordion:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^3.2.1
+        version: 3.2.1
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/accordion-item:
+    dependencies:
+      '@code-ui/accordion':
+        specifier: workspace:*
+        version: link:../accordion
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^3.2.1
+        version: 3.2.1
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))

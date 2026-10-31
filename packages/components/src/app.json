@@ -4,6 +4,8 @@
   "style": "v2",
   "componentFramework": "glass-easel",
   "usingComponents": {
+    "cui-accordion": "runtime/accordion/index",
+    "cui-accordion-item": "runtime/accordion-item/index",
     "cui-app": "runtime/app/index",
     "cui-button": "runtime/button/index",
     "cui-card": "runtime/card/index",

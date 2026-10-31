@@ -141,6 +141,13 @@ Page({
         badge: "Interactive",
         path: "/pages/stepper/index",
       },
+      {
+        id: "accordion",
+        name: "Accordion",
+        desc: "Collapsible disclosure panels supporting single/multiple selection, compound slots, variants, and programmatically driven items.",
+        badge: "Interactive",
+        path: "/pages/accordion/index",
+      },
     ],
   },
 

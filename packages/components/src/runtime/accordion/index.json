@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "shared",
+  "usingComponents": {
+    "c-accordion-item": "../accordion-item/index"
+  }
+}
+

@@ -1,0 +1,73 @@
+<view
+  id="{{cAccordionItem.itemProps.id}}"
+  class="cui-accordion-item {{classes.root}}"
+  data-scope="accordion"
+  data-part="item"
+  data-value="{{cAccordionItem.resolvedValue}}"
+  data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
+  data-disabled="{{cAccordionItem.isDisabled}}"
+>
+  <view class="{{classes.header}}" data-scope="accordion" data-part="header">
+    <view
+      id="{{cAccordionItem.triggerProps.id}}"
+      class="{{classes.trigger}}"
+      role="button"
+      aria-expanded="{{cAccordionItem.isOpen}}"
+      aria-disabled="{{cAccordionItem.isDisabled}}"
+      data-scope="accordion"
+      data-part="trigger"
+      data-value="{{cAccordionItem.resolvedValue}}"
+      data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
+      data-disabled="{{cAccordionItem.isDisabled}}"
+      bind:tap="handleTap"
+    >
+      <!-- Leading element / icon -->
+      <view wx:if="{{cAccordionItem.icon || hasLeadingSlot}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
+        <slot name="leading" />
+        <c-icon wx:if="{{cAccordionItem.icon}}" name="{{cAccordionItem.icon}}" className="{{classes.leadingIcon}}" />
+      </view>
+
+      <!-- Label / Title -->
+      <view class="{{classes.label}}" data-scope="accordion" data-part="label">
+        <view wx:if="{{cAccordionItem.label}}">{{cAccordionItem.label}}</view>
+        <slot wx:else name="label" />
+        <view wx:if="{{cAccordionItem.description}}" class="{{classes.description}}" data-scope="accordion" data-part="description">
+          {{cAccordionItem.description}}
+        </view>
+        <slot wx:else name="description" />
+      </view>
+
+      <!-- Trailing icon / chevron -->
+      <view class="{{classes.trailing}} {{cAccordionItem.isOpen ? 'rotate-180' : ''}}" data-scope="accordion" data-part="trailing">
+        <slot name="trailing" />
+        <c-icon
+          wx:if="{{!customTrailing}}"
+          name="{{cAccordionItem.trailingIcon || 'i-lucide-chevron-down'}}"
+          className="{{classes.trailingIcon}}"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- Content Panel -->
+  <view
+    id="{{cAccordionItem.contentProps.id}}"
+    class="{{classes.content}}"
+    style="{{cAccordionItem.contentStyle}}"
+    role="region"
+    aria-labelledby="{{cAccordionItem.triggerProps.id}}"
+    data-scope="accordion"
+    data-part="content"
+    data-value="{{cAccordionItem.resolvedValue}}"
+    data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
+  >
+    <view class="cui-accordion-body {{classes.body}}" data-scope="accordion" data-part="body">
+      <block wx:if="{{cAccordionItem.content}}">
+        {{cAccordionItem.content}}
+      </block>
+      <slot wx:else name="content" />
+      <slot />
+    </view>
+  </view>
+</view>
+

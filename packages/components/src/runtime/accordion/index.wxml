@@ -1,0 +1,32 @@
+<view
+  id="{{accordion.rootProps.id}}"
+  class="cui-accordion {{classes.root}}"
+  data-scope="accordion"
+  data-part="root"
+  data-disabled="{{accordion.disabled}}"
+  data-size="{{accordion.size}}"
+  data-variant="{{accordion.variant}}"
+>
+  <block wx:if="{{hasItems}}">
+    <c-accordion-item
+      wx:for="{{accordion.items}}"
+      wx:key="value"
+      class="cui-accordion-item"
+      id="{{item.itemProps.id}}"
+      value="{{item.value}}"
+      label="{{item.label}}"
+      description="{{item.description}}"
+      content="{{item.content}}"
+      icon="{{item.icon}}"
+      trailingIcon="{{item.trailingIcon}}"
+      disabled="{{item.isDisabled}}"
+      open="{{item.isOpen}}"
+      size="{{accordion.size || size}}"
+      variant="{{accordion.variant || variant}}"
+      ui="{{item.ui || ui}}"
+      data-value="{{item.value}}"
+    />
+  </block>
+  <slot wx:else />
+</view>
+
