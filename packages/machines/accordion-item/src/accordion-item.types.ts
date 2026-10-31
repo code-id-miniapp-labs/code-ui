@@ -96,7 +96,6 @@ export interface AccordionItemContext {
   trailingIcon: string;
   disabled: boolean;
   open: boolean;
-  isOpenState?: boolean | undefined;
   size: AccordionSize | "";
   variant: AccordionVariant | "";
   collapsible: boolean;
@@ -126,9 +125,6 @@ export interface AccordionGroupStateSnapshot {
 export interface AccordionItemRefs {
   currentGroupBus?: EventBus<AccordionBusEvents> | undefined;
   busDisposers: (() => void)[];
-  prevControlledOpen?: boolean | undefined;
-  prevGroupValue?: string[] | undefined | null;
-  prevGroupProps?: AccordionGroupStateSnapshot | undefined;
 }
 
 export type AccordionItemEvent =

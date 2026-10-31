@@ -1,28 +1,17 @@
 import { isEmpty } from "@code-ui/utils";
 import {
   evaluateRules,
+  getEffectiveLength,
+  parseRegex,
   runRules,
   shouldValidateOnTrigger,
-  registerRuleEvaluator,
 } from "./form.eval";
 import type {
   FormRuleFn,
   FormRuleObject,
 } from "./form.types";
 
-export { evaluateRules, runRules, shouldValidateOnTrigger };
-
-function getEffectiveLength(value: any): number {
-  if (value === null || value === undefined) return 0;
-  if (Array.isArray(value)) {
-    return value.filter((item) =>
-      typeof item === "string"
-        ? item.trim().length > 0
-        : item !== null && item !== undefined,
-    ).length;
-  }
-  return typeof value === "string" ? value.length : String(value).length;
-}
+export { evaluateRules, parseRegex, runRules, shouldValidateOnTrigger };
 
 if (
   typeof RegExp !== "undefined" &&
@@ -42,40 +31,6 @@ if (
       configurable: true,
     });
   } catch {}
-}
-
-export function parseRegex(pattern: unknown, flags?: string): RegExp | null {
-  if (pattern instanceof RegExp) {
-    pattern.lastIndex = 0;
-    return pattern;
-  }
-  if (typeof pattern === "string") {
-    const trimmed = pattern.trim();
-    if (trimmed.length === 0) return null;
-    const slashMatch = /^\/(.*)\/([a-z]*)$/i.exec(trimmed);
-    return slashMatch && slashMatch[1] !== undefined
-      ? new RegExp(slashMatch[1], slashMatch[2] || flags || "")
-      : new RegExp(trimmed, flags ?? "");
-  }
-  if (typeof pattern === "object" && pattern !== null) {
-    const obj = pattern as Record<string, any>;
-    const src =
-      typeof obj.source === "string" && obj.source.length > 0
-        ? obj.source
-        : typeof obj.pattern === "string" && obj.pattern.length > 0
-          ? obj.pattern
-          : null;
-    if (src) {
-      const f =
-        typeof obj.flags === "string"
-          ? obj.flags
-          : typeof obj.patternFlags === "string"
-            ? obj.patternFlags
-            : (flags ?? "");
-      return new RegExp(src, f);
-    }
-  }
-  return null;
 }
 
 const makeRule = (descriptor: FormRuleObject, fn: FormRuleFn): FormRuleFn => {
@@ -164,59 +119,3 @@ export const formRules = {
     });
   },
 };
-
-// Auto-register built-in rule object evaluators when this module is imported
-registerRuleEvaluator((rule, value, values) => {
-  const msg = rule.message;
-  const len = getEffectiveLength(value);
-  if (typeof rule.minLength === "number" && len < rule.minLength) {
-    return msg ?? `Must be at least ${rule.minLength} characters`;
-  }
-  if (typeof rule.maxLength === "number" && len > rule.maxLength) {
-    return msg ?? `Must be at most ${rule.maxLength} characters`;
-  }
-  if (typeof rule.exactLength === "number" && len !== rule.exactLength) {
-    return msg ?? `Must be exactly ${rule.exactLength} characters`;
-  }
-  if (rule.pattern !== undefined) {
-    const rx = parseRegex(rule.pattern, rule.patternFlags);
-    if (rx) {
-      rx.lastIndex = 0;
-      const str = Array.isArray(value) ? value.join("") : String(value);
-      if (!rx.test(str)) return msg ?? "Invalid format";
-    }
-  }
-  if (rule.email || (rule as any).type === "email") {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim())) {
-      return msg ?? "Invalid email address";
-    }
-  }
-  if (
-    rule.numeric ||
-    (rule as any).type === "number" ||
-    (rule as any).type === "numeric"
-  ) {
-    const str = Array.isArray(value) ? value.join("") : String(value);
-    if (!/^[0-9]+$/.test(str)) return msg ?? "Must contain only numbers";
-  }
-  const num = Number(value);
-  if (
-    typeof rule.min === "number" &&
-    (!Number.isNaN(num) ? num < rule.min : true)
-  ) {
-    return msg ?? `Must be greater than or equal to ${rule.min}`;
-  }
-  if (
-    typeof rule.max === "number" &&
-    (!Number.isNaN(num) ? num > rule.max : true)
-  ) {
-    return msg ?? `Must be less than or equal to ${rule.max}`;
-  }
-  if (typeof rule.sameAs === "string" && rule.sameAs.length > 0) {
-    const target = values?.[rule.sameAs];
-    const a = Array.isArray(value) ? value.join("") : value;
-    const b = Array.isArray(target) ? target.join("") : target;
-    if (a !== b) return msg ?? `Must match ${rule.sameAs}`;
-  }
-  return undefined;
-});

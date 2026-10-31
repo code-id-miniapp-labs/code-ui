@@ -10,11 +10,13 @@ import { defaultFormProps } from "./form.props";
 import { evaluateRules, shouldValidateOnTrigger } from "./form.eval";
 import type {
   FormBusEvents,
+  FormContext,
   FormErrorBag,
   FormFieldError,
   FormFieldRegistration,
   FormFieldState,
   FormMachine,
+  FormProps,
   FormRule,
   FormSchema,
   FormService,
@@ -83,15 +85,18 @@ function makeFieldState(
     isValidating?: boolean;
   } = {},
 ): FormFieldState {
+  const safeValue = value === undefined ? "" : value;
+  const safeInitialValue =
+    initialValue === undefined ? safeValue : initialValue;
   return {
     name,
-    id,
-    value,
-    initialValue,
+    id: id || name,
+    value: safeValue,
+    initialValue: safeInitialValue,
     errors,
     errorMessage: errors[0] ?? "",
     isValid: errors.length === 0,
-    isDirty: flags.isDirty ?? !isEqual(value, initialValue),
+    isDirty: flags.isDirty ?? !isEqual(safeValue, safeInitialValue),
     isTouched: Boolean(flags.isTouched),
     isFocused: Boolean(flags.isFocused),
     isValidating: Boolean(flags.isValidating),
@@ -152,6 +157,7 @@ function applyFieldErrors(
   name: string,
   messages: string[],
   isValidating = false,
+  valueOverride?: any,
 ) {
   const fields = service.refs.get("fields");
   const field = fields.get(name);
@@ -167,9 +173,12 @@ function applyFieldErrors(
   const nextErrors = buildErrorsList(nextErrorBag, fields);
   const prevFieldStates = service.context.get("fieldStates") ?? {};
   const existingState = prevFieldStates[name];
-  const currentValue = field
-    ? field.getValue()
-    : (service.context.get("values") ?? {})[name];
+  const currentValue =
+    valueOverride !== undefined
+      ? valueOverride
+      : field
+        ? field.getValue()
+        : (service.context.get("values") ?? {})[name];
   const initialValue =
     existingState?.initialValue ??
     (service.context.get("initialValues") ?? {})[name] ??
@@ -207,6 +216,7 @@ function applyFieldErrors(
 export function validateSingleField(
   service: ServiceLike,
   name: string,
+  valueOverride?: any,
 ): string[] | Promise<string[]> {
   const tokens = service.refs.get("validationTokens");
   const token = (tokens.get(name) ?? 0) + 1;
@@ -214,14 +224,22 @@ export function validateSingleField(
 
   const rules = getEffectiveRules(service, name);
   if (rules.length === 0) {
-    applyFieldErrors(service, name, [], false);
+    applyFieldErrors(service, name, [], false, valueOverride);
     return [];
   }
 
   const fields = service.refs.get("fields");
   const field = fields.get(name);
   const allValues = collectFormValues(service);
-  const value = field ? field.getValue() : allValues[name];
+  const value =
+    valueOverride !== undefined
+      ? valueOverride
+      : field
+        ? field.getValue()
+        : allValues[name];
+  if (valueOverride !== undefined) {
+    allValues[name] = valueOverride;
+  }
 
   const outcome = evaluateRules(value, rules, allValues);
 
@@ -230,7 +248,7 @@ export function validateSingleField(
       "validatingFields",
       toggleArrayItem(service.context.get("validatingFields"), name, false),
     );
-    applyFieldErrors(service, name, outcome, false);
+    applyFieldErrors(service, name, outcome, false, value);
     return outcome;
   }
 
@@ -263,7 +281,7 @@ export function validateSingleField(
     );
     service.context.set("validatingFields", remainingValidating);
 
-    applyFieldErrors(service, name, asyncMessages, false);
+    applyFieldErrors(service, name, asyncMessages, false, value);
 
     if (
       remainingValidating.length === 0 &&
@@ -350,6 +368,9 @@ export function registerFormField(
   if (presetVal !== undefined && isEmpty(fieldValue)) {
     registration.setValue?.(presetVal);
     fieldValue = registration.getValue() ?? presetVal;
+  }
+  if (fieldValue === undefined) {
+    fieldValue = "";
   }
 
   const initialVal =
@@ -470,17 +491,20 @@ export function handleFieldInteraction(
   const prevStates = service.context.get("fieldStates") ?? {};
   const prevState = prevStates[name];
 
-  const nextValue =
+  const rawNextValue =
     payload.value !== undefined
       ? payload.value
       : field
         ? field.getValue()
         : prevValues[name];
+  const nextValue = rawNextValue === undefined ? "" : rawNextValue;
 
-  const initialValue =
+  const rawInitialValue =
     initialValues[name] !== undefined
       ? initialValues[name]
       : prevState?.initialValue;
+  const initialValue =
+    rawInitialValue === undefined ? nextValue : rawInitialValue;
 
   let isDirty = prevState?.isDirty ?? false;
   let isTouched = prevState?.isTouched ?? false;
@@ -546,7 +570,7 @@ export function handleFieldInteraction(
   });
 
   if (shouldRun) {
-    validateSingleField(service, name);
+    validateSingleField(service, name, nextValue);
   } else {
     notifyFieldValidation(field, updatedState);
   }
@@ -693,20 +717,29 @@ export function resetFormFields(
         ? cloneFieldValue(initialValues[name])
         : reg?.getValue();
 
-    nextValues[name] = restoredVal;
+    if (restoredVal !== undefined) {
+      nextValues[name] = restoredVal;
+    } else {
+      delete nextValues[name];
+    }
     delete nextErrorBag[name];
     nextDirty = nextDirty.filter((n) => n !== name);
     nextTouched = nextTouched.filter((n) => n !== name);
     nextValidating = nextValidating.filter((n) => n !== name);
 
-    const resetState = makeFieldState(
-      name,
-      reg?.id ?? prevFieldStates[name]?.id ?? name,
-      restoredVal,
-      cloneFieldValue(restoredVal),
-    );
-    nextFieldStates[name] = resetState;
-    notifyFieldValidation(reg, resetState);
+    if (reg || restoredVal !== undefined) {
+      const safeRestored = restoredVal === undefined ? "" : restoredVal;
+      const resetState = makeFieldState(
+        name,
+        reg?.id ?? prevFieldStates[name]?.id ?? name,
+        safeRestored,
+        cloneFieldValue(safeRestored),
+      );
+      nextFieldStates[name] = resetState;
+      notifyFieldValidation(reg, resetState);
+    } else {
+      delete nextFieldStates[name];
+    }
   }
 
   const nextErrors = buildErrorsList(nextErrorBag, fields);
@@ -785,9 +818,15 @@ export function setFormValues(
   let nextDirty = [...service.context.get("dirtyFields")];
 
   for (const [name, val] of Object.entries(values)) {
-    prevValues[name] = val;
+    if (val === undefined) {
+      delete prevValues[name];
+    } else {
+      prevValues[name] = val;
+    }
     const reg = fields.get(name);
-    reg?.setValue?.(val);
+    if (val !== undefined) {
+      reg?.setValue?.(val);
+    }
 
     const isDirty = !isEqual(val, initialValues[name]);
     nextDirty = toggleArrayItem(nextDirty, name, isDirty);
@@ -894,31 +933,47 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
   },
 
   context: ({ prop, bindable }) => {
-    const b = <T>(val: T | undefined, def: T) =>
-      bindable<T>(() => ({ value: val, defaultValue: def }));
+    const propBindable = <K extends keyof FormContext & keyof FormProps>(
+      key: K,
+      defaultValue: FormContext[K],
+    ) =>
+      bindable<FormContext[K]>(() => ({
+        value: prop(key) as FormContext[K] | undefined,
+        defaultValue,
+      }));
+    const stateBindable = <K extends keyof FormContext>(
+      _key: K,
+      defaultValue: FormContext[K],
+    ) =>
+      bindable<FormContext[K]>(() => ({
+        defaultValue,
+      }));
     const initialVals = cloneFieldValue(
       prop("value") ?? prop("defaultValue") ?? {},
     );
     return {
-      values: b<Record<string, any>>(prop("value") ?? undefined, initialVals),
-      initialValues: b<Record<string, any>>(undefined, cloneFieldValue(initialVals)),
-      errorBag: b<FormErrorBag>(undefined, {}),
-      errors: b<FormFieldError[]>(undefined, []),
-      fieldStates: b<Record<string, FormFieldState>>(undefined, {}),
-      dirtyFields: b<string[]>(undefined, []),
-      touchedFields: b<string[]>(undefined, []),
-      validatingFields: b<string[]>(undefined, []),
-      focusedField: b<string | null>(undefined, null),
-      submitCount: b<number>(undefined, 0),
-      disabled: b<boolean>(prop("disabled"), false),
-      readOnly: b<boolean>(prop("readOnly"), false),
-      focusOnError: b<boolean>(prop("focusOnError"), true),
-      scrollToError: b<boolean>(prop("scrollToError"), false),
-      scrollOffset: b<number>(prop("scrollOffset"), 24),
-      validateOn: b<FormValidateOn>(prop("validateOn"), ["input", "change", "blur"]),
-      validateLazy: b<boolean>(prop("validateLazy"), false),
-      showErrors: b<boolean>(prop("showErrors"), false),
-      ui: b<any>(prop("ui") ?? {}, {}),
+      values: bindable<Record<string, any>>(() => ({
+        value: prop("value"),
+        defaultValue: initialVals,
+      })),
+      initialValues: stateBindable("initialValues", cloneFieldValue(initialVals)),
+      errorBag: stateBindable("errorBag", {}),
+      errors: stateBindable("errors", []),
+      fieldStates: stateBindable("fieldStates", {}),
+      dirtyFields: stateBindable("dirtyFields", []),
+      touchedFields: stateBindable("touchedFields", []),
+      validatingFields: stateBindable("validatingFields", []),
+      focusedField: stateBindable("focusedField", null),
+      submitCount: stateBindable("submitCount", 0),
+      disabled: propBindable("disabled", false),
+      readOnly: propBindable("readOnly", false),
+      focusOnError: propBindable("focusOnError", true),
+      scrollToError: propBindable("scrollToError", false),
+      scrollOffset: propBindable("scrollOffset", 24),
+      validateOn: propBindable("validateOn", ["input", "change", "blur"]),
+      validateLazy: propBindable("validateLazy", false),
+      showErrors: propBindable("showErrors", false),
+      ui: propBindable("ui", {}),
     };
   },
 
@@ -932,21 +987,7 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
     isSubmitting: ({ state }) => state.get() === "submitting",
   },
 
-  watch: ({ prop, context, refs }) => {
-    const disabled = Boolean(prop("disabled"));
-    const readOnly = Boolean(prop("readOnly"));
-    context.set("disabled", disabled);
-    context.set("readOnly", readOnly);
-
-    const fields = refs.get("fields");
-    for (const reg of fields.values()) {
-      reg.onFormStateChange?.({ disabled, readOnly });
-    }
-
-    const bus = refs.get("bus");
-    bus?.emit("form:state", { disabled, readOnly });
-  },
-
+  effects: ["trackFormState"],
   entry: ["setupEventBus"],
   exit: ["cleanupEventBus"],
 
@@ -1092,6 +1133,27 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
       handleSetFieldValue: (p) => {
         const ev = p.event as any;
         setFormValues(p, { [ev.name]: ev.value }, Boolean(ev.validate));
+      },
+    },
+
+    effects: {
+      trackFormState: ({ prop, refs, track }) => {
+        let initial = true;
+        track(
+          [() => prop("disabled"), () => prop("readOnly")],
+          () => {
+            if (initial) {
+              initial = false;
+              return;
+            }
+            const disabled = Boolean(prop("disabled"));
+            const readOnly = Boolean(prop("readOnly"));
+            for (const reg of refs.get("fields").values()) {
+              reg.onFormStateChange?.({ disabled, readOnly });
+            }
+            refs.get("bus")?.emit("form:state", { disabled, readOnly });
+          },
+        );
       },
     },
   },

@@ -1,6 +1,9 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableRefs } from "@code-ui/core";
 import { isEqual } from "@code-ui/utils";
+import type { EventBus } from "@code-ui/utils";
 import type {
+  AccordionBusEvents,
   AccordionChangePayload,
   AccordionSize,
   AccordionVariant,
@@ -45,6 +48,77 @@ export function applyGroupState(
   }
 }
 
+function measureBodyHeight(
+  scope: AccordionItemParams["scope"] | undefined,
+  context: AccordionItemParams["context"],
+): void {
+  if (!scope?.dom?.rect) return;
+  scope.dom
+    .rect(".cui-accordion-body")
+    .then((res) => {
+      if (res && typeof res.height === "number" && res.height > 0) {
+        if (res.height !== context.get("contentHeight")) {
+          context.set("contentHeight", res.height);
+        }
+      }
+    })
+    .catch(() => {});
+}
+
+function bindGroupBus(
+  bus: EventBus<AccordionBusEvents> | undefined,
+  context: AccordionItemParams["context"],
+  refs: BindableRefs<AccordionItemSchema>,
+  scope?: AccordionItemParams["scope"],
+): void {
+  for (const d of refs.get("busDisposers") ?? []) d?.();
+  refs.set("currentGroupBus", bus);
+  refs.set(
+    "busDisposers",
+    bus
+      ? [
+          bus.on("accordion:change", (gState: AccordionChangePayload) => {
+            applyGroupState(context, gState);
+            if (Array.isArray(gState.value) && gState.value.length > 0) {
+              measureBodyHeight(scope, context);
+            }
+          }),
+        ]
+      : [],
+  );
+}
+
+function setItemOpen(
+  {
+    context,
+    computed,
+    refs,
+    prop,
+  }: Pick<AccordionItemParams, "context" | "computed" | "refs" | "prop">,
+  nextOpen: boolean,
+  isTap = false,
+): void {
+  const val = computed("resolvedValue");
+  const details = { value: val, open: nextOpen };
+  if (isTap) {
+    prop("onClick")?.(details);
+    prop("component")?.triggerEvent?.("click", details);
+  }
+
+  const bus = refs.get("currentGroupBus") || prop("groupBus");
+  if (bus) {
+    bus.emit("item:toggle", { value: val });
+    return;
+  }
+
+  context.set("open", nextOpen);
+  prop("onOpenChange")?.(details);
+  prop("component")?.triggerEvent?.("open-change", details);
+  if (isTap) {
+    prop("component")?.triggerEvent?.("change", details);
+  }
+}
+
 export const accordionItemMachine: AccordionItemMachine =
   createMachine<AccordionItemSchema>({
     props: ({ props }) => ({
@@ -54,20 +128,10 @@ export const accordionItemMachine: AccordionItemMachine =
 
     initialState: () => "idle",
 
-    refs: ({ prop }) => {
-      const rawOpen = prop("open");
-      const controlledOpen =
-        rawOpen !== null && rawOpen !== undefined
-          ? Boolean(rawOpen)
-          : undefined;
-
-      return {
-        currentGroupBus: undefined,
-        busDisposers: [],
-        prevControlledOpen: controlledOpen,
-        prevGroupProps: undefined as AccordionGroupStateSnapshot | undefined,
-      };
-    },
+    refs: ({ prop }) => ({
+      currentGroupBus: prop("groupBus"),
+      busDisposers: [],
+    }),
 
     context: ({ prop, bindable }) => {
       const propBindable = <
@@ -81,21 +145,6 @@ export const accordionItemMachine: AccordionItemMachine =
           defaultValue,
         }));
 
-      const stateBindable = <K extends keyof AccordionItemContext>(
-        _key: K,
-        defaultValue: AccordionItemContext[K],
-      ) =>
-        bindable<AccordionItemContext[K]>(() => ({
-          defaultValue,
-        }));
-
-      const rawOpen = prop("open");
-      const controlledOpen =
-        rawOpen !== null && rawOpen !== undefined
-          ? Boolean(rawOpen)
-          : undefined;
-      const initialOpen = controlledOpen ?? Boolean(prop("defaultOpen"));
-
       return {
         id: propBindable("id", ""),
         value: propBindable("value", ""),
@@ -105,31 +154,42 @@ export const accordionItemMachine: AccordionItemMachine =
         icon: propBindable("icon", ""),
         trailingIcon: propBindable("trailingIcon", ""),
         disabled: propBindable("disabled", false),
-        open: bindable<boolean>(() => ({
-          value: controlledOpen,
-          defaultValue: initialOpen,
-        })),
+        open: bindable<boolean>(() => {
+          const rawOpen = prop("open");
+          const controlledOpen =
+            rawOpen !== null && rawOpen !== undefined
+              ? Boolean(rawOpen)
+              : undefined;
+          return {
+            value: controlledOpen,
+            defaultValue: controlledOpen ?? Boolean(prop("defaultOpen")),
+          };
+        }),
         size: propBindable("size", ""),
         variant: propBindable("variant", ""),
         collapsible: propBindable("collapsible", true),
         contentHeight: propBindable("contentHeight", 0),
 
         accordionId: propBindable("accordionId", ""),
-        groupValue: stateBindable("groupValue", prop("groupValue")),
-        groupMultiple: stateBindable(
+        groupValue: bindable<AccordionItemContext["groupValue"]>(() => ({
+          value: prop("groupValue"),
+          defaultValue: prop("groupValue"),
+          isEqual,
+        })),
+        groupMultiple: propBindable(
           "groupMultiple",
           Boolean(prop("groupMultiple")),
         ),
-        groupCollapsible: stateBindable(
+        groupCollapsible: propBindable(
           "groupCollapsible",
           prop("groupCollapsible") !== false,
         ),
-        groupDisabled: stateBindable(
+        groupDisabled: propBindable(
           "groupDisabled",
           Boolean(prop("groupDisabled")),
         ),
-        groupSize: stateBindable("groupSize", prop("groupSize") ?? ""),
-        groupVariant: stateBindable("groupVariant", prop("groupVariant") ?? ""),
+        groupSize: propBindable("groupSize", prop("groupSize") ?? ""),
+        groupVariant: propBindable("groupVariant", prop("groupVariant") ?? ""),
         groupIndex: propBindable("groupIndex", 0),
 
         ui: propBindable("ui", {}),
@@ -153,9 +213,16 @@ export const accordionItemMachine: AccordionItemMachine =
         return context.get("id") || "0";
       },
 
-      isOpen: ({ context, computed }) => {
+      isOpen: ({ context, computed, refs, prop }) => {
         const gv = context.get("groupValue");
-        if (Array.isArray(gv)) {
+        if (
+          Array.isArray(gv) &&
+          Boolean(
+            refs.get("currentGroupBus") ||
+              prop("groupBus") ||
+              prop("groupValue") !== undefined,
+          )
+        ) {
           return gv.includes(computed("resolvedValue"));
         }
         return Boolean(context.get("open"));
@@ -192,65 +259,14 @@ export const accordionItemMachine: AccordionItemMachine =
       },
     },
 
-    watch: ({ prop, context, refs, computed, scope }) => {
-      const rawOpen = prop("open");
-      if (rawOpen !== null && rawOpen !== undefined) {
-        const boolVal = Boolean(rawOpen);
-        if (refs.get("prevControlledOpen") !== boolVal) {
-          refs.set("prevControlledOpen", boolVal);
-          if (context.get("open") !== boolVal) {
-            context.set("open", boolVal);
-          }
-        }
-      }
-
-      const readGroupProps = (): AccordionGroupStateSnapshot => ({
-        value: prop("groupValue"),
-        multiple: prop("groupMultiple"),
-        collapsible: prop("groupCollapsible"),
-        disabled: prop("groupDisabled"),
-        size: prop("groupSize"),
-        variant: prop("groupVariant"),
-      });
-
-      const bus = prop("groupBus");
-      if (bus && bus !== refs.get("currentGroupBus")) {
-        refs.set("currentGroupBus", bus);
-        const prevDisposers = refs.get("busDisposers") || [];
-        for (const d of prevDisposers) d?.();
-        const unsub = bus.on(
-          "accordion:change",
-          (gState: AccordionChangePayload) => {
-            applyGroupState(context, gState);
-          },
-        );
-        refs.set("busDisposers", [unsub]);
-        const currentProps = readGroupProps();
-        refs.set("prevGroupProps", currentProps);
-        applyGroupState(context, currentProps);
-      } else {
-        const currentProps = readGroupProps();
-        const prevProps = refs.get("prevGroupProps");
-        if (!isEqual(currentProps, prevProps)) {
-          refs.set("prevGroupProps", currentProps);
-          applyGroupState(context, currentProps);
-        }
-      }
-
-      if (computed("isOpen") && scope?.dom?.rect) {
-        scope.dom
-          .rect(".cui-accordion-body")
-          .then((res) => {
-            if (res && typeof res.height === "number" && res.height > 0) {
-              if (res.height !== context.get("contentHeight")) {
-                context.set("contentHeight", res.height);
-              }
-            }
-          })
-          .catch(() => {});
+    watch: ({ prop, context, refs, scope }) => {
+      const nextBus = prop("groupBus");
+      if (nextBus !== refs.get("currentGroupBus")) {
+        bindGroupBus(nextBus, context, refs, scope);
       }
     },
 
+    entry: ["setupGroupBus"],
     exit: ["cleanupGroupBus"],
 
     on: {
@@ -287,17 +303,7 @@ export const accordionItemMachine: AccordionItemMachine =
 
       actions: {
         measureHeightAction: ({ scope, context }) => {
-          if (!scope?.dom?.rect) return;
-          scope.dom
-            .rect(".cui-accordion-body")
-            .then((res) => {
-              if (res && typeof res.height === "number" && res.height > 0) {
-                if (res.height !== context.get("contentHeight")) {
-                  context.set("contentHeight", res.height);
-                }
-              }
-            })
-            .catch(() => {});
+          measureBodyHeight(scope, context);
         },
 
         setContentHeightAction: ({ event, context }) => {
@@ -309,8 +315,8 @@ export const accordionItemMachine: AccordionItemMachine =
           }
         },
 
-        handleTapAction: ({ context, computed, refs, prop }) => {
-          const val = computed("resolvedValue");
+        handleTapAction: (params) => {
+          const { context, computed, refs, prop } = params;
           const isOpen = computed("isOpen");
           const isCollapsible = computed("isCollapsible");
           const bus = refs.get("currentGroupBus") || prop("groupBus");
@@ -330,58 +336,33 @@ export const accordionItemMachine: AccordionItemMachine =
             }
           }
 
-          const nextOpen = !isOpen;
-          const details = { value: val, open: nextOpen };
-          prop("onClick")?.(details);
-          prop("component")?.triggerEvent?.("click", details);
+          setItemOpen(params, !isOpen, true);
+        },
 
+        openAction: (params) => {
+          if (params.computed("isOpen")) return;
+          setItemOpen(params, true);
+        },
+
+        closeAction: (params) => {
+          if (!params.computed("isOpen") || !params.computed("isCollapsible")) {
+            return;
+          }
+          setItemOpen(params, false);
+        },
+
+        setupGroupBus: ({ prop, context, computed, refs, scope }) => {
+          const bus = prop("groupBus");
           if (bus) {
-            bus.emit("item:toggle", { value: val });
-          } else {
-            // Standalone mode
-            context.set("open", nextOpen);
-            prop("onOpenChange")?.(details);
-            prop("component")?.triggerEvent?.("open-change", details);
-            prop("component")?.triggerEvent?.("change", details);
+            bindGroupBus(bus, context, refs, scope);
+          }
+          if (computed("isOpen")) {
+            measureBodyHeight(scope, context);
           }
         },
 
-        openAction: ({ context, computed, refs, prop }) => {
-          if (computed("isOpen")) return;
-          const val = computed("resolvedValue");
-          const details = { value: val, open: true };
-
-          const bus = refs.get("currentGroupBus") || prop("groupBus");
-          if (bus) {
-            bus.emit("item:toggle", { value: val });
-          } else {
-            context.set("open", true);
-            prop("onOpenChange")?.(details);
-            prop("component")?.triggerEvent?.("open-change", details);
-          }
-        },
-
-        closeAction: ({ context, computed, refs, prop }) => {
-          if (!computed("isOpen")) return;
-          if (!computed("isCollapsible")) return;
-          const val = computed("resolvedValue");
-          const details = { value: val, open: false };
-
-          const bus = refs.get("currentGroupBus") || prop("groupBus");
-          if (bus) {
-            bus.emit("item:toggle", { value: val });
-          } else {
-            context.set("open", false);
-            prop("onOpenChange")?.(details);
-            prop("component")?.triggerEvent?.("open-change", details);
-          }
-        },
-
-        cleanupGroupBus: ({ refs }) => {
-          const disposers = refs.get("busDisposers") || [];
-          for (const d of disposers) d?.();
-          refs.set("busDisposers", []);
-          refs.set("currentGroupBus", undefined);
+        cleanupGroupBus: ({ context, refs }) => {
+          bindGroupBus(undefined, context, refs);
         },
       },
     },

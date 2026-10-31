@@ -102,6 +102,24 @@ export function getFormFieldWrapperSize(
   return wrapper.data?.size;
 }
 
+export function getFormFieldWrapperName(
+  wrapper: any,
+  snapshot?: any,
+): string | undefined {
+  if (snapshot && typeof snapshot.name === "string" && snapshot.name) {
+    return snapshot.name;
+  }
+  if (wrapper.__codeUiMachine?.service?.context) {
+    const name = wrapper.__codeUiMachine.service.context.get("name");
+    if (name) return name;
+  }
+  const api = (wrapper as any).__codeUiApi;
+  if (api && typeof api.name === "string" && api.name) {
+    return api.name;
+  }
+  return wrapper.data?.name || undefined;
+}
+
 export function updateChildFromFormFieldWrapper(
   wrapper: any,
   child: any,
@@ -109,6 +127,7 @@ export function updateChildFromFormFieldWrapper(
 ) {
   const disabled = getFormFieldWrapperDisabled(wrapper, snapshot);
   const size = getFormFieldWrapperSize(wrapper, snapshot);
+  const wrapperName = getFormFieldWrapperName(wrapper, snapshot);
   const bus =
     wrapper.__codeUiFormBus ??
     getServiceBus(wrapper.__codeUiMachine?.service);
@@ -117,11 +136,19 @@ export function updateChildFromFormFieldWrapper(
       fieldDisabled: disabled,
       fieldSize: size,
     };
+    if (wrapperName && !child.data?.name) {
+      patch.name = wrapperName;
+    }
     if (bus && !child.__codeUiFormBus) {
       child.__codeUiFormBus = bus;
       patch.formBus = bus;
     }
     child.__codeUiMachine.updateProps(patch);
+    if (patch.name || patch.formBus) {
+      child.__codeUiMachine.service?.refs
+        ?.get?.("formField")
+        ?.rebind?.(patch.formBus);
+    }
   }
 }
 
@@ -294,6 +321,10 @@ export function handleFormAttached(
       if (size !== undefined) {
         initialProps.fieldSize = size;
       }
+      const wrapperName = getFormFieldWrapperName(wrapper);
+      if (wrapperName && !initialProps.name) {
+        initialProps.name = wrapperName;
+      }
       const wrapperBus =
         wrapper.__codeUiFormBus ??
         getServiceBus(wrapper.__codeUiMachine?.service);
@@ -449,7 +480,11 @@ export function withFormFieldWrapper(): MachinePlugin {
       handleFormMachineStarted(instance, machine, { formFieldWrapper: true });
     },
     onPropChanged(instance, propKey) {
-      if (propKey === "disabled" || propKey === "size") {
+      if (
+        propKey === "disabled" ||
+        propKey === "size" ||
+        propKey === "name"
+      ) {
         const children = instance.__codeUiFieldChildren || [];
         for (const child of children) {
           updateChildFromFormFieldWrapper(instance, child);

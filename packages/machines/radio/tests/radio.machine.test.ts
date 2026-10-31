@@ -16,7 +16,7 @@ describe("Radio Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
 
       const api = connectRadio(machine.service);
       expect(api.checked).toBe(false);
@@ -34,7 +34,7 @@ describe("Radio Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       const api = connectRadio(machine.service);
       expect(api.checked).toBe(true);

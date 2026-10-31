@@ -473,7 +473,20 @@ export class MiniappMachine<T extends MachineSchema> {
     this.disposeScope = effectScope(() => {
       const watch = this.machine.watch;
       if (watch) {
-        effect(() => watch(this.getParams()));
+        const baseParams = this.getParams();
+        const untrackedState: StateView<T> = {
+          ...baseParams.state,
+          get: () => untracked(() => this.state.get()),
+          matches: (...values: T["state"][]) =>
+            untracked(() => baseParams.state.matches(...values)),
+          hasTag: (tag: T["tag"]) =>
+            untracked(() => baseParams.state.hasTag(tag)),
+        };
+        const watchParams: Params<T> = {
+          ...baseParams,
+          state: untrackedState,
+        };
+        effect(() => watch(watchParams));
       }
 
       effect(() => {
@@ -577,17 +590,22 @@ export class MiniappMachine<T extends MachineSchema> {
     );
     this.debug("transition", transition);
 
-    this.transition = transition;
-    try {
-      if (target !== current) {
+    if (target !== current) {
+      this.transition = transition;
+      try {
         this.state.set(target);
-      } else if (transition.reenter) {
-        this.state.invoke(current, current);
-      } else {
-        this.action(transition.actions);
+      } finally {
+        this.transition = null;
       }
-    } finally {
-      this.transition = null;
+    } else if (transition.reenter) {
+      this.transition = transition;
+      try {
+        this.state.invoke(current, current);
+      } finally {
+        this.transition = null;
+      }
+    } else {
+      this.action(transition.actions);
     }
   }
 

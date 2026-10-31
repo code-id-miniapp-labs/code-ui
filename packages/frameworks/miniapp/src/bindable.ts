@@ -1,4 +1,4 @@
-import { computed, signal } from "alien-signals";
+import { computed, setActiveSub, signal } from "alien-signals";
 import { isFunction } from "@code-ui/utils";
 import type { Bindable, BindableFn, BindableParams } from "@code-ui/core";
 
@@ -45,20 +45,34 @@ export const bindable: BindableFn = Object.assign(
       },
 
       set(nextValue: T | ((prev: T) => T)): void {
-        syncProp();
-        const prev = _signal();
-        const next = isFunction(nextValue)
-          ? (nextValue as (prev: T) => T)(prev)
-          : (nextValue as T);
+        const prevSub = setActiveSub(undefined);
+        let prev: T;
+        let next: T;
+        let shouldInvoke = false;
+        let onChange: ((value: T, prev: T | undefined) => void) | undefined;
+        try {
+          syncProp();
+          prev = _signal();
+          next = isFunction(nextValue)
+            ? (nextValue as (prev: T) => T)(prev)
+            : (nextValue as T);
 
-        if (init.debug) {
-          console.log(`[bindable > ${init.debug}] setValue`, { next, prev });
+          if (init.debug) {
+            console.log(`[bindable > ${init.debug}] setValue`, { next, prev });
+          }
+
+          _signal(next);
+
+          if (!eq(next, prev)) {
+            shouldInvoke = true;
+            onChange = _params().onChange;
+          }
+        } finally {
+          setActiveSub(prevSub);
         }
 
-        _signal(next);
-
-        if (!eq(next, prev)) {
-          _params().onChange?.(next, prev);
+        if (shouldInvoke && onChange) {
+          onChange(next, prev);
         }
       },
 

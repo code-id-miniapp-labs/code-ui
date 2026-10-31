@@ -1,11 +1,13 @@
 import { createMachine } from "@code-ui/core";
-import { createEventBus, isNotNull } from "@code-ui/utils";
+import type { BindableContext, BindableRefs, ComputedFn } from "@code-ui/core";
+import { createEventBus } from "@code-ui/utils";
 import type {
   StepperBusEvents,
   StepperColor,
-  StepperItem,
+  StepperContext,
   StepperMachine,
   StepperOrientation,
+  StepperProps,
   StepperSchema,
   StepperSize,
   StepperVariant,
@@ -16,6 +18,27 @@ import {
   performScrollUpdate,
   resolveControlledStep,
 } from "./stepper.utils";
+
+function emitStepperChange(
+  context: BindableContext<StepperSchema>,
+  computed: ComputedFn<StepperSchema>,
+  refs: BindableRefs<StepperSchema>,
+  stepOverride?: number,
+) {
+  const bus = refs.get("bus");
+  if (!bus) return;
+  bus.emit("stepper:change", {
+    step: stepOverride ?? context.get("step"),
+    count: computed("totalCount"),
+    linear: Boolean(context.get("linear")),
+    orientation: (context.get("orientation") ||
+      "horizontal") as StepperOrientation,
+    color: (context.get("color") || "primary") as StepperColor,
+    size: (context.get("size") || "md") as StepperSize,
+    variant: (context.get("variant") || "subtle") as StepperVariant,
+    disabled: Boolean(context.get("disabled")),
+  });
+}
 
 export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   props: ({ props }) => ({
@@ -30,109 +53,78 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
     const initial = controlled ?? Number(prop("defaultStep") ?? 0);
     return {
       initialStep: initial,
-      prevStepProp: prop("step"),
-      prevValueProp: prop("value"),
-      prevModelValueProp: prop("modelValue"),
-      prevTotalCount: 0,
-      prevSize: (prop("size") ?? "md") as StepperSize,
-      syncingFromProps: false,
       bus: createEventBus<StepperBusEvents>(),
       busDisposers: [],
     };
   },
 
-  context: ({ prop, bindable, getRefs }) => {
-    const b = <T>(key: any, defaultValue: T) =>
-      bindable<T>(() => ({ value: prop(key), defaultValue }));
+  context: ({ prop, bindable, getRefs, getContext, getComputed }) => {
+    const propBindable = <K extends keyof StepperContext & keyof StepperProps>(
+      key: K,
+      defaultValue: StepperContext[K],
+    ) =>
+      bindable<StepperContext[K]>(() => ({
+        value: prop(key) as StepperContext[K] | undefined,
+        defaultValue,
+      }));
+    const stateBindable = <K extends keyof StepperContext>(
+      _key: K,
+      defaultValue: StepperContext[K],
+    ) => bindable<StepperContext[K]>(() => ({ defaultValue }));
 
     const controlled = resolveControlledStep(prop);
     const initial = controlled ?? Number(prop("defaultStep") ?? 0);
-    const initialItems = prop("items") ?? [];
-    const initialTotal =
-      Array.isArray(initialItems) && initialItems.length > 0
-        ? initialItems.length
-        : Number(prop("linkedCount") ?? prop("count") ?? 0);
-    const initialTargetIdx =
-      initial > 0 && initialTotal > 0
-        ? Math.min(initial + 1, initialTotal - 1)
-        : initial > 0
-          ? initial + 1
-          : 0;
 
     return {
-      step: bindable<number>(() => {
-        return {
-          defaultValue: initial,
-          onChange: (nextStep, prevStep) => {
-            if (getRefs().get("syncingFromProps")) {
-              return;
-            }
-            const items = prop("items") ?? [];
-            const itemObj = Array.isArray(items) ? items[nextStep] : undefined;
-            const resolvedVal =
-              itemObj?.value !== undefined ? itemObj.value : nextStep;
-            const previousStep =
-              prevStep !== undefined ? Number(prevStep) : initial;
+      step: bindable<number>(() => ({
+        value: resolveControlledStep(prop),
+        defaultValue: initial,
+        onChange: (nextStep, prevStep) => {
+          const items = prop("items") ?? [];
+          const itemObj = Array.isArray(items) ? items[nextStep] : undefined;
+          const resolvedVal =
+            itemObj?.value !== undefined ? itemObj.value : nextStep;
+          const previousStep =
+            prevStep !== undefined ? Number(prevStep) : initial;
 
-            const details = {
-              step: nextStep,
-              value: resolvedVal,
-              previousStep,
-            };
+          const details = {
+            step: nextStep,
+            value: resolvedVal,
+            previousStep,
+          };
 
-            prop("onStepChange")?.({ ...details });
-            prop("onChange")?.({ ...details });
+          prop("onStepChange")?.({ ...details });
+          prop("onChange")?.({ ...details });
 
-            const comp = prop("component");
-            comp?.triggerEvent?.("change", { ...details });
-            comp?.triggerEvent?.("update:modelValue", nextStep);
+          const comp = prop("component");
+          comp?.triggerEvent?.("change", { ...details });
+          comp?.triggerEvent?.("update:modelValue", nextStep);
 
-            const itemsLen = Array.isArray(items) ? items.length : 0;
-            const linkedLen = Number(prop("linkedCount") ?? 0);
-            const rawCount = Number(prop("count") ?? 0);
-            const totalCount =
-              itemsLen > 0 ? itemsLen : linkedLen > 0 ? linkedLen : rawCount;
+          const totalCount = getComputed()("totalCount");
+          if (totalCount > 0 && nextStep >= totalCount - 1) {
+            prop("onComplete")?.({ step: nextStep });
+            comp?.triggerEvent?.("complete", { step: nextStep });
+          }
 
-            if (totalCount > 0 && nextStep >= totalCount - 1) {
-              prop("onComplete")?.({ step: nextStep });
-              comp?.triggerEvent?.("complete", { step: nextStep });
-            }
-
-            const bus = getRefs().get("bus");
-            if (bus) {
-              bus.emit("stepper:change", {
-                step: nextStep,
-                count: totalCount,
-                linear: Boolean(prop("linear")),
-                orientation: (prop("orientation") ??
-                  "horizontal") as StepperOrientation,
-                color: (prop("color") ?? "primary") as StepperColor,
-                size: (prop("size") ?? "md") as StepperSize,
-                variant: (prop("variant") ?? "subtle") as StepperVariant,
-                disabled: Boolean(prop("disabled")),
-              });
-            }
-          },
-        };
-      }),
-
-      count: b<number>("count", 0),
-      linkedCount: b<number>("linkedCount", 0),
-      linear: b<boolean>("linear", false),
-      orientation: b<StepperOrientation>("orientation", "horizontal"),
-      color: b<StepperColor>("color", "primary"),
-      size: b<StepperSize>("size", "md"),
-      variant: b<StepperVariant>("variant", "subtle"),
-      disabled: b<boolean>("disabled", false),
-      hasContent: b<boolean>("hasContent", false),
-      items: b<StepperItem[]>("items", []),
-      focusedIndex: bindable<number | null>(() => ({ defaultValue: null })),
-      id: b<string>("id", ""),
-      scrollLeft: bindable<number>(() => ({ defaultValue: 0 })),
-      scrollTargetIndex: bindable<number>(() => ({
-        defaultValue: initialTargetIdx,
+          emitStepperChange(getContext(), getComputed(), getRefs(), nextStep);
+        },
       })),
-      ui: b("ui", {}),
+
+      count: propBindable("count", 0),
+      linkedCount: propBindable("linkedCount", 0),
+      linear: propBindable("linear", false),
+      orientation: propBindable("orientation", "horizontal"),
+      color: propBindable("color", "primary"),
+      size: propBindable("size", "md"),
+      variant: propBindable("variant", "subtle"),
+      disabled: propBindable("disabled", false),
+      hasContent: propBindable("hasContent", false),
+      items: propBindable("items", []),
+      focusedIndex: stateBindable("focusedIndex", null),
+      id: propBindable("id", ""),
+      scrollLeft: stateBindable("scrollLeft", 0),
+      scrollTargetIndex: stateBindable("scrollTargetIndex", null),
+      ui: propBindable("ui", {}),
     };
   },
 
@@ -193,7 +185,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       }
       const step = context.get("step");
       const total = computed("totalCount");
-      if (total <= 0) return 0;
+      if (total <= 0) return step > 0 ? step + 1 : 0;
       return step > 0 ? Math.min(step + 1, total - 1) : 0;
     },
 
@@ -206,81 +198,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
     },
   },
 
-  watch: ({ prop, context, refs, computed, scope }) => {
-    const rawStep = prop("step");
-    const rawValue = prop("value");
-    const rawModelValue = prop("modelValue");
-
-    let nextControlled: number | undefined;
-    if (rawStep !== refs.get("prevStepProp")) {
-      refs.set("prevStepProp", rawStep);
-      if (isNotNull(rawStep)) nextControlled = Number(rawStep);
-    }
-    if (rawValue !== refs.get("prevValueProp")) {
-      refs.set("prevValueProp", rawValue);
-      if (isNotNull(rawValue)) nextControlled = Number(rawValue);
-    }
-    if (rawModelValue !== refs.get("prevModelValueProp")) {
-      refs.set("prevModelValueProp", rawModelValue);
-      if (isNotNull(rawModelValue)) nextControlled = Number(rawModelValue);
-    }
-
-    if (
-      nextControlled !== undefined &&
-      nextControlled !== context.get("step")
-    ) {
-      refs.set("syncingFromProps", true);
-      try {
-        context.set("step", nextControlled);
-      } finally {
-        refs.set("syncingFromProps", false);
-      }
-      performScrollUpdate(context, computed, prop, scope, nextControlled);
-    }
-
-    const total = computed("totalCount");
-    if (total !== refs.get("prevTotalCount")) {
-      refs.set("prevTotalCount", total);
-      if (total > 0) {
-        performScrollUpdate(
-          context,
-          computed,
-          prop,
-          scope,
-          context.get("step"),
-        );
-      }
-    }
-
-    const currentSize = (context.get("size") || "md") as StepperSize;
-    if (currentSize !== refs.get("prevSize")) {
-      refs.set("prevSize", currentSize);
-      if (total > 0) {
-        performScrollUpdate(
-          context,
-          computed,
-          prop,
-          scope,
-          context.get("step"),
-        );
-      }
-    }
-
-    const bus = refs.get("bus");
-    if (bus) {
-      bus.emit("stepper:change", {
-        step: context.get("step"),
-        count: total,
-        linear: Boolean(context.get("linear")),
-        orientation: context.get("orientation") || "horizontal",
-        color: context.get("color") || "primary",
-        size: currentSize,
-        variant: context.get("variant") || "subtle",
-        disabled: Boolean(context.get("disabled")),
-      });
-    }
-  },
-
+  effects: ["trackControlledStep"],
   entry: ["setupStepperBus"],
   exit: ["cleanupStepperBus"],
 
@@ -448,7 +366,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         context.set("focusedIndex", null);
       },
 
-      setupStepperBus: ({ refs, send }) => {
+      setupStepperBus: ({ context, computed, refs, send }) => {
         const bus = refs.get("bus");
         if (bus) {
           const unsub = bus.on("item:tap", ({ index, value }) => {
@@ -457,6 +375,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
           const disposers = refs.get("busDisposers") || [];
           disposers.push(unsub);
           refs.set("busDisposers", disposers);
+          emitStepperChange(context, computed, refs);
         }
       },
 
@@ -464,6 +383,32 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         const disposers = refs.get("busDisposers") || [];
         for (const unsub of disposers) unsub?.();
         refs.set("busDisposers", []);
+      },
+    },
+
+    effects: {
+      trackControlledStep: ({ prop, context, computed, refs, scope, track }) => {
+        let initial = true;
+        track(
+          [() => resolveControlledStep(prop)],
+          () => {
+            if (initial) {
+              initial = false;
+              return;
+            }
+            const nextControlled = resolveControlledStep(prop);
+            if (nextControlled !== undefined) {
+              performScrollUpdate(
+                context,
+                computed,
+                prop,
+                scope,
+                nextControlled,
+              );
+              emitStepperChange(context, computed, refs, nextControlled);
+            }
+          },
+        );
       },
     },
   },

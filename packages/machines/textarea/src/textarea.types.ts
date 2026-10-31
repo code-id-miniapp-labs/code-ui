@@ -110,7 +110,14 @@ export interface TextareaProps {
   /** Distance between cursor and keyboard */
   cursorSpacing?: number | undefined;
   /** Keyboard confirm button type */
-  confirmType?: "return" | "send" | "search" | "next" | "go" | "done" | undefined;
+  confirmType?:
+    | "return"
+    | "send"
+    | "search"
+    | "next"
+    | "go"
+    | "done"
+    | undefined;
   /** Keep keyboard active on confirm */
   confirmHold?: boolean | undefined;
   /** Cursor position */
@@ -176,16 +183,18 @@ export interface TextareaContext {
 export interface TextareaComputed {
   isEmpty: boolean;
   isFilled: boolean;
+  isDisabled: boolean;
+  isReadOnly: boolean;
+  isInteractive: boolean;
   isClearable: boolean;
   characterCount: number;
+  effectiveSize: TextareaSize;
 }
 
 export interface TextareaRefs {
-  prevValue?: string | undefined;
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface TextareaSchema extends MachineSchema {

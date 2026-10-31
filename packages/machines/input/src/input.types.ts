@@ -177,18 +177,14 @@ export interface InputComputed {
 }
 
 export interface InputRefs {
-  prevValue?: string | undefined;
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export type InputAction =
   | "setupFormField"
   | "cleanupFormField"
-  | "handleInputChange"
-  | "notifyFormChange"
   | "handleFocus"
   | "handleBlur"
   | "handleConfirm"

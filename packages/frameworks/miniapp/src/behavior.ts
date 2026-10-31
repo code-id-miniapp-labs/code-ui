@@ -165,7 +165,8 @@ export function createMachineBehavior<
     };
   });
 
-  const relations: Record<string, WechatMiniprogram.Component.RelationOption> = {};
+  const relations: Record<string, WechatMiniprogram.Component.RelationOption> =
+    {};
   for (const plugin of plugins) {
     plugin.setupRelations?.(relations);
   }
@@ -177,17 +178,13 @@ export function createMachineBehavior<
 
     lifetimes: {
       attached(this: any) {
-        const id = getComponentId(this, this.id || this.data?.id);
+        const id = getComponentId(this, this.id);
         this.__codeUiId = id;
         const initialProps: Record<string, any> = {
           component: this,
-          id,
+          id: id ?? this.__codeUiId,
           ids: this.data?.ids,
         };
-
-        for (const plugin of plugins) {
-          plugin.onAttached?.(this, initialProps);
-        }
 
         if (this.data) {
           syncProps.forEach((propKey) => {
@@ -196,6 +193,10 @@ export function createMachineBehavior<
               initialProps[keyStr] = this.data[keyStr];
             }
           });
+        }
+
+        for (const plugin of plugins) {
+          plugin.onAttached?.(this, initialProps);
         }
 
         const machine = new MiniappMachine(machineDef, initialProps);

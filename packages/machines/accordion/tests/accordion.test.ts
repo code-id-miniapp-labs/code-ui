@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { accordionMachine, connectAccordion } from "../src";
+import type { AccordionChangePayload } from "../src";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
@@ -158,6 +159,24 @@ describe("Accordion Machine", () => {
       machine.stop();
     });
 
+    it("syncs controlled value and flags through updateProps", async () => {
+      const machine = new MiniappMachine(accordionMachine, {
+        value: ["1"],
+        multiple: false,
+      });
+      machine.start();
+
+      machine.updateProps({ value: ["2"], multiple: true });
+      await flush();
+
+      const api = connectAccordion(machine.service);
+      expect(api.value).toEqual(["2"]);
+      expect(machine.context.get("value")).toEqual(["2"]);
+      expect(api.multiple).toBe(true);
+
+      machine.stop();
+    });
+
     it("supports multiple items open when multiple is true", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         multiple: true,
@@ -202,6 +221,37 @@ describe("Accordion Machine", () => {
   });
 
   describe("Bus Interaction", () => {
+    it("emits a single full accordion:change payload on token toggle", async () => {
+      const machine = new MiniappMachine(accordionMachine, {
+        multiple: true,
+        collapsible: false,
+        size: "lg",
+        variant: "separated",
+      });
+      machine.start();
+
+      const bus = machine.service.refs.get("bus");
+      const changes: AccordionChangePayload[] = [];
+      bus?.on("accordion:change", (payload) => changes.push(payload));
+
+      const api = connectAccordion(machine.service);
+      api.toggle("a");
+      await flush();
+
+      expect(changes).toEqual([
+        {
+          value: ["a"],
+          multiple: true,
+          collapsible: false,
+          disabled: false,
+          size: "lg",
+          variant: "separated",
+        },
+      ]);
+
+      machine.stop();
+    });
+
     it("listens to item:toggle event on bus", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         multiple: false,

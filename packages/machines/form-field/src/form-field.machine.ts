@@ -3,7 +3,9 @@ import type { FormRule } from "@code-ui/form";
 import { isEmpty } from "@code-ui/utils";
 import { defaultFormFieldProps } from "./form-field.props";
 import type {
+  FormFieldContext,
   FormFieldMachine,
+  FormFieldProps,
   FormFieldSchema,
 } from "./form-field.types";
 
@@ -182,70 +184,49 @@ export const formFieldMachine: FormFieldMachine =
         : "valid";
     },
 
-    refs: () => ({
-      currentFormBus: undefined,
+    refs: ({ prop }) => ({
+      currentFormBus: prop("formBus"),
       busDisposers: [],
     }),
 
-    context: ({ prop, bindable }) => ({
-      name: bindable<string>(() => ({
-        value: prop("name"),
-        defaultValue: "",
-      })),
-      label: bindable<string>(() => ({
-        value: prop("label"),
-        defaultValue: "",
-      })),
-      description: bindable<string>(() => ({
-        value: prop("description"),
-        defaultValue: "",
-      })),
-      help: bindable<string>(() => ({
-        value: prop("help"),
-        defaultValue: "",
-      })),
-      helperText: bindable<string>(() => ({
-        value: prop("helperText"),
-        defaultValue: "",
-      })),
-      hint: bindable<string>(() => ({
-        value: prop("hint"),
-        defaultValue: "",
-      })),
-      error: bindable<string>(() => ({
-        value: prop("error"),
-        defaultValue: "",
-      })),
-      innerError: bindable<string>(() => ({
-        defaultValue: "",
-      })),
-      required: bindable<boolean>(() => ({
-        value: prop("required"),
-        defaultValue: false,
-      })),
-      disabled: bindable<boolean>(() => ({
-        value: prop("disabled"),
-        defaultValue: false,
-      })),
-      formDisabled: bindable<boolean>(() => ({
-        defaultValue: false,
-      })),
-      formReadOnly: bindable<boolean>(() => ({
-        defaultValue: false,
-      })),
-      rules: bindable<FormRule[]>(() => ({
-        value: prop("rules"),
-        defaultValue: [],
-      })),
-      size: bindable<any>(() => ({
-        value: prop("size"),
-        defaultValue: "md",
-      })),
-      ui: bindable<any>(() => ({
-        value: prop("ui") ?? {},
-        defaultValue: {},
-      })),
-    }),
+    context: ({ prop, bindable }) => {
+      const propBindable = <
+        K extends keyof FormFieldContext & keyof FormFieldProps,
+      >(
+        key: K,
+        defaultValue: FormFieldContext[K],
+      ) =>
+        bindable<FormFieldContext[K]>(() => ({
+          value: prop(key) as FormFieldContext[K] | undefined,
+          defaultValue,
+        }));
+
+      const stateBindable = <K extends keyof FormFieldContext>(
+        _key: K,
+        defaultValue: FormFieldContext[K],
+      ) =>
+        bindable<FormFieldContext[K]>(() => ({
+          defaultValue,
+        }));
+
+      return {
+        name: propBindable("name", ""),
+        label: propBindable("label", ""),
+        description: propBindable("description", ""),
+        help: propBindable("help", ""),
+        helperText: propBindable("helperText", ""),
+        hint: propBindable("hint", ""),
+        error: propBindable("error", ""),
+        innerError: stateBindable("innerError", ""),
+        required: propBindable("required", false),
+        disabled: propBindable("disabled", false),
+        formDisabled: stateBindable("formDisabled", false),
+        formReadOnly: stateBindable("formReadOnly", false),
+        rules: propBindable("rules", []),
+        size: propBindable("size", "md"),
+        ui: propBindable("ui", {}),
+      };
+    },
 
     computed: {
       displayError: ({ context }) =>
@@ -264,80 +245,47 @@ export const formFieldMachine: FormFieldMachine =
     },
 
     watch: (params) => {
-      // Track reactive props so dynamic rule and prop updates re-emit field rules
-      params.prop("rules");
-      params.prop("required");
-      params.prop("disabled");
-      params.prop("name");
-
       const nextBus = params.prop("formBus");
-      const currentBus = params.refs.get("currentFormBus");
-      if (nextBus !== currentBus) {
+      if (nextBus !== params.refs.get("currentFormBus")) {
         bindBus(params);
-      } else {
-        emitFieldRules(params);
       }
 
-      const controlledError = params.prop("error");
-      if (controlledError !== undefined) {
-        params.context.set("error", controlledError);
-        if (controlledError && controlledError.trim().length > 0) {
-          if (!params.state.matches("invalid")) {
-            params.send({ type: "ERROR.SET", error: controlledError });
-          }
-        } else if (
-          !params.context.get("innerError") &&
-          params.state.matches("invalid")
-        ) {
-          params.send({ type: "ERROR.CLEAR" });
-        }
+      const targetState = params.computed("displayError") ? "invalid" : "valid";
+      if (!params.state.matches(targetState)) {
+        params.state.set(targetState);
       }
     },
 
+    effects: ["trackFieldProps"],
     entry: ["setupBus"],
     exit: ["cleanupBus"],
+
+    on: {
+      "ERROR.SET": {
+        target: "invalid",
+        actions: ["setInnerError"],
+      },
+      "ERROR.CLEAR": {
+        target: "valid",
+        actions: ["clearInnerError"],
+      },
+      RESET: {
+        target: "valid",
+        actions: ["clearInnerError"],
+      },
+    },
 
     states: {
       valid: {
         tags: ["valid"],
-        on: {
-          "ERROR.SET": {
-            target: "invalid",
-            actions: ["setInnerError"],
-          },
-          "ERROR.CLEAR": {
-            actions: ["clearInnerError"],
-          },
-          RESET: {
-            actions: ["clearInnerError"],
-          },
-        },
       },
 
       invalid: {
         tags: ["invalid"],
-        on: {
-          "ERROR.SET": {
-            actions: ["setInnerError"],
-          },
-          "ERROR.CLEAR": {
-            target: "valid",
-            actions: ["clearInnerError"],
-          },
-          RESET: {
-            target: "valid",
-            actions: ["clearInnerError"],
-          },
-        },
       },
     },
 
     implementations: {
-      guards: {
-        isInvalid: ({ computed }) => Boolean(computed("displayError")),
-        isValid: ({ computed }) => !computed("displayError"),
-      },
-
       actions: {
         setInnerError: ({ context, event }) => {
           if ("error" in event && typeof event.error === "string") {
@@ -356,9 +304,27 @@ export const formFieldMachine: FormFieldMachine =
         cleanupBus: (params) => {
           teardownBus(params);
         },
+      },
 
-        emitRules: (params) => {
-          emitFieldRules(params);
+      effects: {
+        trackFieldProps: (params) => {
+          let initial = true;
+          params.track(
+            [
+              () => params.prop("name"),
+              () => params.prop("rules")?.length,
+              () => params.prop("required"),
+              () => params.prop("disabled"),
+              () => params.prop("size"),
+            ],
+            () => {
+              if (initial) {
+                initial = false;
+                return;
+              }
+              emitFieldRules(params);
+            },
+          );
         },
       },
     },

@@ -1,6 +1,9 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableContext, BindableRefs } from "@code-ui/core";
 import { isNotNull } from "@code-ui/utils";
+import type { EventBus } from "@code-ui/utils";
 import type {
+  StepperBusEvents,
   StepperColor,
   StepperOrientation,
   StepperSize,
@@ -8,10 +11,69 @@ import type {
   StepperVariant,
 } from "@code-ui/stepper";
 import type {
+  StepperItemContext,
   StepperItemMachine,
+  StepperItemProps,
   StepperItemSchema,
 } from "./stepper-item.types";
 import { defaultStepperItemProps } from "./stepper-item.props";
+
+interface GroupStateSnapshot {
+  step?: number | undefined;
+  count?: number | undefined;
+  linear?: boolean | undefined;
+  orientation?: StepperOrientation | "" | undefined;
+  disabled?: boolean | undefined;
+  color?: StepperColor | "" | undefined;
+  size?: StepperSize | "" | undefined;
+  variant?: StepperVariant | "" | undefined;
+}
+
+function applyGroupState(
+  context: BindableContext<StepperItemSchema>,
+  g: GroupStateSnapshot,
+) {
+  if (g.step !== undefined) context.set("groupStep", Number(g.step));
+  if (g.count !== undefined) context.set("groupCount", Number(g.count));
+  if (g.linear !== undefined) context.set("groupLinear", Boolean(g.linear));
+  if (g.orientation !== undefined) {
+    context.set(
+      "groupOrientation",
+      (g.orientation ?? "") as StepperOrientation | "",
+    );
+  }
+  if (g.disabled !== undefined) {
+    context.set("groupDisabled", Boolean(g.disabled));
+  }
+  if (g.color !== undefined) {
+    context.set("groupColor", (g.color ?? "") as StepperColor | "");
+  }
+  if (g.size !== undefined) {
+    context.set("groupSize", (g.size ?? "") as StepperSize | "");
+  }
+  if (g.variant !== undefined) {
+    context.set("groupVariant", (g.variant ?? "") as StepperVariant | "");
+  }
+}
+
+function bindGroupBus(
+  bus: EventBus<StepperBusEvents> | undefined,
+  context: BindableContext<StepperItemSchema>,
+  refs: BindableRefs<StepperItemSchema>,
+): void {
+  for (const d of refs.get("busDisposers") ?? []) d?.();
+  refs.set("currentGroupBus", bus);
+  refs.set(
+    "busDisposers",
+    bus
+      ? [
+          bus.on("stepper:change", (gState) => {
+            applyGroupState(context, gState);
+          }),
+        ]
+      : [],
+  );
+}
 
 export const stepperItemMachine: StepperItemMachine =
   createMachine<StepperItemSchema>({
@@ -22,23 +84,22 @@ export const stepperItemMachine: StepperItemMachine =
 
     initialState: () => "idle",
 
-    refs: () => ({
-      currentGroupBus: undefined,
+    refs: ({ prop }) => ({
+      currentGroupBus: prop("groupBus"),
       busDisposers: [],
-      prevGroupStep: undefined,
-      prevGroupCount: undefined,
-      prevGroupLinear: undefined,
-      prevGroupOrientation: undefined,
-      prevGroupDisabled: undefined,
-      prevGroupColor: undefined,
-      prevGroupSize: undefined,
-      prevGroupVariant: undefined,
-      prevStepperId: undefined,
     }),
 
     context: ({ prop, bindable }) => {
-      const b = <T>(key: any, defaultValue: T) =>
-        bindable<T>(() => ({ value: prop(key), defaultValue }));
+      const propBindable = <
+        K extends keyof StepperItemContext & keyof StepperItemProps,
+      >(
+        key: K,
+        defaultValue: StepperItemContext[K],
+      ) =>
+        bindable<StepperItemContext[K]>(() => ({
+          value: prop(key) as StepperItemContext[K] | undefined,
+          defaultValue,
+        }));
 
       return {
         index: bindable<number | null>(() => {
@@ -48,11 +109,11 @@ export const stepperItemMachine: StepperItemMachine =
             defaultValue: isNotNull(raw) ? Number(raw) : null,
           };
         }),
-        title: b<string>("title", ""),
-        description: b<string>("description", ""),
-        icon: b<string>("icon", ""),
-        completedIcon: b<string>("completedIcon", ""),
-        disabled: b<boolean>("disabled", false),
+        title: propBindable("title", ""),
+        description: propBindable("description", ""),
+        icon: propBindable("icon", ""),
+        completedIcon: propBindable("completedIcon", ""),
+        disabled: propBindable("disabled", false),
         completed: bindable<boolean | null>(() => {
           const raw = prop("completed");
           return {
@@ -60,8 +121,8 @@ export const stepperItemMachine: StepperItemMachine =
             defaultValue: isNotNull(raw) ? Boolean(raw) : null,
           };
         }),
-        status: b<StepperStatus | "">("status", ""),
-        value: b<string | number>("value", ""),
+        status: propBindable("status", ""),
+        value: propBindable("value", ""),
         isLast: bindable<boolean | null>(() => {
           const raw = prop("isLast");
           return {
@@ -69,44 +130,48 @@ export const stepperItemMachine: StepperItemMachine =
             defaultValue: isNotNull(raw) ? Boolean(raw) : null,
           };
         }),
-        orientation: b<StepperOrientation | "">("orientation", ""),
-        color: b<StepperColor | "">("color", ""),
-        size: b<StepperSize | "">("size", ""),
-        variant: b<StepperVariant | "">("variant", ""),
+        orientation: propBindable("orientation", ""),
+        color: propBindable("color", ""),
+        size: propBindable("size", ""),
+        variant: propBindable("variant", ""),
 
-        stepperId: b<string>("stepperId", ""),
-        groupStep: bindable<number>(() => ({
-          defaultValue: Number(prop("groupStep") ?? 0),
-        })),
-        groupCount: bindable<number>(() => ({
-          defaultValue: Number(prop("groupCount") ?? 0),
-        })),
-        groupIndex: bindable<number>(() => ({
-          defaultValue: Number(prop("groupIndex") ?? 0),
-        })),
-        groupIsLast: bindable<boolean>(() => ({
-          defaultValue: Boolean(prop("groupIsLast")),
-        })),
-        groupLinear: bindable<boolean>(() => ({
-          defaultValue: Boolean(prop("groupLinear")),
-        })),
-        groupOrientation: bindable<StepperOrientation | "">(() => ({
-          defaultValue: (prop("groupOrientation") ?? "") as StepperOrientation | "",
-        })),
-        groupDisabled: bindable<boolean>(() => ({
-          defaultValue: Boolean(prop("groupDisabled")),
-        })),
-        groupColor: bindable<StepperColor | "">(() => ({
-          defaultValue: (prop("groupColor") ?? "") as StepperColor | "",
-        })),
-        groupSize: bindable<StepperSize | "">(() => ({
-          defaultValue: (prop("groupSize") ?? "") as StepperSize | "",
-        })),
-        groupVariant: bindable<StepperVariant | "">(() => ({
-          defaultValue: (prop("groupVariant") ?? "") as StepperVariant | "",
-        })),
+        stepperId: propBindable("stepperId", ""),
+        groupStep: propBindable("groupStep", Number(prop("groupStep") ?? 0)),
+        groupCount: propBindable(
+          "groupCount",
+          Number(prop("groupCount") ?? 0),
+        ),
+        groupIndex: propBindable(
+          "groupIndex",
+          Number(prop("groupIndex") ?? 0),
+        ),
+        groupIsLast: propBindable("groupIsLast", Boolean(prop("groupIsLast"))),
+        groupLinear: propBindable(
+          "groupLinear",
+          Boolean(prop("groupLinear")),
+        ),
+        groupOrientation: propBindable(
+          "groupOrientation",
+          (prop("groupOrientation") ?? "") as StepperOrientation | "",
+        ),
+        groupDisabled: propBindable(
+          "groupDisabled",
+          Boolean(prop("groupDisabled")),
+        ),
+        groupColor: propBindable(
+          "groupColor",
+          (prop("groupColor") ?? "") as StepperColor | "",
+        ),
+        groupSize: propBindable(
+          "groupSize",
+          (prop("groupSize") ?? "") as StepperSize | "",
+        ),
+        groupVariant: propBindable(
+          "groupVariant",
+          (prop("groupVariant") ?? "") as StepperVariant | "",
+        ),
 
-        ui: b("ui", {}),
+        ui: propBindable("ui", {}),
       };
     },
 
@@ -226,137 +291,17 @@ export const stepperItemMachine: StepperItemMachine =
     },
 
     watch: ({ prop, context, refs }) => {
-      const bus = prop("groupBus") || refs.get("currentGroupBus");
-      if (bus && bus !== refs.get("currentGroupBus")) {
-        refs.set("currentGroupBus", bus);
-        const prevDisposers = refs.get("busDisposers") || [];
-        for (const d of prevDisposers) d?.();
-        const unsub = bus.on("stepper:change", (gState) => {
-          context.set("groupStep", Number(gState.step));
-          context.set("groupCount", Number(gState.count));
-          context.set("groupLinear", Boolean(gState.linear));
-          context.set("groupOrientation", gState.orientation);
-          context.set("groupDisabled", Boolean(gState.disabled));
-          context.set("groupColor", gState.color);
-          context.set("groupSize", gState.size);
-          context.set("groupVariant", gState.variant);
-        });
-        refs.set("busDisposers", [unsub]);
-
-        // Initialize from current prop values when bus is newly wired
-        if (prop("groupStep") !== undefined) {
-          context.set("groupStep", Number(prop("groupStep")));
-        }
-        if (prop("groupCount") !== undefined) {
-          context.set("groupCount", Number(prop("groupCount")));
-        }
-        if (prop("groupLinear") !== undefined) {
-          context.set("groupLinear", Boolean(prop("groupLinear")));
-        }
-        if (prop("groupOrientation") !== undefined) {
-          context.set(
-            "groupOrientation",
-            (prop("groupOrientation") ?? "") as StepperOrientation | "",
-          );
-        }
-        if (prop("groupDisabled") !== undefined) {
-          context.set("groupDisabled", Boolean(prop("groupDisabled")));
-        }
-        if (prop("groupColor") !== undefined) {
-          context.set("groupColor", (prop("groupColor") ?? "") as StepperColor | "");
-        }
-        if (prop("groupSize") !== undefined) {
-          context.set("groupSize", (prop("groupSize") ?? "") as StepperSize | "");
-        }
-        if (prop("groupVariant") !== undefined) {
-          context.set("groupVariant", (prop("groupVariant") ?? "") as StepperVariant | "");
-        }
-      }
-
-      if (!refs.get("currentGroupBus")) {
-        const gs = prop("groupStep");
-        if (gs !== undefined && Number(gs) !== context.get("groupStep")) {
-          context.set("groupStep", Number(gs));
-        }
-        const gc = prop("groupCount");
-        if (gc !== undefined && Number(gc) !== context.get("groupCount")) {
-          context.set("groupCount", Number(gc));
-        }
-        const gl = prop("groupLinear");
-        if (gl !== undefined && Boolean(gl) !== context.get("groupLinear")) {
-          context.set("groupLinear", Boolean(gl));
-        }
-        const go = prop("groupOrientation");
-        if (go !== undefined && go !== context.get("groupOrientation")) {
-          context.set("groupOrientation", (go ?? "") as StepperOrientation | "");
-        }
-        const gd = prop("groupDisabled");
-        if (gd !== undefined && Boolean(gd) !== context.get("groupDisabled")) {
-          context.set("groupDisabled", Boolean(gd));
-        }
-        const gcol = prop("groupColor");
-        if (gcol !== undefined && gcol !== context.get("groupColor")) {
-          context.set("groupColor", (gcol ?? "") as StepperColor | "");
-        }
-        const gz = prop("groupSize");
-        if (gz !== undefined && gz !== context.get("groupSize")) {
-          context.set("groupSize", (gz ?? "") as StepperSize | "");
-        }
-        const gv = prop("groupVariant");
-        if (gv !== undefined && gv !== context.get("groupVariant")) {
-          context.set("groupVariant", (gv ?? "") as StepperVariant | "");
-        }
-      }
-
-      const nextStepperId = (prop("stepperId") ?? "") as string;
-      if (nextStepperId !== context.get("stepperId")) {
-        context.set("stepperId", nextStepperId);
-      }
-
-      if (prop("groupIndex") !== undefined && Number(prop("groupIndex")) !== context.get("groupIndex")) {
-        context.set("groupIndex", Number(prop("groupIndex")));
-      }
-      if (prop("groupIsLast") !== undefined && Boolean(prop("groupIsLast")) !== context.get("groupIsLast")) {
-        context.set("groupIsLast", Boolean(prop("groupIsLast")));
-      }
-
-      const rawIdx = prop("index");
-      const nextIdx = isNotNull(rawIdx) ? Number(rawIdx) : null;
-      if (nextIdx !== context.get("index")) {
-        context.set("index", nextIdx);
-      }
-
-      const rawLast = prop("isLast");
-      const nextLast = isNotNull(rawLast) ? Boolean(rawLast) : null;
-      if (nextLast !== context.get("isLast")) {
-        context.set("isLast", nextLast);
-      }
-
-      const nextDisabled = Boolean(prop("disabled"));
-      if (nextDisabled !== context.get("disabled")) {
-        context.set("disabled", nextDisabled);
-      }
-
-      const rawCompleted = prop("completed");
-      const nextCompleted = isNotNull(rawCompleted) ? Boolean(rawCompleted) : null;
-      if (nextCompleted !== context.get("completed")) {
-        context.set("completed", nextCompleted);
-      }
-
-      const nextStatus = (prop("status") ?? "") as StepperStatus | "";
-      if (nextStatus !== context.get("status")) {
-        context.set("status", nextStatus);
+      const nextBus = prop("groupBus");
+      if (nextBus !== refs.get("currentGroupBus")) {
+        bindGroupBus(nextBus, context, refs);
       }
     },
 
+    entry: ["setupGroupBus"],
     exit: ["cleanupGroupBus"],
 
     on: {
       TAP: {
-        guard: "canTap",
-        actions: ["handleTapAction"],
-      },
-      SELECT: {
         guard: "canTap",
         actions: ["handleTapAction"],
       },
@@ -389,29 +334,15 @@ export const stepperItemMachine: StepperItemMachine =
           }
         },
 
-        setupGroupBus: ({ prop, refs, context }) => {
+        setupGroupBus: ({ prop, context, refs }) => {
           const bus = prop("groupBus");
           if (bus) {
-            refs.set("currentGroupBus", bus);
-            const unsub = bus.on("stepper:change", (gState) => {
-              context.set("groupStep", Number(gState.step));
-              context.set("groupCount", Number(gState.count));
-              context.set("groupLinear", Boolean(gState.linear));
-              context.set("groupOrientation", gState.orientation);
-              context.set("groupDisabled", Boolean(gState.disabled));
-              context.set("groupColor", gState.color);
-              context.set("groupSize", gState.size);
-              context.set("groupVariant", gState.variant);
-            });
-            refs.set("busDisposers", [unsub]);
+            bindGroupBus(bus, context, refs);
           }
         },
 
-        cleanupGroupBus: ({ refs }) => {
-          const disposers = refs.get("busDisposers") || [];
-          for (const d of disposers) d?.();
-          refs.set("busDisposers", []);
-          refs.set("currentGroupBus", undefined);
+        cleanupGroupBus: ({ context, refs }) => {
+          bindGroupBus(undefined, context, refs);
         },
       },
     },

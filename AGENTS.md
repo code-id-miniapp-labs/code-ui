@@ -44,6 +44,7 @@ packages/
 4. **TypeScript & Linter Constraints**:
    - `tsconfig.base.json` sets `"exactOptionalPropertyTypes": true`.
    - `.oxlintrc.json` forbids non-null assertions (`!`) (`typescript(no-non-null-assertion)`) and inline `import()` type annotations (`typescript(consistent-type-imports)`).
+5. **Machine Efficiency**: Before creating or refactoring a machine, read `docs/fsm-machine-guide.md` (single-source-of-truth rules, `watch` policy, anti-patterns, refactor playbook).
 
 ## Quick Commands
 

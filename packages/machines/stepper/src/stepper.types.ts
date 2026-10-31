@@ -146,7 +146,7 @@ export interface StepperContext {
   items: StepperItem[];
   focusedIndex: number | null;
   scrollLeft: number;
-  scrollTargetIndex: number;
+  scrollTargetIndex: number | null;
   ui: StepperUI;
 }
 
@@ -176,12 +176,6 @@ export interface StepperComputed {
 
 export interface StepperRefs {
   initialStep?: number | undefined;
-  prevStepProp?: number | null | undefined;
-  prevValueProp?: number | null | undefined;
-  prevModelValueProp?: number | null | undefined;
-  prevTotalCount?: number | undefined;
-  prevSize?: StepperSize | undefined;
-  syncingFromProps?: boolean | undefined;
   bus?: EventBus<StepperBusEvents> | undefined;
   busDisposers?: Array<() => void> | undefined;
 }

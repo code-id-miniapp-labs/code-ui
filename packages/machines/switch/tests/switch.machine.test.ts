@@ -15,7 +15,6 @@ describe("Switch Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
       expect(machine.computed("isChecked")).toBe(false);
       expect(machine.computed("isInteractive")).toBe(true);
 
@@ -45,7 +44,6 @@ describe("Switch Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
       expect(machine.computed("isChecked")).toBe(true);
 
       const api = connectSwitch(machine.service);
@@ -63,7 +61,7 @@ describe("Switch Machine", () => {
       machine.start();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       const api = connectSwitch(machine.service);
       expect(api.checked).toBe(true);
@@ -84,7 +82,7 @@ describe("Switch Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       const apiChecked = connectSwitch(machine.service);
       expect(apiChecked.checked).toBe(true);
@@ -93,7 +91,7 @@ describe("Switch Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
 
       machine.stop();
     });
@@ -107,13 +105,13 @@ describe("Switch Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       api.setChecked(false);
       await flush();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
 
       machine.stop();
     });
@@ -163,13 +161,13 @@ describe("Switch Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       machine.updateProps({ checked: false });
       await flush();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
 
       machine.stop();
     });
@@ -190,7 +188,7 @@ describe("Switch Machine", () => {
       await flush();
 
       expect(machine.state.get()).toBe("unchecked");
-      expect(machine.context.get("checked")).toBe(false);
+      expect(machine.computed("isChecked")).toBe(false);
 
       machine.stop();
     });
@@ -262,7 +260,7 @@ describe("Switch Machine", () => {
       api.resetChecked();
       await flush();
       expect(machine.state.get()).toBe("checked");
-      expect(machine.context.get("checked")).toBe(true);
+      expect(machine.computed("isChecked")).toBe(true);
 
       machine.stop();
     });

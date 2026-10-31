@@ -1,12 +1,16 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableContext, BindableRefs, PropFn } from "@code-ui/core";
 import {
   setupFormFieldSync,
   cleanupFormFieldSync,
 } from "@code-ui/form/context";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
+import type { EventBus } from "@code-ui/utils";
 import type {
   CheckboxContext,
+  CheckboxGroupBusEvents,
   CheckboxMachine,
+  CheckboxParams,
   CheckboxProps,
   CheckboxSchema,
   GroupStateSnapshot,
@@ -17,6 +21,64 @@ import {
   parseBooleanProp,
   resolveInitialBooleans,
 } from "./checkbox.utils";
+
+function bindGroupBus(
+  bus: EventBus<CheckboxGroupBusEvents> | undefined,
+  context: BindableContext<CheckboxSchema>,
+  state: CheckboxParams["state"],
+  refs: BindableRefs<CheckboxSchema>,
+): void {
+  for (const d of refs.get("busDisposers") ?? []) d?.();
+  refs.set("currentGroupBus", bus);
+  refs.set(
+    "busDisposers",
+    bus
+      ? [
+          bus.on("group:change", (gState: GroupStateSnapshot) => {
+            applyGroupState({ context, state }, gState);
+          }),
+        ]
+      : [],
+  );
+}
+
+function emitChange(
+  context: BindableContext<CheckboxSchema>,
+  prop: PropFn<CheckboxSchema>,
+  refs: BindableRefs<CheckboxSchema>,
+  nextChecked: boolean,
+): void {
+  const itemVal = context.get("value") || prop("value") || nextChecked;
+
+  prop("onCheckedChange")?.({ value: itemVal, checked: nextChecked });
+  prop("onChange")?.({ value: itemVal, checked: nextChecked });
+  prop("component")?.triggerEvent?.("change", {
+    value: itemVal,
+    checked: nextChecked,
+  });
+
+  const formField = refs.get("formField");
+  if (formField) {
+    formField.emitInput(nextChecked);
+    formField.emitChange(nextChecked);
+  }
+}
+
+const toggleToCheckedTransition = [
+  {
+    guard: "hasGroupBus",
+    actions: ["toggleGroupBus"],
+  },
+  {
+    guard: "isControlled",
+    actions: ["emitControlledToggle"],
+  },
+  {
+    guard: "isInteractive",
+    target: "checked" as const,
+    actions: ["emitCheckboxChange"],
+  },
+];
 
 export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   props: ({ props }) => ({
@@ -29,19 +91,12 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   refs: ({ prop }) => {
     const { initialChecked, initialIndeterminate } =
       resolveInitialBooleans(prop);
-    const rawChecked = prop("checked");
-    const rawIndeterminate = prop("indeterminate");
 
     return {
       initialChecked,
       initialIndeterminate,
-      prevControlledChecked: isNotNull(rawChecked)
-        ? parseBooleanProp(rawChecked)
-        : undefined,
-      prevControlledIndeterminate: isNotNull(rawIndeterminate)
-        ? parseBooleanProp(rawIndeterminate)
-        : undefined,
-      currentGroupBus: undefined,
+      lastChecked: initialChecked,
+      currentGroupBus: prop("groupBus"),
       currentFormBus: prop("formBus"),
       formField: undefined,
       busDisposers: [],
@@ -69,40 +124,15 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       }));
 
     return {
-      checked: bindable<boolean>(() => {
-        const rawChecked = prop("checked");
-        const controlledVal = isNotNull(rawChecked)
-          ? parseBooleanProp(rawChecked)
-          : undefined;
-        const initial =
-          controlledVal ?? parseBooleanProp(prop("defaultChecked"));
-
-        return {
-          value: controlledVal,
-          defaultValue: initial,
-        };
-      }),
-
-      indeterminate: bindable<boolean>(() => {
-        const rawIndeterminate = prop("indeterminate");
-        const controlledVal = isNotNull(rawIndeterminate)
-          ? parseBooleanProp(rawIndeterminate)
-          : undefined;
-        const initial =
-          controlledVal ?? parseBooleanProp(prop("defaultIndeterminate"));
-
-        return {
-          value: controlledVal,
-          defaultValue: initial,
-        };
-      }),
-
       formDisabled: stateBindable("formDisabled", false),
       formReadOnly: stateBindable("formReadOnly", false),
       fieldDisabled: propBindable("fieldDisabled", false),
       fieldSize: propBindable("fieldSize", ""),
 
-      groupValue: stateBindable("groupValue", prop("groupValue")),
+      groupValue: bindable<CheckboxContext["groupValue"]>(() => ({
+        defaultValue: prop("groupValue"),
+        isEqual,
+      })),
       groupDisabled: stateBindable(
         "groupDisabled",
         Boolean(prop("groupDisabled")),
@@ -140,14 +170,14 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   },
 
   computed: {
-    isChecked: ({ context }) => {
+    isChecked: ({ context, state }) => {
       const gv = context.get("groupValue");
       if (Array.isArray(gv)) {
         return gv.includes(context.get("value"));
       }
-      return Boolean(context.get("checked"));
+      return state.matches("checked");
     },
-    isIndeterminate: ({ context }) => Boolean(context.get("indeterminate")),
+    isIndeterminate: ({ state }) => state.matches("indeterminate"),
     isDisabled: ({ context }) =>
       Boolean(
         context.get("formDisabled") ||
@@ -169,81 +199,68 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       context.get("groupColor") || context.get("color"),
   },
 
-  watch: ({ prop, context, refs, state, computed }) => {
-    const controlledChecked = prop("checked");
-    if (isNotNull(controlledChecked)) {
-      const boolVal = parseBooleanProp(controlledChecked);
-      if (context.get("checked") !== boolVal) {
-        context.set("checked", boolVal);
-      }
-      const isIndet = Boolean(
-        prop("indeterminate") ?? context.get("indeterminate"),
-      );
-      if (!isIndet) {
-        const targetState = boolVal ? "checked" : "unchecked";
-        if (state.get() !== targetState) state.set(targetState);
-      }
-      refs.set("prevControlledChecked", boolVal);
-    }
-
-    const controlledIndeterminate = prop("indeterminate");
-    if (isNotNull(controlledIndeterminate)) {
-      const boolVal = parseBooleanProp(controlledIndeterminate);
-      if (context.get("indeterminate") !== boolVal) {
-        context.set("indeterminate", boolVal);
-      }
-      if (boolVal && state.get() !== "indeterminate") {
-        state.set("indeterminate");
-      } else if (!boolVal && state.get() === "indeterminate") {
-        const chk = Boolean(prop("checked") ?? context.get("checked"));
-        state.set(chk ? "checked" : "unchecked");
-      }
-      refs.set("prevControlledIndeterminate", boolVal);
-    }
-
+  watch: ({ prop, context, refs, state }) => {
     const nextFormBus = prop("formBus");
     if (nextFormBus !== refs.get("currentFormBus")) {
       refs.set("currentFormBus", nextFormBus);
       refs.get("formField")?.rebind(nextFormBus ?? null);
     }
 
-    const readGroupProps = (): GroupStateSnapshot => ({
-      value: prop("groupValue"),
-      disabled: prop("groupDisabled"),
-      invalid: prop("groupInvalid"),
-      color: prop("groupColor"),
-      size: prop("groupSize"),
-      variant: prop("groupVariant"),
-    });
-
-    const bus = prop("groupBus");
-    if (bus && bus !== refs.get("currentGroupBus")) {
-      refs.set("currentGroupBus", bus);
-      const prevDisposers = refs.get("busDisposers") || [];
-      for (const d of prevDisposers) d?.();
-
-      const unsub = bus.on("group:change", (gState: GroupStateSnapshot) => {
-        applyGroupState({ context, state }, gState);
-      });
-
-      refs.set("busDisposers", [unsub]);
-      applyGroupState({ context, state }, readGroupProps());
-    } else if (!refs.get("currentGroupBus")) {
-      applyGroupState({ context, state }, readGroupProps());
+    const nextBus = prop("groupBus");
+    if (nextBus !== refs.get("currentGroupBus")) {
+      bindGroupBus(nextBus, context, state, refs);
+      if (nextBus) {
+        applyGroupState(
+          { context, state },
+          {
+            value: prop("groupValue"),
+            disabled: prop("groupDisabled"),
+            invalid: prop("groupInvalid"),
+            color: prop("groupColor"),
+            size: prop("groupSize"),
+            variant: prop("groupVariant"),
+          },
+        );
+      }
+      refs.get("formField")?.rebind();
     }
 
-    const isGroupMode =
-      Array.isArray(context.get("groupValue")) ||
-      Boolean(refs.get("currentGroupBus"));
-    if (isGroupMode) {
-      const targetState = computed("isChecked") ? "checked" : "unchecked";
-      if (state.get() !== targetState) {
+    if (nextBus) return;
+
+    const groupVal = prop("groupValue");
+    if (Array.isArray(groupVal)) {
+      context.set("groupValue", groupVal);
+      const targetState = groupVal.includes(prop("value") ?? "")
+        ? "checked"
+        : "unchecked";
+      if (!state.matches(targetState)) {
         state.set(targetState);
       }
+      return;
+    }
+
+    const controlledIndeterminate = prop("indeterminate");
+    if (isNotNull(controlledIndeterminate)) {
+      if (parseBooleanProp(controlledIndeterminate)) {
+        if (!state.matches("indeterminate")) state.set("indeterminate");
+      } else if (state.matches("indeterminate")) {
+        const chk = isNotNull(prop("checked"))
+          ? parseBooleanProp(prop("checked"))
+          : Boolean(refs.get("lastChecked"));
+        state.set(chk ? "checked" : "unchecked");
+      }
+    }
+
+    const controlledChecked = prop("checked");
+    if (isNotNull(controlledChecked) && !state.matches("indeterminate")) {
+      const targetState = parseBooleanProp(controlledChecked)
+        ? "checked"
+        : "unchecked";
+      if (!state.matches(targetState)) state.set(targetState);
     }
   },
 
-  entry: ["setupFormField"],
+  entry: ["setupFormField", "setupGroupBus"],
   exit: ["cleanupFormField", "cleanupGroupBus"],
 
   on: {
@@ -251,73 +268,38 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       {
         guard: "isInitialIndeterminate",
         target: "indeterminate",
-        actions: ["resetIndeterminate"],
+        actions: ["resetInvalid"],
       },
       {
         guard: "isInitialChecked",
         target: "checked",
-        actions: ["resetChecked"],
+        actions: ["resetInvalid"],
       },
       {
         target: "unchecked",
-        actions: ["resetChecked"],
+        actions: ["resetInvalid"],
       },
     ],
     SET_CHECKED: [
       {
         guard: "isEventChecked",
         target: "checked",
-        actions: ["setCheckedTrue"],
       },
       {
         target: "unchecked",
-        actions: ["setCheckedFalse"],
       },
     ],
     SET_INDETERMINATE: [
       {
         guard: "isEventIndeterminate",
         target: "indeterminate",
-        actions: ["setIndeterminateTrue"],
       },
       {
-        guard: "isChecked",
+        guard: "wasChecked",
         target: "checked",
-        actions: ["setIndeterminateFalse"],
       },
       {
         target: "unchecked",
-        actions: ["setIndeterminateFalse"],
-      },
-    ],
-    CHECK: [
-      {
-        guard: "hasGroupBus",
-        actions: ["toggleGroupBus"],
-      },
-      {
-        guard: "isControlled",
-        actions: ["emitControlledCheck"],
-      },
-      {
-        guard: "isInteractive",
-        target: "checked",
-        actions: ["setCheckedTrue", "emitCheckboxChange"],
-      },
-    ],
-    UNCHECK: [
-      {
-        guard: "hasGroupBus",
-        actions: ["toggleGroupBus"],
-      },
-      {
-        guard: "isControlled",
-        actions: ["emitControlledUncheck"],
-      },
-      {
-        guard: "isInteractive",
-        target: "unchecked",
-        actions: ["setCheckedFalse", "emitCheckboxChange"],
       },
     ],
   },
@@ -325,27 +307,15 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   states: {
     unchecked: {
       tags: ["unchecked"],
+      entry: ["recordLastChecked"],
       on: {
-        TOGGLE: [
-          {
-            guard: "hasGroupBus",
-            actions: ["toggleGroupBus"],
-          },
-          {
-            guard: "isControlled",
-            actions: ["emitControlledCheck"],
-          },
-          {
-            guard: "isInteractive",
-            target: "checked",
-            actions: ["setCheckedTrue", "emitCheckboxChange"],
-          },
-        ],
+        TOGGLE: toggleToCheckedTransition,
       },
     },
 
     checked: {
       tags: ["checked"],
+      entry: ["recordLastChecked"],
       on: {
         TOGGLE: [
           {
@@ -354,12 +324,12 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
           },
           {
             guard: "isControlled",
-            actions: ["emitControlledUncheck"],
+            actions: ["emitControlledToggle"],
           },
           {
             guard: "isInteractive",
             target: "unchecked",
-            actions: ["setCheckedFalse", "emitCheckboxChange"],
+            actions: ["emitCheckboxChange"],
           },
         ],
       },
@@ -368,21 +338,7 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
     indeterminate: {
       tags: ["indeterminate"],
       on: {
-        TOGGLE: [
-          {
-            guard: "hasGroupBus",
-            actions: ["toggleGroupBus"],
-          },
-          {
-            guard: "isControlled",
-            actions: ["emitControlledCheck"],
-          },
-          {
-            guard: "isInteractive",
-            target: "checked",
-            actions: ["setCheckedTrue", "emitCheckboxChange"],
-          },
-        ],
+        TOGGLE: toggleToCheckedTransition,
       },
     },
   },
@@ -395,7 +351,7 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
         Boolean(refs.get("currentGroupBus") || prop("groupBus")),
       isControlled: ({ prop, computed }) =>
         computed("isInteractive") && isNotNull(prop("checked")),
-      isChecked: ({ computed }) => computed("isChecked"),
+      wasChecked: ({ refs }) => Boolean(refs.get("lastChecked")),
       isEventChecked: ({ event }) =>
         "checked" in event && Boolean(event.checked),
       isEventIndeterminate: ({ event }) =>
@@ -406,95 +362,24 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
     },
 
     actions: {
+      recordLastChecked: ({ refs, state }) => {
+        refs.set("lastChecked", state.matches("checked"));
+      },
+
       toggleGroupBus: ({ context, refs, prop }) => {
         const bus = refs.get("currentGroupBus") || prop("groupBus");
         bus?.emit("checkbox:toggle", { value: context.get("value") });
       },
 
-      emitControlledCheck: ({ context, prop, refs }) => {
-        const nextChecked = true;
-        const itemVal = context.get("value") || prop("value") || nextChecked;
-
-        prop("onCheckedChange")?.({ value: itemVal, checked: nextChecked });
-        prop("onChange")?.({ value: itemVal, checked: nextChecked });
-        prop("component")?.triggerEvent?.("change", {
-          value: itemVal,
-          checked: nextChecked,
-        });
-
-        const formField = refs.get("formField");
-        if (formField) {
-          formField.emitInput(nextChecked);
-          formField.emitChange(nextChecked);
-        }
+      emitControlledToggle: ({ context, prop, refs, state }) => {
+        emitChange(context, prop, refs, !state.matches("checked"));
       },
 
-      emitControlledUncheck: ({ context, prop, refs }) => {
-        const nextChecked = false;
-        const itemVal = context.get("value") || prop("value") || nextChecked;
-
-        prop("onCheckedChange")?.({ value: itemVal, checked: nextChecked });
-        prop("onChange")?.({ value: itemVal, checked: nextChecked });
-        prop("component")?.triggerEvent?.("change", {
-          value: itemVal,
-          checked: nextChecked,
-        });
-
-        const formField = refs.get("formField");
-        if (formField) {
-          formField.emitInput(nextChecked);
-          formField.emitChange(nextChecked);
-        }
+      emitCheckboxChange: ({ context, prop, refs, state }) => {
+        emitChange(context, prop, refs, state.matches("checked"));
       },
 
-      emitCheckboxChange: ({ context, prop, refs }) => {
-        const nextChecked = Boolean(context.get("checked"));
-        const itemVal = context.get("value") || prop("value") || nextChecked;
-
-        prop("onCheckedChange")?.({ value: itemVal, checked: nextChecked });
-        prop("onChange")?.({ value: itemVal, checked: nextChecked });
-        prop("component")?.triggerEvent?.("change", {
-          value: itemVal,
-          checked: nextChecked,
-        });
-
-        const formField = refs.get("formField");
-        if (formField) {
-          formField.emitInput(nextChecked);
-          formField.emitChange(nextChecked);
-        }
-      },
-
-      setCheckedTrue: ({ context }) => {
-        context.set("indeterminate", false);
-        context.set("checked", true);
-      },
-
-      setCheckedFalse: ({ context }) => {
-        context.set("indeterminate", false);
-        context.set("checked", false);
-      },
-
-      setIndeterminateTrue: ({ context }) => {
-        context.set("indeterminate", true);
-      },
-
-      setIndeterminateFalse: ({ context }) => {
-        context.set("indeterminate", false);
-      },
-
-      resetChecked: ({ context, refs }) => {
-        const initial = Boolean(refs.get("initialChecked"));
-        context.set("checked", initial);
-        context.set("indeterminate", false);
-        context.set("invalid", false);
-      },
-
-      resetIndeterminate: ({ context, refs }) => {
-        const initialIndeterminate = Boolean(refs.get("initialIndeterminate"));
-        const initialChecked = Boolean(refs.get("initialChecked"));
-        context.set("checked", initialChecked);
-        context.set("indeterminate", initialIndeterminate);
+      resetInvalid: ({ context }) => {
         context.set("invalid", false);
       },
 
@@ -505,30 +390,23 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
             bus: prop("formBus"),
             id: scope.id ?? "checkbox",
             getFormId: () => context.get("form") || prop("form") || "",
-            getName: () => context.get("name") || prop("name") || "",
-            getValue: () => context.get("checked"),
+            getName: () =>
+              refs.get("currentGroupBus") || prop("groupBus")
+                ? ""
+                : context.get("name") || prop("name") || "",
+            getValue: () => computed("isChecked"),
             setValue: (rawVal: unknown) => {
-              const nextChecked = Boolean(rawVal);
-              context.set("checked", nextChecked);
-              context.set("indeterminate", false);
-              state.set(nextChecked ? "checked" : "unchecked");
+              state.set(rawVal ? "checked" : "unchecked");
             },
             resetValue: () => {
-              const rawDefaultChecked = prop("defaultChecked");
-              const initial =
-                refs.get("initialChecked") ??
-                (rawDefaultChecked !== undefined
-                  ? parseBooleanProp(rawDefaultChecked)
-                  : false);
               const initialIndet = Boolean(refs.get("initialIndeterminate"));
+              const initialChecked = Boolean(refs.get("initialChecked"));
 
-              context.set("checked", initial);
-              context.set("indeterminate", initialIndet);
               context.set("invalid", false);
               state.set(
                 initialIndet
                   ? "indeterminate"
-                  : initial
+                  : initialChecked
                     ? "checked"
                     : "unchecked",
               );
@@ -562,11 +440,15 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
         cleanupFormFieldSync(refs);
       },
 
-      cleanupGroupBus: ({ refs }) => {
-        const disposers = refs.get("busDisposers") || [];
-        for (const d of disposers) d?.();
-        refs.set("busDisposers", []);
-        refs.set("currentGroupBus", undefined);
+      setupGroupBus: ({ prop, context, state, refs }) => {
+        const bus = prop("groupBus");
+        if (bus) {
+          bindGroupBus(bus, context, state, refs);
+        }
+      },
+
+      cleanupGroupBus: ({ context, state, refs }) => {
+        bindGroupBus(undefined, context, state, refs);
       },
     },
   },

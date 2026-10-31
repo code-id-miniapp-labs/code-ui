@@ -90,9 +90,8 @@ export interface FormFieldSchema {
     | "setInnerError"
     | "clearInnerError"
     | "setupBus"
-    | "cleanupBus"
-    | "emitRules";
-  guard: "isInvalid" | "isValid";
+    | "cleanupBus";
+  effect: "trackFieldProps";
 }
 
 export type FormFieldService = Service<FormFieldSchema>;

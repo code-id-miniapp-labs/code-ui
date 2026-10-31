@@ -481,5 +481,122 @@ describe("CheckboxGroup Machine", () => {
       groupM.stop();
       formM.stop();
     });
+
+    it("validates controlled checkbox-group and child checkboxes on toggle with declarative minLength rule", async () => {
+      let formInterests: string[] = [];
+      const formComp = { setData: vi.fn(), triggerEvent: vi.fn() };
+
+      const formM = new MiniappMachine(formMachine, {
+        component: formComp,
+      });
+      formM.start();
+
+      const formApi = connectForm(formM.service);
+      const formBus = formApi.bus;
+
+      // Simulate WXML-serialized declarative minLength rule from c-form-field
+      const serializedRules = JSON.parse(
+        JSON.stringify([
+          {
+            minLength: 2,
+            message: "Please choose at least 2 areas of interest",
+          },
+        ]),
+      );
+      formBus?.emit("field:rules", {
+        name: "interests",
+        getRules: () => serializedRules,
+        required: true,
+      });
+
+      const groupComp = {
+        setData: vi.fn(),
+        triggerEvent: vi.fn((eventName: string, detail: any) => {
+          if (eventName === "change") {
+            formInterests = detail.value ?? [];
+            groupM.updateProps({ value: formInterests });
+          }
+        }),
+        selectOwnerComponent: () => formComp,
+      };
+
+      const groupM = new MiniappMachine(checkboxGroupMachine, {
+        name: "interests",
+        value: formInterests,
+        formBus,
+        component: groupComp,
+      });
+      groupM.start();
+
+      const groupBus = groupM.service.refs.get("bus");
+
+      // Child checkboxes inside c-checkbox-group also receive formBus from c-form relations,
+      // but have no name prop and must NOT register as standalone form fields
+      const aiCheckbox = new MiniappMachine(checkboxMachine, {
+        value: "ai",
+        groupBus,
+        groupValue: formInterests,
+        formBus,
+      });
+      aiCheckbox.start();
+
+      const webCheckbox = new MiniappMachine(checkboxMachine, {
+        value: "web",
+        groupBus,
+        groupValue: formInterests,
+        formBus,
+      });
+      webCheckbox.start();
+
+      await flush();
+
+      // Only "interests" should be registered in the form
+      expect(Object.keys(connectForm(formM.service).fieldStates)).toEqual([
+        "interests",
+      ]);
+
+      // 1. User taps "ai" child checkbox (1 selected < minLength 2 -> invalid)
+      connectCheckbox(aiCheckbox.service).handleTap();
+      await flush();
+
+      expect(formInterests).toEqual(["ai"]);
+      expect(connectCheckbox(aiCheckbox.service).checked).toBe(true);
+      expect(connectCheckbox(webCheckbox.service).checked).toBe(false);
+      expect(connectCheckboxGroup(groupM.service).invalid).toBe(true);
+      expect(connectCheckbox(aiCheckbox.service).invalid).toBe(true);
+      expect(connectCheckbox(webCheckbox.service).invalid).toBe(true);
+      expect(connectForm(formM.service).errorBag).toEqual({
+        interests: ["Please choose at least 2 areas of interest"],
+      });
+
+      // 2. User taps "web" child checkbox (2 selected >= minLength 2 -> valid!)
+      connectCheckbox(webCheckbox.service).handleTap();
+      await flush();
+
+      expect(formInterests).toEqual(["ai", "web"]);
+      expect(connectCheckbox(aiCheckbox.service).checked).toBe(true);
+      expect(connectCheckbox(webCheckbox.service).checked).toBe(true);
+      expect(connectCheckboxGroup(groupM.service).invalid).toBe(false);
+      expect(connectCheckbox(aiCheckbox.service).invalid).toBe(false);
+      expect(connectCheckbox(webCheckbox.service).invalid).toBe(false);
+      expect(connectForm(formM.service).isValid).toBe(true);
+      expect(connectForm(formM.service).errorBag).toEqual({});
+
+      // 3. User unchecks "web" child checkbox (back to 1 selected -> invalid)
+      connectCheckbox(webCheckbox.service).handleTap();
+      await flush();
+
+      expect(formInterests).toEqual(["ai"]);
+      expect(connectCheckbox(aiCheckbox.service).checked).toBe(true);
+      expect(connectCheckbox(webCheckbox.service).checked).toBe(false);
+      expect(connectCheckboxGroup(groupM.service).invalid).toBe(true);
+      expect(connectCheckbox(aiCheckbox.service).invalid).toBe(true);
+      expect(connectCheckbox(webCheckbox.service).invalid).toBe(true);
+
+      aiCheckbox.stop();
+      webCheckbox.stop();
+      groupM.stop();
+      formM.stop();
+    });
   });
 });

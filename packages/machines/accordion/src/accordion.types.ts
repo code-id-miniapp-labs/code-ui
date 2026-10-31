@@ -123,14 +123,11 @@ export interface AccordionContext {
 export interface AccordionRefs {
   bus: EventBus<AccordionBusEvents>;
   busDisposers: (() => void)[];
-  syncingFromProps: boolean;
-  prevControlledValue: string[] | undefined;
 }
 
 export type AccordionEvent =
   | { type: "VALUE.SET"; value: string | number | (string | number)[] }
   | { type: "VALUE.TOGGLE"; value: string }
-  | { type: "ITEM.TOGGLE"; value: string; index?: number | undefined }
   | { type: "EXPAND_ALL" }
   | { type: "COLLAPSE_ALL" };
 

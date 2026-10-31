@@ -65,6 +65,7 @@ Page({
     formAgreement: false,
     interestRules: [
       {
+        minLength: 2,
         validator: (val: string[]) => Array.isArray(val) && val.length >= 2,
         message: "Please choose at least 2 areas of interest",
       },
@@ -72,6 +73,7 @@ Page({
     agreementRules: [
       {
         required: true,
+        validator: (val: boolean) => !!val,
         message: "You must accept the terms of service to proceed",
       },
       {

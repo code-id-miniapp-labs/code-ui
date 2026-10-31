@@ -142,51 +142,60 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       })),
 
       ecc: bindable<QrCodeEcc>(() => ({
-        value: normalizeEcc(prop("ecc") ?? defaultQrCodeProps.ecc),
+        value:
+          prop("ecc") !== undefined ? normalizeEcc(prop("ecc")) : undefined,
         defaultValue: normalizeEcc(defaultQrCodeProps.ecc),
       })),
 
       border: bindable<number>(() => ({
-        value: normalizeBorder(
-          prop("border") ?? defaultQrCodeProps.border,
-        ),
+        value:
+          prop("border") !== undefined
+            ? normalizeBorder(prop("border"))
+            : undefined,
         defaultValue: normalizeBorder(defaultQrCodeProps.border),
       })),
 
       encoding: bindable<QrCodeEncodingOptions>(() => ({
-        value: prop("encoding") ?? defaultQrCodeProps.encoding ?? {},
+        value: prop("encoding"),
         defaultValue: defaultQrCodeProps.encoding ?? {},
       })),
 
       pixelSize: bindable<number>(() => ({
-        value: normalizePixelSize(
-          prop("pixelSize") ?? defaultQrCodeProps.pixelSize,
-        ),
+        value:
+          prop("pixelSize") !== undefined
+            ? normalizePixelSize(prop("pixelSize"))
+            : undefined,
         defaultValue: 10,
       })),
 
       size: bindable<QrCodeSize>(() => ({
-        value: prop("size") ?? defaultQrCodeProps.size,
+        value: prop("size"),
         defaultValue: "md",
       })),
 
       color: bindable<QrCodeColor>(() => ({
-        value: prop("color") ?? defaultQrCodeProps.color,
+        value: prop("color"),
         defaultValue: "neutral",
       })),
 
       overlaySrc: bindable<string>(() => ({
-        value: String(prop("overlaySrc") ?? ""),
+        value:
+          prop("overlaySrc") !== undefined
+            ? String(prop("overlaySrc"))
+            : undefined,
         defaultValue: "",
       })),
 
       showOverlay: bindable<boolean>(() => ({
-        value: Boolean(prop("showOverlay")),
+        value:
+          prop("showOverlay") !== undefined
+            ? Boolean(prop("showOverlay"))
+            : undefined,
         defaultValue: false,
       })),
 
       ui: bindable<any>(() => ({
-        value: prop("ui") ?? {},
+        value: prop("ui"),
         defaultValue: {},
       })),
     };
@@ -273,23 +282,23 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
     },
   },
 
-  states: {
-    idle: {
-      on: {
-        "VALUE.SET": {
-          actions: ["setValueContext"],
-        },
-        SET_VALUE: {
-          actions: ["setValueContext"],
-        },
-        "ENCODING.SET": {
-          actions: ["setEncodingContext"],
-        },
-        SET_ENCODING: {
-          actions: ["setEncodingContext"],
-        },
-      },
+  on: {
+    "VALUE.SET": {
+      actions: ["setValueContext"],
     },
+    SET_VALUE: {
+      actions: ["setValueContext"],
+    },
+    "ENCODING.SET": {
+      actions: ["setEncodingContext"],
+    },
+    SET_ENCODING: {
+      actions: ["setEncodingContext"],
+    },
+  },
+
+  states: {
+    idle: {},
   },
 
   implementations: {

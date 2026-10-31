@@ -53,8 +53,7 @@ export function syncAccordionChildren(group: any) {
     group.__codeUiMachine.updateProps({ linkedCount: total });
   }
 
-  const groupId =
-    group.data?.id || group.id || group.__codeUiId || getComponentId(group);
+  const groupId = group.id || getComponentId(group);
   group.__codeUiId = groupId;
 
   const ctx = service?.context;
@@ -280,4 +279,3 @@ export function withAccordionItem(): MachinePlugin {
     },
   };
 }
-
