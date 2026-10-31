@@ -46,6 +46,11 @@
       "import": "./dist/behaviors/stepper.js",
       "require": "./dist/behaviors/stepper.cjs"
     },
+    "./behaviors/accordion": {
+      "types": "./dist/behaviors/accordion.d.ts",
+      "import": "./dist/behaviors/accordion.js",
+      "require": "./dist/behaviors/accordion.cjs"
+    },
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",

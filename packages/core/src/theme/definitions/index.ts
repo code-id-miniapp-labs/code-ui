@@ -1,3 +1,5 @@
+export { default as accordion } from "./accordion";
+export { default as accordionItem } from "./accordion-item";
 export { default as app } from "./app";
 export { default as avatar } from "./avatar";
 export { default as avatarGroup } from "./avatar-group";

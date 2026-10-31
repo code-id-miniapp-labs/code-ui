@@ -9,6 +9,7 @@ export default defineConfig({
     "src/behaviors/radio.ts",
     "src/behaviors/checkbox.ts",
     "src/behaviors/stepper.ts",
+    "src/behaviors/accordion.ts",
     "src/behaviors/app.ts",
     "src/behaviors/avatar-group.ts",
   ],

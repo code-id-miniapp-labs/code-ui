@@ -224,6 +224,10 @@ export default defineConfig({
               test: /[\\/]behaviors[\\/]stepper/,
             },
             {
+              name: "behaviors/accordion",
+              test: /[\\/]behaviors[\\/]accordion/,
+            },
+            {
               name: "behaviors/radio",
               test: /[\\/]behaviors[\\/]radio/,
             },

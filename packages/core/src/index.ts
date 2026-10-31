@@ -107,6 +107,8 @@ export type {
   ColorVariantRule,
 } from "./theme";
 export * as componentThemes from "./theme/definitions";
+export { default as accordionTheme } from "./theme/definitions/accordion";
+export { default as accordionItemTheme } from "./theme/definitions/accordion-item";
 export { default as appTheme } from "./theme/definitions/app";
 export { default as avatarTheme } from "./theme/definitions/avatar";
 export { default as avatarGroupTheme } from "./theme/definitions/avatar-group";

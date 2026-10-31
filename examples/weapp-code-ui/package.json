@@ -21,8 +21,10 @@
     "dev:open": "wv dev -o",
     "dev:ui": "wv dev --ui",
     "dev:open:ui": "wv dev --ui -o",
+    "prebuild": "rm -rf dist",
     "build": "wv build",
     "build:web": "wv build -p web",
+    "clean": "rm -rf dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "open": "wv open",
@@ -37,6 +39,8 @@
     "@code-ui/plugin-vite": "workspace:*"
   },
   "devDependencies": {
+    "@code-ui/accordion": "workspace:*",
+    "@code-ui/accordion-item": "workspace:*",
     "@code-ui/checkbox": "workspace:*",
     "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/input": "workspace:*",

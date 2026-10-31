@@ -1,0 +1,5 @@
+/* Accordion root styles are defined in @code-ui/core theme */
+:host {
+  display: block;
+}
+

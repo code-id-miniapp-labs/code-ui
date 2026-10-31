@@ -1,3 +1,15 @@
+declare module "virtual:cui/theme/accordion" {
+  import type { default as accordionTheme } from "@code-ui/core/src/theme/definitions/accordion";
+  const theme: ReturnType<typeof accordionTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/accordion-item" {
+  import type { default as accordionItemTheme } from "@code-ui/core/src/theme/definitions/accordion-item";
+  const theme: ReturnType<typeof accordionItemTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/app" {
   import type { default as appTheme } from "@code-ui/core/src/theme/definitions/app";
   const theme: ReturnType<typeof appTheme>;
