@@ -51,6 +51,11 @@
       "import": "./dist/behaviors/accordion.js",
       "require": "./dist/behaviors/accordion.cjs"
     },
+    "./behaviors/tabs": {
+      "types": "./dist/behaviors/tabs.d.ts",
+      "import": "./dist/behaviors/tabs.js",
+      "require": "./dist/behaviors/tabs.cjs"
+    },
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",

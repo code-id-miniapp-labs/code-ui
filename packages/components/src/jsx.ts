@@ -24,28 +24,19 @@ import type {
   FormValidateOn,
   FormValidationResult,
 } from "@code-ui/form";
-import type {
-  InputProps,
-  InputValueChangeDetails,
-} from "@code-ui/input";
+import type { InputProps, InputValueChangeDetails } from "@code-ui/input";
 import type {
   PinInputProps,
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
-import type {
-  QrCodeProps,
-  QrCodeValueChangeDetails,
-} from "@code-ui/qr-code";
+import type { QrCodeProps, QrCodeValueChangeDetails } from "@code-ui/qr-code";
 import type {
   RadioGroupProps,
   RadioGroupValueChangeDetails,
 } from "@code-ui/radio-group";
 import type { RadioProps } from "@code-ui/radio";
-import type {
-  StepperProps,
-  StepperStepChangeDetails,
-} from "@code-ui/stepper";
+import type { StepperProps, StepperStepChangeDetails } from "@code-ui/stepper";
 import type { StepperItemProps } from "@code-ui/stepper-item";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
@@ -53,6 +44,8 @@ import type {
   SwipeCellOpenChangeDetails,
   SwipeCellActionClickDetails,
 } from "@code-ui/swipe-cell";
+import type { TabsProps, TabsValueChangeDetails } from "@code-ui/tabs";
+import type { TabsItemProps } from "@code-ui/tabs-item";
 import type {
   TextareaProps,
   TextareaValueChangeDetails,
@@ -175,12 +168,8 @@ export interface CuiFormElementProps extends CuiCommonElementProps {
   disabled?: boolean;
   readOnly?: boolean;
   showErrors?: boolean;
-  onSubmit?: (
-    event: WechatMiniprogram.CustomEvent<FormSubmitDetails>,
-  ) => void;
-  onError?: (
-    event: WechatMiniprogram.CustomEvent<FormErrorDetails>,
-  ) => void;
+  onSubmit?: (event: WechatMiniprogram.CustomEvent<FormSubmitDetails>) => void;
+  onError?: (event: WechatMiniprogram.CustomEvent<FormErrorDetails>) => void;
   onValidate?: (
     event: WechatMiniprogram.CustomEvent<FormValidationResult>,
   ) => void;
@@ -225,15 +214,9 @@ export interface CuiInputElementProps extends CuiCommonElementProps {
   onChange?: (
     event: WechatMiniprogram.CustomEvent<InputValueChangeDetails>,
   ) => void;
-  onFocus?: (
-    event: WechatMiniprogram.CustomEvent<{ value: string }>,
-  ) => void;
-  onBlur?: (
-    event: WechatMiniprogram.CustomEvent<{ value: string }>,
-  ) => void;
-  onConfirm?: (
-    event: WechatMiniprogram.CustomEvent<{ value: string }>,
-  ) => void;
+  onFocus?: (event: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
+  onBlur?: (event: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
+  onConfirm?: (event: WechatMiniprogram.CustomEvent<{ value: string }>) => void;
   onClear?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
@@ -479,9 +462,7 @@ export interface CuiStepperElementProps extends CuiCommonElementProps {
   onChange?: (
     event: WechatMiniprogram.CustomEvent<StepperStepChangeDetails>,
   ) => void;
-  onComplete?: (
-    event: WechatMiniprogram.CustomEvent<{ step: number }>,
-  ) => void;
+  onComplete?: (event: WechatMiniprogram.CustomEvent<{ step: number }>) => void;
 }
 
 export interface CuiStepperItemElementProps extends CuiCommonElementProps {
@@ -596,8 +577,30 @@ export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
   onDragend?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
+export interface CuiTabsElementProps extends CuiCommonElementProps {
+  ui?: TabsProps["ui"];
+  value?: TabsProps["value"];
+  defaultValue?: TabsProps["defaultValue"];
+  items?: TabsProps["items"];
+  orientation?: TabsProps["orientation"];
+  variant?: TabsProps["variant"];
+  color?: TabsProps["color"];
+  size?: TabsProps["size"];
+  disabled?: boolean;
+  loopFocus?: boolean;
+  activationMode?: TabsProps["activationMode"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<TabsValueChangeDetails>,
+  ) => void;
+}
 
-
-
-
-
+export interface CuiTabsItemElementProps extends CuiCommonElementProps {
+  ui?: TabsItemProps["ui"];
+  value?: TabsItemProps["value"];
+  label?: string;
+  icon?: string;
+  trailingIcon?: string;
+  badge?: string | number;
+  disabled?: boolean;
+  lazy?: boolean;
+}

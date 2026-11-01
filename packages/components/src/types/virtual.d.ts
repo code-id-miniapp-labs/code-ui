@@ -151,6 +151,17 @@ declare module "virtual:cui/theme/stepper-item" {
 declare module "virtual:cui/theme/swipe-cell" {
   import type { default as swipeCellTheme } from "@code-ui/core/src/theme/definitions/swipe-cell";
   const theme: ReturnType<typeof swipeCellTheme>;
+}
+
+declare module "virtual:cui/theme/tabs" {
+  import type { default as tabsTheme } from "@code-ui/core/src/theme/definitions/tabs";
+  const theme: ReturnType<typeof tabsTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/tabs-item" {
+  import type { default as tabsItemTheme } from "@code-ui/core/src/theme/definitions/tabs-item";
+  const theme: ReturnType<typeof tabsItemTheme>;
   export default theme;
 }
 

@@ -1,0 +1,115 @@
+<view id="{{tabs.rootProps.id}}" class="{{classes.root}}" data-scope="tabs" data-part="root" data-orientation="{{tabs.orientation}}" data-disabled="{{tabs.disabled}}">
+  <!-- Horizontal Orientation: Scrollable Tablist -->
+  <scroll-view
+    wx:if="{{tabs.orientation !== 'vertical'}}"
+    class="cui-tabs-scroll w-full overflow-x-auto"
+    style="{{tabs.scrollMaskStyle}}"
+    scroll-x="{{true}}"
+    scroll-with-animation="{{true}}"
+    scroll-left="{{tabs.scrollLeft}}"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <view
+      id="{{tabs.listProps.id}}"
+      class="cui-tabs-list {{classes.list}}"
+      role="tablist"
+      aria-orientation="horizontal"
+      data-scope="tabs"
+      data-part="list"
+      data-orientation="horizontal"
+    >
+      <c-tabs-item
+        wx:for="{{tabs.items}}"
+        wx:key="value"
+        mode="trigger"
+        triggerId="{{item.triggerProps.id}}"
+        value="{{item.value}}"
+        label="{{item.label}}"
+        icon="{{item.icon}}"
+        trailingIcon="{{item.trailingIcon}}"
+        disabled="{{item.disabled}}"
+        selected="{{item.isSelected}}"
+        orientation="{{tabs.orientation}}"
+        variant="{{tabs.variant}}"
+        color="{{tabs.color}}"
+        size="{{tabs.size}}"
+        fitted="{{tabs.fitted}}"
+        index="{{index}}"
+        ui="{{item.ui || ui}}"
+        bind:select="handleItemSelect"
+      >
+        <slot name="leading-{{item.value}}" slot="leading" />
+        <slot name="trailing-{{item.value}}" slot="trailing" />
+      </c-tabs-item>
+      <slot name="list-trailing" />
+    </view>
+  </scroll-view>
+
+  <!-- Vertical Orientation: Static Tablist -->
+  <view
+    wx:else
+    id="{{tabs.listProps.id}}"
+    class="cui-tabs-list {{classes.list}}"
+    role="tablist"
+    aria-orientation="vertical"
+    data-scope="tabs"
+    data-part="list"
+    data-orientation="vertical"
+  >
+    <c-tabs-item
+      wx:for="{{tabs.items}}"
+      wx:key="value"
+      mode="trigger"
+      triggerId="{{item.triggerProps.id}}"
+      value="{{item.value}}"
+      label="{{item.label}}"
+      icon="{{item.icon}}"
+      trailingIcon="{{item.trailingIcon}}"
+      disabled="{{item.disabled}}"
+      selected="{{item.isSelected}}"
+      orientation="{{tabs.orientation}}"
+      variant="{{tabs.variant}}"
+      color="{{tabs.color}}"
+      size="{{tabs.size}}"
+      fitted="{{tabs.fitted}}"
+      index="{{index}}"
+      ui="{{item.ui || ui}}"
+      bind:select="handleItemSelect"
+    >
+      <slot name="leading-{{item.value}}" slot="leading" />
+      <slot name="trailing-{{item.value}}" slot="trailing" />
+    </c-tabs-item>
+    <slot name="list-trailing" />
+  </view>
+
+  <!-- Content Container -->
+  <view class="cui-tabs-content {{classes.content}}">
+    <!-- Items Mode: rendered when items prop is passed, calling c-tabs-item -->
+    <block wx:if="{{hasItems}}">
+      <c-tabs-item
+        wx:for="{{tabs.items}}"
+        wx:key="value"
+        mode="panel"
+        value="{{item.value}}"
+        label="{{item.label}}"
+        icon="{{item.icon}}"
+        trailingIcon="{{item.trailingIcon}}"
+        disabled="{{item.disabled}}"
+        selected="{{item.isSelected}}"
+        orientation="{{tabs.orientation}}"
+        variant="{{tabs.variant}}"
+        color="{{tabs.color}}"
+        size="{{tabs.size}}"
+        fitted="{{tabs.fitted}}"
+        index="{{index}}"
+        ui="{{item.ui || ui}}"
+      >
+        <text wx:if="{{item.content}}">{{item.content}}</text>
+        <slot wx:else name="{{item.value}}" />
+      </c-tabs-item>
+    </block>
+    <!-- Compound Mode: Declarative <c-tabs-item> children in default slot -->
+    <slot wx:else />
+  </view>
+</view>

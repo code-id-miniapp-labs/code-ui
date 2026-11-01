@@ -16,6 +16,8 @@ export * from "@code-ui/stepper";
 export * from "@code-ui/stepper-item";
 export * from "@code-ui/swipe-cell";
 export * from "@code-ui/switch";
+export * from "@code-ui/tabs";
+export * from "@code-ui/tabs-item";
 export * from "@code-ui/context";
 export * from "@code-ui/miniapp";
 export * from "@code-ui/core";

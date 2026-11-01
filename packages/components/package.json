@@ -164,6 +164,18 @@
       "require": "./dist/runtime/swipe-cell/index.js"
     },
     "./swipe-cell/*": "./dist/runtime/swipe-cell/*",
+    "./tabs": {
+      "types": "./dist/runtime/tabs/index.d.ts",
+      "import": "./dist/runtime/tabs/index.js",
+      "require": "./dist/runtime/tabs/index.js"
+    },
+    "./tabs/*": "./dist/runtime/tabs/*",
+    "./tabs-item": {
+      "types": "./dist/runtime/tabs-item/index.d.ts",
+      "import": "./dist/runtime/tabs-item/index.js",
+      "require": "./dist/runtime/tabs-item/index.js"
+    },
+    "./tabs-item/*": "./dist/runtime/tabs-item/*",
     "./textarea": {
       "types": "./dist/runtime/textarea/index.d.ts",
       "import": "./dist/runtime/textarea/index.js",
@@ -224,6 +236,8 @@
     "@code-ui/stepper-item": "workspace:*",
     "@code-ui/swipe-cell": "workspace:*",
     "@code-ui/switch": "workspace:*",
+    "@code-ui/tabs": "workspace:*",
+    "@code-ui/tabs-item": "workspace:*",
     "@code-ui/textarea": "workspace:*",
     "@code-ui/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"

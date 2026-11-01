@@ -155,6 +155,13 @@ Page({
         badge: "Interactive",
         path: "/pages/swipe-cell/index",
       },
+      {
+        id: "tabs",
+        name: "Tabs",
+        desc: "Tabbed navigation supporting compound items, data-driven lists, pill and link variants, badges, and horizontal/vertical orientations.",
+        badge: "Interactive",
+        path: "/pages/tabs/index",
+      },
     ],
   },
 

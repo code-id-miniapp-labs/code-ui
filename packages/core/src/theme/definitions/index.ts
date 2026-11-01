@@ -24,5 +24,6 @@ export { default as stepper } from "./stepper";
 export { default as stepperItem } from "./stepper-item";
 export { default as switch } from "./switch";
 export { default as swipeCell } from "./swipe-cell";
+export { default as tabs } from "./tabs";
+export { default as tabsItem } from "./tabs-item";
 export { default as textarea } from "./textarea";
-

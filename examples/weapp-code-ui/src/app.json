@@ -23,7 +23,8 @@
     "pages/qr-code/index",
     "pages/stepper/index",
     "pages/accordion/index",
-    "pages/swipe-cell/index"
+    "pages/swipe-cell/index",
+    "pages/tabs/index"
   ],
   "window": {},
   "style": "v2",
