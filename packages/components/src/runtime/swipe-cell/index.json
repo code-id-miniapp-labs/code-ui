@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "virtualHost": true,
+  "usingComponents": {
+    "c-icon": "../icon/index"
+  }
+}
+

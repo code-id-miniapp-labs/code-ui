@@ -1,0 +1,90 @@
+<wxs src="../../.wxs/machines/swipe-cell/src/wxs/swipe-cell-gesture.wxs" module="gesture" />
+<view
+  id="{{swipeCell.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="swipe-cell"
+  data-part="root"
+  data-state="{{swipeCell.state}}"
+  data-disabled="{{swipeCell.disabled}}"
+>
+  <view
+    id="{{swipeCell.wrapperProps.id}}"
+    class="{{classes.wrapper}}"
+    data-scope="swipe-cell"
+    data-part="wrapper"
+    data-wrapper-id="{{swipeCell.wrapperProps.id}}"
+    data-left-width="{{swipeCell.leftWidth}}"
+    data-right-width="{{swipeCell.rightWidth}}"
+    data-threshold="{{swipeCell.threshold}}"
+    data-duration="{{swipeCell.duration}}"
+    data-offset="{{swipeCell.offset}}"
+    data-disabled="{{swipeCell.disabled}}"
+    style="{{swipeCell.contentStyle}}"
+    capture-bind:touchstart="{{gesture.onTouchStart}}"
+    catch:touchmove="{{gesture.onTouchMove}}"
+    catch:touchend="{{gesture.onTouchEnd}}"
+    catch:touchcancel="{{gesture.onTouchEnd}}"
+  >
+    <!-- Left actions -->
+    <view
+      id="{{swipeCell.leftProps.id}}"
+      class="{{classes.left}}"
+      data-scope="swipe-cell"
+      data-part="left"
+      wx:if="{{swipeCell.hasLeftActions}}"
+    >
+      <block wx:if="{{swipeCell.leftActions.length > 0}}">
+        <view
+          wx:for="{{swipeCell.leftActions}}"
+          wx:key="index"
+          class="{{classes.action}} {{item.className || ''}}"
+          style="{{item.style || ''}}"
+          data-index="{{item.index}}"
+          data-side="left"
+          catchtap="handleActionTap"
+        >
+          <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />
+          <text wx:if="{{item.text}}" class="{{classes.actionText}}">{{item.text}}</text>
+        </view>
+      </block>
+      <slot name="left" wx:else />
+    </view>
+
+    <!-- Center content -->
+    <view
+      id="{{swipeCell.contentProps.id}}"
+      class="{{classes.content}}"
+      data-scope="swipe-cell"
+      data-part="content"
+      bindtap="handleContentTap"
+    >
+      <slot />
+    </view>
+
+    <!-- Right actions -->
+    <view
+      id="{{swipeCell.rightProps.id}}"
+      class="{{classes.right}}"
+      data-scope="swipe-cell"
+      data-part="right"
+      wx:if="{{swipeCell.hasRightActions}}"
+    >
+      <block wx:if="{{swipeCell.rightActions.length > 0}}">
+        <view
+          wx:for="{{swipeCell.rightActions}}"
+          wx:key="index"
+          class="{{classes.action}} {{item.className || ''}}"
+          style="{{item.style || ''}}"
+          data-index="{{item.index}}"
+          data-side="right"
+          catchtap="handleActionTap"
+        >
+          <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />
+          <text wx:if="{{item.text}}" class="{{classes.actionText}}">{{item.text}}</text>
+        </view>
+      </block>
+      <slot name="right" wx:else />
+    </view>
+  </view>
+</view>
+

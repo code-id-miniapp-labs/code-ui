@@ -148,6 +148,12 @@ declare module "virtual:cui/theme/stepper-item" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/swipe-cell" {
+  import type { default as swipeCellTheme } from "@code-ui/core/src/theme/definitions/swipe-cell";
+  const theme: ReturnType<typeof swipeCellTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;

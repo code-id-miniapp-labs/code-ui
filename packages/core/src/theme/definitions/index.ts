@@ -23,5 +23,6 @@ export { default as skeleton } from "./skeleton";
 export { default as stepper } from "./stepper";
 export { default as stepperItem } from "./stepper-item";
 export { default as switch } from "./switch";
+export { default as swipeCell } from "./swipe-cell";
 export { default as textarea } from "./textarea";
 

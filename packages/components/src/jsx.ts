@@ -49,6 +49,11 @@ import type {
 import type { StepperItemProps } from "@code-ui/stepper-item";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
+  SwipeCellProps,
+  SwipeCellOpenChangeDetails,
+  SwipeCellActionClickDetails,
+} from "@code-ui/swipe-cell";
+import type {
   TextareaProps,
   TextareaValueChangeDetails,
   TextareaLineChangeDetails,
@@ -559,6 +564,38 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
 }
+
+export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
+  ui?: SwipeCellProps["ui"];
+  disabled?: boolean;
+  opened?: SwipeCellProps["opened"];
+  defaultOpened?: SwipeCellProps["defaultOpened"];
+  left?: SwipeCellProps["left"];
+  right?: SwipeCellProps["right"];
+  leftWidth?: number;
+  rightWidth?: number;
+  threshold?: number;
+  duration?: number;
+  closeOnActionClick?: boolean;
+  closeOnContentClick?: boolean;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<SwipeCellOpenChangeDetails>,
+  ) => void;
+  onOpen?: (
+    event: WechatMiniprogram.CustomEvent<{ side: "left" | "right" }>,
+  ) => void;
+  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onActionClick?: (
+    event: WechatMiniprogram.CustomEvent<SwipeCellActionClickDetails>,
+  ) => void;
+  onClick?: (
+    event: WechatMiniprogram.CustomEvent<SwipeCellActionClickDetails>,
+  ) => void;
+  onDragstart?: (event: WechatMiniprogram.CustomEvent) => void;
+  onDrag?: (event: WechatMiniprogram.CustomEvent) => void;
+  onDragend?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
 
 
 

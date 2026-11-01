@@ -1,0 +1,193 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-20">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="flex items-center gap-2">
+      <view class="text-xl font-extrabold text-neutral-950">SwipeCell</view>
+      <c-badge color="primary" variant="subtle" size="xs">FSM + WXS</c-badge>
+    </view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Smooth gesture-driven sliding cell for list items, powered by Webview WXS gestures and Zag.js state machine.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Basic Usage: Left Swipe (Right Actions) -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        1. Left Swipe (Right Actions)
+      </view>
+
+      <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
+        <!-- Single action -->
+        <c-swipe-cell right="{{rightSingle}}" bind:click="onActionClick">
+          <view class="p-4 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-sm font-semibold text-neutral-900">Swipe left for delete</text>
+              <text class="text-xs text-neutral-400 mt-0.5">Single action button</text>
+            </view>
+            <text class="text-xs text-neutral-400">‹ Swipe</text>
+          </view>
+        </c-swipe-cell>
+
+        <!-- Multiple actions -->
+        <c-swipe-cell right="{{rightMulti}}" bind:click="onActionClick">
+          <view class="p-4 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-sm font-semibold text-neutral-900">Swipe left for multi-action</text>
+              <text class="text-xs text-neutral-400 mt-0.5">Star & Delete actions</text>
+            </view>
+            <text class="text-xs text-neutral-400">‹ Swipe</text>
+          </view>
+        </c-swipe-cell>
+      </view>
+    </view>
+
+    <!-- 2. Swipe Right (Left Actions) & Both Sides -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        2. Swipe Right & Bidirectional
+      </view>
+
+      <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
+        <!-- Left actions (swipe right) -->
+        <c-swipe-cell left="{{leftActions}}" bind:click="onActionClick">
+          <view class="p-4 flex items-center justify-between">
+            <text class="text-xs text-neutral-400">Swipe ›</text>
+            <view class="flex flex-col items-end">
+              <text class="text-sm font-semibold text-neutral-900">Swipe right for archive</text>
+              <text class="text-xs text-neutral-400 mt-0.5">Reveals left action panel</text>
+            </view>
+          </view>
+        </c-swipe-cell>
+
+        <!-- Bidirectional actions -->
+        <c-swipe-cell left="{{bothLeft}}" right="{{bothRight}}" bind:click="onActionClick">
+          <view class="p-4 flex items-center justify-between">
+            <text class="text-xs text-emerald-600 font-medium">Read ›</text>
+            <view class="flex flex-col items-center">
+              <text class="text-sm font-semibold text-neutral-900">Bidirectional Swipe</text>
+              <text class="text-xs text-neutral-400 mt-0.5">Supports both sides</text>
+            </view>
+            <text class="text-xs text-indigo-600 font-medium">‹ Options</text>
+          </view>
+        </c-swipe-cell>
+      </view>
+    </view>
+
+    <!-- 3. Custom Slot Layout -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        3. Custom Slots
+      </view>
+
+      <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs">
+        <c-swipe-cell rightWidth="{{140}}" leftWidth="{{80}}">
+          <!-- Custom left slot -->
+          <view slot="left" class="h-full flex items-center justify-center bg-teal-600 text-white px-5 text-xs font-semibold">
+            Custom
+          </view>
+
+          <!-- Main content -->
+          <view class="p-4 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-sm font-semibold text-neutral-900">Custom Slot Content</text>
+              <text class="text-xs text-neutral-400 mt-0.5">Using slot="left" and slot="right"</text>
+            </view>
+            <c-badge size="xs" color="primary" variant="subtle">Slots</c-badge>
+          </view>
+
+          <!-- Custom right slot -->
+          <view slot="right" class="h-full flex items-center gap-1 bg-neutral-900 px-3">
+            <view class="bg-neutral-800 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg">
+              Button 1
+            </view>
+            <view class="bg-red-600 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg">
+              Button 2
+            </view>
+          </view>
+        </c-swipe-cell>
+      </view>
+    </view>
+
+    <!-- 4. Controlled State & External Triggers -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        4. Controlled State
+      </view>
+
+      <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+        <view class="flex items-center justify-between">
+          <view class="text-sm font-bold text-neutral-900">External Control</view>
+          <c-badge color="{{controlledOpened ? 'primary' : 'neutral'}}" variant="solid" size="xs">
+            {{controlledStatus}}
+          </c-badge>
+        </view>
+
+        <view class="rounded-xl border border-neutral-200 overflow-hidden">
+          <c-swipe-cell
+            opened="{{controlledOpened}}"
+            left="{{bothLeft}}"
+            right="{{bothRight}}"
+            bind:openChange="onControlledOpenChange"
+            bind:click="onActionClick"
+          >
+            <view class="p-4 bg-white flex items-center justify-between">
+              <view class="flex flex-col">
+                <text class="text-sm font-semibold text-neutral-900">Controlled SwipeCell</text>
+                <text class="text-xs text-neutral-400 mt-0.5">Syncs with external buttons below</text>
+              </view>
+            </view>
+          </c-swipe-cell>
+        </view>
+
+        <view class="flex items-center gap-2">
+          <c-button size="xs" color="neutral" variant="outline" bind:tap="openControlledLeft">
+            Open Left
+          </c-button>
+          <c-button size="xs" color="neutral" variant="outline" bind:tap="openControlledRight">
+            Open Right
+          </c-button>
+          <c-button size="xs" color="neutral" variant="subtle" bind:tap="closeControlled">
+            Close
+          </c-button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 5. Interactive Message List -->
+    <view class="flex flex-col gap-3">
+      <view class="flex items-center justify-between px-1">
+        <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+          5. Interactive Inbox List
+        </view>
+        <text class="text-[11px] text-neutral-400">{{messageList.length}} item(s)</text>
+      </view>
+
+      <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
+        <block wx:for="{{messageList}}" wx:key="id">
+          <c-swipe-cell
+            right="{{rightMulti}}"
+            data-id="{{item.id}}"
+            bind:click="handleListAction"
+          >
+            <view class="p-4 flex items-center justify-between bg-white">
+              <view class="flex flex-col gap-1">
+                <view class="flex items-center gap-2">
+                  <text class="text-sm font-semibold text-neutral-900">{{item.sender}}</text>
+                  <text wx:if="{{item.starred}}" class="text-xs text-amber-500 font-bold">★</text>
+                </view>
+                <text class="text-xs text-neutral-500 line-clamp-1">{{item.title}}</text>
+              </view>
+              <text class="text-[11px] text-neutral-400 shrink-0">{{item.time}}</text>
+            </view>
+          </c-swipe-cell>
+        </block>
+
+        <view wx:if="{{messageList.length === 0}}" class="p-8 text-center text-xs text-neutral-400">
+          All items deleted! Refresh page to reset.
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
