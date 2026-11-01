@@ -48,9 +48,15 @@ export function createMachinePropGetter(
 
       if (!handlerCache.has(key)) {
         const eventName = toMiniEventName(key);
+        const stripped = key.slice(2);
+        const camelName = stripped.charAt(0).toLowerCase() + stripped.slice(1);
         const bridge = hasTrigger
           ? createEventBridge(instance, eventName)
           : undefined;
+        const camelBridge =
+          hasTrigger && camelName !== eventName
+            ? createEventBridge(instance, camelName)
+            : undefined;
 
         const triggerAdapter = (
           rawPayload?: any,
@@ -80,6 +86,9 @@ export function createMachinePropGetter(
 
             const bRet = bridge(detail, options);
             if (ret === undefined) ret = bRet;
+            if (camelBridge) {
+              camelBridge(detail, options);
+            }
           }
 
           return ret;

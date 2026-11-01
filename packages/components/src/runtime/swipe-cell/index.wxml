@@ -1,0 +1,93 @@
+<wxs src="../../.wxs/machines/swipe-cell/src/wxs/swipe-cell-gesture.wxs" module="gesture" />
+<view
+  id="{{swipeCell.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="swipe-cell"
+  data-part="root"
+  data-state="{{swipeCell.state}}"
+  data-disabled="{{swipeCell.disabled}}"
+>
+  <view
+    id="{{swipeCell.wrapperProps.id}}"
+    class="{{classes.wrapper}} cui-swipe-cell__wrapper"
+    data-scope="swipe-cell"
+    data-part="wrapper"
+    data-wrapper-id="{{swipeCell.wrapperProps.id}}"
+    data-left-width="{{swipeCell.leftWidth}}"
+    data-right-width="{{swipeCell.rightWidth}}"
+    data-threshold="{{swipeCell.threshold}}"
+    data-duration="{{swipeCell.duration}}"
+    data-offset="{{swipeCell.offset}}"
+    data-disabled="{{swipeCell.disabled}}"
+    change:offset="{{gesture.onOffsetChange}}"
+    offset="{{swipeCell.offset}}"
+    style="{{swipeCell.contentStyle}}"
+    bind:touchstart="{{gesture.onTouchStart}}"
+    catch:touchmove="{{gesture.onTouchMove}}"
+    bind:touchend="{{gesture.onTouchEnd}}"
+    bind:touchcancel="{{gesture.onTouchEnd}}"
+  >
+    <view
+      id="{{swipeCell.leftProps.id}}"
+      class="{{classes.left}} cui-swipe-cell__left"
+      data-scope="swipe-cell"
+      data-part="left"
+      wx:if="{{swipeCell.hasLeftActions}}"
+    >
+      <block wx:if="{{swipeCell.leftActions.length > 0}}">
+        <view
+          wx:for="{{swipeCell.leftActions}}"
+          wx:key="index"
+          class="{{classes.action}} {{item.className || ''}}"
+          style="{{item.style || ''}}"
+          data-index="{{item.index}}"
+          data-side="left"
+          data-value="{{item.value !== undefined ? item.value : ''}}"
+          catchtap="handleActionTap"
+        >
+          <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />
+          <text wx:if="{{item.text}}" class="{{classes.actionText}}">{{item.text}}</text>
+        </view>
+      </block>
+      <slot name="left" wx:else />
+    </view>
+
+    <!-- Center content -->
+    <view
+      id="{{swipeCell.contentProps.id}}"
+      class="{{classes.content}} cui-swipe-cell__content"
+      data-scope="swipe-cell"
+      data-part="content"
+      bindtap="handleContentTap"
+    >
+      <slot />
+    </view>
+
+    <!-- Right actions -->
+    <view
+      id="{{swipeCell.rightProps.id}}"
+      class="{{classes.right}} cui-swipe-cell__right"
+      data-scope="swipe-cell"
+      data-part="right"
+      wx:if="{{swipeCell.hasRightActions}}"
+    >
+      <block wx:if="{{swipeCell.rightActions.length > 0}}">
+        <view
+          wx:for="{{swipeCell.rightActions}}"
+          wx:key="index"
+          class="{{classes.action}} {{item.className || ''}}"
+          style="{{item.style || ''}}"
+          data-index="{{item.index}}"
+          data-side="right"
+          data-value="{{item.value !== undefined ? item.value : ''}}"
+          catchtap="handleActionTap"
+        >
+          <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />
+          <text wx:if="{{item.text}}" class="{{classes.actionText}}">{{item.text}}</text>
+        </view>
+      </block>
+      <slot name="right" wx:else />
+    </view>
+  </view>
+</view>
+

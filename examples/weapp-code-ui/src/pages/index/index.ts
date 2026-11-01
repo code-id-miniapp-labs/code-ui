@@ -148,6 +148,13 @@ Page({
         badge: "Interactive",
         path: "/pages/accordion/index",
       },
+      {
+        id: "swipe-cell",
+        name: "SwipeCell",
+        desc: "Gesture-driven swipeable cell with single/multi actions, bidirectional swiping, custom slots, and external control.",
+        badge: "Interactive",
+        path: "/pages/swipe-cell/index",
+      },
     ],
   },
 

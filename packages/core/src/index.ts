@@ -138,5 +138,6 @@ export { default as skeletonTheme } from "./theme/definitions/skeleton";
 export { default as stepperTheme } from "./theme/definitions/stepper";
 export { default as stepperItemTheme } from "./theme/definitions/stepper-item";
 export { default as switchTheme } from "./theme/definitions/switch";
+export { default as swipeCellTheme } from "./theme/definitions/swipe-cell";
 export { default as textareaTheme } from "./theme/definitions/textarea";
 

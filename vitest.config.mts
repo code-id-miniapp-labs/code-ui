@@ -62,6 +62,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/stepper-item/src",
       ),
+      "@code-ui/swipe-cell": resolve(
+        import.meta.dirname,
+        "packages/machines/swipe-cell/src",
+      ),
       "@code-ui/switch": resolve(
         import.meta.dirname,
         "packages/machines/switch/src",

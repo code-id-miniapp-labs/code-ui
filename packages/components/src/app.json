@@ -28,6 +28,7 @@
     "cui-stepper": "runtime/stepper/index",
     "cui-stepper-item": "runtime/stepper-item/index",
     "cui-switch": "runtime/switch/index",
+    "cui-swipe-cell": "runtime/swipe-cell/index",
     "cui-textarea": "runtime/textarea/index",
     "cui-divider": "runtime/divider/index"
   }
