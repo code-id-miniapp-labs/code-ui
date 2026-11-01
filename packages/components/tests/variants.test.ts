@@ -13,6 +13,7 @@ import {
   resetConfig,
   setConfig,
   avatarTheme as createAvatarTheme,
+  tabsTheme as createTabsTheme,
 } from "@code-ui/core";
 import { cn, dedupeClasses, escapeClass, tv } from "../src/utils/variants";
 
@@ -23,6 +24,7 @@ const checkboxTheme = tv(createCheckboxTheme());
 const checkboxGroupTheme = tv(createCheckboxGroupTheme());
 const iconTheme = tv(createIconTheme());
 const avatarTheme = tv(createAvatarTheme());
+const tabsTheme = tv(createTabsTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -735,4 +737,35 @@ describe("avatarTheme resolution", () => {
     expect(slots.fallback).toContain("text-muted");
     expect(slots.fallback).toContain("text-sm");
   });
+
+  describe("tabsTheme resolution", () => {
+    it("resolves default tabs slots", () => {
+      const slots = resolveSlots(tabsTheme() as any);
+      expect(slots.root).toContain("flex");
+      expect(slots.list).toContain("bg-neutral-100");
+      expect(slots.indicator).toContain("rounded-md");
+      expect(slots.trigger).toContain("text-sm");
+      expect(slots.content).toContain("w-full");
+    });
+
+    it("resolves link variant and vertical orientation", () => {
+      const slots = resolveSlots(
+        tabsTheme({ variant: "link", orientation: "vertical" }) as any,
+      );
+      expect(slots.root).toContain("flex-row");
+      expect(slots.list).toContain("border-r");
+    });
+
+    it("resolves sizes and custom ui override", () => {
+      const slots = resolveSlots(
+        tabsTheme({ size: "lg" }) as any,
+        { trigger: "custom-tab-trigger" },
+        "custom-root-class",
+      );
+      expect(slots.root).toContain("custom-root-class");
+      expect(slots.trigger).toContain("custom-tab-trigger");
+      expect(slots.leading).toContain("size-5");
+    });
+  });
 });
+

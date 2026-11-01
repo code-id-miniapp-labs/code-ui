@@ -148,6 +148,13 @@ Page({
         badge: "Interactive",
         path: "/pages/accordion/index",
       },
+      {
+        id: "tabs",
+        name: "Tabs",
+        desc: "Tabbed navigation supporting compound items, data-driven lists, pill and link variants, badges, and horizontal/vertical orientations.",
+        badge: "Interactive",
+        path: "/pages/tabs/index",
+      },
     ],
   },
 

@@ -49,6 +49,11 @@ import type {
 import type { StepperItemProps } from "@code-ui/stepper-item";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
+  TabsProps,
+  TabsValueChangeDetails,
+} from "@code-ui/tabs";
+import type { TabsItemProps } from "@code-ui/tabs-item";
+import type {
   TextareaProps,
   TextareaValueChangeDetails,
   TextareaLineChangeDetails,
@@ -559,6 +564,36 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
 }
+
+export interface CuiTabsElementProps extends CuiCommonElementProps {
+  ui?: TabsProps["ui"];
+  value?: TabsProps["value"];
+  defaultValue?: TabsProps["defaultValue"];
+  items?: TabsProps["items"];
+  orientation?: TabsProps["orientation"];
+  variant?: TabsProps["variant"];
+  color?: TabsProps["color"];
+  size?: TabsProps["size"];
+  disabled?: boolean;
+  loopFocus?: boolean;
+  activationMode?: TabsProps["activationMode"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<TabsValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiTabsItemElementProps extends CuiCommonElementProps {
+  ui?: TabsItemProps["ui"];
+  value?: TabsItemProps["value"];
+  label?: string;
+  icon?: string;
+  trailingIcon?: string;
+  badge?: string | number;
+  disabled?: boolean;
+  lazy?: boolean;
+}
+
+
 
 
 

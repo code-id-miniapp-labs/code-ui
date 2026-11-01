@@ -1,0 +1,17 @@
+<view
+  id="{{tabsItem.contentProps.id}}"
+  class="cui-tabs-item {{classes.root}}"
+  role="{{tabsItem.contentProps.role}}"
+  aria-labelledby="{{tabsItem.contentProps['aria-labelledby']}}"
+  data-scope="tabs-item"
+  data-part="root"
+  data-value="{{tabsItem.value}}"
+  data-state="{{tabsItem.isSelected ? 'active' : 'inactive'}}"
+  data-disabled="{{tabsItem.isDisabled}}"
+  hidden="{{!tabsItem.isSelected}}"
+>
+  <view class="cui-tabs-item-content {{classes.content}}">
+    <slot wx:if="{{tabsItem.isSelected || !tabsItem.lazy}}" />
+  </view>
+</view>
+

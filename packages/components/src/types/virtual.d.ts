@@ -148,6 +148,18 @@ declare module "virtual:cui/theme/stepper-item" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/tabs" {
+  import type { default as tabsTheme } from "@code-ui/core/src/theme/definitions/tabs";
+  const theme: ReturnType<typeof tabsTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/tabs-item" {
+  import type { default as tabsItemTheme } from "@code-ui/core/src/theme/definitions/tabs-item";
+  const theme: ReturnType<typeof tabsItemTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;

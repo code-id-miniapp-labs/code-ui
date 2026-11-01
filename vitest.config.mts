@@ -66,6 +66,14 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/switch/src",
       ),
+      "@code-ui/tabs": resolve(
+        import.meta.dirname,
+        "packages/machines/tabs/src",
+      ),
+      "@code-ui/tabs-item": resolve(
+        import.meta.dirname,
+        "packages/machines/tabs-item/src",
+      ),
       "@code-ui/textarea": resolve(
         import.meta.dirname,
         "packages/machines/textarea/src",
