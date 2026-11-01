@@ -45,10 +45,23 @@ Component(
       classes() {
         const api = this.data.tabsItem;
         const disabled = Boolean(api?.isDisabled ?? this.data.disabled);
+        const orientation =
+          api?.orientation ?? this.data.orientation ?? "horizontal";
+        const variant = api?.variant ?? this.data.variant ?? "pill";
+        const color = api?.color ?? this.data.color ?? "primary";
+        const size = api?.size ?? this.data.size ?? "md";
+        const selected = Boolean(api?.isSelected ?? this.data.selected);
+        const fitted = Boolean(api?.fitted ?? this.data.fitted);
         const ui = this.data.ui;
 
         const themeFns = tabsItemTheme({
+          orientation,
+          variant,
+          color,
+          size,
           disabled,
+          selected,
+          fitted,
         });
 
         return resolveSlots(themeFns, ui, this.data.className);
@@ -56,10 +69,16 @@ Component(
     },
 
     methods: {
+      handleTap() {
+        const api = getApi(this, "tabsItem");
+        if (api && !api.isDisabled) {
+          api.select();
+          this.triggerEvent("select", { value: api.value });
+        }
+      },
       select() {
         return getApi(this, "tabsItem")?.select?.();
       },
     },
   }),
 );
-

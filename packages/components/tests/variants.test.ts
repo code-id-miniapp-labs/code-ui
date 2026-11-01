@@ -14,6 +14,7 @@ import {
   setConfig,
   avatarTheme as createAvatarTheme,
   tabsTheme as createTabsTheme,
+  tabsItemTheme as createTabsItemTheme,
 } from "@code-ui/core";
 import { cn, dedupeClasses, escapeClass, tv } from "../src/utils/variants";
 
@@ -25,6 +26,7 @@ const checkboxGroupTheme = tv(createCheckboxGroupTheme());
 const iconTheme = tv(createIconTheme());
 const avatarTheme = tv(createAvatarTheme());
 const tabsTheme = tv(createTabsTheme());
+const tabsItemTheme = tv(createTabsItemTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -743,8 +745,6 @@ describe("avatarTheme resolution", () => {
       const slots = resolveSlots(tabsTheme() as any);
       expect(slots.root).toContain("flex");
       expect(slots.list).toContain("bg-neutral-100");
-      expect(slots.indicator).toContain("rounded-md");
-      expect(slots.trigger).toContain("text-sm");
       expect(slots.content).toContain("w-full");
     });
 
@@ -759,10 +759,28 @@ describe("avatarTheme resolution", () => {
     it("resolves sizes and custom ui override", () => {
       const slots = resolveSlots(
         tabsTheme({ size: "lg" }) as any,
-        { trigger: "custom-tab-trigger" },
+        { list: "custom-list-class" },
         "custom-root-class",
       );
       expect(slots.root).toContain("custom-root-class");
+      expect(slots.list).toContain("custom-list-class");
+    });
+  });
+
+  describe("tabsItemTheme resolution", () => {
+    it("resolves default tabs-item slots", () => {
+      const slots = resolveSlots(tabsItemTheme() as any);
+      expect(slots.trigger).toContain("text-sm");
+      expect(slots.leading).toContain("size-4");
+      expect(slots.trailing).toContain("relative");
+      expect(slots.indicator).toContain("rounded-lg");
+    });
+
+    it("resolves sizes and custom ui override", () => {
+      const slots = resolveSlots(
+        tabsItemTheme({ size: "lg" }) as any,
+        { trigger: "custom-tab-trigger" },
+      );
       expect(slots.trigger).toContain("custom-tab-trigger");
       expect(slots.leading).toContain("size-5");
     });

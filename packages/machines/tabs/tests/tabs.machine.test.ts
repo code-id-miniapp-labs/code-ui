@@ -6,6 +6,30 @@ function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
 }
 
+function makeMockTriggerChild(index: number) {
+  return {
+    data: { mode: "trigger", index },
+    createSelectorQuery: () => ({
+      in() {
+        return this;
+      },
+      select() {
+        return {
+          boundingClientRect(cb?: (res: any) => void) {
+            const rect = {
+              left: index * 100,
+              right: (index + 1) * 100,
+              width: 100,
+            };
+            cb?.(rect);
+            return { exec: () => {} };
+          },
+        };
+      },
+    }),
+  };
+}
+
 describe("Tabs Machine", () => {
   describe("Initialization & Default Props", () => {
     it("initializes with default props", () => {
@@ -178,6 +202,30 @@ describe("Tabs Machine", () => {
 
       machine.stop();
     });
+
+    it("broadcasts tabs:change over bus when controlled value updates", async () => {
+      const machine = new MiniappMachine(tabsMachine, {
+        value: "account",
+        childItems: [
+          { label: "Account", value: "account" },
+          { label: "Security", value: "security" },
+        ],
+      });
+      machine.start();
+
+      const bus = machine.service.refs.get("bus");
+      const busEvents: any[] = [];
+      bus.on("tabs:change", (e: any) => busEvents.push(e));
+
+      machine.updateProps({ value: "security" });
+      await flush();
+
+      expect(busEvents.length).toBeGreaterThanOrEqual(1);
+      const lastEvent = busEvents[busEvents.length - 1];
+      expect(lastEvent.value).toBe("security");
+
+      machine.stop();
+    });
   });
 
   describe("Navigation (Next, Prev, First, Last)", () => {
@@ -326,7 +374,7 @@ describe("Tabs Machine", () => {
         id: "demo",
         items: [
           { label: "Account", value: "account", icon: "user", content: "Account info" },
-          { label: "Security", value: "security", badge: "New" },
+          { label: "Security", value: "security" },
         ],
       });
       machine.start();
@@ -357,6 +405,60 @@ describe("Tabs Machine", () => {
       expect(item1?.triggerProps["aria-selected"]).toBe(false);
       expect(item1?.triggerProps["data-state"]).toBe("inactive");
       expect(item1?.contentProps["hidden"]).toBe(true);
+
+      machine.stop();
+    });
+
+    it("automatically scrolls to reveal the next two tabs when tapping the 3rd visible tab", async () => {
+      // 6 tabs, each 100px wide (0..600), inside a 300px viewport (showing 3 tabs)
+      const triggerChildren = [0, 1, 2, 3, 4, 5].map(makeMockTriggerChild);
+      const mockComponent: any = {
+        __codeUiTabsChildren: triggerChildren,
+        createSelectorQuery: () => ({
+          in() {
+            return this;
+          },
+          select() {
+            return {
+              fields(_opts: any, cb?: (res: any) => void) {
+                const res = { left: 0, width: 300, scrollLeft: 0 };
+                cb?.(res);
+                return { exec: () => {} };
+              },
+            };
+          },
+        }),
+      };
+
+      const machine = new MiniappMachine(tabsMachine, {
+        component: mockComponent,
+        items: ["Tab 1", "Tab 2", "Tab 3", "Tab 4", "Tab 5", "Tab 6"],
+      });
+      machine.start();
+
+      let api = connectTabs(machine.service);
+      expect(api.scrollLeft).toBe(0);
+
+      // User taps the 3rd tab ("Tab 3", index 2)
+      api.select("Tab 3");
+      await new Promise((r) => setTimeout(r, 10));
+
+      api = connectTabs(machine.service);
+      expect(api.selectedIndex).toBe(2);
+      // Centers Tab 3 in the 300px viewport: 250 - 150 = 100px
+      expect(api.scrollLeft).toBe(100);
+      expect(api.canScrollLeft).toBe(true);
+      expect(api.canScrollRight).toBe(true);
+      expect(api.scrollMaskStyle).toContain("linear-gradient(to right, transparent 0%, #000 24px");
+
+      // User taps the 1st tab ("Tab 1", index 0) -> resets to 0
+      api.select("Tab 1");
+      await new Promise((r) => setTimeout(r, 10));
+
+      api = connectTabs(machine.service);
+      expect(api.scrollLeft).toBe(0);
+      expect(api.canScrollLeft).toBe(false);
+      expect(api.canScrollRight).toBe(true);
 
       machine.stop();
     });

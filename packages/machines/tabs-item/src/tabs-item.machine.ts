@@ -14,21 +14,28 @@ export function applyGroupState(
   if (g.value !== undefined) {
     context.set("groupValue", g.value);
   }
-  if (g.orientation !== undefined) {
-    context.set("groupOrientation", g.orientation);
-  }
-  if (g.variant !== undefined) {
-    context.set("groupVariant", g.variant);
-  }
-  if (g.color !== undefined) {
-    context.set("groupColor", g.color);
-  }
-  if (g.size !== undefined) {
-    context.set("groupSize", g.size);
-  }
   if (g.disabled !== undefined) {
     context.set("groupDisabled", g.disabled);
   }
+}
+
+function bindGroupBus(
+  bus: any,
+  context: TabsItemParams["context"],
+  refs: TabsItemParams["refs"],
+): void {
+  for (const d of refs.get("busDisposers") ?? []) d?.();
+  refs.set("currentGroupBus", bus);
+  refs.set(
+    "busDisposers",
+    bus
+      ? [
+          bus.on("tabs:change", (snapshot: TabsItemGroupStateSnapshot) => {
+            applyGroupState(context, snapshot);
+          }),
+        ]
+      : [],
+  );
 }
 
 export const tabsItemMachine: TabsItemMachine =
@@ -45,79 +52,44 @@ export const tabsItemMachine: TabsItemMachine =
       busDisposers: [],
     }),
 
-    context: ({ prop, bindable }) => {
-      const propBindable = <K extends keyof TabsItemSchema["context"]>(
-        key: K,
-        defaultValue: TabsItemSchema["context"][K],
-      ) =>
-        bindable<TabsItemSchema["context"][K]>(() => ({
-          value: prop(key as any) as TabsItemSchema["context"][K] | undefined,
-          defaultValue,
-        }));
-
-      const stateBindable = <K extends keyof TabsItemSchema["context"]>(
-        _key: K,
-        defaultValue: TabsItemSchema["context"][K],
-      ) =>
-        bindable<TabsItemSchema["context"][K]>(() => ({
-          defaultValue,
-        }));
-
-      return {
-        value: propBindable("value", ""),
-        label: propBindable("label", ""),
-        icon: propBindable("icon", undefined),
-        trailingIcon: propBindable("trailingIcon", undefined),
-        badge: propBindable("badge", undefined),
-        disabled: propBindable("disabled", false),
-        lazy: propBindable("lazy", true),
-
-        tabsId: propBindable("tabsId", undefined),
-        groupValue: stateBindable("groupValue", prop("groupValue")),
-        groupOrientation: stateBindable(
-          "groupOrientation",
-          prop("groupOrientation"),
-        ),
-        groupVariant: stateBindable("groupVariant", prop("groupVariant")),
-        groupColor: stateBindable("groupColor", prop("groupColor")),
-        groupSize: stateBindable("groupSize", prop("groupSize")),
-        groupDisabled: stateBindable("groupDisabled", prop("groupDisabled")),
-        groupIndex: propBindable("groupIndex", undefined),
-      };
-    },
+    context: ({ prop, bindable }) => ({
+      groupValue: bindable<string | number | undefined>(() => ({
+        defaultValue: prop("groupValue"),
+      })),
+      groupDisabled: bindable<boolean | undefined>(() => ({
+        defaultValue: prop("groupDisabled"),
+      })),
+    }),
 
     computed: {
-      resolvedValue: ({ context }) => {
-        const v = context.get("value");
+      resolvedValue: ({ prop }) => {
+        const v = prop("value");
         if (v !== undefined && v !== null && v !== "") return v;
-        const idx = context.get("groupIndex");
+        const idx = prop("groupIndex") ?? prop("index");
         return idx !== undefined ? idx : "";
       },
-      isSelected: ({ context, computed }) => {
+      isSelected: ({ context, computed, prop }) => {
+        const direct = prop("selected");
+        if (direct !== undefined && direct !== null) {
+          return Boolean(direct);
+        }
         const selfVal = computed("resolvedValue");
-        const gVal = context.get("groupValue");
+        const gVal = context.get("groupValue") ?? prop("groupValue");
         return selfVal !== "" && gVal !== undefined && selfVal === gVal;
       },
-      isDisabled: ({ context }) => {
-        return Boolean(context.get("disabled") || context.get("groupDisabled"));
+      isDisabled: ({ context, prop }) => {
+        return Boolean(
+          prop("disabled") ||
+            context.get("groupDisabled") ||
+            prop("groupDisabled"),
+        );
       },
     },
 
     watch: ({ prop, refs, context }) => {
       const nextBus = prop("groupBus");
       if (nextBus !== refs.get("currentGroupBus")) {
-        for (const d of refs.get("busDisposers") ?? []) d?.();
-        refs.set("currentGroupBus", nextBus);
-        refs.set(
-          "busDisposers",
-          nextBus
-            ? [
-                nextBus.on("tabs:change", (snapshot) => {
-                  applyGroupState(context, snapshot);
-                }),
-              ]
-            : [],
-        );
+        bindGroupBus(nextBus, context, refs);
       }
     },
 
@@ -139,17 +111,12 @@ export const tabsItemMachine: TabsItemMachine =
     implementations: {
       actions: {
         setupBusListener: ({ refs, context, prop }) => {
-          const bus = prop("groupBus") ?? refs.get("currentGroupBus");
-          if (!bus) return;
-          refs.set("currentGroupBus", bus);
-          const unsub = bus.on("tabs:change", (snapshot) => {
-            applyGroupState(context, snapshot);
-          });
-          refs.set("busDisposers", [unsub]);
+          bindGroupBus(prop("groupBus") ?? refs.get("currentGroupBus"), context, refs);
         },
         cleanupBusListener: ({ refs }) => {
           for (const d of refs.get("busDisposers") ?? []) d?.();
           refs.set("busDisposers", []);
+          refs.set("currentGroupBus", undefined);
         },
         selectTab: ({ computed, refs }) => {
           if (computed("isDisabled")) return;

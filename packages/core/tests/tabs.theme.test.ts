@@ -2,26 +2,22 @@ import { describe, expect, it } from "vitest";
 import { tabsTheme } from "../src";
 
 describe("tabsTheme (@code-ui/core)", () => {
-  it("provides all tabs anatomy slots", () => {
+  it("provides all tabs container anatomy slots", () => {
     const theme = tabsTheme();
     expect(theme.slots).toHaveProperty("root");
     expect(theme.slots).toHaveProperty("list");
-    expect(theme.slots).toHaveProperty("indicator");
-    expect(theme.slots).toHaveProperty("trigger");
-    expect(theme.slots).toHaveProperty("leading");
-    expect(theme.slots).toHaveProperty("label");
-    expect(theme.slots).toHaveProperty("trailing");
     expect(theme.slots).toHaveProperty("content");
+    expect(theme.slots).not.toHaveProperty("indicator");
   });
 
   it("sets correct default variants", () => {
     const theme = tabsTheme();
     expect(theme.defaultVariants).toEqual({
-      color: "primary",
       variant: "pill",
       orientation: "horizontal",
       size: "md",
       disabled: false,
+      fitted: false,
     });
   });
 
@@ -35,8 +31,8 @@ describe("tabsTheme (@code-ui/core)", () => {
 
   it("supports orientation styles", () => {
     const theme = tabsTheme();
-    expect(theme.variants.orientation.horizontal.root).toBe("flex-col");
-    expect(theme.variants.orientation.vertical.root).toBe("flex-row");
+    expect(theme.variants.orientation.horizontal.root).toContain("flex-col");
+    expect(theme.variants.orientation.vertical.root).toContain("flex-row");
   });
 
   it("supports size variants", () => {

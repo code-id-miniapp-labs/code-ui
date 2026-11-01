@@ -6,7 +6,6 @@
       Tabbed navigation supporting compound items, data-driven lists, pill and link variants, badges, and horizontal/vertical orientations.
     </view>
   </view>
-
   <view class="px-5 flex flex-col gap-6">
     <!-- 1. Interactive Compound Tabs Demo -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -19,18 +18,9 @@
       <view class="text-xs text-neutral-400 mb-4">
         Custom compound items with slots, live variant switching, orientation, and color themes.
       </view>
-
       <!-- Tabs Component -->
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200 mb-5">
-        <c-tabs
-          id="interactive-tabs"
-          value="{{activeTab}}"
-          variant="{{variant}}"
-          orientation="{{orientation}}"
-          size="{{size}}"
-          color="{{color}}"
-          bind:change="onTabChange"
-        >
+        <c-tabs id="interactive-tabs" value="{{activeTab}}" variant="{{variant}}" orientation="{{orientation}}" size="{{size}}" color="{{color}}" fitted="{{fitted}}" bind:change="onTabChange">
           <c-tabs-item value="account" label="Account" icon="i-lucide-user">
             <view class="p-4 bg-white rounded-xl border border-neutral-200 flex flex-col gap-3">
               <view class="flex items-center gap-3">
@@ -47,22 +37,24 @@
               </view>
             </view>
           </c-tabs-item>
-
-          <c-tabs-item value="security" label="Security" icon="i-lucide-lock" badge="2FA">
+          <c-tabs-item value="security" label="Security" icon="i-lucide-lock">
             <view class="p-4 bg-white rounded-xl border border-neutral-200 flex flex-col gap-3">
               <view class="flex items-center justify-between">
                 <view class="flex flex-col">
                   <text class="text-sm font-bold text-neutral-900">Two-Factor Authentication</text>
-                  <text class="text-xs text-neutral-500">Enhanced account protection is active</text>
+                  <text class="text-xs text-neutral-500">
+                    Enhanced account protection is active
+                  </text>
                 </view>
-                <text class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Enabled</text>
+                <text class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
+                  Enabled
+                </text>
               </view>
               <view class="text-xs text-neutral-600 leading-relaxed border-t border-neutral-100 pt-3">
                 Last password change was 14 days ago. Regular security reviews protect against unauthorized access.
               </view>
             </view>
           </c-tabs-item>
-
           <c-tabs-item value="billing" label="Billing" icon="i-lucide-credit-card">
             <view class="p-4 bg-white rounded-xl border border-neutral-200 flex flex-col gap-3">
               <view class="flex items-center justify-between">
@@ -70,23 +62,29 @@
                   <text class="text-sm font-bold text-neutral-900">Pro Subscription</text>
                   <text class="text-xs text-neutral-500">$29/month billed annually</text>
                 </view>
-                <text class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 font-semibold">Active</text>
+                <text class="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 font-semibold">
+                  Active
+                </text>
               </view>
               <view class="text-xs text-neutral-600 leading-relaxed border-t border-neutral-100 pt-3">
                 Next renewal date: December 1, 2026. Payment method ending in •••• 4242.
               </view>
             </view>
           </c-tabs-item>
-
-          <c-tabs-item value="alerts" label="Alerts" icon="i-lucide-bell" badge="3">
+          <c-tabs-item value="alerts" label="Alerts" icon="i-lucide-bell">
             <view class="p-4 bg-white rounded-xl border border-neutral-200 flex flex-col gap-2">
               <view class="text-sm font-bold text-neutral-900">Recent Notifications</view>
-              <view class="text-xs text-neutral-600">3 unread notifications waiting for your review.</view>
+              <view class="text-xs text-neutral-600">
+                3 unread notifications waiting for your review.
+              </view>
             </view>
           </c-tabs-item>
+
+          <!-- Custom trailing slots for tabs -->
+          <c-chip slot="trailing-security" text="2FA" standalone size="xl" />
+          <c-chip slot="trailing-alerts" text="3" color="danger" standalone size="2xl" />
         </c-tabs>
       </view>
-
       <!-- Controls & Quick Navigation -->
       <view class="flex flex-col gap-4 pt-4 border-t border-neutral-100">
         <!-- Navigation Buttons -->
@@ -94,9 +92,7 @@
           <c-button size="xs" variant="outline" color="neutral" bind:tap="prevTab">
             ← Previous
           </c-button>
-          <c-button size="xs" variant="outline" color="neutral" bind:tap="nextTab">
-            Next →
-          </c-button>
+          <c-button size="xs" variant="outline" color="neutral" bind:tap="nextTab">Next →</c-button>
           <c-button size="xs" variant="ghost" color="neutral" bind:tap="selectAccount">
             Account
           </c-button>
@@ -107,73 +103,52 @@
             Billing
           </c-button>
         </view>
-
+        <!-- Fitted Option -->
+        <view class="flex items-center justify-between">
+          <text class="text-xs font-semibold text-neutral-600">Fitted (Equal Width):</text>
+          <c-button size="xs" variant="{{fitted ? 'solid' : 'outline'}}" color="neutral" bind:tap="toggleFitted">
+            {{fitted ? 'Enabled' : 'Disabled'}}
+          </c-button>
+        </view>
         <!-- Variant Options -->
         <view class="flex flex-col gap-1.5">
           <text class="text-xs font-semibold text-neutral-600">Style Variant:</text>
           <view class="flex gap-2">
             <block wx:for="{{variantOptions}}" wx:key="*this">
-              <c-button
-                size="xs"
-                variant="{{variant === item ? 'solid' : 'outline'}}"
-                color="neutral"
-                data-variant="{{item}}"
-                bind:tap="selectVariant"
-              >
+              <c-button size="xs" variant="{{variant === item ? 'solid' : 'outline'}}" color="neutral" data-variant="{{item}}" bind:tap="selectVariant">
                 {{item}}
               </c-button>
             </block>
           </view>
         </view>
-
         <!-- Orientation Options -->
         <view class="flex flex-col gap-1.5">
           <text class="text-xs font-semibold text-neutral-600">Orientation:</text>
           <view class="flex gap-2">
             <block wx:for="{{orientationOptions}}" wx:key="*this">
-              <c-button
-                size="xs"
-                variant="{{orientation === item ? 'solid' : 'outline'}}"
-                color="neutral"
-                data-orientation="{{item}}"
-                bind:tap="selectOrientation"
-              >
+              <c-button size="xs" variant="{{orientation === item ? 'solid' : 'outline'}}" color="neutral" data-orientation="{{item}}" bind:tap="selectOrientation">
                 {{item}}
               </c-button>
             </block>
           </view>
         </view>
-
         <!-- Color Options -->
         <view class="flex flex-col gap-1.5">
           <text class="text-xs font-semibold text-neutral-600">Color Theme:</text>
           <view class="flex flex-wrap gap-2">
             <block wx:for="{{colorOptions}}" wx:key="*this">
-              <c-button
-                size="xs"
-                variant="{{color === item ? 'solid' : 'outline'}}"
-                color="{{item}}"
-                data-color="{{item}}"
-                bind:tap="selectColor"
-              >
+              <c-button size="xs" variant="{{color === item ? 'solid' : 'outline'}}" color="{{item}}" data-color="{{item}}" bind:tap="selectColor">
                 {{item}}
               </c-button>
             </block>
           </view>
         </view>
-
         <!-- Size Options -->
         <view class="flex flex-col gap-1.5">
           <text class="text-xs font-semibold text-neutral-600">Size Variant:</text>
           <view class="flex gap-2">
             <block wx:for="{{sizeOptions}}" wx:key="*this">
-              <c-button
-                size="xs"
-                variant="{{size === item ? 'solid' : 'outline'}}"
-                color="neutral"
-                data-size="{{item}}"
-                bind:tap="selectSize"
-              >
+              <c-button size="xs" variant="{{size === item ? 'solid' : 'outline'}}" color="neutral" data-size="{{item}}" bind:tap="selectSize">
                 {{item}}
               </c-button>
             </block>
@@ -181,7 +156,6 @@
         </view>
       </view>
     </view>
-
     <!-- 2. Data-Driven Tabs Demo -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="flex items-center justify-between mb-1">
@@ -191,18 +165,14 @@
         </view>
       </view>
       <view class="text-xs text-neutral-400 mb-4">
-        Programmatic items array with leading icons, trailing badges, and disabled state.
+        Programmatic items array with leading icons, trailing slots, and disabled state.
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-tabs
-          items="{{dataItems}}"
-          value="{{dataTab}}"
-          color="neutral"
-          bind:change="onDataTabChange"
-        />
+        <c-tabs items="{{dataItems}}" value="{{dataTab}}" color="neutral" bind:change="onDataTabChange">
+          <c-chip slot="trailing-changelog" text="v1.2" standalone size="xl" />
+        </c-tabs>
       </view>
     </view>
-
     <!-- 3. Link Underline Variant -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Link Underline Variant</view>
@@ -210,18 +180,13 @@
         Clean bottom border indicator suitable for top-level page and section navigation.
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-tabs
-          value="{{linkTab}}"
-          variant="link"
-          color="primary"
-          bind:change="onLinkTabChange"
-        >
+        <c-tabs value="{{linkTab}}" variant="link" color="primary" fitted="{{false}}" bind:change="onLinkTabChange">
           <c-tabs-item value="overview" label="Overview">
             <view class="py-3 text-xs text-neutral-600">
               System health: 99.98% uptime across all edge locations.
             </view>
           </c-tabs-item>
-          <c-tabs-item value="analytics" label="Analytics" badge="Live">
+          <c-tabs-item value="analytics" label="Analytics">
             <view class="py-3 text-xs text-neutral-600">
               Active sessions: 14,280 queries per second with sub-50ms latency.
             </view>
@@ -231,10 +196,10 @@
               Monthly export generated on Nov 1, 2026.
             </view>
           </c-tabs-item>
+          <c-chip slot="trailing-analytics" text="Live" color="success" standalone size="xl" />
         </c-tabs>
       </view>
     </view>
-
     <!-- 4. Vertical Orientation -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Vertical Side Tabs</view>
@@ -242,13 +207,7 @@
         Side navigation structure with vertical tablist for settings and admin dashboards.
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-tabs
-          value="{{verticalTab}}"
-          orientation="vertical"
-          variant="pill"
-          color="neutral"
-          bind:change="onVerticalTabChange"
-        >
+        <c-tabs value="{{verticalTab}}" orientation="vertical" variant="pill" color="neutral" bind:change="onVerticalTabChange">
           <c-tabs-item value="general" label="General" icon="i-lucide-sliders">
             <view class="p-3 bg-white rounded-lg border border-neutral-200 text-xs text-neutral-700">
               Configure system name, localization, and primary workspace region.
@@ -267,7 +226,6 @@
         </c-tabs>
       </view>
     </view>
-
     <!-- 5. Horizontal Scrollable Tabs -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Scrollable Horizontal Tabs</view>
@@ -275,17 +233,15 @@
         Smooth horizontal scroll view for large collections of categories or filters.
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-tabs
-          items="{{scrollItems}}"
-          value="{{scrollTab}}"
-          color="primary"
-          bind:change="onScrollTabChange"
-        />
+        <c-tabs items="{{scrollItems}}" value="{{scrollTab}}" color="primary" bind:change="onScrollTabChange">
+          <c-chip slot="trailing-tech" text="24" standalone size="xl" />
+          <c-chip slot="trailing-dev" text="12" standalone size="xl" />
+        </c-tabs>
         <view class="mt-3 p-3 bg-white rounded-lg border border-neutral-200 text-xs text-neutral-600">
-          Viewing content filtered by: <text class="font-bold text-neutral-900">{{scrollTab}}</text>
+          Viewing content filtered by:
+          <text class="font-bold text-neutral-900">{{scrollTab}}</text>
         </view>
       </view>
     </view>
   </view>
 </view>
-

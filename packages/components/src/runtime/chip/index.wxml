@@ -1,6 +1,7 @@
 <view class="{{ classes.root }}" data-scope="chip" data-part="root">
   <slot />
   <view wx:if="{{ show }}" class="{{ classes.base }}" data-scope="chip" data-part="base" data-color="{{ color || 'primary' }}" data-size="{{ size || 'md' }}" data-position="{{ position || 'top-right' }}">
-    <slot name="content">{{ text }}</slot>
+    <text wx:if="{{ text !== '' && text !== undefined && text !== null }}">{{ text }}</text>
+    <slot wx:else name="content" />
   </view>
 </view>

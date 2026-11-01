@@ -20,6 +20,7 @@ export function connectTabs(service: TabsService): TabsApi {
 
   const value = computed("selectedValue");
   const selectedIndex = computed("selectedIndex");
+  const totalCount = computed("totalCount");
   const focusedValue = context.get("focusedValue");
   const orientation = (prop("orientation") ?? "horizontal") as TabsOrientation;
   const variant = (prop("variant") ?? "pill") as TabsVariant;
@@ -28,6 +29,32 @@ export function connectTabs(service: TabsService): TabsApi {
   const disabled = computed("isDisabled");
   const normalizedItems = computed("normalizedItems");
   const selectedItem = computed("selectedItem");
+  const scrollLeft = context.get("scrollLeft");
+  const canScrollLeft = context.get("canScrollLeft") ?? false;
+  const canScrollRight = context.get("canScrollRight") ?? false;
+  const fitted = Boolean(prop("fitted"));
+
+  let scrollMaskStyle = "";
+  if (!fitted && orientation === "horizontal") {
+    if (canScrollLeft && canScrollRight) {
+      scrollMaskStyle =
+        "-webkit-mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%); mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%);";
+    } else if (canScrollLeft) {
+      scrollMaskStyle =
+        "-webkit-mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 100%); mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 100%);";
+    } else if (canScrollRight) {
+      scrollMaskStyle =
+        "-webkit-mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%); mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%);";
+    }
+  }
+  const activeTriggerId =
+    value !== undefined && value !== null && value !== ""
+      ? getTriggerId(scope, value)
+      : undefined;
+  const indicatorStyle =
+    orientation === "horizontal" && totalCount > 0 && selectedIndex >= 0
+      ? `width: calc(100% / ${totalCount}); transform: translate3d(calc(100% * ${selectedIndex}), 0, 0);`
+      : "";
 
   const getRootProps = (): Record<string, any> => ({
     id: getRootId(scope),
@@ -46,9 +73,15 @@ export function connectTabs(service: TabsService): TabsApi {
     "data-orientation": orientation,
     "scroll-x": orientation === "horizontal",
     "scroll-y": orientation === "vertical",
+    scrollX: orientation === "horizontal",
+    scrollY: orientation === "vertical",
     "enable-flex": true,
+    enableFlex: true,
     enhanced: true,
     "show-scrollbar": false,
+    "scroll-into-view": activeTriggerId,
+    "scroll-left": scrollLeft,
+    scrollLeft,
   });
 
   const getIndicatorProps = (): Record<string, any> => ({
@@ -115,7 +148,6 @@ export function connectTabs(service: TabsService): TabsApi {
       label: item.label,
       icon: item.icon,
       trailingIcon: item.trailingIcon,
-      badge: item.badge,
       disabled: itemDisabled,
       isSelected,
       content: item.content,
@@ -141,6 +173,14 @@ export function connectTabs(service: TabsService): TabsApi {
     disabled,
     items,
     selectedItem,
+    activeTriggerId,
+    scrollLeft,
+    canScrollLeft,
+    canScrollRight,
+    scrollMaskStyle,
+    fitted,
+    totalCount,
+    indicatorStyle,
 
     setValue(val) {
       send({ type: "SET_VALUE", value: val });

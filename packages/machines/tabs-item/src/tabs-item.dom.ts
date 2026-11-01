@@ -14,3 +14,12 @@ export const getContentId = (
   value?: string | number,
 ): string =>
   scope.ids?.content ?? `cui-tabs-item-${scope.id ?? value ?? "item"}-content`;
+
+export const getTriggerId = (
+  scope: TabsItemDomScope,
+  tabsId?: string,
+  value?: string | number,
+): string =>
+  scope.ids?.trigger ??
+  `cui-tabs-${tabsId ?? "root"}-trigger-${value ?? scope.id ?? "item"}`;
+

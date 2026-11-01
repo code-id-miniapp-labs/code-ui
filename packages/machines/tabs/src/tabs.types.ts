@@ -3,12 +3,7 @@ import type {
   ComponentUI,
   ResolvedUI,
 } from "@code-ui/anatomy";
-import type {
-  Machine,
-  MachineSchema,
-  Params,
-  Service,
-} from "@code-ui/core";
+import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { EventBus, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./tabs.anatomy";
 
@@ -36,6 +31,7 @@ export interface TabsChangePayload {
   color: TabsColor;
   size: TabsSize;
   disabled: boolean;
+  fitted?: boolean | undefined;
 }
 
 export interface TabsBusEvents {
@@ -49,7 +45,6 @@ export interface TabsItem {
   value?: string | number | undefined;
   icon?: string | undefined;
   trailingIcon?: string | undefined;
-  badge?: string | number | undefined;
   disabled?: boolean | undefined;
   content?: string | undefined;
   slot?: string | undefined;
@@ -63,7 +58,6 @@ export interface TabItemComputed {
   label: string;
   icon?: string | undefined;
   trailingIcon?: string | undefined;
-  badge?: string | number | undefined;
   disabled: boolean;
   isSelected: boolean;
   content?: string | undefined;
@@ -113,6 +107,8 @@ export interface TabsProps {
   loopFocus?: boolean | undefined;
   /** Selection trigger mode on focus */
   activationMode?: TabsActivationMode | undefined;
+  /** Whether tabs should divide space equally to fit container */
+  fitted?: boolean | undefined;
   /** Callback fired when the active tab changes */
   onChange?: ((details: TabsValueChangeDetails) => void) | undefined;
 }
@@ -126,6 +122,9 @@ export interface NormalizedTabItem extends TabsItem {
 export interface TabsContext {
   value: string | number;
   focusedValue: string | number | null;
+  scrollLeft: number;
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
 }
 
 export interface TabsComputed {
@@ -190,6 +189,22 @@ export interface TabsApi {
   items: TabItemComputed[];
   /** Currently selected item descriptor */
   selectedItem?: TabsItem | undefined;
+  /** Active trigger element id for scroll-into-view */
+  activeTriggerId?: string | undefined;
+  /** Horizontal scroll offset for automatic tablist scrolling */
+  scrollLeft: number;
+  /** Whether the tablist can scroll left */
+  canScrollLeft: boolean;
+  /** Whether the tablist can scroll right */
+  canScrollRight: boolean;
+  /** Dynamic CSS edge-fade mask style to prevent sharp text clipping */
+  scrollMaskStyle?: string | undefined;
+  /** Whether tabs are in fitted mode */
+  fitted?: boolean | undefined;
+  /** Total count of tabs */
+  totalCount: number;
+  /** Declarative sliding indicator style */
+  indicatorStyle?: string | undefined;
 
   /** Set active tab by value */
   setValue(value: string | number): void;

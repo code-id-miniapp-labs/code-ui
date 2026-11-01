@@ -46,10 +46,15 @@ export function syncTabsChildren(group: any) {
   if (Array.isArray(templateChildren)) {
     for (const c of templateChildren) childrenSet.add(c);
   }
-  const children = Array.from(childrenSet);
+  const allChildren = Array.from(childrenSet);
+  // Declarative child items exclude internal trigger-mode instances
+  const declarativeChildren = allChildren.filter(
+    (c: any) =>
+      c.data?.mode !== "trigger" && c.data?.tabsItem?.mode !== "trigger",
+  );
 
-  const total = children.length;
-  const childDescriptors = children.map((child, i) => {
+  const total = declarativeChildren.length;
+  const childDescriptors = declarativeChildren.map((child, i) => {
     const d = child.data || {};
     const itemData = d.tabsItem || {};
     return {
@@ -58,7 +63,6 @@ export function syncTabsChildren(group: any) {
       label: d.label ?? itemData.label ?? `Tab ${i + 1}`,
       icon: d.icon ?? itemData.icon,
       trailingIcon: d.trailingIcon ?? itemData.trailingIcon,
-      badge: d.badge ?? itemData.badge,
       disabled: Boolean(d.disabled ?? itemData.disabled),
     };
   });
@@ -75,8 +79,8 @@ export function syncTabsChildren(group: any) {
 
   const ctx = service?.context;
   const val = ctx?.get("value");
-  for (let i = 0; i < total; i++) {
-    const child = children[i];
+  for (let i = 0; i < declarativeChildren.length; i++) {
+    const child = declarativeChildren[i];
     if (!child) continue;
     child.__codeUiTabsBus = bus;
     child.__codeUiPendingTabs = group;
@@ -92,9 +96,17 @@ export function syncTabsChildren(group: any) {
         groupColor: group.data?.color || "primary",
         groupSize: group.data?.size || "md",
         groupDisabled: Boolean(group.data?.disabled),
+        groupFitted: Boolean(group.data?.fitted),
         groupIndex: i,
       });
     }
+  }
+
+  for (const child of allChildren) {
+    if (!child) continue;
+    child.__codeUiTabsBus = bus;
+    child.__codeUiPendingTabs = group;
+    child.__codeUiTabsId = groupId;
   }
 
   if (bus) {
@@ -105,6 +117,7 @@ export function syncTabsChildren(group: any) {
       color: group.data?.color || "primary",
       size: group.data?.size || "md",
       disabled: Boolean(group.data?.disabled),
+      fitted: Boolean(group.data?.fitted),
     });
   }
 }
@@ -218,22 +231,20 @@ export function handleTabsAttached(
       if (instance.__codeUiTabsIndex !== undefined) {
         initialProps.groupIndex = instance.__codeUiTabsIndex;
       }
-      const tid =
-        instance.__codeUiTabsId ??
-        parent.data?.id ??
-        parent.id ??
-        parent.__codeUiId;
+      const tid = instance.__codeUiTabsId ?? parent.__codeUiId;
       if (tid !== undefined) {
         initialProps.tabsId = tid;
       }
       if (pService) {
         const ctx = pService.context;
         initialProps.groupValue = ctx?.get("value");
-        initialProps.groupOrientation = parent.data?.orientation || "horizontal";
+        initialProps.groupOrientation =
+          parent.data?.orientation || "horizontal";
         initialProps.groupVariant = parent.data?.variant || "pill";
         initialProps.groupColor = parent.data?.color || "primary";
         initialProps.groupSize = parent.data?.size || "md";
         initialProps.groupDisabled = Boolean(parent.data?.disabled);
+        initialProps.groupFitted = Boolean(parent.data?.fitted);
       }
     }
   }
@@ -255,10 +266,7 @@ export function handleTabsReady(
   if (options.tabs) {
     syncTabsChildren(instance);
   }
-  if (
-    options.tabsItem &&
-    typeof instance.getRelationNodes === "function"
-  ) {
+  if (options.tabsItem && typeof instance.getRelationNodes === "function") {
     const parents = instance.getRelationNodes("cuiTabsParent");
     if (parents && parents.length > 0) {
       linkTabsItemToParent(parents[0], instance);
@@ -289,6 +297,9 @@ export function withTabsItem(): MachinePlugin {
   return {
     name: "tabs-item",
     behaviors: [cuiTabsItemBehavior],
+    setupRelations(relations) {
+      setupTabsRelations(relations, { tabsItem: true });
+    },
     onAttached(instance, initialProps) {
       handleTabsAttached(instance, initialProps, { tabsItem: true });
     },

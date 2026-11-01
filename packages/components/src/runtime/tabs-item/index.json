@@ -2,6 +2,8 @@
   "component": true,
   "styleIsolation": "apply-shared",
   "virtualHost": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "c-icon": "../icon/index"
+  }
 }
 

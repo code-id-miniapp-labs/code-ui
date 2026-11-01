@@ -30,6 +30,7 @@ export interface TabsItemGroupStateSnapshot {
   color?: TabsColor | undefined;
   size?: TabsSize | undefined;
   disabled?: boolean | undefined;
+  fitted?: boolean | undefined;
 }
 
 export interface TabsItemProps {
@@ -38,6 +39,8 @@ export interface TabsItemProps {
   component?: MiniAppComponent | undefined;
   ui?: TabsItemUI | undefined;
 
+  /** Render mode: trigger button, content panel, or auto */
+  mode?: "auto" | "trigger" | "panel" | undefined;
   /** Tab value identifier */
   value?: string | number | undefined;
   /** Tab label text */
@@ -46,12 +49,27 @@ export interface TabsItemProps {
   icon?: string | undefined;
   /** Trailing icon name */
   trailingIcon?: string | undefined;
-  /** Badge text or number */
-  badge?: string | number | undefined;
   /** Whether the tab is disabled */
   disabled?: boolean | undefined;
+  /** Direct selected state (e.g. passed from tabs machine) */
+  selected?: boolean | null | undefined;
+  /** Explicit trigger DOM id */
+  triggerId?: string | undefined;
+  /** Whether the tab trigger is fitted (equal width) */
+  fitted?: boolean | undefined;
   /** Whether to lazily render slot content until active */
   lazy?: boolean | undefined;
+
+  /** Orientation override or from parent */
+  orientation?: TabsOrientation | undefined;
+  /** Variant override or from parent */
+  variant?: TabsVariant | undefined;
+  /** Color override or from parent */
+  color?: TabsColor | undefined;
+  /** Size override or from parent */
+  size?: TabsSize | undefined;
+  /** Index override */
+  index?: number | undefined;
 
   /** Parent tabs scope ID */
   tabsId?: string | undefined;
@@ -69,27 +87,15 @@ export interface TabsItemProps {
   groupSize?: TabsSize | undefined;
   /** Disabled state from parent */
   groupDisabled?: boolean | undefined;
+  /** Fitted state from parent */
+  groupFitted?: boolean | undefined;
   /** Index among siblings */
   groupIndex?: number | undefined;
 }
 
 export interface TabsItemContext {
-  value: string | number;
-  label: string;
-  icon?: string | undefined;
-  trailingIcon?: string | undefined;
-  badge?: string | number | undefined;
-  disabled: boolean;
-  lazy: boolean;
-
-  tabsId?: string | undefined;
   groupValue?: string | number | undefined;
-  groupOrientation?: TabsOrientation | undefined;
-  groupVariant?: TabsVariant | undefined;
-  groupColor?: TabsColor | undefined;
-  groupSize?: TabsSize | undefined;
   groupDisabled?: boolean | undefined;
-  groupIndex?: number | undefined;
 }
 
 export interface TabsItemComputed {
@@ -128,15 +134,26 @@ export type TabsItemMachine = Machine<TabsItemSchema>;
 export interface TabsItemApi {
   value: string | number;
   label: string;
+  icon?: string | undefined;
+  trailingIcon?: string | undefined;
   isSelected: boolean;
   isDisabled: boolean;
   lazy: boolean;
+  mode: "auto" | "trigger" | "panel";
+  orientation: TabsOrientation;
+  variant: TabsVariant;
+  color: TabsColor;
+  size: TabsSize;
+  fitted: boolean;
+  index: number;
 
   select(): void;
 
   getRootProps(): Record<string, any>;
   getContentProps(): Record<string, any>;
+  getTriggerProps(): Record<string, any>;
 
   rootProps: Record<string, any>;
   contentProps: Record<string, any>;
+  triggerProps: Record<string, any>;
 }

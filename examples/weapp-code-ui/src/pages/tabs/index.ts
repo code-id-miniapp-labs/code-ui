@@ -2,6 +2,7 @@ Page({
   data: {
     // 1. Interactive Compound Tabs
     activeTab: "account",
+    fitted: false,
     variant: "pill",
     variantOptions: ["pill", "link"],
     orientation: "horizontal",
@@ -32,14 +33,12 @@ Page({
         value: "code",
         label: "Source Code",
         icon: "i-lucide-code",
-        content:
-          "<c-tabs items=\"{{items}}\" value=\"preview\" color=\"primary\" />",
+        content: '<c-tabs items="{{items}}" value="preview" color="primary" />',
       },
       {
         value: "changelog",
         label: "Changelog",
         icon: "i-lucide-sparkles",
-        badge: "v1.2",
         content:
           "What's new in v1.2: Added compound tabs-item support, vertical orientation, and indicator transitions.",
       },
@@ -62,9 +61,9 @@ Page({
     scrollTab: "all",
     scrollItems: [
       { value: "all", label: "All Topics" },
-      { value: "tech", label: "Technology", badge: "24" },
+      { value: "tech", label: "Technology" },
       { value: "design", label: "Design" },
-      { value: "dev", label: "Development", badge: "12" },
+      { value: "dev", label: "Development" },
       { value: "business", label: "Business" },
       { value: "marketing", label: "Marketing" },
       { value: "finance", label: "Finance" },
@@ -136,6 +135,10 @@ Page({
     }
   },
 
+  toggleFitted() {
+    this.setData({ fitted: !this.data.fitted });
+  },
+
   prevTab() {
     const tabsComp = this.selectComponent("#interactive-tabs");
     tabsComp?.selectPrev?.();
@@ -158,4 +161,3 @@ Page({
     this.setData({ activeTab: "billing" });
   },
 });
-

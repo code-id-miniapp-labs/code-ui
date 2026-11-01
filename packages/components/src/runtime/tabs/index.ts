@@ -54,6 +54,7 @@ Component(
         const variant = api?.variant ?? this.data.variant;
         const color = api?.color ?? this.data.color;
         const size = api?.size ?? this.data.size;
+        const fitted = Boolean(api?.fitted ?? this.data.fitted);
         const ui = this.data.ui;
 
         const themeFns = tabsTheme({
@@ -62,6 +63,7 @@ Component(
           color,
           size,
           disabled,
+          fitted,
         });
 
         return resolveSlots(themeFns, ui, this.data.className);
@@ -69,12 +71,20 @@ Component(
     },
 
     methods: {
+      handleItemSelect(e: WechatMiniprogram.CustomEvent) {
+        const value = e.detail?.value;
+        if (value !== undefined) {
+          getApi(this, "tabs")?.select?.(value);
+        }
+      },
+
       handleTriggerTap(e: WechatMiniprogram.CustomEvent) {
         const value = e.currentTarget?.dataset?.value;
         if (value !== undefined) {
           getApi(this, "tabs")?.select?.(value);
         }
       },
+
       select(value: string | number) {
         return getApi(this, "tabs")?.select?.(value);
       },
@@ -96,4 +106,3 @@ Component(
     },
   }),
 );
-

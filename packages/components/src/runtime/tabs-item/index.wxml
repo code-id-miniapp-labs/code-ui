@@ -1,4 +1,46 @@
+<!-- Trigger Mode: Tab trigger button within the tablist -->
 <view
+  wx:if="{{mode === 'trigger'}}"
+  id="{{tabsItem.triggerProps.id}}"
+  class="cui-tabs-trigger {{classes.trigger}}"
+  role="tab"
+  aria-selected="{{tabsItem.isSelected}}"
+  aria-disabled="{{tabsItem.isDisabled}}"
+  data-scope="tabs"
+  data-part="trigger"
+  data-value="{{tabsItem.value}}"
+  data-index="{{tabsItem.index}}"
+  data-state="{{tabsItem.isSelected ? 'active' : 'inactive'}}"
+  data-disabled="{{tabsItem.isDisabled}}"
+  data-orientation="{{tabsItem.orientation}}"
+  bindtap="handleTap"
+>
+  <!-- Active Indicator (Pill background or Link underline) -->
+  <view
+    class="cui-tabs-indicator {{classes.indicator}}"
+    data-scope="tabs"
+    data-part="indicator"
+    data-orientation="{{tabsItem.orientation}}"
+    data-state="{{tabsItem.isSelected ? 'active' : 'inactive'}}"
+  />
+
+  <view class="relative z-10 inline-flex items-center justify-center gap-1.5 min-w-0">
+    <slot name="leading" />
+    <c-icon wx:if="{{tabsItem.icon}}" name="{{tabsItem.icon}}" className="cui-tabs-leading {{classes.leading}}" />
+
+    <!-- Label -->
+    <text wx:if="{{tabsItem.label}}" class="cui-tabs-label {{classes.label}}">{{tabsItem.label}}</text>
+    <slot wx:else name="label" />
+
+    <!-- Trailing Slot & Trailing Icon -->
+    <slot name="trailing" />
+    <c-icon wx:if="{{tabsItem.trailingIcon}}" name="{{tabsItem.trailingIcon}}" className="cui-tabs-trailing {{classes.trailing}}" />
+  </view>
+</view>
+
+<!-- Panel Mode / Auto: Tab content panel -->
+<view
+  wx:else
   id="{{tabsItem.contentProps.id}}"
   class="cui-tabs-item {{classes.root}}"
   role="{{tabsItem.contentProps.role}}"
@@ -14,4 +56,3 @@
     <slot wx:if="{{tabsItem.isSelected || !tabsItem.lazy}}" />
   </view>
 </view>
-

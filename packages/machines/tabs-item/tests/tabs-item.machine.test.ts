@@ -137,4 +137,17 @@ describe("TabsItem Machine", () => {
 
     machine.stop();
   });
+
+  it("exposes icon and trailingIcon", () => {
+    const m = new MiniappMachine(tabsItemMachine, {
+      value: "account",
+      icon: "i-lucide-user",
+      trailingIcon: "i-lucide-chevron-right",
+    });
+    m.start();
+    const api = connectTabsItem(m.service);
+    expect(api.icon).toBe("i-lucide-user");
+    expect(api.trailingIcon).toBe("i-lucide-chevron-right");
+    m.stop();
+  });
 });

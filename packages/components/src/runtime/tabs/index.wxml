@@ -1,42 +1,113 @@
 <view id="{{tabs.rootProps.id}}" class="{{classes.root}}" data-scope="tabs" data-part="root" data-orientation="{{tabs.orientation}}" data-disabled="{{tabs.disabled}}">
   <!-- Horizontal Orientation: Scrollable Tablist -->
-  <scroll-view wx:if="{{tabs.orientation !== 'vertical'}}" id="{{tabs.listProps.id}}" class="cui-tabs-list {{classes.list}}" role="tablist" scroll-x="{{tabs.listProps['scroll-x']}}" scroll-with-animation enhanced show-scrollbar="{{false}}" aria-orientation="horizontal" data-scope="tabs" data-part="list" data-orientation="horizontal">
-    <block wx:for="{{tabs.items}}" wx:key="value">
-      <view id="{{item.triggerProps.id}}" class="cui-tabs-trigger {{classes.trigger}}" role="{{item.triggerProps.role}}" aria-selected="{{item.triggerProps['aria-selected']}}" aria-disabled="{{item.triggerProps['aria-disabled']}}" aria-controls="{{item.triggerProps['aria-controls']}}" data-scope="{{item.triggerProps['data-scope']}}" data-part="{{item.triggerProps['data-part']}}" data-value="{{item.triggerProps['data-value']}}" data-state="{{item.triggerProps['data-state']}}" data-disabled="{{item.triggerProps['data-disabled']}}" data-orientation="{{item.triggerProps['data-orientation']}}" bindtap="handleTriggerTap">
-        <view wx:if="{{item.isSelected}}" id="{{tabs.indicatorProps.id}}" class="cui-tabs-indicator {{classes.indicator}}" data-scope="tabs" data-part="indicator" data-orientation="{{tabs.orientation}}" data-state="active" />
-        <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" class="cui-tabs-leading {{classes.leading}}" />
-        <text class="cui-tabs-label {{classes.label}}">{{item.label}}</text>
-        <c-icon wx:if="{{item.trailingIcon}}" name="{{item.trailingIcon}}" class="cui-tabs-trailing {{classes.trailing}}" />
-        <text wx:elif="{{item.badge !== undefined && item.badge !== null && item.badge !== ''}}" class="cui-tabs-trailing {{classes.trailing}} text-xs px-1.5 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-          {{item.badge}}
-        </text>
-      </view>
-    </block>
+  <scroll-view
+    wx:if="{{tabs.orientation !== 'vertical'}}"
+    class="cui-tabs-scroll w-full overflow-x-auto"
+    style="{{tabs.scrollMaskStyle}}"
+    scroll-x="{{true}}"
+    scroll-with-animation="{{true}}"
+    scroll-left="{{tabs.scrollLeft}}"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <view
+      id="{{tabs.listProps.id}}"
+      class="cui-tabs-list {{classes.list}}"
+      role="tablist"
+      aria-orientation="horizontal"
+      data-scope="tabs"
+      data-part="list"
+      data-orientation="horizontal"
+    >
+      <c-tabs-item
+        wx:for="{{tabs.items}}"
+        wx:key="value"
+        mode="trigger"
+        triggerId="{{item.triggerProps.id}}"
+        value="{{item.value}}"
+        label="{{item.label}}"
+        icon="{{item.icon}}"
+        trailingIcon="{{item.trailingIcon}}"
+        disabled="{{item.disabled}}"
+        selected="{{item.isSelected}}"
+        orientation="{{tabs.orientation}}"
+        variant="{{tabs.variant}}"
+        color="{{tabs.color}}"
+        size="{{tabs.size}}"
+        fitted="{{tabs.fitted}}"
+        index="{{index}}"
+        ui="{{item.ui || ui}}"
+        bind:select="handleItemSelect"
+      >
+        <slot name="leading-{{item.value}}" slot="leading" />
+        <slot name="trailing-{{item.value}}" slot="trailing" />
+      </c-tabs-item>
+      <slot name="list-trailing" />
+    </view>
   </scroll-view>
+
   <!-- Vertical Orientation: Static Tablist -->
-  <view wx:else id="{{tabs.listProps.id}}" class="cui-tabs-list {{classes.list}}" role="tablist" aria-orientation="vertical" data-scope="tabs" data-part="list" data-orientation="vertical">
-    <block wx:for="{{tabs.items}}" wx:key="value">
-      <view id="{{item.triggerProps.id}}" class="cui-tabs-trigger {{classes.trigger}}" role="{{item.triggerProps.role}}" aria-selected="{{item.triggerProps['aria-selected']}}" aria-disabled="{{item.triggerProps['aria-disabled']}}" aria-controls="{{item.triggerProps['aria-controls']}}" data-scope="{{item.triggerProps['data-scope']}}" data-part="{{item.triggerProps['data-part']}}" data-value="{{item.triggerProps['data-value']}}" data-state="{{item.triggerProps['data-state']}}" data-disabled="{{item.triggerProps['data-disabled']}}" data-orientation="{{item.triggerProps['data-orientation']}}" bindtap="handleTriggerTap">
-        <view wx:if="{{item.isSelected}}" id="{{tabs.indicatorProps.id}}" class="cui-tabs-indicator {{classes.indicator}}" data-scope="tabs" data-part="indicator" data-orientation="{{tabs.orientation}}" data-state="active" />
-        <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" class="cui-tabs-leading {{classes.leading}}" />
-        <text class="cui-tabs-label {{classes.label}}">{{item.label}}</text>
-        <c-icon wx:if="{{item.trailingIcon}}" name="{{item.trailingIcon}}" class="cui-tabs-trailing {{classes.trailing}}" />
-        <text wx:elif="{{item.badge !== undefined && item.badge !== null && item.badge !== ''}}" class="cui-tabs-trailing {{classes.trailing}} text-xs px-1.5 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-          {{item.badge}}
-        </text>
-      </view>
-    </block>
+  <view
+    wx:else
+    id="{{tabs.listProps.id}}"
+    class="cui-tabs-list {{classes.list}}"
+    role="tablist"
+    aria-orientation="vertical"
+    data-scope="tabs"
+    data-part="list"
+    data-orientation="vertical"
+  >
+    <c-tabs-item
+      wx:for="{{tabs.items}}"
+      wx:key="value"
+      mode="trigger"
+      triggerId="{{item.triggerProps.id}}"
+      value="{{item.value}}"
+      label="{{item.label}}"
+      icon="{{item.icon}}"
+      trailingIcon="{{item.trailingIcon}}"
+      disabled="{{item.disabled}}"
+      selected="{{item.isSelected}}"
+      orientation="{{tabs.orientation}}"
+      variant="{{tabs.variant}}"
+      color="{{tabs.color}}"
+      size="{{tabs.size}}"
+      fitted="{{tabs.fitted}}"
+      index="{{index}}"
+      ui="{{item.ui || ui}}"
+      bind:select="handleItemSelect"
+    >
+      <slot name="leading-{{item.value}}" slot="leading" />
+      <slot name="trailing-{{item.value}}" slot="trailing" />
+    </c-tabs-item>
+    <slot name="list-trailing" />
   </view>
+
   <!-- Content Container -->
   <view class="cui-tabs-content {{classes.content}}">
-    <!-- Items Mode: rendered when items prop is passed -->
+    <!-- Items Mode: rendered when items prop is passed, calling c-tabs-item -->
     <block wx:if="{{hasItems}}">
-      <block wx:for="{{tabs.items}}" wx:key="value">
-        <view wx:if="{{item.isSelected}}" id="{{item.contentProps.id}}" role="{{item.contentProps.role}}" aria-labelledby="{{item.contentProps['aria-labelledby']}}" data-scope="{{item.contentProps['data-scope']}}" data-part="{{item.contentProps['data-part']}}" data-value="{{item.contentProps['data-value']}}" data-state="{{item.contentProps['data-state']}}" data-orientation="{{item.contentProps['data-orientation']}}">
-          <text wx:if="{{item.content}}">{{item.content}}</text>
-          <slot wx:else />
-        </view>
-      </block>
+      <c-tabs-item
+        wx:for="{{tabs.items}}"
+        wx:key="value"
+        mode="panel"
+        value="{{item.value}}"
+        label="{{item.label}}"
+        icon="{{item.icon}}"
+        trailingIcon="{{item.trailingIcon}}"
+        disabled="{{item.disabled}}"
+        selected="{{item.isSelected}}"
+        orientation="{{tabs.orientation}}"
+        variant="{{tabs.variant}}"
+        color="{{tabs.color}}"
+        size="{{tabs.size}}"
+        fitted="{{tabs.fitted}}"
+        index="{{index}}"
+        ui="{{item.ui || ui}}"
+      >
+        <text wx:if="{{item.content}}">{{item.content}}</text>
+        <slot wx:else name="{{item.value}}" />
+      </c-tabs-item>
     </block>
     <!-- Compound Mode: Declarative <c-tabs-item> children in default slot -->
     <slot wx:else />
