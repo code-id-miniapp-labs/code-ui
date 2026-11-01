@@ -1,6 +1,10 @@
 import type { SliderProps } from "./slider.types";
 
 export const defaultSliderProps: SliderProps = {
+  value: null,
+  defaultValue: null,
+  name: "",
+  form: "",
   disabled: false,
   readOnly: false,
   invalid: false,
@@ -8,7 +12,6 @@ export const defaultSliderProps: SliderProps = {
   min: 0,
   max: 100,
   step: 1,
-  defaultValue: 0,
   orientation: "horizontal",
   inverted: false,
   minStepsBetweenThumbs: 0,
@@ -16,6 +19,7 @@ export const defaultSliderProps: SliderProps = {
   size: "md",
   label: "",
   marks: false,
+  formBus: null as any,
   formDisabled: false,
   formReadOnly: false,
   fieldDisabled: false,
@@ -23,4 +27,3 @@ export const defaultSliderProps: SliderProps = {
   className: "",
   ui: {},
 };
-

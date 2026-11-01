@@ -30,6 +30,7 @@ watch: props/state ──▶ FSM state + external subscriptions
 | Value | Home | Notes |
 |---|---|---|
 | Controlled/uncontrolled input (`value`, `checked`, `open`) | `bindable` with `value: prop(...)` | Do not sync it manually |
+| Array/reference input (`value: number[]`) | `bindable` with `isEqual: isEqual` | Prevents factory re-evaluations from triggering false updates |
 | Internal mutable runtime data | context `bindable` | Only if no other owner exists |
 | Data owned by a parent/group bus | context `stateBindable` | Bus is authoritative, not props |
 | Derived flags (`isOpen`, `isChecked`, `isDisabled`) | `computed` | Cheap, pure reads |
@@ -196,6 +197,50 @@ emitChange: ({ state, context, prop, refs }) => {
 - Prefer `track([deps], fn)` for machine-lifetime effects that do not need `watch` reruns; it reruns only when the listed deps change.
 - Do not perform DOM queries / `getRelationNodes` in every action; measure only when needed.
 
+## MiniProgram reactivity and `defaultProps`
+
+WeChat MiniProgram runtime components register properties via `Component({ properties: createProperties(defaultProps, ...) })`. Furthermore, `createMachineBehavior` sets up reactive observers keyed by `Object.keys(defaultProps)`.
+
+- **Every controlled prop must be declared in `defaultProps`**: If an optional controlled prop (such as `value`, `checked`, `open`) is omitted from `defaultProps` (e.g. only `defaultValue` is defined), WeChat never attaches a property observer for it. When an external page modifies the prop via `setData({ value: 70 })`, the observer does not fire, `updateProps` is never called, and the machine never receives the new controlled value.
+- Declare controlled props explicitly in `defaultProps`:
+  ```ts
+  export const defaultSliderProps: SliderProps = {
+    value: null as any,
+    defaultValue: 0,
+    min: 0,
+    max: 100,
+    // ...
+  };
+  ```
+
+## Reference-type `bindables` (`isEqual`)
+
+When `bindable<T>` holds an array or object (such as `value: number[]` for a dual-thumb slider):
+- Normalizing or cloning inside the factory returns a new reference each time.
+- Without an equality comparer, `bindable` defaults to strict reference comparison (`===`), triggering false dirty syncs.
+- Always provide `isEqual` from `@code-ui/utils`:
+  ```ts
+  value: bindable<number[]>(() => ({
+    value: isNotNull(prop("value")) ? normalizeValues(prop("value"), ...) : undefined,
+    defaultValue: normalizeValues(prop("defaultValue") ?? 0, ...),
+    isEqual,
+  })),
+  ```
+
+## High-frequency gestures and WXS view driver
+
+MiniProgram isolates the JavaScript execution environment (JSCore) from the rendering environment (Webview). Passing continuous touch events (`touchmove`) over IPC to JSCore, evaluating the machine, and sending back `setData` introduces a 16-50ms latency delay, resulting in noticeable thumb lag during fast drag interactions.
+
+To achieve 60/120fps fluid dragging:
+1. **WXS View Driver (Webview thread)**:
+   - Captures `touchstart`, `touchmove`, and `touchend` directly in WXS.
+   - Instantly mutates DOM element styles via `instance.setStyle({ transform: ..., width: ... })`.
+2. **Throttled Machine Reporting (IPC)**:
+   - WXS throttles `callMethod` (e.g. every 16-32ms or upon step threshold) to report `handleTouchMove` to the machine.
+3. **FSM Machine (JSCore thread)**:
+   - Remains the authoritative single source of truth for normalized values, clamping, form synchronization, and emitting `onChange`/`onChangeEnd`.
+   - On `touchend` (or external `value` prop updates), data flows from FSM -> `setData` -> WXS `change:rect` / `change:value` to ensure convergence.
+
 ## Refactoring playbook
 
 1. **Inventory writers.** `grep -n "context.set\|state.set\|refs.set" <machine>.ts`.
@@ -213,6 +258,10 @@ emitChange: ({ state, context, prop, refs }) => {
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
+| Omitted controlled prop in `defaultProps` | MiniProgram `createProperties` creates no observer; parent `setData({ value })` fails to reach machine | Include every controlled prop in `defaultProps` (`value: null as any`) |
+| Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
+| Driving high-frequency drag gestures via JSCore `setData` | 16-50ms IPC roundtrip latency causes thumb/slider to lag behind touch gestures | Use WXS view driver to mutate DOM transform/width directly on Webview thread; throttle IPC event calls to machine |
+| Clearing transient interactive state in event actions | `activeThumbIndex` cleared on `POINTER_UP` leaves stale state if machine stops or transitions via another path | Clear transient interaction state in `states.<state>.exit` (e.g. `states.dragging.exit: ["clearActiveThumb"]`) |
 | `propBindable` for `group*` bus state | Stale WXML `groupInvalid` / `groupValue` props overwrite `groupBus` updates during validation | Use `stateBindable` initialized from `prop("group*")`; let `groupBus` (`applyGroupState`) own updates |
 | Reading `field.getValue()` during batched controlled input | Controlled prop `watch` flushes on `endBatch()`, so `field.getValue()` returns pre-toggle state during `emitInput`/`emitChange` | Pass `payload.value` (`valueOverride`) directly to `validateSingleField` / `applyFieldErrors` |
 | Moving `watch` logic into `effects` | Using `effects: ["trackProps"]` for prop → state sync or bus rebind | Keep prop → state sync & bus rebinding in `watch`; use `effects` only for state-scoped timers/animations or parent bus broadcasts |

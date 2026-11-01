@@ -6,7 +6,6 @@
       Continuous and stepped range selection supporting single thumb, dual-thumb range, markers, and form integration.
     </view>
   </view>
-
   <view class="px-5 flex flex-col gap-6">
     <!-- 1. Controlled Single Slider -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
@@ -15,18 +14,14 @@
         Syncs numeric value between page and state machine.
       </view>
       <view class="flex flex-col gap-4">
-        <c-slider
-          value="{{singleValue}}"
-          label="Volume"
-          showValue="{{true}}"
-          bind:change="onSingleChange"
-        />
+        <c-slider value="{{singleValue}}" label="Volume" showValue="{{true}}" bind:change="onSingleChange" />
         <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
           <text class="text-neutral-500">Current Value:</text>
           <text class="font-bold text-neutral-900">{{singleValue}}</text>
         </view>
         <view class="text-xs text-neutral-400">
-          Last event: <text class="font-mono text-neutral-700">{{lastEvent}}</text>
+          Last event:
+          <text class="font-mono text-neutral-700">{{lastEvent}}</text>
         </view>
         <view class="flex gap-2 pt-1">
           <c-button size="sm" variant="outline" color="primary" bind:tap="setSingleTo70">
@@ -35,7 +30,6 @@
         </view>
       </view>
     </view>
-
     <!-- 2. Dual-Thumb Range Slider -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Range Slider (Dual Thumbs)</view>
@@ -43,19 +37,13 @@
         Select a minimum and maximum range interval.
       </view>
       <view class="flex flex-col gap-4">
-        <c-slider
-          value="{{rangeValue}}"
-          label="Price Range ($)"
-          showValue="{{true}}"
-          bind:change="onRangeChange"
-        />
+        <c-slider value="{{rangeValue}}" label="Price Range ($)" showValue="{{true}}" bind:change="onRangeChange" />
         <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
           <text class="text-neutral-500">Interval:</text>
           <text class="font-bold text-neutral-900">{{rangeValue[0]}} - {{rangeValue[1]}}</text>
         </view>
       </view>
     </view>
-
     <!-- 3. Steps & Markers -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Steps & Markers</view>
@@ -63,16 +51,9 @@
         Snapping step increments with customized tick markers.
       </view>
       <view class="flex flex-col gap-4">
-        <c-slider
-          defaultValue="{{50}}"
-          step="{{25}}"
-          marks="{{marks}}"
-          label="Temperature"
-          showValue="{{true}}"
-        />
+        <c-slider defaultValue="{{50}}" step="{{25}}" marks="{{marks}}" label="Temperature" showValue="{{true}}" />
       </view>
     </view>
-
     <!-- 4. Sizes -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
@@ -85,7 +66,6 @@
         <c-slider size="xl" label="Size xl" defaultValue="{{80}}" />
       </view>
     </view>
-
     <!-- 5. Colors -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
@@ -101,7 +81,6 @@
         <c-slider color="neutral" label="Neutral" defaultValue="{{55}}" />
       </view>
     </view>
-
     <!-- 6. States -->
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Disabled & Invalid States</view>
@@ -111,6 +90,47 @@
         <c-slider invalid="{{true}}" label="Invalid Validation" defaultValue="{{25}}" />
       </view>
     </view>
+    <!-- 7. Form & Validation Integration -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
+      <view class="text-sm font-bold text-neutral-900 mb-1">Form & Validation Integration</view>
+      <view class="text-xs text-neutral-400 mb-4">
+        Connected with c-form and c-form-field. Supports validation rules, programmatic reset, field errors, and submit payloads.
+      </view>
+      <c-form id="slider-demo-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleFormSubmit" bind:error="handleFormError">
+        <view class="flex flex-col gap-5">
+          <!-- 1. Controlled Slider in Form with Min Validation Rule -->
+          <c-form-field name="budget" label="Campaign Budget ($)" description="Minimum budget required is $40 (starts at $25 to demonstrate validation)" rules="{{budgetRules}}" required="{{true}}">
+            <c-slider name="budget" value="{{formBudgetValue}}" min="{{0}}" max="{{100}}" step="{{5}}" color="primary" showValue="{{true}}" bind:change="onFormBudgetChange" />
+          </c-form-field>
+          <view class="flex items-center justify-between text-xs bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-200">
+            <text class="text-neutral-500">Page State (formBudgetValue):</text>
+            <text class="font-bold font-mono text-neutral-900">${{formBudgetValue}}</text>
+          </view>
+          <view class="flex gap-2">
+            <c-button variant="soft" color="primary" size="xs" bind:tap="setFormBudgetTo80">
+              Set to $80 (Valid) via Page State
+            </c-button>
+          </view>
+          <!-- 2. Dual-Thumb Range Slider in Form -->
+          <c-form-field name="ageBracket" label="Target Audience Age Bracket" description="Dual-thumb range selection within a form field">
+            <c-slider name="ageBracket" defaultValue="{{[25, 60]}}" min="{{18}}" max="{{80}}" color="info" showValue="{{true}}" />
+          </c-form-field>
+          <!-- Action Buttons -->
+          <view class="flex flex-wrap gap-2 pt-2 border-t border-neutral-100">
+            <c-button variant="solid" color="primary" size="sm" bind:tap="submitSliderForm">
+              Submit Form
+            </c-button>
+            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetSliderForm">
+              Reset Form
+            </c-button>
+          </view>
+          <!-- Feedback Status Card -->
+          <view wx:if="{{formStatus}}" class="px-3.5 py-2.5 rounded-xl text-xs {{formStatus === 'Success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-red-50 text-red-900 border border-red-200'}}">
+            <view class="font-bold mb-0.5">{{formStatus}}</view>
+            <view class="font-mono text-2xs break-all">{{formMessage}}</view>
+          </view>
+        </view>
+      </c-form>
+    </view>
   </view>
 </view>
-

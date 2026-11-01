@@ -9,13 +9,7 @@ import type {
   FormBusEvents,
   FormValidateOn,
 } from "@code-ui/form";
-import type {
-  EventBus,
-  MiniAppComponent,
-  MiniAppCustomEvent,
-  MiniAppRect,
-  MiniAppTouchEvent,
-} from "@code-ui/utils";
+import type { EventBus, MiniAppComponent, MiniAppRect } from "@code-ui/utils";
 import type { anatomy } from "./slider.anatomy";
 
 export type SliderOrientation = "horizontal" | "vertical";
@@ -51,8 +45,8 @@ export interface SliderProps {
   min?: number | undefined;
   max?: number | undefined;
   step?: number | undefined;
-  value?: number | number[] | undefined;
-  defaultValue?: number | number[] | undefined;
+  value?: number | number[] | string | null | undefined;
+  defaultValue?: number | number[] | string | null | undefined;
   orientation?: SliderOrientation | undefined;
   inverted?: boolean | undefined;
   minStepsBetweenThumbs?: number | undefined;
@@ -78,8 +72,11 @@ export interface SliderProps {
 export interface SliderContext {
   disabled: boolean;
   readOnly: boolean;
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
   invalid: boolean;
-  required: boolean;
   min: number;
   max: number;
   step: number;
@@ -87,18 +84,7 @@ export interface SliderContext {
   orientation: SliderOrientation;
   inverted: boolean;
   minStepsBetweenThumbs: number;
-  color: string;
-  size: SliderSize;
-  name: string;
-  form: string;
-  label: string;
-  marks: boolean | SliderMark[];
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: string;
   activeThumbIndex: number;
-  ui: Record<string, string>;
 }
 
 export type SliderState = "idle" | "dragging";
@@ -141,6 +127,7 @@ export interface SliderComputed {
   isReadOnly: boolean;
   isInteractive: boolean;
   isDragging: boolean;
+  isRange: boolean;
   effectiveSize: SliderSize;
   values: number[];
   value: number | number[];
@@ -149,10 +136,9 @@ export interface SliderComputed {
 
 export interface SliderRefs {
   initialValue: number[];
-  isRange: boolean;
   rect: MiniAppRect | null;
-  activeThumbIndex: number;
   currentFormBus: EventBus<FormBusEvents> | null | undefined;
+  currentName?: string | undefined;
   formField: BoundFormField | undefined;
 }
 
@@ -185,9 +171,17 @@ export interface SliderApi {
   readOnly: boolean;
   invalid: boolean;
   dragging: boolean;
+  isRange: boolean;
   orientation: SliderOrientation;
+  inverted: boolean;
+  size: SliderSize;
+  color: string;
+  label: string;
   activeThumbIndex: number;
   thumbs: SliderThumbSnapshot[];
+  thumbIds: string;
+  thumbPercents: number[];
+  rect: MiniAppRect | null;
   markers: SliderMarkerSnapshot[];
   rangeStyle: string;
   valueText: string;
@@ -204,10 +198,10 @@ export interface SliderApi {
   stepUp(index?: number, step?: number): void;
   stepDown(index?: number, step?: number): void;
   reset(): void;
-  handleTouchStart(e: MiniAppTouchEvent): Promise<void> | void;
-  handleTouchMove(e: MiniAppTouchEvent): void;
-  handleTouchEnd(e: MiniAppTouchEvent): void;
-  handleTap(e: MiniAppCustomEvent): Promise<void> | void;
+  handleTouchStart(e: any): Promise<void> | void;
+  handleTouchMove(e: any): void;
+  handleTouchEnd(e?: any): void;
+  handleTap(e: any): Promise<void> | void;
 }
 
 export interface SliderSchema extends MachineSchema {

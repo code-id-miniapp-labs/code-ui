@@ -3,7 +3,7 @@ import {
   setupFormFieldSync,
   cleanupFormFieldSync,
 } from "@code-ui/form/context";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   SliderContext,
   SliderMachine,
@@ -22,7 +22,12 @@ import {
 } from "./slider.utils";
 
 function notifyChange(
-  { prop, refs, computed, context }: Pick<SliderParams, "prop" | "refs" | "computed" | "context">,
+  {
+    prop,
+    refs,
+    computed,
+    context,
+  }: Pick<SliderParams, "prop" | "refs" | "computed" | "context">,
   isEnd = false,
 ): void {
   const currentVal = computed("value");
@@ -50,26 +55,27 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     const min = Number(prop("min") ?? 0);
     const max = Number(prop("max") ?? 100);
     const step = Number(prop("step") ?? 1);
-    const rawVal = prop("value") ?? prop("defaultValue") ?? 0;
+    const propVal = prop("value");
+    const defaultVal = prop("defaultValue");
+    const rawVal =
+      isNotNull(propVal) && propVal !== ""
+        ? propVal
+        : isNotNull(defaultVal) && defaultVal !== ""
+          ? defaultVal
+          : 0;
     const initialValues = normalizeValues(rawVal, min, max, step);
-    const isRange =
-      Array.isArray(prop("value")) ||
-      (prop("value") === undefined && Array.isArray(prop("defaultValue")));
 
     return {
       initialValue: initialValues,
-      isRange,
       rect: null,
-      activeThumbIndex: -1,
       currentFormBus: prop("formBus"),
+      currentName: prop("name"),
       formField: undefined,
     };
   },
 
   context: ({ prop, bindable }) => {
-    const propBindable = <
-      K extends keyof SliderContext & keyof SliderProps,
-    >(
+    const propBindable = <K extends keyof SliderContext & keyof SliderProps>(
       key: K,
       defaultValue: SliderContext[K],
     ) =>
@@ -91,8 +97,8 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       readOnly: propBindable("readOnly", false),
       formDisabled: stateBindable("formDisabled", false),
       formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
+      fieldDisabled: stateBindable("fieldDisabled", false),
+      fieldSize: stateBindable("fieldSize", ""),
 
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
@@ -102,21 +108,13 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         };
       }),
 
-      required: propBindable("required", false),
       min: propBindable("min", 0),
       max: propBindable("max", 100),
       step: propBindable("step", 1),
       orientation: propBindable("orientation", "horizontal"),
       inverted: propBindable("inverted", false),
       minStepsBetweenThumbs: propBindable("minStepsBetweenThumbs", 0),
-      color: propBindable("color", "primary"),
-      size: propBindable("size", "md"),
-      name: propBindable("name", ""),
-      form: propBindable("form", ""),
-      label: propBindable("label", ""),
-      marks: propBindable("marks", false),
       activeThumbIndex: stateBindable("activeThumbIndex", -1),
-      ui: propBindable("ui", {}),
 
       value: bindable<number[]>(() => {
         const propVal = prop("value");
@@ -124,16 +122,20 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         const min = Number(prop("min") ?? 0);
         const max = Number(prop("max") ?? 100);
         const step = Number(prop("step") ?? 1);
+        const hasPropVal = isNotNull(propVal) && propVal !== "";
+        const hasDefaultVal = isNotNull(defaultVal) && defaultVal !== "";
+
         return {
-          value: isNotNull(propVal)
+          value: hasPropVal
             ? normalizeValues(propVal, min, max, step)
             : undefined,
           defaultValue: normalizeValues(
-            isNotNull(defaultVal) ? defaultVal : 0,
+            hasDefaultVal ? defaultVal : 0,
             min,
             max,
             step,
           ),
+          isEqual,
         };
       }),
     };
@@ -143,29 +145,26 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     isDisabled: ({ context }) =>
       Boolean(
         context.get("disabled") ||
-          context.get("formDisabled") ||
-          context.get("fieldDisabled"),
+        context.get("formDisabled") ||
+        context.get("fieldDisabled"),
       ),
     isReadOnly: ({ context }) =>
       Boolean(context.get("readOnly") || context.get("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
     isDragging: ({ state }) => state.matches("dragging"),
-    effectiveSize: ({ context }) => {
-      const rawSize = context.get("size");
+    isRange: ({ context }) => context.get("value").length > 1,
+    effectiveSize: ({ prop, context }) => {
+      const rawSize = prop("size");
       const fieldSize = context.get("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
         : ((fieldSize || rawSize || "md") as SliderSize);
     },
     values: ({ context }) => context.get("value"),
-    value: ({ context, refs, prop }) => {
+    value: ({ context, computed }) => {
       const vals = context.get("value");
-      const isRange =
-        Array.isArray(prop("value")) ||
-        (prop("value") === undefined &&
-          (Array.isArray(prop("defaultValue")) || refs.get("isRange")));
-      return isRange ? vals : (vals[0] ?? context.get("min"));
+      return computed("isRange") ? vals : (vals[0] ?? context.get("min"));
     },
     valueAsPercent: ({ context }) => {
       const vals = context.get("value");
@@ -177,8 +176,13 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
 
   watch: ({ prop, refs }) => {
     const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
+    const nextName = prop("name");
+    const busChanged = nextFormBus !== refs.get("currentFormBus");
+    const nameChanged = nextName !== refs.get("currentName");
+
+    if (busChanged || nameChanged) {
       refs.set("currentFormBus", nextFormBus);
+      refs.set("currentName", nextName);
       refs.get("formField")?.rebind(nextFormBus ?? null);
     }
   },
@@ -217,13 +221,14 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     },
     dragging: {
       tags: ["dragging"],
+      exit: ["clearActiveThumb"],
       on: {
         POINTER_MOVE: {
           actions: ["updateValueFromPoint", "emitChange"],
         },
         POINTER_UP: {
           target: "idle",
-          actions: ["clearActiveThumb", "emitChangeEnd"],
+          actions: ["emitChangeEnd"],
         },
       },
     },
@@ -263,7 +268,6 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
           targetIndex = 0;
         }
 
-        refs.set("activeThumbIndex", targetIndex);
         context.set("activeThumbIndex", targetIndex);
 
         if (rect) {
@@ -292,7 +296,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         if (event.type !== "POINTER_MOVE") return;
         const rect = refs.get("rect");
         if (!rect) return;
-        const activeIndex = refs.get("activeThumbIndex");
+        const activeIndex = context.get("activeThumbIndex");
         if (activeIndex < 0) return;
 
         const currentVals = [...context.get("value")];
@@ -326,8 +330,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         }
       },
 
-      clearActiveThumb: ({ context, refs }) => {
-        refs.set("activeThumbIndex", -1);
+      clearActiveThumb: ({ context }) => {
         context.set("activeThumbIndex", -1);
       },
 
@@ -426,8 +429,8 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
             component: prop("component"),
             bus: prop("formBus") ?? undefined,
             id: scope.id ?? "slider",
-            getFormId: () => context.get("form") || prop("form") || "",
-            getName: () => context.get("name") || prop("name") || "",
+            getFormId: () => prop("form") ?? "",
+            getName: () => prop("name") ?? "",
             getValue: () => computed("value"),
             setValue: (rawVal: unknown) => {
               const min = context.get("min");
@@ -472,4 +475,3 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     },
   },
 });
-

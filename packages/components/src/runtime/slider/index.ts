@@ -55,6 +55,9 @@ Component(
         const size = api?.size ?? this.data.size;
         const color = api?.color ?? this.data.color;
         const ui = this.data.ui;
+        const hasMarkers = Boolean(
+          (api?.markers && api.markers.length > 0) || this.data.marks,
+        );
 
         const themeFns = sliderTheme({
           color,
@@ -63,6 +66,7 @@ Component(
           disabled,
           invalid: isInvalid,
           dragging: isDragging,
+          hasMarkers,
         });
 
         return resolveSlots(themeFns, ui, this.data.className);
@@ -70,19 +74,18 @@ Component(
     },
 
     methods: {
-      handleTouchStart(e: WechatMiniprogram.TouchEvent) {
+      handleTouchStart(e: any) {
         return getApi(this, "slider")?.handleTouchStart?.(e);
       },
-      handleTouchMove(e: WechatMiniprogram.TouchEvent) {
+      handleTouchMove(e: any) {
         getApi(this, "slider")?.handleTouchMove?.(e);
       },
-      handleTouchEnd(e: WechatMiniprogram.TouchEvent) {
+      handleTouchEnd(e: any) {
         getApi(this, "slider")?.handleTouchEnd?.(e);
       },
-      handleTap(e: WechatMiniprogram.CustomEvent) {
+      handleTap(e: any) {
         return getApi(this, "slider")?.handleTap?.(e);
       },
     },
   }),
 );
-

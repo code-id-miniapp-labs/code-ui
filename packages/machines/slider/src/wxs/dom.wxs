@@ -1,0 +1,120 @@
+/**
+ * dom.wxs
+ *
+ * Common DOM querying and event helpers for WXS event handlers.
+ * Reusable across any component that handles gestures or touch events.
+ *
+ * Usage:
+ *   <wxs src="../../_shared/wxs/dom.wxs" module="dom" />
+ */
+
+/**
+ * Safely get the primary touch from a touchstart/touchmove event.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {Touch | null}
+ */
+function getTouch(event) {
+  return event.touches && event.touches.length > 0 ? event.touches[0] : null;
+}
+
+/**
+ * Safely get the primary touch from a touchend/touchcancel event.
+ * touchend does not populate event.touches, so we use changedTouches.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {Touch | null}
+ */
+function getChangedTouch(event) {
+  return event.changedTouches && event.changedTouches.length > 0
+    ? event.changedTouches[0]
+    : null;
+}
+
+/**
+ * Get the dataset from the event's current target.
+ *
+ * @param {WxsTouchEvent} event
+ * @returns {object}
+ */
+function getDataset(event) {
+  return event.currentTarget && event.currentTarget.dataset
+    ? event.currentTarget.dataset
+    : {};
+}
+
+/**
+ * Select a single element within the component tree using a CSS-like selector.
+ * Wraps ownerInstance.selectComponent for a consistent call signature.
+ *
+ * @param {WxsComponentInstance} ownerInstance
+ * @param {string} selector  - e.g. '#my-id', '[data-part="content"]'
+ * @returns {WxsComponentInstance | null}
+ */
+function selectEl(ownerInstance, selector) {
+  if (!ownerInstance || !ownerInstance.selectComponent) return null;
+  return ownerInstance.selectComponent(selector) || null;
+}
+
+/**
+ * Select all matching elements within the component tree.
+ *
+ * @param {WxsComponentInstance} ownerInstance
+ * @param {string} selector
+ * @returns {WxsComponentInstance[]}
+ */
+function selectAllEl(ownerInstance, selector) {
+  if (!ownerInstance || !ownerInstance.selectAllComponents) return [];
+  return ownerInstance.selectAllComponents(selector) || [];
+}
+
+/**
+ * Safely get current timestamp in milliseconds (compatible with both WXS and Node.js).
+ *
+ * @returns {number}
+ */
+function now() {
+  return typeof getDate !== 'undefined' ? getDate().getTime() : Date.now();
+}
+
+/**
+ * Creates a throttled function that invokes `fn` at most once per `wait` milliseconds.
+ * In WXS, this prevents flooding the cross-thread bridge with high-frequency events.
+ *
+ * @param {Function} fn - The function to throttle
+ * @param {number} [wait=16] - Minimum interval in milliseconds between invocations (default 16ms ~ 60fps)
+ * @returns {Function}
+ */
+function throttle(fn, wait) {
+  var last = 0;
+  var delay = wait > 0 ? wait : 16;
+
+  function throttled(a, b, c, d, e) {
+    var currentTime = now();
+    if (currentTime - last >= delay) {
+      last = currentTime;
+      if (typeof e !== 'undefined') return fn(a, b, c, d, e);
+      if (typeof d !== 'undefined') return fn(a, b, c, d);
+      if (typeof c !== 'undefined') return fn(a, b, c);
+      if (typeof b !== 'undefined') return fn(a, b);
+      if (typeof a !== 'undefined') return fn(a);
+      return fn();
+    }
+  }
+
+  throttled.reset = function() {
+    last = 0;
+  };
+
+  return throttled;
+}
+
+module.exports = {
+  getTouch: getTouch,
+  getChangedTouch: getChangedTouch,
+  getDataset: getDataset,
+  selectEl: selectEl,
+  selectAllEl: selectAllEl,
+  now: now,
+  throttle: throttle,
+};

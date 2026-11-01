@@ -76,9 +76,86 @@ describe("Slider Machine", () => {
 
       machine.stop();
     });
+
+    it("initializes range slider with array defaultValue [25, 60] and custom min 18, max 80", () => {
+      const machine = new MiniappMachine(sliderMachine, {
+        defaultValue: [25, 60],
+        min: 18,
+        max: 80,
+      });
+      machine.start();
+
+      expect(machine.computed("value")).toEqual([25, 60]);
+      expect(machine.computed("values")).toEqual([25, 60]);
+
+      const api = connectSlider(machine.service);
+      expect(api.thumbs.length).toBe(2);
+      expect(api.thumbs[0]?.value).toBe(25);
+      expect(api.thumbs[1]?.value).toBe(60);
+      expect(api.valueText).toBe("25 - 60");
+
+      machine.stop();
+    });
+
+    it("normalizes array from JSON string defaultValue '[25, 60]'", () => {
+      const machine = new MiniappMachine(sliderMachine, {
+        defaultValue: "[25, 60]" as any,
+        min: 18,
+        max: 80,
+      });
+      machine.start();
+
+      expect(machine.computed("value")).toEqual([25, 60]);
+      const api = connectSlider(machine.service);
+      expect(api.thumbs.length).toBe(2);
+      expect(api.thumbs[0]?.value).toBe(25);
+      expect(api.thumbs[1]?.value).toBe(60);
+
+      machine.stop();
+    });
   });
 
   describe("Controlled Value & Props", () => {
+    it("defines value, name, form, and formBus in defaultSliderProps for MiniProgram observer syncing", () => {
+      const defaultProps = sliderMachine.props?.({ props: {}, scope: {} as any });
+      expect(defaultProps).toHaveProperty("value");
+      expect(defaultProps?.value).toBeNull();
+      expect(defaultProps).toHaveProperty("defaultValue");
+      expect(defaultProps?.defaultValue).toBeNull();
+      expect(defaultProps).toHaveProperty("name");
+      expect(defaultProps?.name).toBe("");
+      expect(defaultProps).toHaveProperty("form");
+      expect(defaultProps?.form).toBe("");
+      expect(defaultProps).toHaveProperty("formBus");
+    });
+
+    it("updates thumb and range when value prop changes via button (e.g. Set to 70)", async () => {
+      // Simulates page with initial singleValue = 35, then button sets singleValue = 70
+      const machine = new MiniappMachine(sliderMachine, {
+        value: 35,
+        min: 0,
+        max: 100,
+      });
+      machine.start();
+
+      let api = connectSlider(machine.service);
+      expect(api.value).toBe(35);
+      expect(api.thumbs[0]?.percent).toBe(35);
+      expect(api.rangeStyle).toBe("left: 0%; width: 35%;");
+
+      // User taps button: Set to 70
+      machine.updateProps({ value: 70 });
+      await flush();
+
+      api = connectSlider(machine.service);
+      expect(machine.computed("value")).toBe(70);
+      expect(api.value).toBe(70);
+      expect(api.thumbs[0]?.percent).toBe(70);
+      expect(api.rangeStyle).toBe("left: 0%; width: 70%;");
+
+      machine.stop();
+    });
+
     it("updates when controlled value prop changes", async () => {
       const machine = new MiniappMachine(sliderMachine, {
         value: 10,
@@ -98,6 +175,26 @@ describe("Slider Machine", () => {
       expect(api.thumbs[0]?.percent).toBe(60);
 
       machine.stop();
+    });
+
+    it("exposes thumbIds and thumbPercents for WXS bindings", () => {
+      const singleMachine = new MiniappMachine(sliderMachine, {
+        defaultValue: 30,
+      });
+      singleMachine.start();
+      const singleApi = connectSlider(singleMachine.service);
+      expect(singleApi.thumbIds).toBeTruthy();
+      expect(singleApi.thumbPercents).toEqual([30]);
+      singleMachine.stop();
+
+      const rangeMachine = new MiniappMachine(sliderMachine, {
+        defaultValue: [20, 80],
+      });
+      rangeMachine.start();
+      const rangeApi = connectSlider(rangeMachine.service);
+      expect(rangeApi.thumbIds.split(",").length).toBe(2);
+      expect(rangeApi.thumbPercents).toEqual([20, 80]);
+      rangeMachine.stop();
     });
   });
 
@@ -247,6 +344,42 @@ describe("Slider Machine", () => {
 
       machine.stop();
     });
+
+    it("handles touch events dispatched from WXS gesture handler", async () => {
+      const machine = new MiniappMachine(sliderMachine, {
+        defaultValue: 0,
+        min: 0,
+        max: 100,
+      });
+      machine.start();
+      machine.refs.set("rect", mockRect);
+
+      const api = connectSlider(machine.service);
+
+      // WXS calls handleTouchStart({ clientX: 40, clientY: 10 })
+      await api.handleTouchStart({ clientX: 40, clientY: 10 });
+      await flush();
+      expect(machine.state.get()).toBe("dragging");
+      expect(machine.computed("value")).toBe(20);
+
+      // WXS calls handleTouchMove({ clientX: 160, clientY: 10 })
+      api.handleTouchMove({ clientX: 160, clientY: 10 });
+      await flush();
+      expect(machine.computed("value")).toBe(80);
+
+      // WXS calls handleTouchEnd()
+      api.handleTouchEnd();
+      await flush();
+      expect(machine.state.get()).toBe("idle");
+      expect(machine.computed("value")).toBe(80);
+
+      // Tap at x: 100 (50%)
+      await api.handleTap({ clientX: 100, clientY: 10 });
+      await flush();
+      expect(machine.computed("value")).toBe(50);
+
+      machine.stop();
+    });
   });
 
   describe("Programmatic API Methods", () => {
@@ -387,6 +520,88 @@ describe("Slider Machine", () => {
       sliderApi = connectSlider(sliderM.service);
       expect(sliderApi.value).toBe(40);
       expect(sliderApi.invalid).toBe(false);
+
+      sliderM.stop();
+      formM.stop();
+    });
+
+    it("collects single and range slider values on form submit", async () => {
+      const formComp = { setData: vi.fn(), triggerEvent: vi.fn() };
+      const slider1Comp = { setData: vi.fn(), triggerEvent: vi.fn() };
+      const slider2Comp = { setData: vi.fn(), triggerEvent: vi.fn() };
+
+      const formM = new MiniappMachine(formMachine, {
+        component: formComp,
+      });
+      formM.start();
+      const formApi = connectForm(formM.service);
+      const bus = formApi.bus;
+
+      // 1. Single slider
+      const singleM = new MiniappMachine(sliderMachine, {
+        component: slider1Comp,
+        formBus: bus,
+        name: "budget",
+        defaultValue: 25,
+      });
+      singleM.start();
+
+      // 2. Range slider
+      const rangeM = new MiniappMachine(sliderMachine, {
+        component: slider2Comp,
+        formBus: bus,
+        name: "ageBracket",
+        defaultValue: [25, 60],
+      });
+      rangeM.start();
+      await flush();
+
+      // Form submit collects both values
+      const submitResult = await formApi.submit();
+      await flush();
+
+      expect(submitResult.valid).toBe(true);
+      expect(submitResult.values).toEqual({
+        budget: 25,
+        ageBracket: [25, 60],
+      });
+
+      singleM.stop();
+      rangeM.stop();
+      formM.stop();
+    });
+
+    it("binds name dynamically when wrapper updates props after initialization", async () => {
+      const formComp = { setData: vi.fn(), triggerEvent: vi.fn() };
+      const sliderComp = { setData: vi.fn(), triggerEvent: vi.fn() };
+
+      const formM = new MiniappMachine(formMachine, {
+        component: formComp,
+      });
+      formM.start();
+      const formApi = connectForm(formM.service);
+      const bus = formApi.bus;
+
+      // Starts without name or bus (before relations link)
+      const sliderM = new MiniappMachine(sliderMachine, {
+        component: sliderComp,
+        defaultValue: 55,
+      });
+      sliderM.start();
+      await flush();
+
+      // Relations link: updateProps simulates updateChildFromFormFieldWrapper
+      sliderM.updateProps({
+        name: "inferredBudget",
+        formBus: bus,
+      });
+      await flush();
+
+      // Form submit collects the newly bound field
+      const submitResult = await formApi.submit();
+      await flush();
+
+      expect(submitResult.values).toHaveProperty("inferredBudget", 55);
 
       sliderM.stop();
       formM.stop();

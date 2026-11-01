@@ -1,3 +1,11 @@
+interface FormRef {
+  submit?: () => Promise<any>;
+  reset?: (name?: string | string[]) => void;
+  resetValidation?: (name?: string | string[]) => void;
+  setErrors?: (errors: Record<string, string | string[]>) => void;
+  setValues?: (values: Record<string, any>) => void;
+}
+
 Page({
   data: {
     singleValue: 35,
@@ -11,6 +19,15 @@ Page({
       { value: 100, label: "100°C" },
     ],
     lastEvent: "None",
+
+    // Form showcase state
+    formBudgetValue: 25,
+    formStatus: "",
+    formMessage: "",
+    budgetRules: [
+      { required: true, message: "Campaign budget is required" },
+      { min: 40, message: "Minimum budget must be at least $40" },
+    ],
   },
 
   onSingleChange(e: WechatMiniprogram.CustomEvent) {
@@ -32,5 +49,50 @@ Page({
       singleValue: 70,
     });
   },
-});
 
+  onFormBudgetChange(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      formBudgetValue: e.detail.value,
+    });
+  },
+
+  setFormBudgetTo80() {
+    this.setData({
+      formBudgetValue: 80,
+    });
+  },
+
+  getSliderForm(): FormRef | null {
+    return this.selectComponent("#slider-demo-form") as FormRef | null;
+  },
+
+  submitSliderForm() {
+    this.getSliderForm()?.submit?.();
+  },
+
+  resetSliderForm() {
+    this.getSliderForm()?.reset?.();
+    this.setData({
+      formBudgetValue: 25,
+      formStatus: "",
+      formMessage: "",
+    });
+  },
+
+  handleFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      formStatus: "Success",
+      formMessage: `Form submitted with values: ${JSON.stringify(e.detail.values)}`,
+    });
+  },
+
+  handleFormError(e: WechatMiniprogram.CustomEvent) {
+    const errorBag = (e.detail?.errorBag || {}) as Record<string, string>;
+    const firstField = Object.keys(errorBag)[0];
+    const firstMsg = firstField ? errorBag[firstField] : "Validation failed";
+    this.setData({
+      formStatus: "Validation Error",
+      formMessage: `${firstField}: ${firstMsg}`,
+    });
+  },
+});

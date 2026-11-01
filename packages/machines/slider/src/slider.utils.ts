@@ -67,7 +67,21 @@ export function normalizeValues(
       snapValueToStep(Number(item ?? min), min, max, step),
     );
   }
-  if (raw !== undefined && raw !== null && !isNaN(Number(raw))) {
+  if (
+    typeof raw === "string" &&
+    raw.trim().startsWith("[") &&
+    raw.trim().endsWith("]")
+  ) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item) =>
+          snapValueToStep(Number(item ?? min), min, max, step),
+        );
+      }
+    } catch {}
+  }
+  if (raw !== undefined && raw !== null && raw !== "" && !isNaN(Number(raw))) {
     return [snapValueToStep(Number(raw), min, max, step)];
   }
   return [min];

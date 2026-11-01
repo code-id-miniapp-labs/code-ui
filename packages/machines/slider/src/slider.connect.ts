@@ -1,7 +1,3 @@
-import type {
-  MiniAppCustomEvent,
-  MiniAppTouchEvent,
-} from "@code-ui/utils";
 import { queryRect } from "@code-ui/utils";
 import * as dom from "./slider.dom";
 import type {
@@ -13,7 +9,7 @@ import type {
 import { getValueAsPercent } from "./slider.utils";
 
 export function connectSlider(service: SliderService): SliderApi {
-  const { context, computed, refs, scope, state } = service;
+  const { context, computed, prop, refs, scope, state } = service;
 
   const min = context.get("min");
   const max = context.get("max");
@@ -27,7 +23,7 @@ export function connectSlider(service: SliderService): SliderApi {
   const activeThumbIndex = context.get("activeThumbIndex");
   const values = context.get("value");
   const percents = computed("valueAsPercent");
-  const isRange = values.length > 1;
+  const isRange = computed("isRange");
 
   let rangeStart = 0;
   let rangeEnd = 0;
@@ -84,7 +80,7 @@ export function connectSlider(service: SliderService): SliderApi {
     };
   });
 
-  const rawMarks = context.get("marks");
+  const rawMarks = prop("marks");
   let markerList: Array<{ value: number; label?: string | undefined }> = [];
   if (Array.isArray(rawMarks)) {
     markerList = rawMarks;
@@ -133,6 +129,26 @@ export function connectSlider(service: SliderService): SliderApi {
     ? `${values[0] ?? min} - ${values[1] ?? max}`
     : String(values[0] ?? min);
 
+  const thumbIds = thumbs.map((t) => t.id).join(",");
+  const thumbPercents = thumbs.map((t) => t.percent);
+  const rect = refs.get("rect");
+
+  const comp = prop("component");
+  const wxGlobal = (globalThis as Record<string, any>).wx;
+  const canQuery =
+    Boolean(comp) &&
+    (Boolean(wxGlobal) ||
+      typeof (comp as any)?.createSelectorQuery === "function");
+
+  if (canQuery && !rect) {
+    const controlId = dom.getControlId(scope);
+    queryRect(`#${controlId}`, comp).then((queried) => {
+      if (queried) {
+        refs.set("rect", queried);
+      }
+    });
+  }
+
   return {
     state: state.get(),
     value: computed("value"),
@@ -144,9 +160,17 @@ export function connectSlider(service: SliderService): SliderApi {
     readOnly: isReadOnly,
     invalid: isInvalid,
     dragging: isDragging,
+    isRange,
     orientation,
+    inverted,
+    size: computed("effectiveSize"),
+    color: prop("color") ?? "primary",
+    label: prop("label") ?? "",
     activeThumbIndex,
     thumbs,
+    thumbIds,
+    thumbPercents,
+    rect,
     markers,
     rangeStyle,
     valueText,
@@ -243,73 +267,87 @@ export function connectSlider(service: SliderService): SliderApi {
       service.send({ type: "RESET_VALUE" });
     },
 
-    async handleTouchStart(e: MiniAppTouchEvent) {
+    async handleTouchStart(e: any) {
       if (computed("isDisabled") || computed("isReadOnly")) return;
-      const touch = e.touches[0];
-      if (!touch) return;
-      const comp = service.prop("component");
+      const clientX = e?.clientX ?? e?.touches?.[0]?.clientX;
+      const clientY = e?.clientY ?? e?.touches?.[0]?.clientY;
+      if (clientX === undefined || clientY === undefined) return;
       const controlId = dom.getControlId(scope);
       const selector = `#${controlId}`;
-      let rect = refs.get("rect");
-      if (comp) {
+      let currentRect = refs.get("rect");
+      if (!currentRect && canQuery) {
         const queried = await queryRect(selector, comp);
         if (queried) {
-          rect = queried;
-          refs.set("rect", rect);
+          currentRect = queried;
+          refs.set("rect", currentRect);
         }
       }
       service.send({
         type: "POINTER_DOWN",
-        point: { x: touch.clientX, y: touch.clientY },
-        rect: rect ?? undefined,
+        point: { x: clientX, y: clientY },
+        rect: currentRect ?? undefined,
       });
+      if (canQuery) {
+        queryRect(selector, comp).then((queried) => {
+          if (queried) {
+            refs.set("rect", queried);
+          }
+        });
+      }
     },
 
-    handleTouchMove(e: MiniAppTouchEvent) {
+    handleTouchMove(e: any) {
       if (computed("isDisabled") || computed("isReadOnly")) return;
-      const touch = e.touches[0];
-      if (!touch) return;
+      const clientX = e?.clientX ?? e?.touches?.[0]?.clientX;
+      const clientY = e?.clientY ?? e?.touches?.[0]?.clientY;
+      if (clientX === undefined || clientY === undefined) return;
       service.send({
         type: "POINTER_MOVE",
-        point: { x: touch.clientX, y: touch.clientY },
+        point: { x: clientX, y: clientY },
       });
     },
 
-    handleTouchEnd(_e: MiniAppTouchEvent) {
+    handleTouchEnd(_e?: any) {
       if (computed("isDisabled") || computed("isReadOnly")) return;
       service.send({
         type: "POINTER_UP",
       });
     },
 
-    async handleTap(e: MiniAppCustomEvent) {
+    async handleTap(e: any) {
       if (computed("isDisabled") || computed("isReadOnly")) return;
-      const detail = e.detail as { x?: number; y?: number } | undefined;
-      const touches = (e as any).touches as
+      const detail = e?.detail as { x?: number; y?: number } | undefined;
+      const touches = (e as any)?.touches as
         | Array<{ clientX: number; clientY: number }>
         | undefined;
-      const x = detail?.x ?? touches?.[0]?.clientX;
-      const y = detail?.y ?? touches?.[0]?.clientY;
+      const x = e?.clientX ?? e?.x ?? detail?.x ?? touches?.[0]?.clientX;
+      const y = e?.clientY ?? e?.y ?? detail?.y ?? touches?.[0]?.clientY;
       if (x === undefined || y === undefined) return;
-      const comp = service.prop("component");
       const controlId = dom.getControlId(scope);
       const selector = `#${controlId}`;
-      let rect = refs.get("rect");
-      if (comp) {
+      let currentRect = refs.get("rect");
+      if (!currentRect && canQuery) {
         const queried = await queryRect(selector, comp);
         if (queried) {
-          rect = queried;
-          refs.set("rect", rect);
+          currentRect = queried;
+          refs.set("rect", currentRect);
         }
       }
       service.send({
         type: "POINTER_DOWN",
         point: { x, y },
-        rect: rect ?? undefined,
+        rect: currentRect ?? undefined,
       });
       service.send({
         type: "POINTER_UP",
       });
+      if (canQuery) {
+        queryRect(selector, comp).then((queried) => {
+          if (queried) {
+            refs.set("rect", queried);
+          }
+        });
+      }
     },
   };
 }

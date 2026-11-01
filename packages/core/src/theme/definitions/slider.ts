@@ -16,16 +16,15 @@ export default function sliderTheme(options: ThemeOptions = {}) {
       label: "block font-medium text-neutral-900 leading-snug",
       valueText: "text-neutral-500 font-medium tabular-nums",
       control: "relative flex items-center cursor-pointer",
-      track:
-        "relative bg-neutral-200 dark:bg-neutral-800 rounded-full grow overflow-hidden",
+      track: "relative bg-neutral-200 rounded-full grow overflow-hidden",
       range: "absolute rounded-full transition-all duration-75",
       thumb:
         "absolute rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center justify-center transition-[transform,shadow] duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-      markerGroup: "relative w-full pointer-events-none mt-1",
+      markerGroup: "absolute inset-0 pointer-events-none",
       marker:
         "absolute flex flex-col items-center -translate-x-1/2 text-neutral-400 font-medium",
-      markerTick: "w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700",
-      markerLabel: "mt-1 tabular-nums",
+      markerTick: "w-1 h-1 rounded-full bg-neutral-300",
+      markerLabel: "mt-2 tabular-nums select-none",
     },
     variants: {
       color: createColorVariants(colors),
@@ -78,6 +77,9 @@ export default function sliderTheme(options: ThemeOptions = {}) {
           track: "w-full",
           range: "h-full top-0",
           thumb: "top-1/2",
+          marker: "top-1/2",
+          markerTick: "-translate-y-1/2",
+          markerLabel: "mt-2",
         },
         vertical: {
           root: "h-48 flex-row items-center",
@@ -85,6 +87,9 @@ export default function sliderTheme(options: ThemeOptions = {}) {
           track: "h-full w-2",
           range: "w-full bottom-0",
           thumb: "left-1/2",
+          marker: "left-1/2 flex-row",
+          markerTick: "-translate-x-1/2",
+          markerLabel: "ml-2.5 mt-0",
         },
       },
       disabled: {
@@ -103,12 +108,26 @@ export default function sliderTheme(options: ThemeOptions = {}) {
       },
       dragging: {
         true: {
-          thumb: "scale-110 shadow-lg",
+          range: "transition-none",
+          thumb: "transition-none scale-110 shadow-lg",
+        },
+        false: {},
+      },
+      hasMarkers: {
+        true: {
+          root: "pb-5",
         },
         false: {},
       },
     },
     compoundVariants: [
+      {
+        orientation: "vertical",
+        hasMarkers: true,
+        class: {
+          root: "pr-6 pb-0",
+        },
+      },
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
         invalid: false,
@@ -132,6 +151,7 @@ export default function sliderTheme(options: ThemeOptions = {}) {
       disabled: false,
       invalid: false,
       dragging: false,
+      hasMarkers: false,
     },
   });
 }

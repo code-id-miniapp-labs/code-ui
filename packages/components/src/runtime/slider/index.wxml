@@ -1,3 +1,4 @@
+<wxs src="../../.wxs/machines/slider/src/wxs/slider-gesture.wxs" module="gesture" />
 <view
   id="{{slider.rootProps.id}}"
   class="{{classes.root}}"
@@ -23,14 +24,28 @@
     id="{{slider.controlProps.id}}"
     class="{{classes.control}}"
     data-part="control"
-    bindtouchstart="handleTouchStart"
-    catchtouchmove="handleTouchMove"
-    bindtouchend="handleTouchEnd"
-    bindtouchcancel="handleTouchEnd"
-    bindtap="handleTap"
+    data-disabled="{{slider.disabled}}"
+    data-readonly="{{slider.readOnly}}"
+    data-orientation="{{slider.orientation}}"
+    data-min="{{slider.min}}"
+    data-max="{{slider.max}}"
+    data-step="{{slider.step}}"
+    data-inverted="{{slider.inverted}}"
+    data-is-range="{{slider.thumbs.length > 1}}"
+    data-range-id="{{slider.rangeProps.id}}"
+    data-thumb-ids="{{slider.thumbIds}}"
+    data-percents="{{slider.thumbPercents}}"
+    data-rect="{{slider.rect}}"
+    change:rect="{{gesture.onRectChange}}"
+    rect="{{slider.rect}}"
+    bindtouchstart="{{gesture.onTouchStart}}"
+    catchtouchmove="{{gesture.onTouchMove}}"
+    bindtouchend="{{gesture.onTouchEnd}}"
+    bindtouchcancel="{{gesture.onTouchEnd}}"
+    bindtap="{{gesture.onTap}}"
   >
     <view id="{{slider.trackProps.id}}" class="{{classes.track}}" data-part="track">
-      <view class="{{classes.range}}" data-part="range" style="{{slider.rangeStyle}}" />
+      <view id="{{slider.rangeProps.id}}" class="{{classes.range}}" data-part="range" style="{{slider.rangeStyle}}" />
     </view>
 
     <view
@@ -58,10 +73,9 @@
         data-active="{{item.active}}"
         style="{{item.style}}"
       >
-        <view class="{{classes.markerTick}}" />
-        <text wx:if="{{item.label}}" class="{{classes.markerLabel}}">{{item.label}}</text>
+        <view class="{{classes.markerTick}} {{item.active ? 'bg-white/90' : ''}}" />
+        <text wx:if="{{item.label}}" class="{{classes.markerLabel}} {{item.active ? 'text-neutral-700 font-semibold' : ''}}">{{item.label}}</text>
       </view>
     </view>
   </view>
 </view>
-
