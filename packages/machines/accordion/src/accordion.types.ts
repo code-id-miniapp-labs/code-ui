@@ -105,6 +105,8 @@ export interface AccordionProps {
   onChange?: ((details: AccordionValueChangeDetails) => void) | undefined;
   /** Value change handler */
   onValueChange?: ((details: AccordionValueChangeDetails) => void) | undefined;
+  /** Model value sync handler */
+  onUpdateModelValue?: ((value: string | string[]) => void) | undefined;
 }
 
 export interface AccordionContext {

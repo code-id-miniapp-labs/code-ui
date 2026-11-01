@@ -96,6 +96,8 @@ export interface QrCodeProps {
   /** Whether to render the center overlay slot when no overlaySrc is provided */
   showOverlay?: boolean | undefined;
   /** Callback fired when encoded value changes */
+  onChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
+  /** Callback fired when encoded value changes (legacy alias) */
   onValueChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
 }
 

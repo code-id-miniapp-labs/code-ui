@@ -1,5 +1,9 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
 import { wxButtonBehavior } from "./wx-button";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -64,8 +68,8 @@ Component(
 
     methods: {
       handleTap(e: WechatMiniprogram.TouchEvent) {
-        const api = this.data.button;
-        api?.handleTap?.(e);
+        const api = getApi(this, "button");
+        return api.handleTap(e);
       },
     },
   }),

@@ -124,12 +124,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           },
           onChange: (nextVal) => {
             const valueAsString = nextVal.join("");
-            prop("onValueChange")?.({ value: nextVal, valueAsString });
-            prop("component")?.triggerEvent?.("change", {
+            (prop("onChange") ?? prop("onValueChange"))?.({
               value: nextVal,
               valueAsString,
             });
-            prop("component")?.setData?.({ value: nextVal });
 
             const formField = getRefs().get("formField");
             if (formField) {
@@ -141,8 +139,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               nextVal.length === (prop("length") ?? 4) &&
               nextVal.every((c) => Boolean(c && c.trim() !== ""));
             if (isComplete) {
-              prop("onValueComplete")?.({ value: nextVal, valueAsString });
-              prop("component")?.triggerEvent?.("complete", {
+              (prop("onComplete") ?? prop("onValueComplete"))?.({
                 value: nextVal,
                 valueAsString,
               });
@@ -400,7 +397,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           formField.emitFocus(valueAsString);
         }
 
-        prop("component")?.triggerEvent?.("focus", {
+        prop("onFocus")?.({
           value: currentValues,
           valueAsString,
           index: targetIndex,
@@ -415,7 +412,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         if (formField) {
           formField.emitBlur(valueAsString);
         }
-        prop("component")?.triggerEvent?.("blur", {
+        prop("onBlur")?.({
           value: context.get("value"),
           valueAsString,
         });
@@ -489,8 +486,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             .filter((c: string) => isValidCharacter(c, inputType));
 
           if (validChars.length === 0) {
-            prop("onValueInvalid")?.({ value: cleanVal, index });
-            prop("component")?.triggerEvent?.("invalid", {
+            (prop("onInvalid") ?? prop("onValueInvalid"))?.({
               value: cleanVal,
               index,
             });
@@ -512,8 +508,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
         const char = cleanVal;
         if (!isValidCharacter(char, inputType)) {
-          prop("onValueInvalid")?.({ value: char, index });
-          prop("component")?.triggerEvent?.("invalid", { value: char, index });
+          (prop("onInvalid") ?? prop("onValueInvalid"))?.({
+            value: char,
+            index,
+          });
           return;
         }
 

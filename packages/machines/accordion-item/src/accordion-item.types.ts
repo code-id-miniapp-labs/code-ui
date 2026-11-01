@@ -78,8 +78,12 @@ export interface AccordionItemProps {
   /** Index in parent accordion */
   groupIndex?: number | undefined;
 
-  /** Click callback */
+  /** Tap callback */
+  onTap?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
+  /** Click callback (fallback) */
   onClick?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
+  /** Change callback */
+  onChange?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
   /** Open change callback */
   onOpenChange?:
     | ((details: AccordionItemOpenChangeDetails) => void)

@@ -142,7 +142,6 @@ describe("Switch Machine", () => {
         value: true,
         checked: true,
       });
-      expect(setData).toHaveBeenCalledWith({ checked: true });
 
       machine.stop();
     });

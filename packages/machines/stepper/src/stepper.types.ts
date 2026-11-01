@@ -129,6 +129,8 @@ export interface StepperProps {
   onChange?: ((details: StepperStepChangeDetails) => void) | undefined;
   /** Callback fired when the final step is reached or completed */
   onComplete?: ((details: { step: number }) => void) | undefined;
+  /** v-model update callback */
+  onUpdateModelValue?: ((value: number) => void) | undefined;
 }
 
 export interface StepperContext {

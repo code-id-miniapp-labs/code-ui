@@ -111,9 +111,6 @@ describe("QR Code Machine", () => {
       expect(triggerEvent).toHaveBeenCalledWith("change", {
         value: "https://updated.example.com",
       });
-      expect(setData).toHaveBeenCalledWith({
-        value: "https://updated.example.com",
-      });
 
       machine.stop();
     });

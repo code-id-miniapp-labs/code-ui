@@ -1,7 +1,11 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { generateThemeCSS, SHADES } from "../src/core/theme";
 import { transformAppStyle } from "../src/core/style-inject";
 import { PluginConfigManager } from "../src/core/config";
+import { collectUsedComponents } from "../src/core/used-components";
 
 describe("generateThemeCSS", () => {
   it("generates default palette tokens with 50-950 shades and dark mode shifts", () => {
@@ -147,6 +151,27 @@ describe("codeUI virtual themes", () => {
     expect(brandCompound?.class?.root).toContain("bg-brand");
   });
 
+  it("replaces default colors when colorsMode is replace", () => {
+    const config = {
+      prefix: "cui",
+      ui: {
+        colors: {
+          primary: "#3b82f6",
+          danger: "#ef4444",
+        },
+        colorsMode: "replace" as const,
+      },
+    };
+
+    const compiled = compileComponentTheme("button", buttonTheme, config);
+    expect(Object.keys(compiled.variants.color)).toEqual(["primary", "danger"]);
+    expect(
+      compiled.compoundVariants?.every(
+        (cv: any) => cv.color === "primary" || cv.color === "danger",
+      ),
+    ).toBe(true);
+  });
+
   it("compiles drawer theme dynamically", () => {
     const config = {
       prefix: "cui",
@@ -222,7 +247,8 @@ describe("codeUI virtual themes", () => {
     const configManager = new PluginConfigManager({
       icons: { autoPlugin: true },
     });
-    const existing = '@import "tailwindcss";\n@plugin "@egoist/tailwindcss-icons";';
+    const existing =
+      '@import "tailwindcss";\n@plugin "@egoist/tailwindcss-icons";';
     const result = transformAppStyle(
       existing,
       "/test/src/app.css",
@@ -233,6 +259,140 @@ describe("codeUI virtual themes", () => {
     // Should not contain a second @plugin directive
     const matches = result?.code.match(/@plugin "@egoist\/tailwindcss-icons"/g);
     expect(matches?.length).toBe(1);
+  });
+
+  it("collects used components from WXML tags and usingComponents", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-used-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "pages/index.wxml"),
+        "<c-button />\n<c-card></c-card>",
+      );
+      fs.writeFileSync(
+        path.join(root, "app.json"),
+        JSON.stringify({
+          usingComponents: {
+            "my-checkbox": "@code-ui/components/runtime/checkbox/index",
+          },
+        }),
+      );
+
+      const scan = collectUsedComponents(
+        root,
+        new Set(["button", "card", "checkbox"]),
+      );
+      expect(scan?.components).toEqual(new Set(["button", "card", "checkbox"]));
+      expect(scan?.files).toHaveLength(2);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("matches multi-word components and resolves transitive dependencies like accordion and stepper", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-multi-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "pages/index.wxml"),
+        "<c-qr-code value='test' />\n<c-accordion />\n<c-stepper />\n<c-pin-input />",
+      );
+
+      const known = new Set([
+        "accordion",
+        "accordionItem",
+        "stepper",
+        "stepperItem",
+        "qrCode",
+        "pinInput",
+        "icon",
+      ]);
+
+      const scan = collectUsedComponents(root, known);
+      expect(scan?.components.has("qr-code")).toBe(true);
+      expect(scan?.components.has("accordion")).toBe(true);
+      expect(scan?.components.has("accordion-item")).toBe(true);
+      expect(scan?.components.has("stepper")).toBe(true);
+      expect(scan?.components.has("stepper-item")).toBe(true);
+      expect(scan?.components.has("pin-input")).toBe(true);
+      expect(scan?.components.has("icon")).toBe(true);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("includes qr-code, accordion, and stepper theme classes in stylesheet injection", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-styles-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "pages/index.wxml"),
+        "<c-qr-code value='https://code-ui.dev' />\n<c-accordion />\n<c-stepper />",
+      );
+
+      const configManager = new PluginConfigManager({});
+      const result = transformAppStyle(
+        '@import "tailwindcss";',
+        path.join(root, "app.wxss"),
+        root,
+        configManager,
+        () => {},
+      );
+
+      // qr-code theme classes
+      expect(result?.code).toContain("w-40");
+      expect(result?.code).toContain("h-40");
+
+      // accordion-item theme classes (resolved via transitive dependency)
+      expect(result?.code).toContain("select-none");
+
+      // stepper-item separator classes (resolved via transitive dependency)
+      expect(result?.code).toContain("pointer-events-none");
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("falls back to all themes when dynamic component tags are present", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-used-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "pages/index.wxml"),
+        '<component is="{{tag}}" />',
+      );
+
+      expect(
+        collectUsedComponents(root, new Set(["button", "card", "checkbox"])),
+      ).toBeNull();
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("prunes unused component theme classes from the app stylesheet", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-used-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "pages/index.wxml"),
+        "<c-button /><c-card></c-card>",
+      );
+
+      const configManager = new PluginConfigManager({});
+      const result = transformAppStyle(
+        '@import "tailwindcss";',
+        path.join(root, "app.wxss"),
+        root,
+        configManager,
+        () => {},
+      );
+
+      expect(result?.code).toContain("inline-flex");
+      expect(result?.code).not.toContain("resize-none");
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("includes collection preset icon classes in @source inline directive", () => {
@@ -289,4 +449,3 @@ describe("codeUI virtual themes", () => {
     expect(virtualCode).toContain('"zinc": "#71717a"');
   });
 });
-

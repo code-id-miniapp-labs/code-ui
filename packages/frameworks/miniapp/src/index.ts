@@ -5,6 +5,12 @@
  */
 
 export { MiniappMachine } from "./machine";
+export { createMachinePropGetter } from "./prop-getter";
+export type { UserPropsGetter } from "./prop-getter";
+export { normalizeEvent, toMiniEventName } from "./normalize-event";
+export type { NormalizedMiniEvent } from "./normalize-event";
+export { normalizeProps, createNormalizer } from "./normalize-props";
+export type { Normalizer, NormalizerFn } from "./normalize-props";
 export { connectToPage, connectToComponent } from "./connect";
 export type { ConnectFn, MiniAppInstance } from "./connect";
 export {

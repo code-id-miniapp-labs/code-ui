@@ -94,12 +94,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
             defaultValue: initial,
             isEqual,
             onChange: (nextVal) => {
-              prop("onValueChange")?.({ value: nextVal });
               prop("onChange")?.({ value: nextVal });
-              prop("component")?.triggerEvent?.("change", {
-                value: nextVal,
-              });
-              prop("component")?.setData?.({ value: nextVal });
 
               emitGroupChange(
                 {

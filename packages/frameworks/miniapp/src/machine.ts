@@ -10,9 +10,8 @@ import {
 import {
   callAll,
   isFunction,
-  isPromise,
   isString,
-  normalizeProps,
+  normalizeProps as normalizeUtilProps,
   runIfFn,
   warn,
 } from "@code-ui/utils";
@@ -28,6 +27,7 @@ import {
   resolveStateValue,
 } from "@code-ui/core";
 import { bindable } from "./bindable";
+import { createMachinePropGetter } from "./prop-getter";
 import type {
   ActionsOrFn,
   Bindable,
@@ -97,7 +97,7 @@ function normalizeUserProps<T extends MachineSchema>(
 ): Partial<T["props"]> {
   const evaluated = runIfFn(input) as Partial<T["props"]> | undefined;
   if (!evaluated || typeof evaluated !== "object") return {};
-  return normalizeProps(evaluated) as Partial<T["props"]>;
+  return normalizeUtilProps(evaluated) as Partial<T["props"]>;
 }
 
 /**
@@ -111,179 +111,6 @@ function shallowContains(target: Dict, patch: Dict): boolean {
     }
   }
   return true;
-}
-
-/**
- * Resolves the owner (parent component or current page) of a component.
- * `selectOwnerComponent()` returns `null` when the component lives directly in
- * a page, in which case the current page is the owner.
- */
-function resolveOwner(component: any): any {
-  const owner =
-    typeof component.selectOwnerComponent === "function"
-      ? component.selectOwnerComponent()
-      : undefined;
-  if (owner) return owner;
-
-  if (typeof getCurrentPages === "function") {
-    const pages = getCurrentPages();
-    return pages && pages.length > 0 ? pages[pages.length - 1] : undefined;
-  }
-  return undefined;
-}
-
-interface OwnerPatchState {
-  depth: number;
-  restored: Array<[string, AnyFn | undefined, AnyFn, boolean]>;
-  collectors: Array<(p: Promise<any>) => void>;
-}
-
-const ownerStates = new WeakMap<object, OwnerPatchState>();
-const interceptors = new WeakSet<AnyFn>();
-
-function restoreOwner(owner: any, state: OwnerPatchState): void {
-  for (let i = 0; i < state.restored.length; i++) {
-    const entry = state.restored[i];
-    if (!entry) continue;
-    const [name, original, wrapper, wasOwn] = entry;
-    if (owner[name] === wrapper) {
-      if (wasOwn) {
-        owner[name] = original;
-      } else {
-        delete owner[name];
-      }
-    }
-  }
-  ownerStates.delete(owner);
-}
-
-/**
- * Temporarily wraps the own, writable, data-property methods of `owner` so
- * that a promise returned by the handler that `triggerEvent` invokes
- * synchronously can be captured. Accessors, non-writable members and methods
- * that are already wrapped (re-entrant calls) are never touched. Restoration
- * only reverts members that still hold our wrapper once the outermost call completes.
- */
-function interceptOwnerPromises(
-  owner: any,
-  onPromise: (promise: Promise<any>) => void,
-): VoidFunction {
-  let state = ownerStates.get(owner);
-  if (state) {
-    state.depth++;
-    state.collectors.push(onPromise);
-    return () => {
-      if (!state) return;
-      state.depth--;
-      state.collectors.pop();
-      if (state.depth === 0) {
-        restoreOwner(owner, state);
-      }
-    };
-  }
-
-  const restored: Array<[string, AnyFn | undefined, AnyFn, boolean]> = [];
-  const seen = new Set<string>();
-  state = {
-    depth: 1,
-    restored,
-    collectors: [onPromise],
-  };
-  ownerStates.set(owner, state);
-
-  let current = owner;
-  while (current && current !== Object.prototype) {
-    const names = Object.getOwnPropertyNames(current);
-    for (let i = 0; i < names.length; i++) {
-      const name = names[i];
-      if (
-        !name ||
-        seen.has(name) ||
-        name.startsWith("__") ||
-        name === "setData" ||
-        name === "constructor"
-      ) {
-        if (name) seen.add(name);
-        continue;
-      }
-      seen.add(name);
-
-      const descriptor = Object.getOwnPropertyDescriptor(current, name);
-      if (!descriptor || typeof descriptor.value !== "function") continue;
-      if (current === owner && !descriptor.writable) continue;
-
-      const original = descriptor.value;
-      if (interceptors.has(original)) continue;
-
-      const currentState = state;
-      const wrapper = function (this: unknown, ...args: unknown[]) {
-        const ret = original.apply(this, args);
-        if (isPromise(ret)) {
-          const collector =
-            currentState.collectors[currentState.collectors.length - 1];
-          collector?.(ret);
-        }
-        return ret;
-      };
-      interceptors.add(wrapper);
-
-      const wasOwn = Object.prototype.hasOwnProperty.call(owner, name);
-      const ownOriginal = wasOwn ? owner[name] : undefined;
-
-      try {
-        owner[name] = wrapper;
-        restored.push([name, ownOriginal, wrapper, wasOwn]);
-      } catch {
-        // Ignore read-only properties
-      }
-    }
-    current = Object.getPrototypeOf(current);
-  }
-
-  return () => {
-    if (!state) return;
-    state.depth--;
-    state.collectors.pop();
-    if (state.depth === 0) {
-      restoreOwner(owner, state);
-    }
-  };
-}
-
-/**
- * Builds a callback that forwards to `component.triggerEvent(eventName)` and
- * returns the handler's promise (if any) so async-aware machines can await it.
- */
-function createEventBridge(component: any, eventName: string) {
-  return (detail?: any): Promise<any> | undefined => {
-    let asyncPromise: Promise<any> | undefined;
-    const capture = (promise: Promise<any>) => {
-      asyncPromise = promise;
-    };
-
-    if (detail && typeof detail === "object") {
-      const origSetPromise = detail.setPromise;
-      detail.setPromise = (promise: Promise<any>) => {
-        capture(promise);
-        origSetPromise?.(promise);
-      };
-    }
-
-    const owner = resolveOwner(component);
-    const restore =
-      owner && typeof owner === "object"
-        ? interceptOwnerPromises(owner, capture)
-        : undefined;
-
-    try {
-      const ret = component?.triggerEvent?.(eventName, detail);
-      if (isPromise(ret)) return ret;
-    } finally {
-      restore?.();
-    }
-
-    return asyncPromise;
-  };
 }
 
 /**
@@ -317,7 +144,6 @@ export class MiniappMachine<T extends MachineSchema> {
   private readonly resolvedProps: () => Dict;
   /** Per-key computed signals to prevent cross-prop reactive invalidations. */
   private readonly propCache = new Map<PropertyKey, () => unknown>();
-  private readonly eventBridges = new Map<string, AnyFn>();
 
   private contextRefs: Array<{ get: () => unknown }> = [];
   private readonly computedCache = new Map<PropertyKey, () => unknown>();
@@ -812,34 +638,18 @@ export class MiniappMachine<T extends MachineSchema> {
    * read a specific prop key.
    */
   private createPropFn(): PropFn<T> {
+    const propGetter = createMachinePropGetter(
+      this.scope.component,
+      () => this.resolvedProps(),
+    );
     return ((key: PropertyKey) => {
       let getter = this.propCache.get(key);
       if (!getter) {
-        getter = alienComputed(() => this.resolvedProps()[key as string]);
+        getter = alienComputed(() => propGetter(key as string));
         this.propCache.set(key, getter);
       }
-      const value = getter();
-      if (value !== undefined) return value;
-      return this.getEventBridge(key);
+      return getter();
     }) as PropFn<T>;
-  }
-
-  /** Lazily creates (and caches) an `onXxx` handler that fires `triggerEvent`. */
-  private getEventBridge(key: PropertyKey): AnyFn | undefined {
-    if (typeof key !== "string" || !key.startsWith("on")) return undefined;
-
-    const component = this.scope.component;
-    if (!component || typeof component.triggerEvent !== "function") {
-      return undefined;
-    }
-
-    let bridge = this.eventBridges.get(key);
-    if (!bridge) {
-      const eventName = key.charAt(2).toLowerCase() + key.slice(3);
-      bridge = createEventBridge(component, eventName);
-      this.eventBridges.set(key, bridge);
-    }
-    return bridge;
   }
 
   private createContext(): BindableContext<T> {

@@ -101,8 +101,7 @@ function setItemOpen(
   const val = computed("resolvedValue");
   const details = { value: val, open: nextOpen };
   if (isTap) {
-    prop("onClick")?.(details);
-    prop("component")?.triggerEvent?.("click", details);
+    (prop("onTap") ?? prop("onClick"))?.(details);
   }
 
   const bus = refs.get("currentGroupBus") || prop("groupBus");
@@ -113,10 +112,6 @@ function setItemOpen(
 
   context.set("open", nextOpen);
   prop("onOpenChange")?.(details);
-  prop("component")?.triggerEvent?.("open-change", details);
-  if (isTap) {
-    prop("component")?.triggerEvent?.("change", details);
-  }
 }
 
 export const accordionItemMachine: AccordionItemMachine =

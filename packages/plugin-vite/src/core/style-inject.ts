@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { getActiveCollections } from "@code-ui/core";
+import { componentThemes, getActiveCollections } from "@code-ui/core";
 import { THEME_TAG } from "./theme";
 import type { PluginConfigManager } from "./config";
+import { collectUsedComponents, toKebabCase } from "./used-components";
 
 const require = createRequire(import.meta.url);
 
@@ -165,6 +166,17 @@ export function transformAppStyle(
   const styleDir = path.dirname(cleanId);
   let injection = "";
 
+  const usedScan = collectUsedComponents(
+    projectRoot,
+    new Set(Object.keys(componentThemes)),
+  );
+  if (usedScan) {
+    for (const file of usedScan.files) addWatchFile(file);
+    // The app wrapper is injected at build time and may not exist in source WXML.
+    usedScan.components.add("app");
+  }
+  const usedComponents = usedScan?.components ?? null;
+
   if (configManager.configPath) {
     addWatchFile(configManager.configPath);
     const relConfig = path
@@ -186,10 +198,19 @@ export function transformAppStyle(
   );
 
   if (compScanDir) {
-    const relComp = path.relative(styleDir, compScanDir).replace(/\\/g, "/");
-    const compSource = `${relComp.startsWith(".") ? relComp : `./${relComp}`}/${compGlobPattern}`;
-    if (!code.includes(relComp)) {
-      injection += `\n@source "${compSource}";\n`;
+    const componentDirs = usedComponents
+      ? Array.from(usedComponents).map((name) =>
+          path.join(compScanDir, toKebabCase(name)),
+        )
+      : [compScanDir];
+
+    for (const componentDir of componentDirs) {
+      if (!fs.existsSync(componentDir)) continue;
+      const relComp = path.relative(styleDir, componentDir).replace(/\\/g, "/");
+      const compSource = `${relComp.startsWith(".") ? relComp : `./${relComp}`}/${compGlobPattern}`;
+      if (!code.includes(compSource)) {
+        injection += `\n@source "${compSource}";\n`;
+      }
     }
   }
 
@@ -205,7 +226,7 @@ export function transformAppStyle(
 
   // All @code-ui/core theme definitions (plus user color & component overrides)
   // are already compiled in memory and emitted via @source inline(...) below.
-  injection += configManager.getInlineThemeClassesDirective();
+  injection += configManager.getInlineThemeClassesDirective(usedComponents);
 
   if (!code.includes(THEME_TAG)) {
     const themeCSS = configManager.getThemeCSS();

@@ -44,4 +44,35 @@ describe("Button via component triggerEvent (page async handler)", () => {
 
     machine.stop();
   });
+
+  it("triggers normal tap event to parent page without loadingAuto", async () => {
+    let tapCount = 0;
+    const page: Record<string, any> = {
+      handleTap() {
+        tapCount++;
+      },
+    };
+    (globalThis as any).getCurrentPages = () => [page];
+
+    const component = {
+      selectOwnerComponent: () => null,
+      triggerEvent: (name: string) => {
+        if (name === "tap") page.handleTap();
+      },
+    };
+
+    const machine = new MiniappMachine(buttonMachine, {
+      component,
+      loadingAuto: false,
+    } as any);
+
+    machine.start();
+    const api = connectButton(machine.service);
+    api.handleTap({});
+
+    await sleep(5);
+    expect(tapCount).toBe(1);
+    expect(machine.state.get()).toBe("idle");
+    machine.stop();
+  });
 });

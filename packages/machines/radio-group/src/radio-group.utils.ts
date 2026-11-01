@@ -23,12 +23,7 @@ export function dispatchChangeEvent(
   val: string | null,
 ) {
   const valStr = val ?? "";
-  prop("onValueChange")?.({ value: valStr });
   prop("onChange")?.({ value: valStr });
-  prop("component")?.triggerEvent?.("change", {
-    value: val,
-  });
-  prop("component")?.setData?.({ value: val });
 
   const formField = refs.get("formField");
   if (formField) {

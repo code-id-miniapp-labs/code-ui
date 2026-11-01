@@ -60,9 +60,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
           value: controlledVal,
           defaultValue: controlledVal ?? defaultVal ?? "",
           onChange: (nextVal) => {
-            prop("onValueChange")?.({ value: nextVal });
-            prop("component")?.triggerEvent?.("change", { value: nextVal });
-            prop("component")?.setData?.({ value: nextVal });
+            prop("onChange")?.({ value: nextVal });
 
             const formField = getRefs().get("formField");
             if (formField) {
@@ -260,24 +258,23 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
 
       handleFocus: ({ context, prop, refs }) => {
         const val = context.get("value");
-        prop("component")?.triggerEvent?.("focus", { value: val });
+        prop("onFocus")?.({ value: val });
         refs.get("formField")?.emitFocus(val);
       },
 
       handleBlur: ({ context, prop, refs }) => {
         const val = context.get("value");
-        prop("component")?.triggerEvent?.("blur", { value: val });
+        prop("onBlur")?.({ value: val });
         refs.get("formField")?.emitBlur(val);
       },
 
       handleConfirm: ({ context, prop }) => {
         const val = context.get("value");
-        prop("component")?.triggerEvent?.("confirm", { value: val });
+        prop("onConfirm")?.({ value: val });
       },
 
       handleLineChange: ({ prop, event }) => {
         const details = (event as any).details;
-        prop("component")?.triggerEvent?.("linechange", details);
         prop("onLineChange")?.(details);
       },
 
@@ -288,7 +285,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
 
       clearValue: ({ context, prop }) => {
         context.set("value", "");
-        prop("component")?.triggerEvent?.("clear", {});
+        prop("onClear")?.({});
       },
 
       resetValue: ({ context, prop, refs }) => {

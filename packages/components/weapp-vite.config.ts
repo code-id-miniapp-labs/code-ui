@@ -147,7 +147,7 @@ function syncWxsFiles(): Plugin {
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/(^|[^:])\/\/.*/g, "$1")
             .replace(/\s+/g, " ")
-            .replace(/\s*([;{}(),=+\-*\/?:<>!])\s*/g, "$1")
+            .replace(/\s*([;{}(),=+\-*/?:<>!])\s*/g, "$1")
             .trim();
           fs.writeFileSync(path.join(targetDir, fileName), minified, "utf8");
         }
@@ -219,6 +219,10 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
+            {
+              name: "alien-signals",
+              test: /[\\/]alien-signals[\\/]/,
+            },
             {
               name: "behaviors/stepper",
               test: /[\\/]behaviors[\\/]stepper/,
