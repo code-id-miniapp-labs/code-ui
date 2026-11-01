@@ -11,6 +11,7 @@
     "pages/input/index",
     "pages/pin-input/index",
     "pages/switch/index",
+    "pages/slider/index",
     "pages/checkbox/index",
     "pages/radio/index",
     "pages/form/index",

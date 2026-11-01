@@ -140,6 +140,12 @@
       "require": "./dist/runtime/radio-group/index.js"
     },
     "./radio-group/*": "./dist/runtime/radio-group/*",
+    "./slider": {
+      "types": "./dist/runtime/slider/index.d.ts",
+      "import": "./dist/runtime/slider/index.js",
+      "require": "./dist/runtime/slider/index.js"
+    },
+    "./slider/*": "./dist/runtime/slider/*",
     "./stepper": {
       "types": "./dist/runtime/stepper/index.d.ts",
       "import": "./dist/runtime/stepper/index.js",
@@ -232,6 +238,7 @@
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
+    "@code-ui/slider": "workspace:*",
     "@code-ui/stepper": "workspace:*",
     "@code-ui/stepper-item": "workspace:*",
     "@code-ui/swipe-cell": "workspace:*",

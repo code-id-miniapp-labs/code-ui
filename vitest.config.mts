@@ -54,6 +54,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/radio-group/src",
       ),
+      "@code-ui/slider": resolve(
+        import.meta.dirname,
+        "packages/machines/slider/src",
+      ),
       "@code-ui/stepper": resolve(
         import.meta.dirname,
         "packages/machines/stepper/src",

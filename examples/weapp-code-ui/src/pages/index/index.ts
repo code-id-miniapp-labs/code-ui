@@ -65,6 +65,13 @@ Page({
         path: "/pages/switch/index",
       },
       {
+        id: "slider",
+        name: "Slider",
+        desc: "Continuous & stepped range selection with single/dual thumbs, markers & Form link.",
+        badge: "Form",
+        path: "/pages/slider/index",
+      },
+      {
         id: "checkbox",
         name: "Checkbox & CheckboxGroup",
         desc: "Accessible checkbox and multi-select groups with indeterminate state, card variants, min/max limits & Form link.",

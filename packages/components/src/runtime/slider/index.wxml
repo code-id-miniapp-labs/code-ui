@@ -1,0 +1,67 @@
+<view
+  id="{{slider.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="slider"
+  data-part="root"
+  data-disabled="{{slider.disabled}}"
+  data-readonly="{{slider.readOnly}}"
+  data-invalid="{{slider.invalid}}"
+  data-dragging="{{slider.dragging}}"
+  data-orientation="{{slider.orientation}}"
+  aria-disabled="{{slider.disabled}}"
+  aria-invalid="{{slider.invalid}}"
+>
+  <view wx:if="{{slider.label || hasLabelSlot}}" class="{{classes.wrapper}}" data-part="wrapper">
+    <text wx:if="{{slider.label}}" class="{{classes.label}}" data-part="label">{{slider.label}}</text>
+    <slot wx:else name="label" />
+
+    <text wx:if="{{showValue}}" class="{{classes.valueText}}" data-part="value-text">{{slider.valueText}}</text>
+    <slot wx:else name="value" />
+  </view>
+
+  <view
+    id="{{slider.controlProps.id}}"
+    class="{{classes.control}}"
+    data-part="control"
+    bindtouchstart="handleTouchStart"
+    catchtouchmove="handleTouchMove"
+    bindtouchend="handleTouchEnd"
+    bindtouchcancel="handleTouchEnd"
+    bindtap="handleTap"
+  >
+    <view id="{{slider.trackProps.id}}" class="{{classes.track}}" data-part="track">
+      <view class="{{classes.range}}" data-part="range" style="{{slider.rangeStyle}}" />
+    </view>
+
+    <view
+      wx:for="{{slider.thumbs}}"
+      wx:key="index"
+      id="{{item.id}}"
+      class="{{classes.thumb}}"
+      data-part="thumb"
+      data-index="{{item.index}}"
+      data-dragging="{{slider.activeThumbIndex === item.index}}"
+      style="{{item.style}}"
+      aria-valuemin="{{slider.min}}"
+      aria-valuemax="{{slider.max}}"
+      aria-valuenow="{{item.value}}"
+      aria-orientation="{{slider.orientation}}"
+      aria-disabled="{{slider.disabled}}"
+    />
+
+    <view wx:if="{{slider.markers && slider.markers.length > 0}}" class="{{classes.markerGroup}}" data-part="marker-group">
+      <view
+        wx:for="{{slider.markers}}"
+        wx:key="value"
+        class="{{classes.marker}}"
+        data-part="marker"
+        data-active="{{item.active}}"
+        style="{{item.style}}"
+      >
+        <view class="{{classes.markerTick}}" />
+        <text wx:if="{{item.label}}" class="{{classes.markerLabel}}">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
