@@ -16,5 +16,4 @@ export const defaultAccordionProps: AccordionProps = {
   items: [],
   linkedCount: 0,
   onChange: undefined,
-  onValueChange: undefined,
 };

@@ -85,13 +85,13 @@ describe("QR Code Machine", () => {
 
   describe("Events & Dynamic Updates", () => {
     it("updates encoded value via setValue / VALUE.SET and fires callbacks", async () => {
-      const onValueChange = vi.fn();
+      const onChange = vi.fn();
       const triggerEvent = vi.fn();
       const setData = vi.fn();
 
       const machine = new MiniappMachine(qrCodeMachine, {
         value: "initial",
-        onValueChange,
+        onChange,
         component: { triggerEvent, setData } as any,
       });
       machine.start();
@@ -105,13 +105,10 @@ describe("QR Code Machine", () => {
       const updatedApi = connectQrCode(machine.service);
       expect(updatedApi.value).toBe("https://updated.example.com");
       expect(updatedApi.path).not.toBe(initialPath);
-      expect(onValueChange).toHaveBeenCalledWith({
+      expect(onChange).toHaveBeenCalledWith({
         value: "https://updated.example.com",
       });
       expect(triggerEvent).toHaveBeenCalledWith("change", {
-        value: "https://updated.example.com",
-      });
-      expect(setData).toHaveBeenCalledWith({
         value: "https://updated.example.com",
       });
 

@@ -135,7 +135,15 @@ export interface TextareaProps {
   /** Whether to show character counter */
   count?: boolean | undefined;
   /** Callback fired when value changes */
-  onValueChange?: ((details: TextareaValueChangeDetails) => void) | undefined;
+  onChange?: ((details: TextareaValueChangeDetails) => void) | undefined;
+  /** Callback fired when textarea is focused */
+  onFocus?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when textarea loses focus */
+  onBlur?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when confirm button is tapped */
+  onConfirm?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when clear button is clicked */
+  onClear?: ((details?: Record<string, any>) => void) | undefined;
   /** Callback fired when line count/height changes */
   onLineChange?: ((details: TextareaLineChangeDetails) => void) | undefined;
 }

@@ -474,3 +474,31 @@ export enum MachineStatus {
 }
 
 export const INIT_STATE = "__init__";
+
+export type PropTypes = Record<string, any>;
+
+export type NormalizeProps<T extends PropTypes = PropTypes> = ((
+  props: Dict,
+) => Dict) & {
+  [K in keyof T]: (props: Dict) => T[K];
+} & {
+  element: (props: Dict) => any;
+  button: (props: Dict) => any;
+  [key: string]: (props: Dict) => any;
+};
+
+export function createNormalizer<T extends PropTypes = PropTypes>(
+  fn: (props: Dict) => Dict,
+): NormalizeProps<T> {
+  const normalizer = ((props: Dict) => fn(props)) as NormalizeProps<T>;
+  return new Proxy(normalizer, {
+    get(target, prop, receiver) {
+      if (typeof prop === "string" && prop in target) {
+        return Reflect.get(target, prop, receiver);
+      }
+      return (props: Dict) => fn(props);
+    },
+  });
+}
+
+export const defaultNormalizer: NormalizeProps = createNormalizer((props) => props);

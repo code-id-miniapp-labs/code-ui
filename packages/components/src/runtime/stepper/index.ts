@@ -59,9 +59,12 @@ Component(
     },
 
     methods: {
-      handleItemClick(e: WechatMiniprogram.CustomEvent) {
+      handleItemTap(e: WechatMiniprogram.CustomEvent) {
         const index = e.detail?.index ?? e.currentTarget?.dataset?.index;
         getApi(this, "stepper")?.goToStep?.(index);
+      },
+      handleItemClick(e: WechatMiniprogram.CustomEvent) {
+        this.handleItemTap(e);
       },
       setStep(index: number) {
         return getApi(this, "stepper")?.setStep?.(index);

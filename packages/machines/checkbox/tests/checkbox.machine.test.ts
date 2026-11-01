@@ -306,12 +306,10 @@ describe("Checkbox Machine", () => {
   });
 
   describe("Callbacks & Events", () => {
-    it("calls onCheckedChange and onChange on toggle", async () => {
-      const onCheckedChange = vi.fn();
+    it("calls onChange on toggle", async () => {
       const onChange = vi.fn();
 
       const machine = new MiniappMachine(checkboxMachine, {
-        onCheckedChange,
         onChange,
       });
       machine.start();
@@ -320,7 +318,6 @@ describe("Checkbox Machine", () => {
       api.toggle();
       await flush();
 
-      expect(onCheckedChange).toHaveBeenCalledWith({ value: true, checked: true });
       expect(onChange).toHaveBeenCalledWith({ value: true, checked: true });
 
       machine.stop();
@@ -370,14 +367,12 @@ describe("Checkbox Machine", () => {
 
     it("handles controlled checked mode without premature state mutation", async () => {
       const onChange = vi.fn();
-      const onCheckedChange = vi.fn();
       const component = { triggerEvent: vi.fn(), setData: vi.fn() };
 
       const machine = new MiniappMachine(checkboxMachine, {
         checked: false,
         value: "terms",
         onChange,
-        onCheckedChange,
         component,
       });
       machine.start();
@@ -392,7 +387,6 @@ describe("Checkbox Machine", () => {
 
       // Should emit change event requesting checked = true
       expect(onChange).toHaveBeenCalledWith({ value: "terms", checked: true });
-      expect(onCheckedChange).toHaveBeenCalledWith({ value: "terms", checked: true });
       expect(component.triggerEvent).toHaveBeenCalledWith("change", {
         value: "terms",
         checked: true,

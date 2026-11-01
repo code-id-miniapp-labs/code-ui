@@ -437,8 +437,11 @@ export function compileComponentTheme(
   const userColors = resolvedConfig.ui?.colors
     ? Object.keys(resolvedConfig.ui.colors)
     : [];
-  const allColors =
-    userColors.length > 0
+  const replaceColors =
+    resolvedConfig.ui?.colorsMode === "replace" && userColors.length > 0;
+  const allColors = replaceColors
+    ? userColors
+    : userColors.length > 0
       ? Array.from(new Set([...DEFAULT_THEME_COLORS, ...userColors]))
       : DEFAULT_THEME_COLORS;
 

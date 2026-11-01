@@ -325,8 +325,7 @@ export const stepperItemMachine: StepperItemMachine =
           const status = computed("status");
 
           const details = { index: idx, value: val, status };
-          prop("onClick")?.(details);
-          prop("component")?.triggerEvent?.("click", details);
+          prop("onTap")?.(details);
 
           const bus = refs.get("currentGroupBus") || prop("groupBus");
           if (bus) {

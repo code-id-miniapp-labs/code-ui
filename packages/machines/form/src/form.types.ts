@@ -212,7 +212,7 @@ export interface FormProps {
   /** Callback fired when form validation fails on submit */
   onError?: ((details: FormErrorDetails) => void) | undefined;
   /** Callback fired whenever any field value changes */
-  onValueChange?: ((values: Record<string, any>) => void) | undefined;
+  onChange?: ((values: Record<string, any>) => void) | undefined;
   /** Callback fired when the form is reset */
   onReset?: (() => void) | undefined;
   /** Callback fired after validation runs */

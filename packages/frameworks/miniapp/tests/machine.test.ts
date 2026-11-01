@@ -595,7 +595,23 @@ describe("MiniappMachine › props", () => {
       const m = new MiniappMachine(schema, { component });
       const detail = { x: 1 };
       m.prop("onValueChange")(detail);
-      expect(component.triggerEvent).toHaveBeenCalledWith("valueChange", detail);
+      expect(component.triggerEvent).toHaveBeenCalledWith(
+        "valuechange",
+        detail,
+      );
+    });
+
+    it("does not attach setPromise to non-action event details", () => {
+      let capturedDetail: any;
+      const component = {
+        triggerEvent: vi.fn((_name: string, detail: any) => {
+          capturedDetail = detail;
+        }),
+      };
+      const m = new MiniappMachine(schema, { component });
+      m.prop("onChange")({ value: ["1", "2"] });
+      expect(capturedDetail.setPromise).toBeUndefined();
+      expect("setPromise" in capturedDetail).toBe(false);
     });
 
     it("returns a stable function identity across reads", () => {
@@ -603,13 +619,16 @@ describe("MiniappMachine › props", () => {
       expect(m.prop("onTap")).toBe(m.prop("onTap"));
     });
 
-    it("prefers a user-provided handler", () => {
+    it("prefers a user-provided handler and triggers events", () => {
       const onTap = vi.fn();
+      const component = { triggerEvent: vi.fn() };
       const m = new MiniappMachine(schema, {
-        component: { triggerEvent: vi.fn() },
+        component,
         onTap,
       });
-      expect(m.prop("onTap")).toBe(onTap);
+      m.prop("onTap")({ x: 1 });
+      expect(onTap).toHaveBeenCalledWith({ x: 1 });
+      expect(component.triggerEvent).toHaveBeenCalledWith("tap", { x: 1 });
     });
 
     it("returns undefined without a component", () => {

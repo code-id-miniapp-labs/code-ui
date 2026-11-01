@@ -52,7 +52,7 @@ export interface StepperItemProps {
   groupColor?: StepperColor | "" | undefined;
   groupSize?: StepperSize | "" | undefined;
   groupVariant?: StepperVariant | "" | undefined;
-  onClick?:
+  onTap?:
     | ((details: {
         index: number;
         value: string | number;

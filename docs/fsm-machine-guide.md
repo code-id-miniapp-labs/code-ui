@@ -170,13 +170,11 @@ computed: {
 // ❌ three near-identical actions
 emitControlledCheck, emitControlledUncheck, emitCheckboxChange
 
-// ✅ one action + value
+// ✅ one action + value (machine only invokes pure prop callbacks)
 emitChange: ({ state, context, prop, refs }) => {
   const checked = state.matches("checked");
   const value = context.get("value") || prop("value") || checked;
-  prop("onCheckedChange")?.({ value, checked });
   prop("onChange")?.({ value, checked });
-  prop("component")?.triggerEvent?.("change", { value, checked });
   refs.get("formField")?.emitInput(checked);
   refs.get("formField")?.emitChange(checked);
 },
@@ -188,7 +186,7 @@ emitChange: ({ state, context, prop, refs }) => {
 - Do not also emit from `watch`; parent prop changes already reach children through the domain behavior (`onPropChanged` → `sync...Children`) and child prop watchers.
 - Emit **full snapshots**, not deltas. Children must be able to apply a snapshot without querying the parent.
 - `bindable.onChange` is the right place for user-initiated changes. It already fires once per `set`.
-- WeChat events (`triggerEvent("change")`, `update:modelValue`) belong at this boundary, not scattered across transitions.
+- **Framework event adapter bridge**: Machines MUST invoke pure props like `prop("onTap")(payload)` or `prop("onChange")(payload)`. Never call `prop("component")?.triggerEvent(...)` or `prop("component")?.setData(...)` inside machine code. The MiniApp runtime `createMachinePropGetter` adapter transparently translates these pure callbacks to WeChat's `instance.triggerEvent("tap" | "click" | "change" | "update:modelValue", ...)` and user props.
 
 ## Lifecycle and side effects
 

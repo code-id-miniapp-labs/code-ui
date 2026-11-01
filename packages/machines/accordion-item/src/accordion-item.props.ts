@@ -27,6 +27,6 @@ export const defaultAccordionItemProps: AccordionItemProps = {
   groupSize: undefined,
   groupVariant: undefined,
   groupIndex: undefined,
-  onClick: undefined,
+  onTap: undefined,
   onOpenChange: undefined,
 };

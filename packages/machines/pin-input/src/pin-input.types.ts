@@ -103,11 +103,15 @@ export interface PinInputProps {
   /** The separator character (defaults to "-") */
   separatorChar?: string | undefined;
   /** Callback fired when value changes */
-  onValueChange?: ((details: PinInputValueChangeDetails) => void) | undefined;
+  onChange?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when all inputs are filled */
-  onValueComplete?: ((details: PinInputValueChangeDetails) => void) | undefined;
+  onComplete?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when an invalid character is entered */
-  onValueInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
+  onInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
+  /** Callback fired when input receives focus */
+  onFocus?: ((details: { value: string[]; valueAsString: string; index: number }) => void) | undefined;
+  /** Callback fired when input loses focus */
+  onBlur?: ((details: { value: string[]; valueAsString: string }) => void) | undefined;
 }
 
 export type PinInputEvent =

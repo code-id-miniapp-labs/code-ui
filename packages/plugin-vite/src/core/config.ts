@@ -336,13 +336,34 @@ if (import.meta.hot) {
     return code;
   }
 
-  public getInlineThemeClassesDirective(): string {
-    if (this.cachedInlineThemeSource !== null) {
+  public getInlineThemeClassesDirective(
+    components?: Iterable<string> | null,
+  ): string {
+    const filtered = components !== undefined && components !== null;
+    if (!filtered && this.cachedInlineThemeSource !== null) {
       return this.cachedInlineThemeSource;
     }
 
+    const themeNames =
+      components !== undefined && components !== null
+        ? Array.from(components)
+            .map((name) => {
+              if (Object.prototype.hasOwnProperty.call(componentThemes, name)) {
+                return name;
+              }
+              const camel = name.replace(/-([a-z0-9])/g, (_, c: string) =>
+                c.toUpperCase(),
+              );
+              if (Object.prototype.hasOwnProperty.call(componentThemes, camel)) {
+                return camel;
+              }
+              return null;
+            })
+            .filter((name): name is string => name !== null)
+        : Object.keys(componentThemes);
+
     const allThemeClasses = new Set<string>();
-    for (const name of Object.keys(componentThemes)) {
+    for (const name of themeNames) {
       const themeConfig = this.getCompiledComponentTheme(name);
       for (const c of extractClassesFromThemeConfig(themeConfig)) {
         allThemeClasses.add(c);
@@ -358,15 +379,15 @@ if (import.meta.hot) {
       if (col in ICON_COLLECTION_PRESETS) {
         const preset =
           ICON_COLLECTION_PRESETS[col as keyof typeof ICON_COLLECTION_PRESETS];
-        allThemeClasses.add(`${prefix}-${col}-${preset.check}`);
-        allThemeClasses.add(`${prefix}-${col}-${preset.minus}`);
-        allThemeClasses.add(`${prefix}-${col}-${preset.close}`);
-        allThemeClasses.add(`${prefix}-${col}-${preset.loading}`);
+        for (const iconName of Object.values(preset)) {
+          allThemeClasses.add(`${prefix}-${col}-${iconName}`);
+        }
       } else {
         allThemeClasses.add(`${prefix}-${col}-check`);
         allThemeClasses.add(`${prefix}-${col}-minus`);
         allThemeClasses.add(`${prefix}-${col}-close`);
         allThemeClasses.add(`${prefix}-${col}-loading`);
+        allThemeClasses.add(`${prefix}-${col}-chevron-down`);
       }
     }
 
@@ -390,7 +411,7 @@ if (import.meta.hot) {
     }
 
     if (allThemeClasses.size === 0) {
-      this.cachedInlineThemeSource = "";
+      if (!filtered) this.cachedInlineThemeSource = "";
       return "";
     }
 
@@ -399,7 +420,7 @@ if (import.meta.hot) {
       .replace(/\\/g, "\\\\")
       .replace(/"/g, '\\"');
     const directive = `\n@source inline("${inlineClasses}");\n`;
-    this.cachedInlineThemeSource = directive;
+    if (!filtered) this.cachedInlineThemeSource = directive;
     return directive;
   }
 

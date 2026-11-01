@@ -1,8 +1,12 @@
+import { defaultNormalizer, type NormalizeProps, type PropTypes } from "@code-ui/core";
 import type { ButtonApi, ButtonService } from "./button.types";
 import { parts } from "./button.anatomy";
 import * as dom from "./button.dom";
 
-export function connectButton(service: ButtonService): ButtonApi {
+export function connectButton<T extends PropTypes = PropTypes>(
+  service: ButtonService,
+  normalize: NormalizeProps<T> = defaultNormalizer as NormalizeProps<T>,
+): ButtonApi {
   const { state, send, context, computed, scope } = service;
 
   const loading = computed("isLoading");
@@ -37,7 +41,7 @@ export function connectButton(service: ButtonService): ButtonApi {
       send({ type: "TAP", event });
     },
 
-    rootProps: {
+    rootProps: normalize.button({
       id: dom.getRootId(scope),
       ...parts.root.attrs,
       "data-state": currentState,
@@ -51,7 +55,7 @@ export function connectButton(service: ButtonService): ButtonApi {
       role: "button",
       "aria-busy": String(loading),
       "aria-disabled": String(disabled),
-    },
+    }),
 
     spinnerProps: {
       id: dom.getSpinnerId(scope),

@@ -126,6 +126,14 @@ export type UIRadiusConfig =
 export interface UIConfig {
   /** Design token colors */
   colors?: UIColorsConfig;
+  /**
+   * How `colors` interacts with the built-in semantic colors.
+   * - `"extend"` (default): user colors are added to the defaults.
+   * - `"replace"`: only user colors are compiled into component themes.
+   *   Include `primary`/`neutral` for default variants and `danger`/`error`
+   *   when using validation or error states.
+   */
+  colorsMode?: "extend" | "replace";
   /** Border radius tokens (base radius string or object with custom overrides) */
   radius?: UIRadiusConfig;
   /** Transition duration tokens */

@@ -185,13 +185,7 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
     actions: {
       emitSwitchChange: ({ prop, refs, state }) => {
         const nextVal = state.matches("checked");
-        prop("onCheckedChange")?.({ checked: nextVal });
         prop("onChange")?.({ checked: nextVal });
-        prop("component")?.triggerEvent?.("change", {
-          value: nextVal,
-          checked: nextVal,
-        });
-        prop("component")?.setData?.({ checked: nextVal });
 
         const formField = refs.get("formField");
         if (formField) {

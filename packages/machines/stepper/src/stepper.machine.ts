@@ -93,17 +93,12 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
             previousStep,
           };
 
-          prop("onStepChange")?.({ ...details });
           prop("onChange")?.({ ...details });
-
-          const comp = prop("component");
-          comp?.triggerEvent?.("change", { ...details });
-          comp?.triggerEvent?.("update:modelValue", nextStep);
+          prop("onUpdateModelValue")?.(nextStep);
 
           const totalCount = getComputed()("totalCount");
           if (totalCount > 0 && nextStep >= totalCount - 1) {
             prop("onComplete")?.({ step: nextStep });
-            comp?.triggerEvent?.("complete", { step: nextStep });
           }
 
           emitStepperChange(getContext(), getComputed(), getRefs(), nextStep);

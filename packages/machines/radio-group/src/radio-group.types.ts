@@ -116,8 +116,6 @@ export interface RadioGroupProps {
   /** Item options rendered automatically via wx:for */
   items?: (string | RadioGroupItemRaw)[] | undefined;
   /** Callback fired when selected value changes */
-  onValueChange?: ((details: RadioGroupValueChangeDetails) => void) | undefined;
-  /** Legacy/generic change callback */
   onChange?: ((details: RadioGroupValueChangeDetails) => void) | undefined;
 }
 

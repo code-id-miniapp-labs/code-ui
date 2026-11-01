@@ -116,14 +116,12 @@ describe("Switch Machine", () => {
       machine.stop();
     });
 
-    it("dispatches onCheckedChange, onChange, and component events", async () => {
-      const onCheckedChange = vi.fn();
+    it("dispatches onChange and component events", async () => {
       const onChange = vi.fn();
       const triggerEvent = vi.fn();
       const setData = vi.fn();
 
       const machine = new MiniappMachine(switchMachine, {
-        onCheckedChange,
         onChange,
         component: {
           triggerEvent,
@@ -136,13 +134,11 @@ describe("Switch Machine", () => {
       api.toggle();
       await flush();
 
-      expect(onCheckedChange).toHaveBeenCalledWith({ checked: true });
       expect(onChange).toHaveBeenCalledWith({ checked: true });
       expect(triggerEvent).toHaveBeenCalledWith("change", {
         value: true,
         checked: true,
       });
-      expect(setData).toHaveBeenCalledWith({ checked: true });
 
       machine.stop();
     });

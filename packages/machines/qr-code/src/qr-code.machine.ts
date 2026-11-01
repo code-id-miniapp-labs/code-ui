@@ -135,9 +135,7 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
             : undefined,
         defaultValue: initialValue,
         onChange: (nextVal) => {
-          prop("onValueChange")?.({ value: nextVal });
-          prop("component")?.triggerEvent?.("change", { value: nextVal });
-          prop("component")?.setData?.({ value: nextVal });
+          prop("onChange")?.({ value: nextVal });
         },
       })),
 

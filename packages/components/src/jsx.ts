@@ -76,7 +76,6 @@ export interface CuiButtonElementProps extends CuiCommonElementProps {
   openType?: string;
   formType?: string;
   onTap?: (event?: any) => void;
-  onClick?: (event?: any) => void;
   onGetPhoneNumber?: (event?: any) => void;
   onChooseAvatar?: (event?: any) => void;
 }
@@ -494,7 +493,7 @@ export interface CuiStepperItemElementProps extends CuiCommonElementProps {
   size?: StepperItemProps["size"];
   variant?: StepperItemProps["variant"];
   customIndicator?: boolean;
-  onClick?: (
+  onTap?: (
     event: WechatMiniprogram.CustomEvent<{
       index: number;
       value: string | number;
@@ -536,9 +535,6 @@ export interface CuiAccordionElementProps extends CuiCommonElementProps {
   onChange?: (
     event: WechatMiniprogram.CustomEvent<AccordionValueChangeDetails>,
   ) => void;
-  onValueChange?: (
-    event: WechatMiniprogram.CustomEvent<AccordionValueChangeDetails>,
-  ) => void;
 }
 
 export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
@@ -556,7 +552,7 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
   variant?: AccordionItemProps["variant"];
   customTrailing?: boolean;
   hasLeadingSlot?: boolean;
-  onClick?: (
+  onTap?: (
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
   onOpenChange?: (

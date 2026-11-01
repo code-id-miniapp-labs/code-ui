@@ -30,7 +30,13 @@ export type {
   TransitionSet,
   ValueOrFn,
 } from "./types";
-export { MachineStatus, INIT_STATE } from "./types";
+export {
+  MachineStatus,
+  INIT_STATE,
+  createNormalizer,
+  defaultNormalizer,
+} from "./types";
+export type { PropTypes, NormalizeProps } from "./types";
 
 export { createMachine, createGuards, setup } from "./create-machine";
 export { extendMachine } from "./extend-machine";

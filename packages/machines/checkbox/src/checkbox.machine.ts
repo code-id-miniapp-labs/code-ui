@@ -50,12 +50,7 @@ function emitChange(
 ): void {
   const itemVal = context.get("value") || prop("value") || nextChecked;
 
-  prop("onCheckedChange")?.({ value: itemVal, checked: nextChecked });
   prop("onChange")?.({ value: itemVal, checked: nextChecked });
-  prop("component")?.triggerEvent?.("change", {
-    value: itemVal,
-    checked: nextChecked,
-  });
 
   const formField = refs.get("formField");
   if (formField) {

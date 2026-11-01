@@ -89,14 +89,10 @@ export const accordionMachine: AccordionMachine =
               };
 
               prop("onChange")?.(details);
-              prop("onValueChange")?.(details);
-
-              const comp = prop("component");
-              comp?.triggerEvent?.("change", details);
               const modelVal = prop("multiple")
                 ? nextValue
                 : (nextValue[0] ?? "");
-              comp?.triggerEvent?.("update:modelValue", modelVal);
+              prop("onUpdateModelValue")?.(modelVal);
 
               emitChange(prop, getRefs(), nextValue);
             },

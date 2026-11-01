@@ -124,7 +124,15 @@ export interface InputProps {
   /** Hold keyboard */
   holdKeyboard?: boolean | undefined;
   /** Callback fired when value changes */
-  onValueChange?: ((details: InputValueChangeDetails) => void) | undefined;
+  onChange?: ((details: InputValueChangeDetails) => void) | undefined;
+  /** Callback fired when input receives focus */
+  onFocus?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when input loses focus */
+  onBlur?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when keyboard confirm button is tapped */
+  onConfirm?: ((details: { value: string }) => void) | undefined;
+  /** Callback fired when clear button is tapped */
+  onClear?: ((details?: Record<string, any>) => void) | undefined;
 }
 
 export type InputEvent =

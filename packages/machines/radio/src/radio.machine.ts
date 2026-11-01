@@ -80,11 +80,6 @@ function emitRadioChange(
 ): void {
   const value = context.get("value") || prop("value") || "";
   prop("onChange")?.({ value, checked: nextChecked });
-  prop("component")?.triggerEvent?.("change", {
-    value,
-    checked: nextChecked,
-  });
-  prop("component")?.setData?.({ checked: nextChecked });
 }
 
 const selectToCheckedTransition = [
