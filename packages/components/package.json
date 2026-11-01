@@ -122,6 +122,12 @@
       "require": "./dist/runtime/pin-input/index.js"
     },
     "./pin-input/*": "./dist/runtime/pin-input/*",
+    "./progress": {
+      "types": "./dist/runtime/progress/index.d.ts",
+      "import": "./dist/runtime/progress/index.js",
+      "require": "./dist/runtime/progress/index.js"
+    },
+    "./progress/*": "./dist/runtime/progress/*",
     "./qr-code": {
       "types": "./dist/runtime/qr-code/index.d.ts",
       "import": "./dist/runtime/qr-code/index.js",
@@ -235,6 +241,7 @@
     "@code-ui/input": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
+    "@code-ui/progress": "workspace:*",
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",

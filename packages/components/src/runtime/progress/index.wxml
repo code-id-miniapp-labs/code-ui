@@ -1,0 +1,106 @@
+<view
+  id="{{progress.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="progress"
+  data-part="root"
+  data-state="{{progress.progressState}}"
+  data-orientation="{{progress.orientation}}"
+  data-type="{{progress.type}}"
+  data-size="{{progress.size}}"
+  data-color="{{progress.color}}"
+  role="progressbar"
+  aria-valuemin="{{progress.min}}"
+  aria-valuemax="{{progress.max}}"
+  aria-valuenow="{{progress.isIndeterminate ? undefined : progress.value}}"
+  aria-valuetext="{{progress.valueAsString}}"
+>
+  <!-- Top Label & Value text container for linear progress -->
+  <view wx:if="{{progress.type !== 'circular' && (label || showValue)}}" class="flex items-center justify-between mb-1.5 w-full">
+    <text wx:if="{{label}}" id="{{progress.labelProps.id}}" class="{{classes.label}}" data-scope="progress" data-part="label">{{label}}</text>
+    <slot wx:else name="label" />
+
+    <text wx:if="{{showValue}}" id="{{progress.valueTextProps.id}}" class="{{classes.valueText}}" data-scope="progress" data-part="value-text">{{progress.valueAsString}}</text>
+    <slot wx:else name="value-text" />
+  </view>
+
+  <!-- Linear Track & Range -->
+  <block wx:if="{{progress.type !== 'circular'}}">
+    <view
+      id="{{progress.trackProps.id}}"
+      class="{{classes.track}}"
+      data-scope="progress"
+      data-part="track"
+      data-state="{{progress.progressState}}"
+      data-orientation="{{progress.orientation}}"
+    >
+      <view
+        id="{{progress.rangeProps.id}}"
+        class="{{classes.range}}"
+        data-scope="progress"
+        data-part="range"
+        data-state="{{progress.progressState}}"
+        data-orientation="{{progress.orientation}}"
+        data-striped="{{progress.striped}}"
+        data-animated="{{progress.animated}}"
+        style="{{progress.rangeProps.style}}"
+      />
+    </view>
+  </block>
+
+  <!-- Circular SVG & Range -->
+  <block wx:else>
+    <view
+      id="{{progress.viewProps.id}}"
+      class="{{classes.view}}"
+      data-scope="progress"
+      data-part="view"
+      data-state="{{progress.progressState}}"
+    >
+      <svg
+        id="{{progress.circleProps.id}}"
+        class="{{classes.circle}}"
+        data-scope="progress"
+        data-part="circle"
+        viewBox="{{progress.circleProps.viewBox}}"
+        data-state="{{progress.progressState}}"
+      >
+        <circle
+          id="{{progress.circleTrackProps.id}}"
+          class="{{classes.circleTrack}}"
+          data-scope="progress"
+          data-part="circle-track"
+          cx="{{progress.circleTrackProps.cx}}"
+          cy="{{progress.circleTrackProps.cy}}"
+          r="{{progress.circleTrackProps.r}}"
+          stroke-width="{{progress.circleTrackProps.strokeWidth}}"
+          fill="{{progress.circleTrackProps.fill}}"
+        />
+        <circle
+          id="{{progress.circleRangeProps.id}}"
+          class="{{classes.circleRange}}"
+          data-scope="progress"
+          data-part="circle-range"
+          cx="{{progress.circleRangeProps.cx}}"
+          cy="{{progress.circleRangeProps.cy}}"
+          r="{{progress.circleRangeProps.r}}"
+          stroke-width="{{progress.circleRangeProps.strokeWidth}}"
+          fill="{{progress.circleRangeProps.fill}}"
+          stroke-dasharray="{{progress.circleRangeProps.strokeDasharray}}"
+          stroke-dashoffset="{{progress.circleRangeProps.strokeDashoffset}}"
+          transform="{{progress.circleRangeProps.transform}}"
+          style="{{progress.circleRangeProps.style}}"
+        />
+      </svg>
+      <!-- Center content inside circular progress (e.g. value percentage or default slot) -->
+      <view wx:if="{{showValue}}" class="absolute inset-0 flex items-center justify-center">
+        <text id="{{progress.valueTextProps.id}}" class="{{classes.valueText}}" data-scope="progress" data-part="value-text">{{progress.valueAsString}}</text>
+      </view>
+      <view wx:else class="absolute inset-0 flex items-center justify-center">
+        <slot />
+      </view>
+    </view>
+  </block>
+
+  <slot wx:if="{{progress.type !== 'circular'}}" />
+</view>
+

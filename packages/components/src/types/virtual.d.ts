@@ -82,6 +82,12 @@ declare module "virtual:cui/theme/pin-input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/progress" {
+  import type { default as progressTheme } from "@code-ui/core/src/theme/definitions/progress";
+  const theme: ReturnType<typeof progressTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/qr-code" {
   import type { default as qrCodeTheme } from "@code-ui/core/src/theme/definitions/qr-code";
   const theme: ReturnType<typeof qrCodeTheme>;

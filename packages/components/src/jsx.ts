@@ -30,6 +30,10 @@ import type {
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
 } from "@code-ui/pin-input";
+import type {
+  ProgressProps,
+  ProgressValueChangeDetails,
+} from "@code-ui/progress";
 import type { QrCodeProps, QrCodeValueChangeDetails } from "@code-ui/qr-code";
 import type {
   RadioGroupProps,
@@ -424,6 +428,30 @@ export interface CuiCheckboxGroupElementProps extends CuiCommonElementProps {
   items?: CheckboxGroupProps["items"];
   onChange?: (
     event: WechatMiniprogram.CustomEvent<CheckboxGroupValueChangeDetails>,
+  ) => void;
+}
+
+export interface CuiProgressElementProps extends CuiCommonElementProps {
+  ui?: ProgressProps["ui"];
+  value?: number | null;
+  defaultValue?: number | null;
+  min?: number;
+  max?: number;
+  orientation?: ProgressProps["orientation"];
+  type?: ProgressProps["type"];
+  size?: ProgressProps["size"];
+  color?: ProgressProps["color"];
+  striped?: boolean;
+  animated?: boolean;
+  animation?: ProgressProps["animation"];
+  inverted?: boolean;
+  circleRadius?: number;
+  strokeWidth?: number;
+  label?: string;
+  showValue?: boolean;
+  translations?: ProgressProps["translations"];
+  onValueChange?: (
+    event: WechatMiniprogram.CustomEvent<ProgressValueChangeDetails>,
   ) => void;
 }
 

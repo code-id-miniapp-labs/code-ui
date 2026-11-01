@@ -1,0 +1,81 @@
+<view class="p-4 space-y-8 pb-16">
+  <!-- Interactive Control -->
+  <view class="space-y-3 p-4 bg-neutral-50 rounded-xl">
+    <text class="text-base font-bold">Interactive Control</text>
+    <c-progress value="{{value}}" showValue label="Controlled Task" />
+    <view class="flex items-center gap-2 pt-2">
+      <c-button size="sm" variant="outline" bindtap="decrease">-10%</c-button>
+      <c-button size="sm" variant="outline" bindtap="increase">+10%</c-button>
+      <c-button size="sm" variant="outline" bindtap="toggleIndeterminate">Toggle Indeterminate</c-button>
+    </view>
+  </view>
+
+  <!-- Linear Progress -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Linear Progress</text>
+    <view class="space-y-3">
+      <c-progress value="{{value}}" />
+      <c-progress value="{{value}}" showValue label="Uploading files..." />
+      <c-progress value="{{null}}" label="Indeterminate (loading)" />
+    </view>
+  </section>
+
+  <!-- Colors -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Colors</text>
+    <view class="space-y-3">
+      <c-progress value="{{75}}" color="primary" label="Primary" showValue />
+      <c-progress value="{{75}}" color="success" label="Success" showValue />
+      <c-progress value="{{75}}" color="warning" label="Warning" showValue />
+      <c-progress value="{{75}}" color="danger" label="Danger" showValue />
+      <c-progress value="{{75}}" color="info" label="Info" showValue />
+      <c-progress value="{{75}}" color="neutral" label="Neutral" showValue />
+    </view>
+  </section>
+
+  <!-- Sizes -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Sizes</text>
+    <view class="space-y-3">
+      <c-progress value="{{60}}" size="2xs" label="Size: 2xs" />
+      <c-progress value="{{60}}" size="xs" label="Size: xs" />
+      <c-progress value="{{60}}" size="sm" label="Size: sm" />
+      <c-progress value="{{60}}" size="md" label="Size: md" />
+      <c-progress value="{{60}}" size="lg" label="Size: lg" />
+      <c-progress value="{{60}}" size="xl" label="Size: xl" />
+      <c-progress value="{{60}}" size="2xl" label="Size: 2xl" />
+    </view>
+  </section>
+
+  <!-- Striped & Animated -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Striped & Animated</text>
+    <view class="space-y-3">
+      <c-progress value="{{65}}" striped label="Striped" />
+      <c-progress value="{{65}}" striped animated label="Striped & Animated" />
+    </view>
+  </section>
+
+  <!-- Circular Progress -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Circular Progress</text>
+    <view class="flex items-center gap-6 flex-wrap">
+      <c-progress type="circular" value="{{value}}" showValue size="md" color="primary" />
+      <c-progress type="circular" value="{{value}}" showValue size="lg" color="success" />
+      <c-progress type="circular" value="{{value}}" showValue size="xl" color="warning" />
+      <c-progress type="circular" value="{{null}}" size="md" color="danger" />
+    </view>
+  </section>
+
+  <!-- Custom UI Override -->
+  <section class="space-y-4">
+    <text class="text-lg font-bold">Custom UI Override</text>
+    <c-progress
+      value="{{70}}"
+      showValue
+      label="Custom Track & Range"
+      ui="{{ { track: 'bg-neutral-100 rounded-none h-4', range: 'rounded-none bg-purple-600', label: 'text-purple-700 font-bold' } }}"
+    />
+  </section>
+</view>
+

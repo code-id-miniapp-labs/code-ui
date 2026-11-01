@@ -10,6 +10,7 @@
     "pages/drawer/index",
     "pages/input/index",
     "pages/pin-input/index",
+    "pages/progress/index",
     "pages/switch/index",
     "pages/slider/index",
     "pages/checkbox/index",

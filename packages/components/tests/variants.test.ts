@@ -15,6 +15,7 @@ import {
   avatarTheme as createAvatarTheme,
   tabsTheme as createTabsTheme,
   tabsItemTheme as createTabsItemTheme,
+  progressTheme as createProgressTheme,
 } from "@code-ui/core";
 import { cn, dedupeClasses, escapeClass, tv } from "../src/utils/variants";
 
@@ -27,6 +28,7 @@ const iconTheme = tv(createIconTheme());
 const avatarTheme = tv(createAvatarTheme());
 const tabsTheme = tv(createTabsTheme());
 const tabsItemTheme = tv(createTabsItemTheme());
+const progressTheme = tv(createProgressTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -783,6 +785,44 @@ describe("avatarTheme resolution", () => {
       );
       expect(slots.trigger).toContain("custom-tab-trigger");
       expect(slots.leading).toContain("size-5");
+    });
+  });
+
+  describe("progressTheme resolution", () => {
+    it("resolves default linear progress slots", () => {
+      const slots = resolveSlots(progressTheme() as any);
+      expect(slots.root).toContain("relative");
+      expect(slots.track).toContain("overflow-hidden");
+      expect(slots.range).toContain("bg-primary");
+      expect(slots.label).toContain("font-medium");
+      expect(slots.valueText).toContain("tabular-nums");
+    });
+
+    it("resolves circular progress slots", () => {
+      const slots = resolveSlots(
+        progressTheme({ type: "circular", color: "success" }) as any,
+      );
+      expect(slots.circle).toContain("overflow-visible");
+      expect(slots.circleTrack).toContain("text-neutral-200");
+      expect(slots.circleRange).toContain("text-success");
+    });
+
+    it("resolves size, striped, animated, and custom ui overrides", () => {
+      const slots = resolveSlots(
+        progressTheme({
+          size: "lg",
+          striped: true,
+          animated: true,
+        }) as any,
+        { track: "custom-track-class" },
+        "custom-root-class",
+      );
+      expect(slots.root).toContain("custom-root-class");
+      expect(slots.track).toContain("custom-track-class");
+      expect(slots.track).toContain("h-3");
+      expect(slots.range).toContain(
+        escapeClass("animate-[progress-stripes_1s_linear_infinite]"),
+      );
     });
   });
 });
