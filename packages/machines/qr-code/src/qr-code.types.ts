@@ -97,8 +97,6 @@ export interface QrCodeProps {
   showOverlay?: boolean | undefined;
   /** Callback fired when encoded value changes */
   onChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
-  /** Callback fired when encoded value changes (legacy alias) */
-  onValueChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
 }
 
 export type QrCodeEvent =

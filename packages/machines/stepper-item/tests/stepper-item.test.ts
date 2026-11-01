@@ -88,7 +88,7 @@ describe("StepperItem Machine", () => {
     const onBusTap = vi.fn();
     bus.on("item:tap", onBusTap);
 
-    const onClick = vi.fn();
+    const onTap = vi.fn();
     const triggerEvent = vi.fn();
 
     const item = new MiniappMachine(stepperItemMachine, {
@@ -96,7 +96,7 @@ describe("StepperItem Machine", () => {
       groupStep: 0,
       groupCount: 2,
       groupIndex: 1,
-      onClick,
+      onTap,
       component: { triggerEvent, setData: vi.fn() },
     });
     item.start();
@@ -104,12 +104,12 @@ describe("StepperItem Machine", () => {
     connectStepperItem(item.service).handleTap();
     await flush();
 
-    expect(onClick).toHaveBeenCalledWith({
+    expect(onTap).toHaveBeenCalledWith({
       index: 1,
       value: 1,
       status: "upcoming",
     });
-    expect(triggerEvent).toHaveBeenCalledWith("click", {
+    expect(triggerEvent).toHaveBeenCalledWith("tap", {
       index: 1,
       value: 1,
       status: "upcoming",

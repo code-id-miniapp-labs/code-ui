@@ -196,7 +196,7 @@ Dynamically mapped for all semantic colors (`primary`, `secondary`, `success`, `
 
 | Event        | Detail                                          | Description                                     |
 | :----------- | :---------------------------------------------- | :---------------------------------------------- |
-| `bind:click` | `{ index: number, value: any, status: string }` | Emitted when this step item trigger is clicked. |
+| `bind:tap` | `{ index: number, value: any, status: string }` | Emitted when this step item trigger is tapped. |
 
 #### Template (`packages/components/src/runtime/stepper-item/index.wxml`)
 

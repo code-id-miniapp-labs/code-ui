@@ -147,7 +147,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         "loading" in event && event.loading === false,
       isInteractiveAndHasAsyncHandler: ({ computed, prop }) =>
         computed("isInteractive") &&
-        Boolean(prop("loadingAuto") && (prop("onTap") || prop("onClick"))),
+        Boolean(prop("loadingAuto") && prop("onTap")),
     },
 
     actions: {
@@ -165,7 +165,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       },
       executeTapHandler: ({ prop, event }) => {
         const rawEvent = "event" in event ? event.event : undefined;
-        (prop("onTap") ?? prop("onClick"))?.(rawEvent);
+        prop("onTap")?.(rawEvent);
       },
       executeAsyncHandler: ({ prop, event, send, context }) => {
         const rawEvent = "event" in event ? event.event : undefined;
@@ -185,8 +185,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
           }
         }
 
-        const handler = prop("onTap") ?? prop("onClick");
-        const result = handler?.(rawEvent);
+        const result = prop("onTap")?.(rawEvent);
         const promise = isPromise(result) ? result : capturedPromise;
 
         if (isPromise(promise)) {

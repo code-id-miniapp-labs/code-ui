@@ -136,8 +136,6 @@ export interface TextareaProps {
   count?: boolean | undefined;
   /** Callback fired when value changes */
   onChange?: ((details: TextareaValueChangeDetails) => void) | undefined;
-  /** Callback fired when value changes (legacy alias) */
-  onValueChange?: ((details: TextareaValueChangeDetails) => void) | undefined;
   /** Callback fired when textarea is focused */
   onFocus?: ((details: { value: string }) => void) | undefined;
   /** Callback fired when textarea loses focus */

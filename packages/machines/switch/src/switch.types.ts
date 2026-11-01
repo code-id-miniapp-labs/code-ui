@@ -84,10 +84,6 @@ export interface SwitchProps {
   /** Custom loading icon class */
   loadingIcon?: string | undefined;
   /** Callback fired when checked state changes */
-  onCheckedChange?:
-    | ((details: SwitchCheckedChangeDetails) => void)
-    | undefined;
-  /** Alias callback fired when checked state changes */
   onChange?: ((details: SwitchCheckedChangeDetails) => void) | undefined;
 }
 

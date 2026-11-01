@@ -125,8 +125,6 @@ export interface InputProps {
   holdKeyboard?: boolean | undefined;
   /** Callback fired when value changes */
   onChange?: ((details: InputValueChangeDetails) => void) | undefined;
-  /** Callback fired when value changes (legacy alias) */
-  onValueChange?: ((details: InputValueChangeDetails) => void) | undefined;
   /** Callback fired when input receives focus */
   onFocus?: ((details: { value: string }) => void) | undefined;
   /** Callback fired when input loses focus */

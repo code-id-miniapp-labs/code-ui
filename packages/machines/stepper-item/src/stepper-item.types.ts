@@ -59,13 +59,6 @@ export interface StepperItemProps {
         status: StepperStatus;
       }) => void)
     | undefined;
-  onClick?:
-    | ((details: {
-        index: number;
-        value: string | number;
-        status: StepperStatus;
-      }) => void)
-    | undefined;
 }
 
 export interface StepperItemContext {

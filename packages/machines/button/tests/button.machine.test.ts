@@ -81,10 +81,9 @@ describe("Button Machine", () => {
   });
 
   describe("Synchronous Tap Handling", () => {
-    it("invokes onTap and onClick handlers on TAP in idle state", async () => {
+    it("invokes onTap handler on TAP in idle state", async () => {
       const onTap = vi.fn();
-      const onClick = vi.fn();
-      const machine = new MiniappMachine(buttonMachine, { onTap, onClick });
+      const machine = new MiniappMachine(buttonMachine, { onTap });
       machine.start();
 
       const api = connectButton(machine.service);
@@ -95,8 +94,6 @@ describe("Button Machine", () => {
 
       expect(onTap).toHaveBeenCalledTimes(1);
       expect(onTap).toHaveBeenCalledWith(fakeEvent);
-      expect(onClick).toHaveBeenCalledTimes(1);
-      expect(onClick).toHaveBeenCalledWith(fakeEvent);
       expect(machine.state.get()).toBe("idle");
 
       machine.stop();

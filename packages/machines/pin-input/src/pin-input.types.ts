@@ -104,16 +104,10 @@ export interface PinInputProps {
   separatorChar?: string | undefined;
   /** Callback fired when value changes */
   onChange?: ((details: PinInputValueChangeDetails) => void) | undefined;
-  /** Callback fired when value changes (legacy alias) */
-  onValueChange?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when all inputs are filled */
   onComplete?: ((details: PinInputValueChangeDetails) => void) | undefined;
-  /** Callback fired when all inputs are filled (legacy alias) */
-  onValueComplete?: ((details: PinInputValueChangeDetails) => void) | undefined;
   /** Callback fired when an invalid character is entered */
   onInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
-  /** Callback fired when an invalid character is entered (legacy alias) */
-  onValueInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
   /** Callback fired when input receives focus */
   onFocus?: ((details: { value: string[]; valueAsString: string; index: number }) => void) | undefined;
   /** Callback fired when input loses focus */

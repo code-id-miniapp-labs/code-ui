@@ -101,7 +101,7 @@ function setItemOpen(
   const val = computed("resolvedValue");
   const details = { value: val, open: nextOpen };
   if (isTap) {
-    (prop("onTap") ?? prop("onClick"))?.(details);
+    prop("onTap")?.(details);
   }
 
   const bus = refs.get("currentGroupBus") || prop("groupBus");

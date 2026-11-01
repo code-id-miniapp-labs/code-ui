@@ -124,7 +124,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           },
           onChange: (nextVal) => {
             const valueAsString = nextVal.join("");
-            (prop("onChange") ?? prop("onValueChange"))?.({
+            prop("onChange")?.({
               value: nextVal,
               valueAsString,
             });
@@ -139,7 +139,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               nextVal.length === (prop("length") ?? 4) &&
               nextVal.every((c) => Boolean(c && c.trim() !== ""));
             if (isComplete) {
-              (prop("onComplete") ?? prop("onValueComplete"))?.({
+              prop("onComplete")?.({
                 value: nextVal,
                 valueAsString,
               });
@@ -486,7 +486,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             .filter((c: string) => isValidCharacter(c, inputType));
 
           if (validChars.length === 0) {
-            (prop("onInvalid") ?? prop("onValueInvalid"))?.({
+            prop("onInvalid")?.({
               value: cleanVal,
               index,
             });
@@ -508,7 +508,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
         const char = cleanVal;
         if (!isValidCharacter(char, inputType)) {
-          (prop("onInvalid") ?? prop("onValueInvalid"))?.({
+          prop("onInvalid")?.({
             value: char,
             index,
           });

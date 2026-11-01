@@ -62,11 +62,9 @@ describe("RadioGroup Machine", () => {
   });
 
   describe("Value Changes & Events", () => {
-    it("selects a value via send and triggers onChange / onValueChange", async () => {
-      const onValueChange = vi.fn();
+    it("selects a value via send and triggers onChange", async () => {
       const onChange = vi.fn();
       const machine = new MiniappMachine(radioGroupMachine, {
-        onValueChange,
         onChange,
       });
       machine.start();
@@ -75,7 +73,6 @@ describe("RadioGroup Machine", () => {
       await flush();
 
       expect(machine.context.get("value")).toBe("orange");
-      expect(onValueChange).toHaveBeenCalledWith({ value: "orange" });
       expect(onChange).toHaveBeenCalledWith({ value: "orange" });
 
       const api = connectRadioGroup(machine.service);
@@ -98,11 +95,11 @@ describe("RadioGroup Machine", () => {
     });
 
     it("cannot change value when disabled or readOnly", async () => {
-      const onValueChange = vi.fn();
+      const onChange = vi.fn();
       const machine = new MiniappMachine(radioGroupMachine, {
         disabled: true,
         defaultValue: "default",
-        onValueChange,
+        onChange,
       });
       machine.start();
 
@@ -111,7 +108,7 @@ describe("RadioGroup Machine", () => {
       await flush();
 
       expect(machine.context.get("value")).toBe("default");
-      expect(onValueChange).not.toHaveBeenCalled();
+      expect(onChange).not.toHaveBeenCalled();
 
       machine.stop();
     });

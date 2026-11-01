@@ -102,11 +102,11 @@ describe("Textarea Machine", () => {
   });
 
   describe("User Input & Event Handlers", () => {
-    it("handles input change, fires change event and onValueChange", async () => {
-      const onValueChange = vi.fn();
+    it("handles input change, fires change event and onChange", async () => {
+      const onChange = vi.fn();
       const triggerEvent = vi.fn();
       const machine = new MiniappMachine(textareaMachine, {
-        onValueChange,
+        onChange,
         component: {
           setData: vi.fn(),
           triggerEvent,
@@ -123,7 +123,7 @@ describe("Textarea Machine", () => {
       expect(returnedVal).toBe("Line 1\nLine 2");
       expect(machine.context.get("value")).toBe("Line 1\nLine 2");
       expect(machine.computed("characterCount")).toBe(13);
-      expect(onValueChange).toHaveBeenCalledWith({ value: "Line 1\nLine 2" });
+      expect(onChange).toHaveBeenCalledWith({ value: "Line 1\nLine 2" });
       expect(triggerEvent).toHaveBeenCalledWith("change", {
         value: "Line 1\nLine 2",
       });

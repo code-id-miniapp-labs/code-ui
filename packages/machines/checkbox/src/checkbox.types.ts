@@ -118,10 +118,6 @@ export interface CheckboxProps {
   /** Icon name / class / path when indeterminate (defaults to 'minus') */
   indeterminateIcon?: string | undefined;
   /** Callback fired when checked state changes */
-  onCheckedChange?:
-    | ((details: CheckboxCheckedChangeDetails) => void)
-    | undefined;
-  /** Alias callback fired when checked state changes */
   onChange?: ((details: CheckboxCheckedChangeDetails) => void) | undefined;
 }
 

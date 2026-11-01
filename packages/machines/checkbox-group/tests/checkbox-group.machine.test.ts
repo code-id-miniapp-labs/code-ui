@@ -317,12 +317,10 @@ describe("CheckboxGroup Machine", () => {
   });
 
   describe("Callbacks & Events", () => {
-    it("fires onValueChange and onChange", async () => {
-      const onValueChange = vi.fn();
+    it("fires onChange", async () => {
       const onChange = vi.fn();
 
       const machine = new MiniappMachine(checkboxGroupMachine, {
-        onValueChange,
         onChange,
         items: sampleItems,
       });
@@ -332,7 +330,6 @@ describe("CheckboxGroup Machine", () => {
       api.toggleValue("banana");
       await flush();
 
-      expect(onValueChange).toHaveBeenCalledWith({ value: ["banana"] });
       expect(onChange).toHaveBeenCalledWith({ value: ["banana"] });
 
       machine.stop();

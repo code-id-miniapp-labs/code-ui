@@ -211,13 +211,13 @@ describe("Pin Input Machine", () => {
 
   describe("Sequential Typing & Auto-Advance", () => {
     it("advances focus sequentially on valid single-digit input and fires callbacks", async () => {
-      const onValueChange = vi.fn();
-      const onValueComplete = vi.fn();
+      const onChange = vi.fn();
+      const onComplete = vi.fn();
 
       const machine = new MiniappMachine(pinInputMachine, {
         length: 4,
-        onValueChange,
-        onValueComplete,
+        onChange,
+        onComplete,
       });
       machine.start();
 
@@ -227,11 +227,11 @@ describe("Pin Input Machine", () => {
 
       expect(machine.context.get("value")).toEqual(["1", "", "", ""]);
       expect(machine.context.get("focusedIndex")).toBe(1);
-      expect(onValueChange).toHaveBeenCalledWith({
+      expect(onChange).toHaveBeenCalledWith({
         value: ["1", "", "", ""],
         valueAsString: "1",
       });
-      expect(onValueComplete).not.toHaveBeenCalled();
+      expect(onComplete).not.toHaveBeenCalled();
 
       // Type '2' in slot 1
       machine.send({ type: "INPUT.CHANGE", index: 1, value: "2" });
@@ -251,7 +251,7 @@ describe("Pin Input Machine", () => {
       expect(machine.context.get("value")).toEqual(["1", "2", "3", "4"]);
       expect(machine.computed("isValueComplete")).toBe(true);
       expect(machine.computed("valueAsString")).toBe("1234");
-      expect(onValueComplete).toHaveBeenCalledWith({
+      expect(onComplete).toHaveBeenCalledWith({
         value: ["1", "2", "3", "4"],
         valueAsString: "1234",
       });
@@ -378,10 +378,10 @@ describe("Pin Input Machine", () => {
 
   describe("Pasting & SMS OTP Autofill", () => {
     it("distributes pasted multi-character string across all slots", async () => {
-      const onValueComplete = vi.fn();
+      const onComplete = vi.fn();
       const machine = new MiniappMachine(pinInputMachine, {
         length: 4,
-        onValueComplete,
+        onComplete,
       });
       machine.start();
 
@@ -392,7 +392,7 @@ describe("Pin Input Machine", () => {
       expect(machine.context.get("value")).toEqual(["8", "7", "6", "5"]);
       expect(machine.computed("isValueComplete")).toBe(true);
       expect(machine.computed("valueAsString")).toBe("8765");
-      expect(onValueComplete).toHaveBeenCalledWith({
+      expect(onComplete).toHaveBeenCalledWith({
         value: ["8", "7", "6", "5"],
         valueAsString: "8765",
       });
@@ -418,10 +418,10 @@ describe("Pin Input Machine", () => {
 
   describe("Character Validation", () => {
     it("rejects non-numeric characters when type is numeric", async () => {
-      const onValueInvalid = vi.fn();
+      const onInvalid = vi.fn();
       const machine = new MiniappMachine(pinInputMachine, {
         type: "numeric",
-        onValueInvalid,
+        onInvalid,
       });
       machine.start();
 
@@ -430,7 +430,7 @@ describe("Pin Input Machine", () => {
 
       // Value remains empty
       expect(machine.context.get("value")).toEqual(["", "", "", ""]);
-      expect(onValueInvalid).toHaveBeenCalledWith({ value: "a", index: 0 });
+      expect(onInvalid).toHaveBeenCalledWith({ value: "a", index: 0 });
 
       machine.stop();
     });

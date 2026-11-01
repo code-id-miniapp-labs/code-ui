@@ -124,8 +124,6 @@ export interface StepperProps {
   /** Step items rendered in data-driven mode */
   items?: StepperItem[] | undefined;
   /** Callback fired when active step changes */
-  onStepChange?: ((details: StepperStepChangeDetails) => void) | undefined;
-  /** Generic change callback */
   onChange?: ((details: StepperStepChangeDetails) => void) | undefined;
   /** Callback fired when the final step is reached or completed */
   onComplete?: ((details: { step: number }) => void) | undefined;

@@ -121,8 +121,6 @@ export interface CheckboxGroupProps {
   /** Item options rendered automatically via wx:for */
   items?: (string | CheckboxGroupItemRaw)[] | undefined;
   /** Callback fired when selected values change */
-  onValueChange?: ((details: CheckboxGroupValueChangeDetails) => void) | undefined;
-  /** Legacy/generic change callback */
   onChange?: ((details: CheckboxGroupValueChangeDetails) => void) | undefined;
 }
 

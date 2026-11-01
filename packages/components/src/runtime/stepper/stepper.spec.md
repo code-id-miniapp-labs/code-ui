@@ -252,7 +252,7 @@ Nuxt UI v4-style theme definition keeping only the slots `<c-stepper>` renders. 
   <scroll-view wx:if="{{(stepper.orientation || orientation) !== 'vertical'}}" id="{{stepper.listProps.id}}" class="cui-stepper-list {{classes.list}}" role="tablist" scroll-x="{{stepper.listProps['scroll-x']}}" scroll-with-animation="{{stepper.listProps['scroll-with-animation']}}" scroll-left="{{stepper.scrollLeft}}" enhanced="{{stepper.listProps['enhanced']}}" show-scrollbar="{{stepper.listProps['show-scrollbar']}}" aria-orientation="horizontal" data-scope="stepper" data-part="list" data-orientation="horizontal">
     <view class="cui-stepper-header {{classes.header}}">
       <block wx:if="{{hasItems}}">
-        <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" id="{{item.itemProps.id}}" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{stepper.orientation || orientation}}" color="{{stepper.color || color}}" size="{{stepper.size || size}}" ui="{{item.ui || ui}}" data-index="{{item.index}}" bind:click="handleItemClick" />
+        <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" id="{{item.itemProps.id}}" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{stepper.orientation || orientation}}" color="{{stepper.color || color}}" size="{{stepper.size || size}}" ui="{{item.ui || ui}}" data-index="{{item.index}}" bind:tap="handleItemTap" />
       </block>
       <slot wx:else />
     </view>
@@ -260,7 +260,7 @@ Nuxt UI v4-style theme definition keeping only the slots `<c-stepper>` renders. 
   <!-- Vertical Orientation: Static List -->
   <view wx:else id="{{stepper.listProps.id}}" class="{{classes.list}}" role="tablist" aria-orientation="vertical" data-scope="stepper" data-part="list" data-orientation="vertical">
     <block wx:if="{{hasItems}}">
-      <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{stepper.orientation || orientation}}" color="{{stepper.color || color}}" size="{{stepper.size || size}}" ui="{{item.ui || ui}}" data-index="{{item.index}}" bind:click="handleItemClick" />
+      <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{stepper.orientation || orientation}}" color="{{stepper.color || color}}" size="{{stepper.size || size}}" ui="{{item.ui || ui}}" data-index="{{item.index}}" bind:tap="handleItemTap" />
     </block>
     <slot wx:else />
   </view>

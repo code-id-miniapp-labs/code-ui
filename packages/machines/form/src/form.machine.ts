@@ -521,7 +521,7 @@ export function handleFieldInteraction(
     );
 
     if (trigger === "change") {
-      service.prop("onValueChange")?.({ ...nextValues });
+      service.prop("onChange")?.({ ...nextValues });
     }
   } else if (trigger === "focus") {
     isFocused = true;
@@ -834,7 +834,7 @@ export function setFormValues(
 
   service.context.set("values", prevValues);
   service.context.set("dirtyFields", nextDirty);
-  service.prop("onValueChange")?.({ ...prevValues });
+  service.prop("onChange")?.({ ...prevValues });
 
   if (shouldValidate) {
     void validateFormFields(service, Object.keys(values));

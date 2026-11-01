@@ -80,8 +80,6 @@ export interface AccordionItemProps {
 
   /** Tap callback */
   onTap?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
-  /** Click callback (fallback) */
-  onClick?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
   /** Change callback */
   onChange?: ((details: AccordionItemOpenChangeDetails) => void) | undefined;
   /** Open change callback */

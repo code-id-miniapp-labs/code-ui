@@ -94,11 +94,11 @@ describe("Input Machine", () => {
   });
 
   describe("User Input & Event Handlers", () => {
-    it("handles input change, fires change event and onValueChange", async () => {
-      const onValueChange = vi.fn();
+    it("handles input change, fires change event and onChange", async () => {
+      const onChange = vi.fn();
       const triggerEvent = vi.fn();
       const machine = new MiniappMachine(inputMachine, {
-        onValueChange,
+        onChange,
         component: {
           setData: vi.fn(),
           triggerEvent,
@@ -114,7 +114,7 @@ describe("Input Machine", () => {
 
       expect(returnedVal).toBe("test@example.com");
       expect(machine.context.get("value")).toBe("test@example.com");
-      expect(onValueChange).toHaveBeenCalledWith({ value: "test@example.com" });
+      expect(onChange).toHaveBeenCalledWith({ value: "test@example.com" });
       expect(triggerEvent).toHaveBeenCalledWith("change", {
         value: "test@example.com",
       });

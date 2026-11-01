@@ -50,8 +50,6 @@ export interface ButtonProps {
   autoResetDuration?: number;
   /** Callback fired on button tap */
   onTap?: (event?: any) => void | Promise<any>;
-  /** Callback fired on button click (for React / Web / Taro) */
-  onClick?: (event?: any) => void | Promise<any>;
 }
 
 export type ButtonEvent =
