@@ -1,24 +1,159 @@
 import { createMachine } from "@code-ui/core";
-import { isNotNull } from "@code-ui/utils";
+import { isNotNull, type MiniAppRect } from "@code-ui/utils";
 import type {
+  SwipeCellAction,
   SwipeCellMachine,
+  SwipeCellParams,
   SwipeCellSchema,
-  SwipeCellUI,
   SwipeSide,
 } from "./swipe-cell.types";
 import { defaultSwipeCellProps } from "./swipe-cell.props";
+
+function resolveSide(value: unknown): SwipeSide {
+  return value === "left" || value === "right" ? value : "right";
+}
 
 function resolveInitialSide(
   rawOpened: unknown,
   rawDefaultOpened: unknown,
 ): SwipeSide | null {
-  if (rawOpened === "left" || rawOpened === "right") return rawOpened;
-  if (rawOpened === true) return "right";
-  if (rawDefaultOpened === "left" || rawDefaultOpened === "right")
-    return rawDefaultOpened;
-  if (rawDefaultOpened === true) return "right";
+  if (isNotNull(rawOpened) && rawOpened) return resolveSide(rawOpened);
+  if (rawDefaultOpened) return resolveSide(rawDefaultOpened);
   return null;
 }
+
+function parseBooleanProp(val: unknown, defaultValue = true): boolean {
+  if (val === "" || val === true || val === "true") return true;
+  if (val === false || val === "false") return false;
+  return (val as boolean | undefined) ?? defaultValue;
+}
+
+function measureActionWidths(
+  scope: SwipeCellParams["scope"] | undefined,
+  context: SwipeCellParams["context"],
+  prop: SwipeCellParams["prop"],
+): void {
+  const explicitLeft = prop("leftWidth");
+  const explicitRight = prop("rightWidth");
+  const hasExplicitLeft = typeof explicitLeft === "number" && explicitLeft > 0;
+  const hasExplicitRight =
+    typeof explicitRight === "number" && explicitRight > 0;
+
+  if (hasExplicitLeft && hasExplicitRight) {
+    if (context.get("leftWidth") !== explicitLeft) {
+      context.set("leftWidth", explicitLeft);
+    }
+    if (context.get("rightWidth") !== explicitRight) {
+      context.set("rightWidth", explicitRight);
+    }
+    return;
+  }
+
+  if (!scope?.dom?.rect) {
+    if (hasExplicitLeft && context.get("leftWidth") !== explicitLeft) {
+      context.set("leftWidth", explicitLeft);
+    }
+    if (hasExplicitRight && context.get("rightWidth") !== explicitRight) {
+      context.set("rightWidth", explicitRight);
+    }
+    return;
+  }
+
+  const left = prop("left");
+  const right = prop("right");
+  const hasLeft = (Array.isArray(left) && left.length > 0) || hasExplicitLeft;
+  const hasRight =
+    (Array.isArray(right) && right.length > 0) || hasExplicitRight;
+
+  const shouldQueryLeft = !hasExplicitLeft && hasLeft;
+  const shouldQueryRight = !hasExplicitRight && hasRight;
+
+  if (!shouldQueryLeft && !shouldQueryRight) {
+    if (hasExplicitLeft && context.get("leftWidth") !== explicitLeft) {
+      context.set("leftWidth", explicitLeft);
+    }
+    if (hasExplicitRight && context.get("rightWidth") !== explicitRight) {
+      context.set("rightWidth", explicitRight);
+    }
+    return;
+  }
+
+  const queries: [
+    Promise<MiniAppRect | null> | null,
+    Promise<MiniAppRect | null> | null,
+  ] = [
+    shouldQueryLeft ? scope.dom.rect(".cui-swipe-cell__left") : null,
+    shouldQueryRight ? scope.dom.rect(".cui-swipe-cell__right") : null,
+  ];
+
+  Promise.all(queries)
+    .then(([leftRect, rightRect]) => {
+      let leftWidth = hasExplicitLeft
+        ? explicitLeft
+        : context.get("leftWidth");
+      let rightWidth = hasExplicitRight
+        ? explicitRight
+        : context.get("rightWidth");
+
+      if (
+        shouldQueryLeft &&
+        leftRect &&
+        typeof leftRect.width === "number" &&
+        leftRect.width > 0
+      ) {
+        leftWidth = leftRect.width;
+      }
+      if (
+        shouldQueryRight &&
+        rightRect &&
+        typeof rightRect.width === "number" &&
+        rightRect.width > 0
+      ) {
+        rightWidth = rightRect.width;
+      }
+
+      if (context.get("leftWidth") !== leftWidth) {
+        context.set("leftWidth", leftWidth);
+      }
+      if (context.get("rightWidth") !== rightWidth) {
+        context.set("rightWidth", rightWidth);
+      }
+    })
+    .catch(() => {});
+}
+
+const openActions: SwipeCellAction[] = [
+  "setOpenedSide",
+  "invokeOnOpen",
+  "emitChange",
+];
+const closeActions: SwipeCellAction[] = [
+  "clearOpenedSide",
+  "invokeOnClose",
+  "emitChange",
+];
+
+const contentTapTransition = [
+  {
+    guard: "closeOnContentClick" as const,
+    target: "closed" as const,
+    actions: ["invokeOnContentTap" as const, ...closeActions],
+  },
+  {
+    actions: ["invokeOnContentTap" as const],
+  },
+];
+
+const actionClickTransition = [
+  {
+    guard: "closeOnActionClick" as const,
+    target: "closed" as const,
+    actions: ["invokeOnActionClick" as const, ...closeActions],
+  },
+  {
+    actions: ["invokeOnActionClick" as const],
+  },
+];
 
 export const swipeCellMachine: SwipeCellMachine =
   createMachine<SwipeCellSchema>({
@@ -35,12 +170,11 @@ export const swipeCellMachine: SwipeCellMachine =
       return isOpened ? "open" : "closed";
     },
 
+    refs: () => ({}),
+
     context: ({ prop, bindable }) => ({
       openedSide: bindable<SwipeSide | null>(() => ({
-        defaultValue: resolveInitialSide(
-          prop("opened"),
-          prop("defaultOpened"),
-        ),
+        defaultValue: resolveInitialSide(prop("opened"), prop("defaultOpened")),
       })),
       leftWidth: bindable<number>(() => ({
         value: prop("leftWidth"),
@@ -52,10 +186,6 @@ export const swipeCellMachine: SwipeCellMachine =
       })),
       currentOffset: bindable<number>(() => ({
         defaultValue: 0,
-      })),
-      ui: bindable<SwipeCellUI>(() => ({
-        value: prop("ui"),
-        defaultValue: {},
       })),
     }),
 
@@ -79,35 +209,39 @@ export const swipeCellMachine: SwipeCellMachine =
       },
       hasLeftActions: ({ prop, context }) => {
         const left = prop("left");
-        return (Array.isArray(left) && left.length > 0) || context.get("leftWidth") > 0;
+        return (
+          (Array.isArray(left) && left.length > 0) ||
+          context.get("leftWidth") > 0
+        );
       },
       hasRightActions: ({ prop, context }) => {
         const right = prop("right");
-        return (Array.isArray(right) && right.length > 0) || context.get("rightWidth") > 0;
+        return (
+          (Array.isArray(right) && right.length > 0) ||
+          context.get("rightWidth") > 0
+        );
       },
     },
 
-    watch: ({ prop, state, send, context }) => {
+    watch: ({ prop, state, send }) => {
       const rawOpened = prop("opened");
       if (!isNotNull(rawOpened)) return;
 
       const shouldBeOpen = Boolean(rawOpened);
-      const targetSide: SwipeSide =
-        typeof rawOpened === "string" &&
-        (rawOpened === "left" || rawOpened === "right")
-          ? rawOpened
-          : "right";
+      const isCurrentlyOpen = state.hasTag("open");
 
       if (shouldBeOpen) {
-        if (!state.matches("open") || context.get("openedSide") !== targetSide) {
-          send({ type: "CONTROLLED.OPEN", side: targetSide });
-        }
-      } else if (!state.matches("closed")) {
+        const side = resolveSide(rawOpened);
+        send({ type: "CONTROLLED.OPEN", side });
+      } else if (isCurrentlyOpen) {
         send({ type: "CONTROLLED.CLOSE" });
       }
     },
 
     on: {
+      MEASURE: {
+        actions: ["measureWidths"],
+      },
       SET_WIDTHS: {
         actions: ["setWidths"],
       },
@@ -117,115 +251,112 @@ export const swipeCellMachine: SwipeCellMachine =
       closed: {
         tags: ["closed"],
         on: {
-          DRAG_START: {
-            guard: "isInteractive",
-            target: "dragging",
-            actions: ["setOffsetFromEvent"],
-          },
-          DRAG_MOVE: {
-            guard: "isInteractive",
-            actions: ["setOffsetFromEvent"],
-          },
-          OPEN: {
-            guard: "isInteractive",
-            target: "open",
-            actions: ["setOpenedSide", "invokeOnOpen", "emitChange"],
-          },
-          TOGGLE: {
-            guard: "isInteractive",
-            target: "open",
-            actions: ["setOpenedSide", "invokeOnOpen", "emitChange"],
-          },
           "CONTROLLED.OPEN": {
             target: "open",
             actions: ["setOpenedSide"],
           },
+          DRAG_START: {
+            guard: "isInteractive",
+            target: "dragging",
+            actions: ["setOffsetFromEvent", "invokeOnDragStart"],
+          },
+          DRAG_MOVE: {
+            guard: "isInteractive",
+            actions: ["setOffsetFromEvent", "invokeOnDrag"],
+          },
+          OPEN: {
+            guard: "isInteractive",
+            target: "open",
+            actions: openActions,
+          },
+          TOGGLE: {
+            guard: "isInteractive",
+            target: "open",
+            actions: openActions,
+          },
+          ACTION_CLICK: actionClickTransition,
         },
       },
 
       dragging: {
         tags: ["dragging"],
         on: {
-          DRAG_MOVE: {
-            actions: ["setOffsetFromEvent"],
-          },
-          DRAG_END: [
-            {
-              guard: "isDragOpened",
-              target: "open",
-              actions: [
-                "setOpenedSideFromEvent",
-                "invokeOnOpen",
-                "emitChange",
-              ],
-            },
-            {
-              target: "closed",
-              actions: ["clearOpenedSide", "invokeOnClose", "emitChange"],
-            },
-          ],
-          CLOSE: {
-            target: "closed",
-            actions: ["clearOpenedSide", "invokeOnClose", "emitChange"],
+          "CONTROLLED.OPEN": {
+            target: "open",
+            actions: ["setOpenedSide"],
           },
           "CONTROLLED.CLOSE": {
             target: "closed",
             actions: ["clearOpenedSide"],
           },
-          "CONTROLLED.OPEN": {
-            target: "open",
-            actions: ["setOpenedSide"],
+          DRAG_MOVE: {
+            actions: ["setOffsetFromEvent", "invokeOnDrag"],
           },
+          DRAG_END: [
+            {
+              guard: "isDragOpened",
+              target: "open",
+              actions: ["invokeOnDragEnd", ...openActions],
+            },
+            {
+              target: "closed",
+              actions: ["invokeOnDragEnd", ...closeActions],
+            },
+          ],
+          CLOSE: {
+            target: "closed",
+            actions: closeActions,
+          },
+          CONTENT_TAP: contentTapTransition,
+          ACTION_CLICK: actionClickTransition,
         },
       },
 
       open: {
         tags: ["open"],
         on: {
-          DRAG_START: {
-            guard: "isInteractive",
-            target: "dragging",
-            actions: ["setOffsetFromEvent"],
-          },
-          DRAG_MOVE: {
-            guard: "isInteractive",
-            actions: ["setOffsetFromEvent"],
-          },
-          CLOSE: {
-            target: "closed",
-            actions: ["clearOpenedSide", "invokeOnClose", "emitChange"],
-          },
-          TOGGLE: {
-            target: "closed",
-            actions: ["clearOpenedSide", "invokeOnClose", "emitChange"],
-          },
-          CONTENT_TAP: {
-            guard: "closeOnContentClick",
-            target: "closed",
-            actions: ["clearOpenedSide", "invokeOnClose", "emitChange"],
-          },
-          ACTION_CLICK: [
+          "CONTROLLED.OPEN": [
             {
-              guard: "closeOnActionClick",
-              target: "closed",
-              actions: [
-                "invokeOnActionClick",
-                "clearOpenedSide",
-                "invokeOnClose",
-                "emitChange",
-              ],
-            },
-            {
-              actions: ["invokeOnActionClick"],
+              guard: "isDifferentSide",
+              actions: ["setOpenedSide"],
             },
           ],
           "CONTROLLED.CLOSE": {
             target: "closed",
             actions: ["clearOpenedSide"],
           },
-          "CONTROLLED.OPEN": {
-            actions: ["setOpenedSide"],
+          DRAG_START: {
+            guard: "isInteractive",
+            target: "dragging",
+            actions: ["setOffsetFromEvent", "invokeOnDragStart"],
           },
+          DRAG_MOVE: {
+            guard: "isInteractive",
+            actions: ["setOffsetFromEvent", "invokeOnDrag"],
+          },
+          OPEN: [
+            {
+              guard: "isDifferentSide",
+              actions: openActions,
+            },
+          ],
+          TOGGLE: [
+            {
+              guard: "isDifferentSide",
+              actions: openActions,
+            },
+            {
+              guard: "isInteractive",
+              target: "closed",
+              actions: closeActions,
+            },
+          ],
+          CLOSE: {
+            target: "closed",
+            actions: closeActions,
+          },
+          CONTENT_TAP: contentTapTransition,
+          ACTION_CLICK: actionClickTransition,
         },
       },
     },
@@ -233,18 +364,36 @@ export const swipeCellMachine: SwipeCellMachine =
     implementations: {
       guards: {
         isInteractive: ({ computed }) => !computed("isDisabled"),
-        closeOnContentClick: ({ prop }) => prop("closeOnContentClick") ?? true,
-        closeOnActionClick: ({ prop }) => prop("closeOnActionClick") ?? true,
+        closeOnContentClick: ({ prop }) =>
+          parseBooleanProp(prop("closeOnContentClick")),
+        closeOnActionClick: ({ prop }) =>
+          parseBooleanProp(prop("closeOnActionClick")),
         isDragOpened: ({ event }) =>
           event.type === "DRAG_END" && Boolean(event.opened),
+        isDifferentSide: ({ context, event, computed }) => {
+          if (computed("isDisabled")) return false;
+          const targetSide =
+            event.type === "OPEN" || event.type === "CONTROLLED.OPEN"
+              ? (event.side ?? "right")
+              : event.side;
+          return Boolean(targetSide && targetSide !== context.get("openedSide"));
+        },
       },
 
       actions: {
         setOpenedSide: ({ context, event }) => {
-          if (event.type === "OPEN" || event.type === "TOGGLE") {
+          if (
+            event.type === "OPEN" ||
+            event.type === "TOGGLE" ||
+            event.type === "DRAG_END" ||
+            event.type === "CONTROLLED.OPEN"
+          ) {
             context.set("openedSide", event.side ?? "right");
-          } else if (event.type === "CONTROLLED.OPEN") {
-            context.set("openedSide", event.side);
+            if (event.type === "DRAG_END") {
+              context.set("currentOffset", event.offset);
+            } else {
+              context.set("currentOffset", 0);
+            }
           }
         },
 
@@ -268,6 +417,10 @@ export const swipeCellMachine: SwipeCellMachine =
           if (event.type === "DRAG_MOVE") {
             context.set("currentOffset", event.offset);
           }
+        },
+
+        measureWidths: ({ scope, context, prop }) => {
+          measureActionWidths(scope, context, prop);
         },
 
         setWidths: ({ context, event }) => {
@@ -297,12 +450,40 @@ export const swipeCellMachine: SwipeCellMachine =
 
         invokeOnActionClick: ({ prop, event }) => {
           if (event.type !== "ACTION_CLICK") return;
-          event.action.onClick?.(event.action);
-          prop("onActionClick")?.({
+          const details = {
             action: event.action,
             side: event.side,
             index: event.index,
-          });
+          };
+          event.action.onClick?.(event.action);
+          prop("onActionClick")?.(details);
+          prop("onClick")?.(details);
+        },
+
+        invokeOnDragStart: ({ prop, event }) => {
+          if (event.type === "DRAG_START") {
+            prop("onDragStart")?.(event.data ?? {});
+          }
+        },
+
+        invokeOnDrag: ({ prop, event }) => {
+          if (event.type === "DRAG_MOVE") {
+            prop("onDrag")?.({ offset: event.offset });
+          }
+        },
+
+        invokeOnDragEnd: ({ prop, event }) => {
+          if (event.type === "DRAG_END") {
+            prop("onDragEnd")?.({
+              opened: event.opened,
+              side: event.side,
+              offset: event.offset,
+            });
+          }
+        },
+
+        invokeOnContentTap: ({ prop }) => {
+          prop("onContentTap")?.();
         },
       },
     },

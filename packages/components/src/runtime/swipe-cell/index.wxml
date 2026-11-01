@@ -9,7 +9,7 @@
 >
   <view
     id="{{swipeCell.wrapperProps.id}}"
-    class="{{classes.wrapper}}"
+    class="{{classes.wrapper}} cui-swipe-cell__wrapper"
     data-scope="swipe-cell"
     data-part="wrapper"
     data-wrapper-id="{{swipeCell.wrapperProps.id}}"
@@ -19,16 +19,17 @@
     data-duration="{{swipeCell.duration}}"
     data-offset="{{swipeCell.offset}}"
     data-disabled="{{swipeCell.disabled}}"
+    change:offset="{{gesture.onOffsetChange}}"
+    offset="{{swipeCell.offset}}"
     style="{{swipeCell.contentStyle}}"
-    capture-bind:touchstart="{{gesture.onTouchStart}}"
+    bind:touchstart="{{gesture.onTouchStart}}"
     catch:touchmove="{{gesture.onTouchMove}}"
-    catch:touchend="{{gesture.onTouchEnd}}"
-    catch:touchcancel="{{gesture.onTouchEnd}}"
+    bind:touchend="{{gesture.onTouchEnd}}"
+    bind:touchcancel="{{gesture.onTouchEnd}}"
   >
-    <!-- Left actions -->
     <view
       id="{{swipeCell.leftProps.id}}"
-      class="{{classes.left}}"
+      class="{{classes.left}} cui-swipe-cell__left"
       data-scope="swipe-cell"
       data-part="left"
       wx:if="{{swipeCell.hasLeftActions}}"
@@ -41,6 +42,7 @@
           style="{{item.style || ''}}"
           data-index="{{item.index}}"
           data-side="left"
+          data-value="{{item.value !== undefined ? item.value : ''}}"
           catchtap="handleActionTap"
         >
           <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />
@@ -53,7 +55,7 @@
     <!-- Center content -->
     <view
       id="{{swipeCell.contentProps.id}}"
-      class="{{classes.content}}"
+      class="{{classes.content}} cui-swipe-cell__content"
       data-scope="swipe-cell"
       data-part="content"
       bindtap="handleContentTap"
@@ -64,7 +66,7 @@
     <!-- Right actions -->
     <view
       id="{{swipeCell.rightProps.id}}"
-      class="{{classes.right}}"
+      class="{{classes.right}} cui-swipe-cell__right"
       data-scope="swipe-cell"
       data-part="right"
       wx:if="{{swipeCell.hasRightActions}}"
@@ -77,6 +79,7 @@
           style="{{item.style || ''}}"
           data-index="{{item.index}}"
           data-side="right"
+          data-value="{{item.value !== undefined ? item.value : ''}}"
           catchtap="handleActionTap"
         >
           <c-icon wx:if="{{item.icon}}" name="{{item.icon}}" className="{{classes.actionIcon}}" />

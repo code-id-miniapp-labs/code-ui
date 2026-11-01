@@ -26,7 +26,11 @@ function onTouchStart(event, ownerInstance) {
 
   startX = touch.clientX;
   startY = touch.clientY;
-  startOffset = typeof dataset.offset === 'number' ? dataset.offset : 0;
+  startOffset =
+    dataset.offset !== undefined && dataset.offset !== null && dataset.offset !== ''
+      ? Number(dataset.offset)
+      : (currentOffset || 0);
+  if (isNaN(startOffset)) startOffset = currentOffset || 0;
   currentOffset = startOffset;
   isDragging = false;
   direction = '';
@@ -35,16 +39,10 @@ function onTouchStart(event, ownerInstance) {
     _throttledCallMove.reset();
   }
 
-  _wrapperEl = dom.selectEl(ownerInstance, '#' + dataset.wrapperId);
-  if (_wrapperEl) {
-    _wrapperEl.setStyle('transition: none; transform: translate3d(' + startOffset + 'px, 0, 0);');
-  }
-
-  ownerInstance.callMethod('handleTouchStart', {
-    clientX: touch.clientX,
-    clientY: touch.clientY,
-    offset: startOffset
-  });
+  _wrapperEl =
+    event.instance ||
+    dom.selectEl(ownerInstance, '#' + dataset.wrapperId) ||
+    dom.selectEl(ownerInstance, '.cui-swipe-cell__wrapper');
 }
 
 function onTouchMove(event, ownerInstance) {
@@ -74,7 +72,17 @@ function onTouchMove(event, ownerInstance) {
   }
 
   if (direction === 'horizontal') {
-    isDragging = true;
+    if (!isDragging) {
+      isDragging = true;
+      if (_wrapperEl) {
+        _wrapperEl.setStyle('transition: none; transform: translate3d(' + startOffset + 'px, 0, 0);');
+      }
+      ownerInstance.callMethod('handleTouchStart', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        offset: startOffset
+      });
+    }
     var leftWidth = dataset.leftWidth ? Number(dataset.leftWidth) : 0;
     var rightWidth = dataset.rightWidth ? Number(dataset.rightWidth) : 0;
     var newOffset = startOffset + deltaX;
@@ -130,6 +138,8 @@ function onTouchEnd(event, ownerInstance) {
   var opened = false;
   var side = null;
 
+  var curOffset = typeof currentOffset === 'number' ? currentOffset : (startOffset + deltaX);
+
   if (startOffset === 0) {
     if (deltaX > threshold && leftWidth > 0) {
       target = leftWidth;
@@ -145,7 +155,11 @@ function onTouchEnd(event, ownerInstance) {
       side = null;
     }
   } else if (startOffset > 0) {
-    if (deltaX < -threshold) {
+    if ((curOffset < -threshold || (startOffset + deltaX) < -threshold) && rightWidth > 0) {
+      target = -rightWidth;
+      opened = true;
+      side = 'right';
+    } else if (deltaX < -threshold) {
       target = 0;
       opened = false;
       side = null;
@@ -155,7 +169,11 @@ function onTouchEnd(event, ownerInstance) {
       side = 'left';
     }
   } else if (startOffset < 0) {
-    if (deltaX > threshold) {
+    if ((curOffset > threshold || (startOffset + deltaX) > threshold) && leftWidth > 0) {
+      target = leftWidth;
+      opened = true;
+      side = 'left';
+    } else if (deltaX > threshold) {
       target = 0;
       opened = false;
       side = null;
@@ -188,9 +206,40 @@ function onTouchEnd(event, ownerInstance) {
   });
 }
 
+function onOffsetChange(newValue, oldValue, ownerInstance, instance) {
+  if (newValue === oldValue) return;
+  if (isDragging) return;
+
+  var targetEl =
+    instance ||
+    _wrapperEl ||
+    (ownerInstance
+      ? dom.selectEl(ownerInstance, '.cui-swipe-cell__wrapper')
+      : null);
+  if (!targetEl) return;
+
+  var offset = typeof newValue === 'number' ? newValue : 0;
+  var dataset = targetEl.getDataset ? targetEl.getDataset() : {};
+  var duration = dataset.duration ? Number(dataset.duration) : 300;
+
+  if (oldValue === undefined || oldValue === null) {
+    if (offset !== 0) {
+      targetEl.setStyle('transform: translate3d(' + offset + 'px, 0, 0);');
+    }
+    currentOffset = offset;
+    return;
+  }
+
+  targetEl.setStyle(
+    'transition: transform ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1); transform: translate3d(' + offset + 'px, 0, 0);'
+  );
+  currentOffset = offset;
+}
+
 module.exports = {
   onTouchStart: onTouchStart,
   onTouchMove: onTouchMove,
   onTouchEnd: onTouchEnd,
+  onOffsetChange: onOffsetChange,
 };
 

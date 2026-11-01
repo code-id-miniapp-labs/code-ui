@@ -1,12 +1,15 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
 import { resolveSlots } from "../../utils/ui";
 import {
   swipeCellMachine,
   connectSwipeCell,
   defaultSwipeCellProps,
-  type SwipeActionItem,
-  type SwipeSide,
+  type SwipeCellApi,
 } from "@code-ui/swipe-cell";
 import themeConfig from "virtual:cui/theme/swipe-cell";
 import { tv } from "../../utils/variants";
@@ -19,7 +22,11 @@ const swipeCellBehavior = createMachineBehavior({
   key: "swipeCell",
   exportApi: true,
   syncProps: [
+    "variant",
+    "size",
     "disabled",
+    "opened",
+    "defaultOpened",
     "left",
     "right",
     "leftWidth",
@@ -41,13 +48,24 @@ Component(
       virtualHost: true,
     },
 
+    properties: createProperties(defaultSwipeCellProps, {
+      className: {
+        type: String,
+        value: "",
+      },
+    }),
+
     computed: {
       classes() {
         const api = this.data.swipeCell;
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const variant = api?.variant ?? this.data.variant;
+        const size = api?.size ?? this.data.size;
         const ui = this.data.ui;
 
         const themeFns = swipeCellTheme({
+          variant,
+          size,
           disabled,
         });
 
@@ -56,102 +74,66 @@ Component(
     },
 
     lifetimes: {
-      ready() {
-        this.updateWidths();
+      ready(this: any) {
+        this.measure();
       },
     },
 
     observers: {
-      "left, right": function () {
-        this.updateWidths();
+      "left, right": function (this: any) {
+        this.measure();
       },
     },
 
-    properties: createProperties(defaultSwipeCellProps, {
-      className: {
-        type: String,
-        value: "",
-      },
-    }),
-
     methods: {
-      updateWidths() {
-        if (this.data.leftWidth > 0 && this.data.rightWidth > 0) return;
-        if (typeof this.createSelectorQuery !== "function") return;
-
-        const query = this.createSelectorQuery();
-        const api = this.data.swipeCell;
-        const leftId = api?.leftProps?.id as string | undefined;
-        const rightId = api?.rightProps?.id as string | undefined;
-
-        if (leftId) query.select(`#${leftId}`).boundingClientRect();
-        if (rightId) query.select(`#${rightId}`).boundingClientRect();
-
-        query.exec((res: Array<{ width?: number } | null>) => {
-          if (!res || res.length === 0) return;
-          let idx = 0;
-          let leftWidth = this.data.leftWidth;
-          let rightWidth = this.data.rightWidth;
-
-          if (leftId) {
-            const rect = res[idx++];
-            if (rect && typeof rect.width === "number" && rect.width > 0) {
-              leftWidth = rect.width;
-            }
-          }
-          if (rightId) {
-            const rect = res[idx++];
-            if (rect && typeof rect.width === "number" && rect.width > 0) {
-              rightWidth = rect.width;
-            }
-          }
-
-          this.send({ type: "SET_WIDTHS", leftWidth, rightWidth });
-        });
+      measure(this: any) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.measure?.();
       },
 
-      handleTouchStart(data?: Record<string, unknown>) {
-        this.send({ type: "DRAG_START" });
-        this.triggerEvent("dragstart", data ?? {});
+      handleTouchStart(this: any, data?: Record<string, unknown>) {
+        return getApi<SwipeCellApi>(
+          this,
+          "swipeCell",
+        )?.handleTouchStart?.(data);
       },
 
-      handleTouchMove(data?: { offset?: number; deltaX?: number }) {
-        const offset = typeof data?.offset === "number" ? data.offset : 0;
-        this.send({ type: "DRAG_MOVE", offset });
-        this.triggerEvent("drag", data ?? {});
+      handleTouchMove(
+        this: any,
+        data?: { offset?: number; deltaX?: number },
+      ) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.handleTouchMove?.(data);
       },
 
-      handleTouchEnd(data?: {
-        opened: boolean;
-        side: SwipeSide | null;
-        offset: number;
-      }) {
-        const opened = Boolean(data?.opened);
-        const side = data?.side ?? null;
-        const offset = typeof data?.offset === "number" ? data.offset : 0;
-        this.send({ type: "DRAG_END", opened, side, offset });
-        this.triggerEvent("dragend", data ?? { opened, side, offset });
+      handleTouchEnd(
+        this: any,
+        data?: {
+          opened: boolean;
+          side: any;
+          offset: number;
+        },
+      ) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.handleTouchEnd?.(data);
       },
 
-      handleContentTap() {
-        this.send({ type: "CONTENT_TAP" });
-        this.triggerEvent("contentTap");
+      handleContentTap(this: any) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.handleContentTap?.();
       },
 
-      handleActionTap(ev: WechatMiniprogram.CustomEvent) {
-        const side = ev.currentTarget?.dataset?.side as SwipeSide | undefined;
-        const index = Number(ev.currentTarget?.dataset?.index);
-        if (!side || isNaN(index)) return;
+      handleActionTap(this: any, ev: WechatMiniprogram.CustomEvent) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.handleActionTap?.(ev);
+      },
 
-        const list = side === "left" ? this.data.left : this.data.right;
-        const action: SwipeActionItem | undefined = list?.[index];
-        if (action) {
-          this.send({ type: "ACTION_CLICK", action, side, index });
-          this.triggerEvent("actionClick", { action, side, index });
-          this.triggerEvent("click", { action, side, index });
-        }
+      open(this: any, side?: any) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.openCell?.(side);
+      },
+
+      close(this: any) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.closeCell?.();
+      },
+
+      toggle(this: any, side?: any) {
+        return getApi<SwipeCellApi>(this, "swipeCell")?.toggleCell?.(side);
       },
     },
   }),
 );
-

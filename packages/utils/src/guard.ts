@@ -69,4 +69,4 @@ export const isEmpty = (v: unknown): boolean => {
 
 export const isNotEmpty = (v: unknown): boolean => !isEmpty(v);
 
-export const isNotNull = (v: any): v is boolean => !isNull(v);
+export const isNotNull = <T>(v: T): v is NonNullable<T> => !isNull(v);

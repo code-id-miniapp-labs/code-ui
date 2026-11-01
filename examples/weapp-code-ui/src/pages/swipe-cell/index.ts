@@ -13,6 +13,7 @@ Page({
     // 1. Single action (right)
     rightSingle: [
       {
+        value: "delete",
         text: "Delete",
         className: "bg-red-500 text-white",
         icon: "trash",
@@ -22,11 +23,13 @@ Page({
     // 2. Multi action (right)
     rightMulti: [
       {
+        value: "star",
         text: "Star",
         className: "bg-amber-500 text-white",
         icon: "star",
       },
       {
+        value: "delete",
         text: "Delete",
         className: "bg-red-500 text-white",
         icon: "trash",
@@ -36,6 +39,7 @@ Page({
     // 3. Left action
     leftActions: [
       {
+        value: "archive",
         text: "Archive",
         className: "bg-blue-600 text-white",
         icon: "archive",
@@ -45,6 +49,7 @@ Page({
     // 4. Both sides actions
     bothLeft: [
       {
+        value: "read",
         text: "Mark Read",
         className: "bg-emerald-600 text-white",
         icon: "check",
@@ -52,11 +57,13 @@ Page({
     ] as SwipeActionItem[],
     bothRight: [
       {
+        value: "pin",
         text: "Pin",
         className: "bg-indigo-600 text-white",
         icon: "pin",
       },
       {
+        value: "delete",
         text: "Delete",
         className: "bg-red-500 text-white",
         icon: "trash",
@@ -94,6 +101,7 @@ Page({
   },
 
   onActionClick(e: WechatMiniprogram.CustomEvent) {
+    console.log("testing");
     const { action, side } = e.detail;
     wx.showToast({
       title: `${action.text || "Action"} (${side})`,
@@ -134,15 +142,18 @@ Page({
     const { action } = e.detail;
     const itemId = e.currentTarget.dataset.id as number;
 
-    if (action.text === "Delete") {
+    if (action.value === "delete") {
       const filtered = this.data.messageList.filter((msg) => msg.id !== itemId);
       this.setData({ messageList: filtered });
       wx.showToast({ title: "Deleted", icon: "success" });
-    } else if (action.text === "Star") {
+    } else if (action.value === "star") {
       const updated = this.data.messageList.map((msg) =>
         msg.id === itemId ? { ...msg, starred: !msg.starred } : msg,
       );
       this.setData({ messageList: updated });
+      console.log({
+        updated,
+      });
       wx.showToast({ title: "Updated Star", icon: "none" });
     }
   },

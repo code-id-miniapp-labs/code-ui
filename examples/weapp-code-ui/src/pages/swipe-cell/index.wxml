@@ -9,17 +9,15 @@
       Smooth gesture-driven sliding cell for list items, powered by Webview WXS gestures and Zag.js state machine.
     </view>
   </view>
-
   <view class="px-5 flex flex-col gap-6">
     <!-- 1. Basic Usage: Left Swipe (Right Actions) -->
     <view class="flex flex-col gap-3">
       <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
         1. Left Swipe (Right Actions)
       </view>
-
       <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
         <!-- Single action -->
-        <c-swipe-cell right="{{rightSingle}}" bind:click="onActionClick">
+        <c-swipe-cell right="{{rightSingle}}" bind:click="onActionClick" closeOnActionClick closeOnContentClick>
           <view class="p-4 flex items-center justify-between">
             <view class="flex flex-col">
               <text class="text-sm font-semibold text-neutral-900">Swipe left for delete</text>
@@ -28,12 +26,13 @@
             <text class="text-xs text-neutral-400">‹ Swipe</text>
           </view>
         </c-swipe-cell>
-
         <!-- Multiple actions -->
         <c-swipe-cell right="{{rightMulti}}" bind:click="onActionClick">
           <view class="p-4 flex items-center justify-between">
             <view class="flex flex-col">
-              <text class="text-sm font-semibold text-neutral-900">Swipe left for multi-action</text>
+              <text class="text-sm font-semibold text-neutral-900">
+                Swipe left for multi-action
+              </text>
               <text class="text-xs text-neutral-400 mt-0.5">Star & Delete actions</text>
             </view>
             <text class="text-xs text-neutral-400">‹ Swipe</text>
@@ -41,13 +40,11 @@
         </c-swipe-cell>
       </view>
     </view>
-
     <!-- 2. Swipe Right (Left Actions) & Both Sides -->
     <view class="flex flex-col gap-3">
       <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
         2. Swipe Right & Bidirectional
       </view>
-
       <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
         <!-- Left actions (swipe right) -->
         <c-swipe-cell left="{{leftActions}}" bind:click="onActionClick">
@@ -59,7 +56,6 @@
             </view>
           </view>
         </c-swipe-cell>
-
         <!-- Bidirectional actions -->
         <c-swipe-cell left="{{bothLeft}}" right="{{bothRight}}" bind:click="onActionClick">
           <view class="p-4 flex items-center justify-between">
@@ -73,29 +69,27 @@
         </c-swipe-cell>
       </view>
     </view>
-
     <!-- 3. Custom Slot Layout -->
     <view class="flex flex-col gap-3">
       <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
         3. Custom Slots
       </view>
-
       <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs">
         <c-swipe-cell rightWidth="{{140}}" leftWidth="{{80}}">
           <!-- Custom left slot -->
           <view slot="left" class="h-full flex items-center justify-center bg-teal-600 text-white px-5 text-xs font-semibold">
             Custom
           </view>
-
           <!-- Main content -->
           <view class="p-4 flex items-center justify-between">
             <view class="flex flex-col">
               <text class="text-sm font-semibold text-neutral-900">Custom Slot Content</text>
-              <text class="text-xs text-neutral-400 mt-0.5">Using slot="left" and slot="right"</text>
+              <text class="text-xs text-neutral-400 mt-0.5">
+                Using slot="left" and slot="right"
+              </text>
             </view>
             <c-badge size="xs" color="primary" variant="subtle">Slots</c-badge>
           </view>
-
           <!-- Custom right slot -->
           <view slot="right" class="h-full flex items-center gap-1 bg-neutral-900 px-3">
             <view class="bg-neutral-800 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg">
@@ -108,13 +102,11 @@
         </c-swipe-cell>
       </view>
     </view>
-
     <!-- 4. Controlled State & External Triggers -->
     <view class="flex flex-col gap-3">
       <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
         4. Controlled State
       </view>
-
       <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
         <view class="flex items-center justify-between">
           <view class="text-sm font-bold text-neutral-900">External Control</view>
@@ -122,24 +114,18 @@
             {{controlledStatus}}
           </c-badge>
         </view>
-
         <view class="rounded-xl border border-neutral-200 overflow-hidden">
-          <c-swipe-cell
-            opened="{{controlledOpened}}"
-            left="{{bothLeft}}"
-            right="{{bothRight}}"
-            bind:openChange="onControlledOpenChange"
-            bind:click="onActionClick"
-          >
+          <c-swipe-cell opened="{{controlledOpened}}" left="{{bothLeft}}" right="{{bothRight}}" bind:openChange="onControlledOpenChange" bind:openchange="onControlledOpenChange" bind:click="onActionClick">
             <view class="p-4 bg-white flex items-center justify-between">
               <view class="flex flex-col">
                 <text class="text-sm font-semibold text-neutral-900">Controlled SwipeCell</text>
-                <text class="text-xs text-neutral-400 mt-0.5">Syncs with external buttons below</text>
+                <text class="text-xs text-neutral-400 mt-0.5">
+                  Syncs with external buttons below
+                </text>
               </view>
             </view>
           </c-swipe-cell>
         </view>
-
         <view class="flex items-center gap-2">
           <c-button size="xs" color="neutral" variant="outline" bind:tap="openControlledLeft">
             Open Left
@@ -153,7 +139,6 @@
         </view>
       </view>
     </view>
-
     <!-- 5. Interactive Message List -->
     <view class="flex flex-col gap-3">
       <view class="flex items-center justify-between px-1">
@@ -162,14 +147,9 @@
         </view>
         <text class="text-[11px] text-neutral-400">{{messageList.length}} item(s)</text>
       </view>
-
       <view class="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-xs flex flex-col divide-y divide-neutral-100">
         <block wx:for="{{messageList}}" wx:key="id">
-          <c-swipe-cell
-            right="{{rightMulti}}"
-            data-id="{{item.id}}"
-            bind:click="handleListAction"
-          >
+          <c-swipe-cell right="{{rightMulti}}" data-id="{{item.id}}" bind:click="handleListAction">
             <view class="p-4 flex items-center justify-between bg-white">
               <view class="flex flex-col gap-1">
                 <view class="flex items-center gap-2">
@@ -182,12 +162,50 @@
             </view>
           </c-swipe-cell>
         </block>
-
         <view wx:if="{{messageList.length === 0}}" class="p-8 text-center text-xs text-neutral-400">
           All items deleted! Refresh page to reset.
         </view>
       </view>
     </view>
+    <!-- 6. Variants & Sizes -->
+    <view class="flex flex-col gap-3">
+      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
+        6. Variants & Sizes
+      </view>
+      <view class="flex flex-col gap-3">
+        <!-- Outline variant with sm size -->
+        <c-swipe-cell variant="outline" size="sm" right="{{rightSingle}}" bind:click="onActionClick">
+          <view class="p-3 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-xs font-semibold text-neutral-900">Outline Variant (Small)</text>
+              <text class="text-[10px] text-neutral-400">variant="outline" size="sm"</text>
+            </view>
+            <text class="text-xs text-neutral-400">‹ Swipe</text>
+          </view>
+        </c-swipe-cell>
+
+        <!-- Separated variant with md size (default) -->
+        <c-swipe-cell variant="separated" size="md" right="{{rightMulti}}" bind:click="onActionClick">
+          <view class="p-4 flex items-center justify-between">
+            <view class="flex flex-col">
+              <text class="text-sm font-semibold text-neutral-900">Separated Card (Medium)</text>
+              <text class="text-xs text-neutral-400">variant="separated" size="md"</text>
+            </view>
+            <text class="text-xs text-neutral-400">‹ Swipe</text>
+          </view>
+        </c-swipe-cell>
+
+        <!-- Soft variant with lg size -->
+        <c-swipe-cell variant="soft" size="lg" left="{{leftActions}}" bind:click="onActionClick">
+          <view class="p-5 flex items-center justify-between">
+            <text class="text-xs text-neutral-400">Swipe ›</text>
+            <view class="flex flex-col items-end">
+              <text class="text-base font-semibold text-neutral-900">Soft Variant (Large)</text>
+              <text class="text-xs text-neutral-400">variant="soft" size="lg"</text>
+            </view>
+          </view>
+        </c-swipe-cell>
+      </view>
+    </view>
   </view>
 </view>
-

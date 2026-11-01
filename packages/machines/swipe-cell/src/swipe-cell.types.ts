@@ -16,6 +16,7 @@ export type SwipeCellUI = ComponentUI<typeof anatomy>;
 export type SwipeCellResolvedUI = ResolvedUI<typeof anatomy>;
 
 export interface SwipeActionItem {
+  value?: string | number | undefined;
   text?: string | undefined;
   icon?: string | undefined;
   className?: string | undefined;
@@ -28,6 +29,7 @@ export interface SwipeActionItem {
 export interface SwipeCellActionSnapshot {
   index: number;
   side: SwipeSide;
+  value?: string | number | undefined;
   text?: string | undefined;
   icon?: string | undefined;
   className?: string | undefined;
@@ -52,6 +54,15 @@ export interface SwipeCellActionClickDetails {
 
 export type ActionClickDetails = SwipeCellActionClickDetails;
 
+export type SwipeCellVariant =
+  | "plain"
+  | "outline"
+  | "subtle"
+  | "soft"
+  | "separated";
+
+export type SwipeCellSize = "xs" | "sm" | "md" | "lg" | "xl";
+
 export interface SwipeCellProps {
   /** The unique id of the component */
   id?: string | undefined;
@@ -59,6 +70,10 @@ export interface SwipeCellProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
+  /** Visual style variant */
+  variant?: SwipeCellVariant | undefined;
+  /** Size of swipe cell actions */
+  size?: SwipeCellSize | undefined;
   /** Custom UI slot classes for swipe-cell anatomy parts */
   ui?: SwipeCellUI | undefined;
   /** Whether swipe cell interaction is disabled */
@@ -91,27 +106,52 @@ export interface SwipeCellProps {
   onClose?: (() => void) | undefined;
   /** Callback fired when an action item is clicked */
   onActionClick?: ((details: ActionClickDetails) => void) | undefined;
+  /** Callback fired when an action item is clicked (alias) */
+  onClick?: ((details: ActionClickDetails) => void) | undefined;
+  /** Callback fired when drag starts */
+  onDragStart?: ((data: Record<string, unknown>) => void) | undefined;
+  /** Callback fired while dragging */
+  onDrag?: ((data: { offset: number }) => void) | undefined;
+  /** Callback fired when drag ends */
+  onDragEnd?:
+    | ((data: {
+        opened: boolean;
+        side: SwipeSide | null;
+        offset: number;
+      }) => void)
+    | undefined;
+  /** Callback fired when cell content is tapped */
+  onContentTap?: (() => void) | undefined;
 }
 
 export type SwipeCellEvent =
-  | { type: "DRAG_START" }
+  | { type: "CONTROLLED.OPEN"; side?: SwipeSide | undefined }
+  | { type: "CONTROLLED.CLOSE" }
+  | { type: "DRAG_START"; data?: Record<string, unknown> | undefined }
   | { type: "DRAG_MOVE"; offset: number }
   | { type: "DRAG_END"; opened: boolean; side: SwipeSide | null; offset: number }
   | { type: "OPEN"; side?: SwipeSide | undefined }
   | { type: "CLOSE" }
   | { type: "TOGGLE"; side?: SwipeSide | undefined }
-  | { type: "ACTION_CLICK"; action: SwipeActionItem; side: SwipeSide; index: number }
+  | {
+      type: "ACTION_CLICK";
+      action: SwipeActionItem;
+      side: SwipeSide;
+      index: number;
+    }
   | { type: "CONTENT_TAP" }
-  | { type: "SET_WIDTHS"; leftWidth?: number | undefined; rightWidth?: number | undefined }
-  | { type: "CONTROLLED.OPEN"; side: SwipeSide }
-  | { type: "CONTROLLED.CLOSE" };
+  | { type: "MEASURE" }
+  | {
+      type: "SET_WIDTHS";
+      leftWidth?: number | undefined;
+      rightWidth?: number | undefined;
+    };
 
 export interface SwipeCellContext {
   openedSide: SwipeSide | null;
   leftWidth: number;
   rightWidth: number;
   currentOffset: number;
-  ui: SwipeCellUI;
 }
 
 export interface SwipeCellComputed {
@@ -130,17 +170,25 @@ export type SwipeCellAction =
   | "invokeOnClose"
   | "emitChange"
   | "invokeOnActionClick"
+  | "invokeOnDragStart"
+  | "invokeOnDrag"
+  | "invokeOnDragEnd"
+  | "invokeOnContentTap"
   | "setOpenedSide"
   | "clearOpenedSide"
   | "setOpenedSideFromEvent"
   | "setWidths"
+  | "measureWidths"
   | "setOffsetFromEvent";
 
 export type SwipeCellGuard =
   | "isInteractive"
   | "closeOnContentClick"
   | "closeOnActionClick"
-  | "isDragOpened";
+  | "isDragOpened"
+  | "isDifferentSide";
+
+export interface SwipeCellRefs {}
 
 export interface SwipeCellSchema extends MachineSchema {
   state: SwipeCellState;
@@ -151,6 +199,7 @@ export interface SwipeCellSchema extends MachineSchema {
   computed: SwipeCellComputed;
   action: SwipeCellAction;
   guard: SwipeCellGuard;
+  refs: SwipeCellRefs;
 }
 
 export type SwipeCellService = Service<SwipeCellSchema>;
@@ -166,6 +215,10 @@ export interface SwipeCellApi {
   openedSide: SwipeSide | null;
   /** Current sliding offset in px */
   offset: number;
+  /** Visual style variant */
+  variant: SwipeCellVariant;
+  /** Size of swipe cell actions */
+  size: SwipeCellSize;
   /** Whether the cell is disabled */
   disabled: boolean;
   /** Transition duration in ms */
@@ -190,6 +243,31 @@ export interface SwipeCellApi {
   closeCell: () => void;
   /** Toggle the cell open/closed state */
   toggleCell: (side?: SwipeSide) => void;
+  /** Trigger measurement of action panel widths */
+  measure: () => void;
+  /** Handle touch/drag start from WXS or gesture system */
+  handleTouchStart: (data?: Record<string, unknown>) => void;
+  /** Handle touch/drag move from WXS or gesture system */
+  handleTouchMove: (data?: { offset?: number; deltaX?: number }) => void;
+  /** Handle touch/drag end from WXS or gesture system */
+  handleTouchEnd: (data?: {
+    opened: boolean;
+    side: SwipeSide | null;
+    offset: number;
+  }) => void;
+  /** Handle cell content tap */
+  handleContentTap: () => void;
+  /** Handle action button tap */
+  handleActionTap: (
+    e:
+      | { side: SwipeSide; index: number }
+      | {
+          currentTarget?: {
+            dataset?: { side?: SwipeSide; index?: number | string };
+          };
+        }
+      | any,
+  ) => void;
   /** Props for root container */
   rootProps: Record<string, unknown>;
   /** Props for sliding wrapper */

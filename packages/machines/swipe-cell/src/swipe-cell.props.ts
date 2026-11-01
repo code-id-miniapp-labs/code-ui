@@ -1,6 +1,8 @@
 import type { SwipeCellProps } from "./swipe-cell.types";
 
 export const defaultSwipeCellProps: SwipeCellProps = {
+  variant: "plain",
+  size: "md",
   disabled: false,
   opened: null,
   defaultOpened: false,

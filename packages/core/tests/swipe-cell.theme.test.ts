@@ -17,6 +17,8 @@ describe("swipeCellTheme (@code-ui/core)", () => {
   it("sets correct default variants", () => {
     const theme = swipeCellTheme();
     expect(theme.defaultVariants).toEqual({
+      variant: "plain",
+      size: "md",
       disabled: false,
     });
   });
@@ -26,6 +28,24 @@ describe("swipeCellTheme (@code-ui/core)", () => {
     expect(theme.variants.disabled.true).toEqual({
       root: "opacity-60 pointer-events-none",
     });
+  });
+
+  it("supports variant options", () => {
+    const theme = swipeCellTheme();
+    expect(theme.variants.variant).toHaveProperty("plain");
+    expect(theme.variants.variant).toHaveProperty("outline");
+    expect(theme.variants.variant).toHaveProperty("subtle");
+    expect(theme.variants.variant).toHaveProperty("soft");
+    expect(theme.variants.variant).toHaveProperty("separated");
+  });
+
+  it("supports size options", () => {
+    const theme = swipeCellTheme();
+    expect(theme.variants.size).toHaveProperty("xs");
+    expect(theme.variants.size).toHaveProperty("sm");
+    expect(theme.variants.size).toHaveProperty("md");
+    expect(theme.variants.size).toHaveProperty("lg");
+    expect(theme.variants.size).toHaveProperty("xl");
   });
 });
 

@@ -36,7 +36,23 @@ describe("SwipeCell Machine", () => {
       expect(api.offset).toBe(0);
       expect(api.duration).toBe(300);
       expect(api.threshold).toBe(30);
+      expect(api.variant).toBe("plain");
+      expect(api.size).toBe("md");
       expect(api.contentStyle).toBe("");
+
+      machine.stop();
+    });
+
+    it("respects custom variant and size props", () => {
+      const machine = new MiniappMachine(swipeCellMachine, {
+        variant: "separated",
+        size: "sm",
+      });
+      machine.start();
+
+      const api = connectSwipeCell(machine.service);
+      expect(api.variant).toBe("separated");
+      expect(api.size).toBe("sm");
 
       machine.stop();
     });
@@ -87,6 +103,7 @@ describe("SwipeCell Machine", () => {
       const machine = new MiniappMachine(swipeCellMachine, {
         left: [
           {
+            value: "star",
             text: "Star",
             icon: "star",
             color: "warning",
@@ -94,8 +111,8 @@ describe("SwipeCell Machine", () => {
           },
         ],
         right: [
-          { text: "Delete", color: "danger" },
-          { text: "Archive", color: "neutral" },
+          { value: "delete", text: "Delete", color: "danger" },
+          { value: "archive", text: "Archive", color: "neutral" },
         ],
       });
       machine.start();
@@ -107,6 +124,7 @@ describe("SwipeCell Machine", () => {
       expect(api.leftActions[0]).toEqual({
         index: 0,
         side: "left",
+        value: "star",
         text: "Star",
         icon: "star",
         color: "warning",
@@ -117,7 +135,9 @@ describe("SwipeCell Machine", () => {
       });
 
       expect(api.rightActions).toHaveLength(2);
+      expect(api.rightActions[0]?.value).toBe("delete");
       expect(api.rightActions[0]?.text).toBe("Delete");
+      expect(api.rightActions[1]?.value).toBe("archive");
       expect(api.rightActions[1]?.text).toBe("Archive");
 
       machine.stop();
@@ -408,6 +428,151 @@ describe("SwipeCell Machine", () => {
       machine.updateProps({ opened: false });
       await flush();
       expect(machine.state.get()).toBe("closed");
+
+      machine.stop();
+    });
+
+    it("allows gesture interaction when externally controlled and stays persistent", async () => {
+      const onOpenChange = vi.fn();
+      const machine = new MiniappMachine(swipeCellMachine, {
+        opened: null,
+        leftWidth: 80,
+        rightWidth: 100,
+        onOpenChange,
+      });
+      machine.start();
+
+      const api = connectSwipeCell(machine.service);
+
+      // 1. External control opens right
+      machine.updateProps({ opened: "right" });
+      await flush();
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("openedSide")).toBe("right");
+
+      // 2. User drags to open left side instead
+      api.handleTouchStart();
+      await flush();
+      expect(machine.state.get()).toBe("dragging");
+
+      api.handleTouchMove({ offset: 80 });
+      await flush();
+      expect(machine.computed("offset")).toBe(80);
+
+      api.handleTouchEnd({ opened: true, side: "left", offset: 80 });
+      await flush();
+
+      // State is open on the left
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("openedSide")).toBe("left");
+      expect(onOpenChange).toHaveBeenCalledWith({ opened: true, side: "left" });
+
+      // 3. Parent page receives onOpenChange and updates controlled prop to 'left'
+      machine.updateProps({ opened: "left" });
+      await flush();
+
+      // Cell remains open on left without reverting
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("openedSide")).toBe("left");
+
+      machine.stop();
+    });
+
+    it("invokes action click exactly once without duplicate calls", async () => {
+      const onActionClick = vi.fn();
+      const onClick = vi.fn();
+      const itemClick = vi.fn();
+
+      const machine = new MiniappMachine(swipeCellMachine, {
+        right: [
+          { value: "star", text: "Star", onClick: itemClick },
+        ],
+        onActionClick,
+        onClick,
+      });
+      machine.start();
+
+      const api = connectSwipeCell(machine.service);
+      api.handleActionTap({ side: "right", index: 0 });
+      await flush();
+
+      expect(itemClick).toHaveBeenCalledTimes(1);
+      expect(onActionClick).toHaveBeenCalledTimes(1);
+      expect(onClick).toHaveBeenCalledTimes(1);
+
+      machine.stop();
+    });
+  });
+
+  describe("Connect Event Delegates & Measurement", () => {
+    it("delegates touch events and measurement through connect api", async () => {
+      const triggerEvent = vi.fn();
+      const mockComponent = { triggerEvent };
+      const onActionClick = vi.fn();
+      const onClick = vi.fn();
+
+      const machine = new MiniappMachine(swipeCellMachine, {
+        component: mockComponent as any,
+        left: [{ text: "Pin" }],
+        right: [{ text: "Delete" }],
+        rightWidth: 80,
+        leftWidth: 60,
+        onActionClick,
+        onClick,
+      });
+      machine.start();
+
+      const api = connectSwipeCell(machine.service);
+
+      // handleTouchStart
+      api.handleTouchStart({ x: 10 });
+      await flush();
+      expect(machine.state.get()).toBe("dragging");
+      expect(triggerEvent).toHaveBeenCalledWith("dragstart", { x: 10 });
+
+      // handleTouchMove
+      api.handleTouchMove({ offset: -40 });
+      await flush();
+      expect(machine.computed("offset")).toBe(-40);
+      expect(triggerEvent).toHaveBeenCalledWith("drag", { offset: -40 });
+
+      // handleTouchEnd
+      api.handleTouchEnd({ opened: true, side: "right", offset: -80 });
+      await flush();
+      expect(machine.state.get()).toBe("open");
+      expect(triggerEvent).toHaveBeenCalledWith("dragend", {
+        opened: true,
+        side: "right",
+        offset: -80,
+      });
+
+      // handleContentTap
+      api.handleContentTap();
+      await flush();
+      expect(machine.state.get()).toBe("closed");
+      expect(triggerEvent).toHaveBeenCalledWith("contentTap", undefined);
+
+      // handleActionTap
+      api.handleActionTap({ side: "right", index: 0 });
+      await flush();
+      expect(onActionClick).toHaveBeenCalledWith({
+        action: expect.objectContaining({ text: "Delete" }),
+        side: "right",
+        index: 0,
+      });
+      expect(onClick).toHaveBeenCalledWith({
+        action: expect.objectContaining({ text: "Delete" }),
+        side: "right",
+        index: 0,
+      });
+      expect(triggerEvent).toHaveBeenCalledWith(
+        "actionClick",
+        expect.objectContaining({ side: "right", index: 0 }),
+      );
+
+      // measure
+      api.measure();
+      await flush();
 
       machine.stop();
     });

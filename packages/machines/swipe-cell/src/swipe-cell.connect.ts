@@ -16,6 +16,8 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
   const openedSide = computed("openedSide");
   const offset = computed("offset");
   const disabled = computed("isDisabled");
+  const variant = prop("variant") ?? "plain";
+  const size = prop("size") ?? "md";
   const duration = prop("duration") ?? 300;
   const threshold = prop("threshold") ?? 30;
   const leftWidth = context.get("leftWidth");
@@ -30,6 +32,7 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
     (action, index) => ({
       index,
       side: "left",
+      value: action.value,
       text: action.text,
       icon: action.icon,
       className: action.className,
@@ -44,6 +47,7 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
     (action, index) => ({
       index,
       side: "right",
+      value: action.value,
       text: action.text,
       icon: action.icon,
       className: action.className,
@@ -62,6 +66,8 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
     state: currentState,
     openedSide,
     offset,
+    variant,
+    size,
     disabled,
     duration,
     threshold,
@@ -85,6 +91,64 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
         send({ type: "TOGGLE", side });
       } else {
         send({ type: "TOGGLE" });
+      }
+    },
+
+    measure() {
+      send({ type: "MEASURE" });
+    },
+
+    handleTouchStart(data?: Record<string, unknown>) {
+      send({ type: "DRAG_START", data });
+    },
+
+    handleTouchMove(data?: { offset?: number; deltaX?: number }) {
+      const moveOffset = typeof data?.offset === "number" ? data.offset : 0;
+      send({ type: "DRAG_MOVE", offset: moveOffset });
+    },
+
+    handleTouchEnd(data?: {
+      opened: boolean;
+      side: SwipeSide | null;
+      offset: number;
+    }) {
+      const opened = Boolean(data?.opened);
+      const side = data?.side ?? null;
+      const endOffset = typeof data?.offset === "number" ? data.offset : 0;
+      send({ type: "DRAG_END", opened, side, offset: endOffset });
+    },
+
+    handleContentTap() {
+      send({ type: "CONTENT_TAP" });
+    },
+
+    handleActionTap(
+      ev:
+        | { side: SwipeSide; index: number }
+        | {
+            currentTarget?: {
+              dataset?: { side?: SwipeSide; index?: number | string };
+            };
+          }
+        | any,
+    ) {
+      let side: SwipeSide | undefined;
+      let index: number | undefined;
+
+      if ("currentTarget" in ev && ev.currentTarget?.dataset) {
+        side = ev.currentTarget.dataset.side as SwipeSide | undefined;
+        index = Number(ev.currentTarget.dataset.index);
+      } else if ("side" in ev && "index" in ev) {
+        side = ev.side;
+        index = ev.index;
+      }
+
+      if (!side || index === undefined || isNaN(index)) return;
+
+      const list = side === "left" ? rawLeft : rawRight;
+      const action = list[index];
+      if (action) {
+        send({ type: "ACTION_CLICK", action, side, index });
       }
     },
 
