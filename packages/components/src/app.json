@@ -25,6 +25,7 @@
     "cui-radio": "runtime/radio/index",
     "cui-radio-group": "runtime/radio-group/index",
     "cui-skeleton": "runtime/skeleton/index",
+    "cui-slider": "runtime/slider/index",
     "cui-stepper": "runtime/stepper/index",
     "cui-stepper-item": "runtime/stepper-item/index",
     "cui-switch": "runtime/switch/index",

@@ -1,0 +1,229 @@
+var dom = require('./dom.wxs');
+
+var _throttledCallMove = dom.throttle(function(ownerInstance, data) {
+  if (ownerInstance) {
+    ownerInstance.callMethod('handleTouchMove', data);
+  }
+}, 16);
+
+function clamp(val, min, max) {
+  if (val < min) return min;
+  if (val > max) return max;
+  return val;
+}
+
+function snap(value, min, max, step) {
+  if (!step || step <= 0) return clamp(value, min, max);
+  var stepCount = Math.round((value - min) / step);
+  var snapped = min + stepCount * step;
+  return clamp(snapped, min, max);
+}
+
+function getPercent(point, rect, orientation, inverted) {
+  if (!rect) return 0;
+  var percent = 0;
+  if (orientation === 'vertical') {
+    var height = rect.height || 1;
+    var bottom = rect.bottom || (rect.top + height);
+    percent = ((bottom - point.y) / height) * 100;
+  } else {
+    var width = rect.width || 1;
+    var left = rect.left || 0;
+    percent = ((point.x - left) / width) * 100;
+  }
+  if (inverted) {
+    percent = 100 - percent;
+  }
+  return clamp(percent, 0, 100);
+}
+
+function updateVisuals(state, point) {
+  var rect = state.rect;
+  if (!rect) return;
+  var percent = getPercent(point, rect, state.orientation, state.inverted);
+
+  var range = state.max - state.min;
+  if (range <= 0) range = 1;
+
+  if (state.step && state.step > 0) {
+    var rawVal = state.min + (percent / 100) * range;
+    var snappedVal = snap(rawVal, state.min, state.max, state.step);
+    percent = ((snappedVal - state.min) / range) * 100;
+  }
+
+  var activeIndex = state.activeIndex || 0;
+  if (!state.currentPercents) state.currentPercents = [0];
+  state.currentPercents[activeIndex] = percent;
+
+  var activeThumb = state.thumbEls && state.thumbEls[activeIndex];
+  if (activeThumb) {
+    var thumbStyle = state.orientation === 'vertical'
+      ? 'bottom: ' + percent + '%; transform: translate(-50%, 50%); transition: none;'
+      : 'left: ' + percent + '%; transform: translate(-50%, -50%); transition: none;';
+    activeThumb.setStyle(thumbStyle);
+  }
+
+  var rangeEl = state.rangeEl;
+  if (rangeEl) {
+    var start = 0;
+    var end = percent;
+    if (state.isRange && state.currentPercents.length > 1) {
+      start = Math.min(state.currentPercents[0], state.currentPercents[1]);
+      end = Math.max(state.currentPercents[0], state.currentPercents[1]);
+    }
+    if (state.inverted) {
+      var prevStart = start;
+      start = 100 - end;
+      end = 100 - prevStart;
+    }
+    var rangeStyle = state.orientation === 'vertical'
+      ? 'bottom: ' + start + '%; height: ' + (end - start) + '%; transition: none;'
+      : 'left: ' + start + '%; width: ' + (end - start) + '%; transition: none;';
+    rangeEl.setStyle(rangeStyle);
+  }
+}
+
+function onTouchStart(event, ownerInstance) {
+  var touch = dom.getTouch(event);
+  var dataset = dom.getDataset(event);
+  if (!touch) return;
+  if (dataset.disabled === true || dataset.disabled === 'true' ||
+      dataset.readonly === true || dataset.readonly === 'true') {
+    return;
+  }
+
+  var state = ownerInstance.getState();
+  var rect = dataset.rect || state.rect;
+  var orientation = dataset.orientation || 'horizontal';
+  var inverted = dataset.inverted === true || dataset.inverted === 'true';
+  var min = Number(dataset.min !== undefined ? dataset.min : 0);
+  var max = Number(dataset.max !== undefined ? dataset.max : 100);
+  var step = Number(dataset.step !== undefined ? dataset.step : 1);
+  var isRange = dataset.isRange === true || dataset.isRange === 'true';
+
+  state.rect = rect;
+  state.orientation = orientation;
+  state.inverted = inverted;
+  state.min = min;
+  state.max = max;
+  state.step = step;
+  state.isRange = isRange;
+  state.isDragging = true;
+
+  var rangeEl = dataset.rangeId ? dom.selectEl(ownerInstance, '#' + dataset.rangeId) : null;
+  var thumbEls = [];
+  if (dataset.thumbIds) {
+    var ids = ('' + dataset.thumbIds).split(',');
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i].trim();
+      if (id) {
+        var el = dom.selectEl(ownerInstance, '#' + id);
+        if (el) thumbEls.push(el);
+      }
+    }
+  }
+  state.rangeEl = rangeEl;
+  state.thumbEls = thumbEls;
+
+  var point = { x: touch.clientX, y: touch.clientY };
+  var activeIndex = 0;
+  var percents = dataset.percents || [0];
+  if (!percents.length) percents = [0];
+
+  if (rect && isRange && percents.length > 1) {
+    var touchPercent = getPercent(point, rect, orientation, inverted);
+    var p0 = percents[0] || 0;
+    var p1 = percents[1] || 100;
+    if (Math.abs(touchPercent - p1) < Math.abs(touchPercent - p0)) {
+      activeIndex = 1;
+    }
+  }
+  state.activeIndex = activeIndex;
+  state.currentPercents = [percents[0] || 0, percents[1] !== undefined ? percents[1] : 0];
+
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
+
+  if (rangeEl) {
+    rangeEl.setStyle('transition: none;');
+  }
+  for (var j = 0; j < thumbEls.length; j++) {
+    if (thumbEls[j]) {
+      thumbEls[j].setStyle('transition: none;');
+    }
+  }
+
+  if (rect) {
+    updateVisuals(state, point);
+  }
+
+  ownerInstance.callMethod('handleTouchStart', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+}
+
+function onTouchMove(event, ownerInstance) {
+  var touch = dom.getTouch(event);
+  if (!touch) return;
+  var state = ownerInstance.getState();
+  if (!state.isDragging) return;
+
+  if (!state.rect) {
+    var ds = dom.getDataset(event);
+    if (ds && ds.rect) state.rect = ds.rect;
+  }
+
+  var point = { x: touch.clientX, y: touch.clientY };
+  updateVisuals(state, point);
+
+  _throttledCallMove(ownerInstance, {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+}
+
+function onTouchEnd(event, ownerInstance) {
+  var state = ownerInstance.getState();
+  if (!state.isDragging) return;
+  state.isDragging = false;
+
+  if (state.rangeEl) state.rangeEl.setStyle('');
+  if (state.thumbEls) {
+    for (var i = 0; i < state.thumbEls.length; i++) {
+      if (state.thumbEls[i]) state.thumbEls[i].setStyle('');
+    }
+  }
+
+  ownerInstance.callMethod('handleTouchEnd', {});
+}
+
+function onTap(event, ownerInstance) {
+  var dataset = dom.getDataset(event);
+  if (dataset.disabled === true || dataset.disabled === 'true' ||
+      dataset.readonly === true || dataset.readonly === 'true') {
+    return;
+  }
+  var detail = event.detail || {};
+  var touches = event.touches || [];
+  var x = detail.x !== undefined ? detail.x : (touches[0] ? touches[0].clientX : undefined);
+  var y = detail.y !== undefined ? detail.y : (touches[0] ? touches[0].clientY : undefined);
+  ownerInstance.callMethod('handleTap', { x: x, y: y, detail: detail });
+}
+
+function onRectChange(newVal, oldVal, ownerInstance) {
+  if (newVal) {
+    var state = ownerInstance.getState();
+    state.rect = newVal;
+  }
+}
+
+module.exports = {
+  onTouchStart: onTouchStart,
+  onTouchMove: onTouchMove,
+  onTouchEnd: onTouchEnd,
+  onTap: onTap,
+  onRectChange: onRectChange
+};
+

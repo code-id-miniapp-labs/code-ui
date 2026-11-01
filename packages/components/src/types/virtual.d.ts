@@ -136,6 +136,12 @@ declare module "virtual:cui/theme/skeleton" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/slider" {
+  import type { default as sliderTheme } from "@code-ui/core/src/theme/definitions/slider";
+  const theme: ReturnType<typeof sliderTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/stepper" {
   import type { default as stepperTheme } from "@code-ui/core/src/theme/definitions/stepper";
   const theme: ReturnType<typeof stepperTheme>;

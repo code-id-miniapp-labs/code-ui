@@ -199,6 +199,9 @@ importers:
       '@code-ui/radio-group':
         specifier: workspace:*
         version: link:../machines/radio-group
+      '@code-ui/slider':
+        specifier: workspace:*
+        version: link:../machines/slider
       '@code-ui/stepper':
         specifier: workspace:*
         version: link:../machines/stepper
@@ -661,6 +664,34 @@ importers:
         version: 5.9.3
 
   packages/machines/radio-group:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@code-ui/form':
+        specifier: workspace:*
+        version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^3.2.1
+        version: 3.2.1
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/slider:
     dependencies:
       '@code-ui/anatomy':
         specifier: workspace:*

@@ -38,6 +38,7 @@ import type {
 import type { RadioProps } from "@code-ui/radio";
 import type { StepperProps, StepperStepChangeDetails } from "@code-ui/stepper";
 import type { StepperItemProps } from "@code-ui/stepper-item";
+import type { SliderProps, SliderChangeDetails } from "@code-ui/slider";
 import type { SwitchProps } from "@code-ui/switch";
 import type {
   SwipeCellProps,
@@ -575,6 +576,33 @@ export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
   onDragstart?: (event: WechatMiniprogram.CustomEvent) => void;
   onDrag?: (event: WechatMiniprogram.CustomEvent) => void;
   onDragend?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+export interface CuiSliderElementProps extends CuiCommonElementProps {
+  ui?: SliderProps["ui"];
+  name?: string;
+  value?: number | number[];
+  defaultValue?: number | number[];
+  min?: number;
+  max?: number;
+  step?: number;
+  orientation?: SliderProps["orientation"];
+  inverted?: boolean;
+  minStepsBetweenThumbs?: number;
+  color?: SliderProps["color"];
+  size?: SliderProps["size"];
+  disabled?: boolean;
+  readOnly?: boolean;
+  invalid?: boolean;
+  required?: boolean;
+  label?: string;
+  showValue?: boolean;
+  marks?: SliderProps["marks"];
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<SliderChangeDetails>,
+  ) => void;
+  onChangeEnd?: (
+    event: WechatMiniprogram.CustomEvent<SliderChangeDetails>,
+  ) => void;
 }
 
 export interface CuiTabsElementProps extends CuiCommonElementProps {

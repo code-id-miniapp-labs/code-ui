@@ -135,6 +135,7 @@ export { default as qrCodeTheme } from "./theme/definitions/qr-code";
 export { default as radioTheme } from "./theme/definitions/radio";
 export { default as radioGroupTheme } from "./theme/definitions/radio-group";
 export { default as skeletonTheme } from "./theme/definitions/skeleton";
+export { default as sliderTheme } from "./theme/definitions/slider";
 export { default as stepperTheme } from "./theme/definitions/stepper";
 export { default as stepperItemTheme } from "./theme/definitions/stepper-item";
 export { default as switchTheme } from "./theme/definitions/switch";
