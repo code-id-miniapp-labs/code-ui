@@ -76,6 +76,8 @@ export interface ProgressProps {
   size?: ProgressSize | undefined;
   /** Color theme of the progress range indicator */
   color?: ProgressColor | undefined;
+  /** Background track color for circular progress */
+  trackColor?: string | undefined;
   /** Whether the progress bar has striped pattern */
   striped?: boolean | undefined;
   /** Whether stripes or progress bar are animated */
@@ -118,6 +120,8 @@ export interface ProgressComputed {
   circleRadius: number;
   circleCircumference: number;
   circleDashOffset: number;
+  circleDataUrl: string;
+  circleStyle: string;
 }
 
 export interface ProgressRefs {}
@@ -170,6 +174,10 @@ export interface ProgressApi {
   animated: boolean;
   /** Whether progress is inverted */
   inverted: boolean;
+  /** SVG Data URL for circular progress image */
+  circleDataUrl: string;
+  /** Pure CSS circular progress style */
+  circleStyle: string;
 
   /** Set the progress value */
   setValue(value: number | null): void;

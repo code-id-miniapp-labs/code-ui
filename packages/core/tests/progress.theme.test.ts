@@ -84,10 +84,14 @@ describe("progressTheme (@code-ui/core)", () => {
 
   it("supports striped, animated, and indeterminate variants", () => {
     const theme = progressTheme();
-    expect(theme.variants.striped.true).toBeDefined();
-    expect(theme.variants.animated.true).toBeDefined();
+    expect(theme.variants.striped.true).toEqual({
+      range: "cui-progress-striped",
+    });
+    expect(theme.variants.animated.true).toEqual({
+      range: "cui-progress-animated",
+    });
     expect(theme.variants.indeterminate.true).toEqual({
-      range: "animate-[progress-carousel_2s_ease-in-out_infinite]",
+      range: "cui-progress-indeterminate",
       circle: "animate-spin",
     });
   });

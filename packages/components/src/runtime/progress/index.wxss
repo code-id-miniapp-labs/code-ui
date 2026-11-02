@@ -1,0 +1,90 @@
+/* Progress scoped animations & stripes */
+@keyframes progress-stripes {
+  from {
+    background-position: 32rpx 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes progress-carousel {
+  0% {
+    transform: translateX(-100%);
+    width: 50%;
+  }
+  50% {
+    width: 60%;
+  }
+  100% {
+    transform: translateX(200%);
+    width: 50%;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Scoped classes for stripes & animations */
+.cui-progress-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.25) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.25) 75%,
+    transparent 75%,
+    transparent 100%
+  ) !important;
+  background-size: 32rpx 32rpx !important;
+  background-repeat: repeat !important;
+}
+
+.cui-progress-animated {
+  animation: progress-stripes 1s linear infinite !important;
+}
+
+.cui-progress-indeterminate {
+  animation: progress-carousel 2s ease-in-out infinite !important;
+}
+
+/* Circular progress ring (pure CSS conic-gradient + radial-gradient mask) */
+.cui-progress-circle {
+  background: conic-gradient(
+    currentColor 0% var(--cui-progress-percent, 0%),
+    var(--cui-progress-track-color, #e5e7eb) var(--cui-progress-percent, 0%) 100%
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent 0,
+    transparent calc(100% - var(--cui-progress-stroke-width, 8rpx)),
+    #000 calc(100% - var(--cui-progress-stroke-width, 8rpx) + 0.5px),
+    #000 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent 0,
+    transparent calc(100% - var(--cui-progress-stroke-width, 8rpx)),
+    #000 calc(100% - var(--cui-progress-stroke-width, 8rpx) + 0.5px),
+    #000 100%
+  );
+}
+
+.cui-progress-circle-indeterminate {
+  animation: spin 1s linear infinite !important;
+  background: conic-gradient(
+    currentColor 0% 30%,
+    var(--cui-progress-track-color, #e5e7eb) 30% 100%
+  ) !important;
+}

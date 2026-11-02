@@ -35,7 +35,7 @@
     >
       <view
         id="{{progress.rangeProps.id}}"
-        class="{{classes.range}}"
+        class="{{classes.range}} {{progress.striped ? 'cui-progress-striped' : ''}} {{progress.animated ? 'cui-progress-animated' : ''}} {{progress.isIndeterminate ? 'cui-progress-indeterminate' : ''}}"
         data-scope="progress"
         data-part="range"
         data-state="{{progress.progressState}}"
@@ -47,7 +47,7 @@
     </view>
   </block>
 
-  <!-- Circular SVG & Range -->
+  <!-- Circular Progress -->
   <block wx:else>
     <view
       id="{{progress.viewProps.id}}"
@@ -56,43 +56,16 @@
       data-part="view"
       data-state="{{progress.progressState}}"
     >
-      <svg
+      <view
         id="{{progress.circleProps.id}}"
-        class="{{classes.circle}}"
+        class="cui-progress-circle {{classes.circle}} {{classes.circleRange}} {{progress.isIndeterminate ? 'cui-progress-circle-indeterminate' : ''}}"
         data-scope="progress"
         data-part="circle"
-        viewBox="{{progress.circleProps.viewBox}}"
         data-state="{{progress.progressState}}"
-      >
-        <circle
-          id="{{progress.circleTrackProps.id}}"
-          class="{{classes.circleTrack}}"
-          data-scope="progress"
-          data-part="circle-track"
-          cx="{{progress.circleTrackProps.cx}}"
-          cy="{{progress.circleTrackProps.cy}}"
-          r="{{progress.circleTrackProps.r}}"
-          stroke-width="{{progress.circleTrackProps.strokeWidth}}"
-          fill="{{progress.circleTrackProps.fill}}"
-        />
-        <circle
-          id="{{progress.circleRangeProps.id}}"
-          class="{{classes.circleRange}}"
-          data-scope="progress"
-          data-part="circle-range"
-          cx="{{progress.circleRangeProps.cx}}"
-          cy="{{progress.circleRangeProps.cy}}"
-          r="{{progress.circleRangeProps.r}}"
-          stroke-width="{{progress.circleRangeProps.strokeWidth}}"
-          fill="{{progress.circleRangeProps.fill}}"
-          stroke-dasharray="{{progress.circleRangeProps.strokeDasharray}}"
-          stroke-dashoffset="{{progress.circleRangeProps.strokeDashoffset}}"
-          transform="{{progress.circleRangeProps.transform}}"
-          style="{{progress.circleRangeProps.style}}"
-        />
-      </svg>
+        style="{{progress.circleProps.style}}"
+      />
       <!-- Center content inside circular progress (e.g. value percentage or default slot) -->
-      <view wx:if="{{showValue}}" class="absolute inset-0 flex items-center justify-center">
+      <view wx:if="{{showValue}}" class="absolute inset-0 flex items-center justify-center pointer-events-none">
         <text id="{{progress.valueTextProps.id}}" class="{{classes.valueText}}" data-scope="progress" data-part="value-text">{{progress.valueAsString}}</text>
       </view>
       <view wx:else class="absolute inset-0 flex items-center justify-center">

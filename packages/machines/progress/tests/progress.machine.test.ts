@@ -140,6 +140,40 @@ describe("Progress Machine", () => {
       const api = connectProgress(machine.service);
       expect(api.isIndeterminate).toBe(true);
       expect(api.circleRangeProps.strokeDashoffset).toBeUndefined();
+      expect(api.circleDataUrl).toContain("data:image/svg+xml");
+
+      machine.stop();
+    });
+
+    it("generates SVG circleDataUrl for circular progress in determinate mode", () => {
+      const machine = new MiniappMachine(progressMachine, {
+        value: 60,
+        type: "circular",
+        color: "success",
+      });
+      machine.start();
+
+      const api = connectProgress(machine.service);
+      expect(api.circleDataUrl).toContain("data:image/svg+xml");
+      const decoded = decodeURIComponent(api.circleDataUrl);
+      expect(decoded).toContain("<svg");
+      expect(decoded).toContain("<circle");
+      expect(decoded).toContain("#16a34a"); // success color
+
+      machine.stop();
+    });
+
+    it("generates CSS variables in circleStyle for pure CSS circular progress", () => {
+      const machine = new MiniappMachine(progressMachine, {
+        value: 60,
+        type: "circular",
+        color: "primary",
+      });
+      machine.start();
+
+      const api = connectProgress(machine.service);
+      expect(api.circleStyle).toContain("--cui-progress-percent: 60%;");
+      expect(api.circleProps.style).toContain("--cui-progress-percent: 60%;");
 
       machine.stop();
     });
@@ -228,6 +262,33 @@ describe("Progress Machine", () => {
       const api2 = connectProgress(machine.service);
       expect(api2.value).toBe(85);
       expect(api2.percent).toBe(85);
+
+      machine.stop();
+    });
+
+    it("toggles indeterminate mode dynamically when controlled value switches between number and null", async () => {
+      const machine = new MiniappMachine(progressMachine, {
+        value: 60,
+      });
+      machine.start();
+
+      let api = connectProgress(machine.service);
+      expect(api.value).toBe(60);
+      expect(api.isIndeterminate).toBe(false);
+
+      machine.updateProps({ value: null });
+      await flush();
+
+      api = connectProgress(machine.service);
+      expect(api.value).toBeNull();
+      expect(api.isIndeterminate).toBe(true);
+
+      machine.updateProps({ value: 75 });
+      await flush();
+
+      api = connectProgress(machine.service);
+      expect(api.value).toBe(75);
+      expect(api.isIndeterminate).toBe(false);
 
       machine.stop();
     });

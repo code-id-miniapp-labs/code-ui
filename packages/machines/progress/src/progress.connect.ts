@@ -37,6 +37,8 @@ export function connectProgress<T extends PropTypes = PropTypes>(
   const circleRadius = computed("circleRadius");
   const circumference = computed("circleCircumference");
   const circleDashOffset = computed("circleDashOffset");
+  const circleDataUrl = computed("circleDataUrl");
+  const circleStyle = computed("circleStyle");
   const strokeWidth = prop("strokeWidth") ?? 8;
 
   const size = (prop("size") as ProgressSize | undefined) ?? "md";
@@ -67,6 +69,8 @@ export function connectProgress<T extends PropTypes = PropTypes>(
     striped,
     animated,
     inverted,
+    circleDataUrl,
+    circleStyle,
 
     setValue(nextValue: number | null) {
       send({ type: "SET_VALUE", value: nextValue });
@@ -147,6 +151,7 @@ export function connectProgress<T extends PropTypes = PropTypes>(
       viewBox: "0 0 100 100",
       "data-state": progressState,
       "data-type": type,
+      style: circleStyle,
     }),
 
     circleTrackProps: normalize.element({

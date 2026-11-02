@@ -14,56 +14,59 @@ export default function progressTheme(options: ThemeOptions = {}) {
       track: "overflow-hidden rounded-full bg-neutral-200 transition-colors",
       range: "rounded-full transition-all duration-300 ease-out",
       label: "font-medium text-neutral-900",
-      valueText: "font-medium text-neutral-500 tabular-nums",
+      valueText:
+        "font-medium text-neutral-500 tabular-nums leading-none text-center",
       view: "relative inline-flex items-center justify-center",
-      circle: "overflow-visible",
+      circle:
+        "overflow-visible block box-border rounded-full transition-all duration-300 ease-out",
       circleTrack: "text-neutral-200 stroke-current",
-      circleRange: "transition-[stroke-dashoffset] duration-300 ease-out stroke-current",
+      circleRange:
+        "transition-[stroke-dashoffset] duration-300 ease-out stroke-current",
     },
     variants: {
       color: createColorVariants(colors),
       size: {
         "2xs": {
           track: "h-1",
-          circle: "w-6 h-6",
+          circle: "size-6",
           label: "text-xs",
-          valueText: "text-[10px]",
+          valueText: "text-xs",
         },
         xs: {
           track: "h-1.5",
-          circle: "w-8 h-8",
+          circle: "size-8",
           label: "text-xs",
           valueText: "text-xs",
         },
         sm: {
           track: "h-2",
-          circle: "w-10 h-10",
+          circle: "size-10",
           label: "text-xs",
           valueText: "text-xs",
         },
         md: {
           track: "h-2.5",
-          circle: "w-12 h-12",
-          label: "text-sm",
-          valueText: "text-sm",
+          circle: "size-12",
+          label: "text-xs",
+          valueText: "text-xs",
         },
         lg: {
           track: "h-3",
-          circle: "w-14 h-14",
-          label: "text-base",
-          valueText: "text-base",
+          circle: "size-14",
+          label: "text-sm",
+          valueText: "text-xs",
         },
         xl: {
           track: "h-3.5",
-          circle: "w-16 h-16",
-          label: "text-lg",
-          valueText: "text-lg",
+          circle: "size-16",
+          label: "text-base",
+          valueText: "text-sm",
         },
         "2xl": {
           track: "h-4",
-          circle: "w-20 h-20",
-          label: "text-xl",
-          valueText: "text-xl",
+          circle: "size-20",
+          label: "text-lg",
+          valueText: "text-base",
         },
       },
       orientation: {
@@ -90,21 +93,20 @@ export default function progressTheme(options: ThemeOptions = {}) {
       },
       indeterminate: {
         true: {
-          range: "animate-[progress-carousel_2s_ease-in-out_infinite]",
+          range: "cui-progress-indeterminate",
           circle: "animate-spin",
         },
         false: {},
       },
       striped: {
         true: {
-          range:
-            "bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+          range: "cui-progress-striped",
         },
         false: {},
       },
       animated: {
         true: {
-          range: "animate-[progress-stripes_1s_linear_infinite]",
+          range: "cui-progress-animated",
         },
         false: {},
       },

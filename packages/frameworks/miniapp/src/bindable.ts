@@ -21,7 +21,6 @@ export const bindable: BindableFn = Object.assign(
       const currentProp = p.value;
       if (
         currentProp !== undefined &&
-        currentProp !== null &&
         !eq(currentProp as T, lastSeenProp as T)
       ) {
         lastSeenProp = currentProp as T;

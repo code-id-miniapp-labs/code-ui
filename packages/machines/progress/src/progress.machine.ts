@@ -8,6 +8,17 @@ import type {
   ProgressType,
 } from "./progress.types";
 import { defaultProgressProps } from "./progress.props";
+import { createCircleDataUrl, resolveColor } from "./progress.utils";
+
+const DEFAULT_STROKE_WIDTHS: Record<string, number> = {
+  "2xs": 2,
+  xs: 2.5,
+  sm: 3,
+  md: 4,
+  lg: 5,
+  xl: 6,
+  "2xl": 7,
+};
 
 export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
   props: ({ props }) => ({
@@ -90,6 +101,58 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       const circumference = computed("circleCircumference");
       const percent = computed("percent");
       return circumference - (percent / 100) * circumference;
+    },
+
+    circleDataUrl: ({ computed, prop }) => {
+      const radius = computed("circleRadius");
+      const strokeWidth = prop("strokeWidth") ?? 8;
+      const color = resolveColor(prop("color") ?? "primary");
+      const trackColor = resolveColor(prop("trackColor") ?? "#e5e7eb");
+      const isIndeterminate = computed("isIndeterminate");
+      const percent = computed("percent");
+
+      return createCircleDataUrl(
+        radius,
+        strokeWidth,
+        trackColor,
+        color,
+        percent,
+        isIndeterminate,
+      );
+    },
+
+    circleStyle: ({ computed, prop }) => {
+      const isIndeterminate = computed("isIndeterminate");
+      const percent = isIndeterminate
+        ? 25
+        : Math.max(0, Math.min(100, computed("percent")));
+      const color = prop("color");
+      const size = prop("size") ?? "md";
+      const strokeWidth =
+        prop("strokeWidth") ?? DEFAULT_STROKE_WIDTHS[size] ?? 4;
+      const trackColor = prop("trackColor");
+      const inverted = prop("inverted");
+
+      const parts: string[] = [
+        `--cui-progress-percent: ${percent}%;`,
+        `--cui-progress-stroke-width: ${strokeWidth}px;`,
+      ];
+      if (trackColor) {
+        parts.push(`--cui-progress-track-color: ${trackColor};`);
+      }
+      if (
+        typeof color === "string" &&
+        (color.startsWith("#") ||
+          color.startsWith("rgb") ||
+          color.startsWith("hsl") ||
+          color.startsWith("oklch"))
+      ) {
+        parts.push(`color: ${color};`);
+      }
+      if (inverted) {
+        parts.push("transform: scaleX(-1);");
+      }
+      return parts.join(" ");
     },
   },
 

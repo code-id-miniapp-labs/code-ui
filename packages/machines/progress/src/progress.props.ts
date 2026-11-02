@@ -1,6 +1,7 @@
 import type { ProgressProps } from "./progress.types";
 
 export const defaultProgressProps: ProgressProps = {
+  value: null,
   defaultValue: null,
   min: 0,
   max: 100,
@@ -8,6 +9,7 @@ export const defaultProgressProps: ProgressProps = {
   type: "linear" as const,
   size: "md" as const,
   color: "primary" as const,
+  trackColor: "#e5e7eb",
   striped: false,
   animated: false,
   animation: "carousel" as const,

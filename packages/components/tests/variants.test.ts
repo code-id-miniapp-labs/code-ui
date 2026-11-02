@@ -820,9 +820,8 @@ describe("avatarTheme resolution", () => {
       expect(slots.root).toContain("custom-root-class");
       expect(slots.track).toContain("custom-track-class");
       expect(slots.track).toContain("h-3");
-      expect(slots.range).toContain(
-        escapeClass("animate-[progress-stripes_1s_linear_infinite]"),
-      );
+      expect(slots.range).toContain("cui-progress-striped");
+      expect(slots.range).toContain("cui-progress-animated");
     });
   });
 });
