@@ -42,6 +42,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
+      "@code-ui/progress": resolve(
+        import.meta.dirname,
+        "packages/machines/progress/src",
+      ),
       "@code-ui/qr-code": resolve(
         import.meta.dirname,
         "packages/machines/qr-code/src",

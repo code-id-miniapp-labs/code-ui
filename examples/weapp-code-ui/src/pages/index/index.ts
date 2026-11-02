@@ -58,6 +58,13 @@ Page({
         path: "/pages/pin-input/index",
       },
       {
+        id: "progress",
+        name: "Progress",
+        desc: "Accessible linear and circular progress indicators with indeterminate, striped, and animated states.",
+        badge: "Interactive",
+        path: "/pages/progress/index",
+      },
+      {
         id: "switch",
         name: "Switch",
         desc: "Toggle switch, controlled checked, custom colors, sizes, and Form link.",
