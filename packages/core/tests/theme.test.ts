@@ -160,7 +160,7 @@ describe("@code-ui/core color generation", () => {
     expect(getIcon("check")).toBe("i-lucide-check");
     expect(getIcon("minus")).toBe("i-lucide-minus");
     expect(getIcon("close")).toBe("i-lucide-x");
-    expect(getIcon("loading")).toBe("i-lucide-loader-circle");
+    expect(getIcon("loading")).toBe("i-lucide-loader");
 
     // Multiple collections: first entry is the primary (drives default aliases)
     const { setConfig, resetConfig, getActiveCollections } =

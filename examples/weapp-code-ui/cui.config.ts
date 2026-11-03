@@ -4,10 +4,15 @@ export default defineConfig({
   prefix: "cui",
   icons: {
     collections: ["lucide", "tabler"],
+    loading: "i-lucide-loader",
+    check: "i-lucide-check",
+    close: "i-lucide-close",
+    minus: "i-lucide-minus",
+    chevronDown: "i-lucide-chevron-down",
   },
   ui: {
     colors: {
-      primary: "violet",
+      primary: "stone",
       secondary: "amber",
       danger: "red",
     },

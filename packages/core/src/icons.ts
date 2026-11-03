@@ -8,7 +8,7 @@ export const ICON_COLLECTION_PRESETS = {
     check: "check",
     minus: "minus",
     close: "x",
-    loading: "loader-circle",
+    loading: "loader",
     chevronDown: "chevron-down",
   },
   tabler: {
@@ -34,34 +34,7 @@ export const ICON_COLLECTION_PRESETS = {
   },
 } as const;
 
-/**
- * Built-in default icons (Lucide, following Nuxt UI v4 `ui.icons`).
- */
-export const DEFAULT_ICONS = {
-  check: "i-lucide-check",
-  minus: "i-lucide-minus",
-  close: "i-lucide-x",
-  loading: "i-lucide-loader-circle",
-  chevronDown: "i-lucide-chevron-down",
-} as const;
-
-/**
- * Built-in crisp SVG fallbacks when no iconify plugin is installed.
- */
-export const DEFAULT_SVG_ICONS = {
-  check:
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E",
-  minus:
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3C/svg%3E",
-  close:
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E",
-  loading:
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-6.219-8.56'/%3E%3C/svg%3E",
-  chevronDown:
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E",
-} as const;
-
-export type DefaultIconName = keyof typeof DEFAULT_ICONS;
+export type DefaultIconName = keyof (typeof ICON_COLLECTION_PRESETS)["lucide"];
 
 export type ResolvedIcons = Record<DefaultIconName, string> &
   Record<string, string>;
@@ -112,6 +85,7 @@ export function getIcons(): ResolvedIcons {
       minus: `${prefix}-${primaryCollection}-${preset.minus}`,
       close: `${prefix}-${primaryCollection}-${preset.close}`,
       loading: `${prefix}-${primaryCollection}-${preset.loading}`,
+      chevronDown: `${prefix}-${primaryCollection}-${preset.chevronDown}`,
     };
   } else {
     baseIcons = {
@@ -119,6 +93,7 @@ export function getIcons(): ResolvedIcons {
       minus: `${prefix}-${primaryCollection}-minus`,
       close: `${prefix}-${primaryCollection}-close`,
       loading: `${prefix}-${primaryCollection}-loading`,
+      chevronDown: `${prefix}-${primaryCollection}-chevron-down`,
     };
   }
 
@@ -131,6 +106,7 @@ export function getIcons(): ResolvedIcons {
       baseIcons[`${col}:minus`] = `${prefix}-${col}-${preset.minus}`;
       baseIcons[`${col}:close`] = `${prefix}-${col}-${preset.close}`;
       baseIcons[`${col}:loading`] = `${prefix}-${col}-${preset.loading}`;
+      baseIcons[`${col}:chevronDown`] = `${prefix}-${col}-${preset.chevronDown}`;
     }
   }
 

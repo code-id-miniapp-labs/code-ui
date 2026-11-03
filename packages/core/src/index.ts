@@ -84,8 +84,6 @@ export type {
 } from "./config";
 
 export {
-  DEFAULT_ICONS,
-  DEFAULT_SVG_ICONS,
   ICON_COLLECTION_PRESETS,
   getActiveCollections,
   getIcons,

@@ -418,7 +418,7 @@ describe("codeUI virtual themes", () => {
     });
     const directive = configManager.getInlineThemeClassesDirective();
     expect(directive).toContain("i-lucide-check");
-    expect(directive).toContain("i-lucide-loader-circle");
+    expect(directive).toContain("i-lucide-loader");
     expect(directive).toContain("i-tabler-check");
     expect(directive).toContain("i-tabler-loader-2");
   });
