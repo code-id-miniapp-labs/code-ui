@@ -14,9 +14,6 @@ import {
 } from "@code-ui/miniapp/behaviors/app";
 import type { AppHostState, AppMetrics } from "@code-ui/miniapp/behaviors/app";
 import {
-  addToast,
-  clearToasts,
-  dismissToast,
   getToastManager,
   registerToastHost,
   removeToast,
@@ -260,24 +257,8 @@ Component(
     methods: {
       noop() {},
 
-      showToast(this: any, toast: any) {
-        return addToast(toast, this);
-      },
-
-      addToast(this: any, toast: any) {
-        return addToast(toast, this);
-      },
-
-      dismissToast(this: any, id: string) {
-        return dismissToast(id, this);
-      },
-
       removeToast(this: any, id: string) {
         return removeToast(id, this);
-      },
-
-      clearToasts(this: any) {
-        return clearToasts(this);
       },
 
       handleToastDismiss(this: any, event: any) {
@@ -286,21 +267,6 @@ Component(
           event.currentTarget?.dataset?.id ||
           event.target?.dataset?.id;
         if (id) {
-          removeToast(id, this);
-        }
-      },
-
-      handleToastAction(this: any, event: any) {
-        const id =
-          event.detail?.id ||
-          event.currentTarget?.dataset?.id ||
-          event.target?.dataset?.id;
-        const detail = event.detail;
-        if (id) {
-          const toast = (this.data.toasts || []).find(
-            (t: ToastEntry) => t.id === id,
-          );
-          toast?.onAction?.(detail);
           removeToast(id, this);
         }
       },

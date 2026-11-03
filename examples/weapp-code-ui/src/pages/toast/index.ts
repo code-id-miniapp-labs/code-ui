@@ -52,7 +52,7 @@ Page({
           color: "primary",
           variant: "outline",
           onClick: () => {
-            wx.showToast({ title: "Restored", icon: "none" });
+            console.log("mabarin");
           },
         },
       ],

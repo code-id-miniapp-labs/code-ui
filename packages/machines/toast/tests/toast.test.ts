@@ -209,7 +209,7 @@ describe("Toast Machine", () => {
     machine.stop();
   });
 
-  it("handles action tap and auto-dismisses", async () => {
+  it("handles action tap without closing toast by default", async () => {
     const onAction = vi.fn();
     const actionClick = vi.fn();
     const machine = new MiniappMachine(toastMachine, {
@@ -232,6 +232,36 @@ describe("Toast Machine", () => {
     expect(actionClick).toHaveBeenCalledTimes(1);
     expect(onAction).toHaveBeenCalledWith({
       action: expect.objectContaining({ label: "Undo" }),
+      index: 0,
+      id: undefined,
+    });
+    // Remains open by default
+    expect(machine.state.get()).toBe("open");
+
+    machine.stop();
+  });
+
+  it("handles action tap with closeOnClick: true and dismisses", async () => {
+    const onAction = vi.fn();
+    const actionClick = vi.fn();
+    const machine = new MiniappMachine(toastMachine, {
+      actions: [
+        {
+          label: "Close",
+          onClick: actionClick,
+          closeOnClick: true,
+        },
+      ],
+      onAction,
+    });
+    machine.start();
+
+    const api = connectToast(machine.service);
+    api.handleAction(0);
+    await flush();
+    expect(actionClick).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith({
+      action: expect.objectContaining({ label: "Close", closeOnClick: true }),
       index: 0,
       id: undefined,
     });
