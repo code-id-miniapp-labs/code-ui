@@ -9,11 +9,7 @@ import {
   setupAppRelations,
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
-import {
-  connectToast,
-  defaultToastProps,
-  toastMachine,
-} from "@code-ui/toast";
+import { connectToast, defaultToastProps, toastMachine } from "@code-ui/toast";
 import themeConfig from "virtual:cui/theme/toast";
 import { tv } from "../../utils/variants";
 
@@ -27,7 +23,8 @@ const toastBehavior = createMachineBehavior({
   syncProps: ["id", "open", "duration", "actions"],
 });
 
-const relations: Record<string, WechatMiniprogram.Component.RelationOption> = {};
+const relations: Record<string, WechatMiniprogram.Component.RelationOption> =
+  {};
 setupAppRelations(relations, "child");
 
 Component(

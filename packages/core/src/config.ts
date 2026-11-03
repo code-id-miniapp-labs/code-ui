@@ -22,9 +22,9 @@ type KebabCase<S extends string> = S extends `${infer T}${infer U}`
   : S;
 
 export type BuiltinComponentRegistry = {
-  [K in keyof typeof componentThemes as K | KebabCase<string & K>]: ExtractSlots<
-    (typeof componentThemes)[K]
-  >;
+  [
+    K in keyof typeof componentThemes as K | KebabCase<string & K>
+  ]: ExtractSlots<(typeof componentThemes)[K]>;
 };
 
 export interface ComponentRegistry extends BuiltinComponentRegistry {
@@ -177,6 +177,8 @@ export interface IconsConfig {
   close?: string | undefined;
   /** Loading spinners (rendered with `animate-spin`) */
   loading?: string | undefined;
+  /** Chevron for input menu/ select menu */
+  chevronDown?: string | undefined;
   /** Allow custom icon aliases */
   [iconName: string]: unknown;
 }
