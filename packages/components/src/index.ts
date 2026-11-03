@@ -20,6 +20,7 @@ export * from "@code-ui/swipe-cell";
 export * from "@code-ui/switch";
 export * from "@code-ui/tabs";
 export * from "@code-ui/tabs-item";
+export * from "@code-ui/toast";
 export * from "@code-ui/context";
 export * from "@code-ui/miniapp";
 export * from "@code-ui/core";

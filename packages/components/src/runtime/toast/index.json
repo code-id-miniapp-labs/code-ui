@@ -1,0 +1,10 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "virtualHost": true,
+  "usingComponents": {
+    "c-icon": "../icon/index",
+    "c-button": "../button/index",
+    "c-progress": "../progress/index"
+  }
+}

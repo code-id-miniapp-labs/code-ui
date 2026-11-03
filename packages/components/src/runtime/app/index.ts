@@ -13,6 +13,17 @@ import {
   unregisterAppHost,
 } from "@code-ui/miniapp/behaviors/app";
 import type { AppHostState, AppMetrics } from "@code-ui/miniapp/behaviors/app";
+import {
+  addToast,
+  clearToasts,
+  dismissToast,
+  getToastManager,
+  registerToastHost,
+  removeToast,
+  unregisterToastHost,
+  updateToastHostConfig,
+} from "@code-ui/miniapp/behaviors/toast";
+import type { ToastEntry } from "@code-ui/miniapp/behaviors/toast";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";
@@ -68,9 +79,14 @@ Component(
         type: String,
         value: "",
       },
+      maxToasts: {
+        type: Number,
+        value: 2,
+      },
     },
 
     data: {
+      toasts: [] as ToastEntry[],
       locked: false,
       scaled: false,
       hostScaleFactor: 0.94,
@@ -134,6 +150,9 @@ Component(
             ? `background-color:${bg};`
             : "";
 
+        const toastTopOffset = offsetTop;
+        const toastBottomOffset = offsetBottom;
+
         return (
           `--cui-status-bar-height:${px(m.statusBarHeight)};` +
           `--cui-safe-top:${px(m.safeTop)};` +
@@ -147,6 +166,8 @@ Component(
           `--cui-bottom-inset:${px(bottomInset)};` +
           `--cui-top-offset:${px(offsetTop)};` +
           `--cui-bottom-offset:${px(offsetBottom)};` +
+          `--cui-toast-top-offset:${px(toastTopOffset)};` +
+          `--cui-toast-bottom-offset:${px(toastBottomOffset)};` +
           `padding-top:var(--cui-top-offset);` +
           `padding-bottom:var(--cui-bottom-offset);` +
           bgStyle
@@ -160,6 +181,12 @@ Component(
         if (value) lockScroll(this, PROP_LOCK_ID);
         else unlockScroll(this, PROP_LOCK_ID);
       },
+      maxToasts(this: any, value: number) {
+        if (!this.__cuiAppAttached) return;
+        if (value !== undefined) {
+          updateToastHostConfig(this, { max: value });
+        }
+      },
     },
 
     lifetimes: {
@@ -169,6 +196,23 @@ Component(
         registerAppHost(this, {
           onChange: (state: AppHostState) => this.applyHostState(state),
         });
+        registerToastHost(
+          this,
+          (toasts: ToastEntry[]) => {
+            this.setData({ toasts });
+          },
+          { max: this.data.maxToasts ?? 2 },
+        );
+        this.toastManager = getToastManager(this);
+        if (typeof getCurrentPages === "function") {
+          try {
+            const pages = getCurrentPages();
+            const topPage = pages && pages[pages.length - 1];
+            if (topPage) {
+              topPage.__cuiApp = this;
+            }
+          } catch {}
+        }
         setPageScrollLocked(
           this,
           Boolean(this.data.locked || this.data.lockScroll),
@@ -181,12 +225,22 @@ Component(
         if (this.data.locked) {
           setPageScrollLocked(this, false);
         }
+        unregisterToastHost(this);
         unregisterAppHost(this);
       },
     },
 
     pageLifetimes: {
       show(this: any) {
+        if (typeof getCurrentPages === "function") {
+          try {
+            const pages = getCurrentPages();
+            const topPage = pages && pages[pages.length - 1];
+            if (topPage) {
+              topPage.__cuiApp = this;
+            }
+          } catch {}
+        }
         setAppHostVisible(this, true);
         if (this.data.locked) {
           setPageScrollLocked(this, true);
@@ -205,6 +259,51 @@ Component(
 
     methods: {
       noop() {},
+
+      showToast(this: any, toast: any) {
+        return addToast(toast, this);
+      },
+
+      addToast(this: any, toast: any) {
+        return addToast(toast, this);
+      },
+
+      dismissToast(this: any, id: string) {
+        return dismissToast(id, this);
+      },
+
+      removeToast(this: any, id: string) {
+        return removeToast(id, this);
+      },
+
+      clearToasts(this: any) {
+        return clearToasts(this);
+      },
+
+      handleToastDismiss(this: any, event: any) {
+        const id =
+          event.detail?.id ||
+          event.currentTarget?.dataset?.id ||
+          event.target?.dataset?.id;
+        if (id) {
+          removeToast(id, this);
+        }
+      },
+
+      handleToastAction(this: any, event: any) {
+        const id =
+          event.detail?.id ||
+          event.currentTarget?.dataset?.id ||
+          event.target?.dataset?.id;
+        const detail = event.detail;
+        if (id) {
+          const toast = (this.data.toasts || []).find(
+            (t: ToastEntry) => t.id === id,
+          );
+          toast?.onAction?.(detail);
+          removeToast(id, this);
+        }
+      },
 
       startScaleGesture(this: any) {
         this._lastScaleProgress = undefined;

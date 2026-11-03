@@ -226,6 +226,9 @@ importers:
       '@code-ui/textarea':
         specifier: workspace:*
         version: link:../machines/textarea
+      '@code-ui/toast':
+        specifier: workspace:*
+        version: link:../machines/toast
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../utils
@@ -253,6 +256,9 @@ importers:
 
   packages/composables:
     dependencies:
+      '@code-ui/miniapp':
+        specifier: workspace:*
+        version: link:../frameworks/miniapp
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../utils
@@ -260,9 +266,6 @@ importers:
       '@code-ui/core':
         specifier: workspace:*
         version: link:../core
-      '@code-ui/miniapp':
-        specifier: workspace:*
-        version: link:../frameworks/miniapp
       '@types/node':
         specifier: ^26.2.0
         version: 26.6.2
@@ -917,6 +920,31 @@ importers:
       '@code-ui/form':
         specifier: workspace:*
         version: link:../form
+      '@code-ui/utils':
+        specifier: workspace:*
+        version: link:../../utils
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.6.2
+      alien-signals:
+        specifier: ^3.2.1
+        version: 3.2.1
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.13)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
+  packages/machines/toast:
+    dependencies:
+      '@code-ui/anatomy':
+        specifier: workspace:*
+        version: link:../../anatomy
+      '@code-ui/core':
+        specifier: workspace:*
+        version: link:../../core
       '@code-ui/utils':
         specifier: workspace:*
         version: link:../../utils

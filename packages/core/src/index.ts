@@ -144,3 +144,4 @@ export { default as swipeCellTheme } from "./theme/definitions/swipe-cell";
 export { default as tabsTheme } from "./theme/definitions/tabs";
 export { default as tabsItemTheme } from "./theme/definitions/tabs-item";
 export { default as textareaTheme } from "./theme/definitions/textarea";
+export { default as toastTheme } from "./theme/definitions/toast";

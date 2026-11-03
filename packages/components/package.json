@@ -194,6 +194,12 @@
       "require": "./dist/runtime/textarea/index.js"
     },
     "./textarea/*": "./dist/runtime/textarea/*",
+    "./toast": {
+      "types": "./dist/runtime/toast/index.d.ts",
+      "import": "./dist/runtime/toast/index.js",
+      "require": "./dist/runtime/toast/index.js"
+    },
+    "./toast/*": "./dist/runtime/toast/*",
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",
@@ -253,6 +259,7 @@
     "@code-ui/tabs": "workspace:*",
     "@code-ui/tabs-item": "workspace:*",
     "@code-ui/textarea": "workspace:*",
+    "@code-ui/toast": "workspace:*",
     "@code-ui/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"
   },

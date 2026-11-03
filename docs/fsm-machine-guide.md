@@ -3,7 +3,7 @@
 Reference for creating or refactoring machines in `packages/machines/<name>/src/<name>.machine.ts`.
 Read this before adding `watch`, new context fields, or new state transitions.
 
-## TL;DR — 10 rules
+## TL;DR — 11 rules
 
 1. **One writer per value.** A value lives in exactly one place: prop, context, computed, state, or ref.
 2. **Never mirror props into context inside `watch`.** `bindable` already re-reads props on `context.get` (`packages/frameworks/miniapp/src/bindable.ts:19-30,43`).
@@ -15,6 +15,7 @@ Read this before adding `watch`, new context fields, or new state transitions.
 8. **Actions run after the target state is applied.** Read `state.matches(...)` for the new value; do not duplicate what the transition target already does.
 9. **Refs own handles.** Timers, buses, disposers, form bindings, and previous-value snapshots go in `refs`, with cleanup in `exit`.
 10. **`connect` is a read-only adapter.** No writes, no machine logic. Precompute WXML arrays there.
+11. **Zero prop-echoing in `connect` (Do not re-export component props on `Api`).** Component props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible in WXML templates directly as `{{title}}`, `{{color}}`, etc. `connect()` must never return static/component props on `Api`. Return only FSM state, state-derived booleans, dynamic prop getters, dynamic arrays (e.g. `actions`), and imperative methods.
 
 ## Data flow
 
@@ -35,7 +36,7 @@ watch: props/state ──▶ FSM state + external subscriptions
 | Data owned by a parent/group bus | context `stateBindable` | Bus is authoritative, not props |
 | Derived flags (`isOpen`, `isChecked`, `isDisabled`) | `computed` | Cheap, pure reads |
 | Mutually exclusive modes (`idle`/`focused`, `checked`/`unchecked`) | FSM `state` | Used by guards/transitions/tags |
-| Presentational props (`size`, `variant`, `ui`, `items`) | read via `prop()` in `connect` | Do not copy into context |
+| Presentational / component props (`size`, `variant`, `color`, `title`, `description`, `mode`, `ui`, `items`) | Component `properties` (`this.data`) | Do NOT copy into machine context, and do NOT re-export in `connect` `Api` |
 | Handles, disposers, timers, previous snapshot | `refs` | Cleanup in `exit` |
 
 Displayed API fields should be derived (computed or `.matches()`), not stored again.
@@ -258,6 +259,7 @@ To achieve 60/120fps fluid dragging:
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
+| Prop-echoing in `connect` `Api` | `title`, `description`, `color`, `variant` re-exported in `Api` | Double memory in `this.data`, inflated `setData` IPC payload, and fallback clutter (`toast.title \|\| title`). Fix: Read props directly from WeChat component data in WXML and runtime. |
 | Omitted controlled prop in `defaultProps` | MiniProgram `createProperties` creates no observer; parent `setData({ value })` fails to reach machine | Include every controlled prop in `defaultProps` (`value: null as any`) |
 | Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
 | Driving high-frequency drag gestures via JSCore `setData` | 16-50ms IPC roundtrip latency causes thumb/slider to lag behind touch gestures | Use WXS view driver to mutate DOM transform/width directly on Webview thread; throttle IPC event calls to machine |

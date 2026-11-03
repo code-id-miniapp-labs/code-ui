@@ -177,6 +177,12 @@ declare module "virtual:cui/theme/tabs-item" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/toast" {
+  import type { default as toastTheme } from "@code-ui/core/src/theme/definitions/toast";
+  const theme: ReturnType<typeof toastTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;
