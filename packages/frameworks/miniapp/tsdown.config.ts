@@ -13,6 +13,7 @@ export default defineConfig({
     "src/behaviors/tabs.ts",
     "src/behaviors/app.ts",
     "src/behaviors/avatar-group.ts",
+    "src/behaviors/toast.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

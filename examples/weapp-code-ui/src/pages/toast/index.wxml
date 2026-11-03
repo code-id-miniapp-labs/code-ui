@@ -1,0 +1,67 @@
+<view class="p-5 flex flex-col gap-6 bg-neutral-50 min-h-screen text-neutral-900">
+  <view class="flex flex-col gap-1">
+    <view class="text-xl font-bold tracking-tight text-neutral-950">Toast</view>
+    <view class="text-xs text-neutral-500 leading-relaxed">
+      Trigger notifications via useToast() composable with Nuxt UI and Native mobile styles.
+    </view>
+  </view>
+  <!-- Nuxt UI Mode Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-900">Nuxt UI Style (mode: default)</view>
+    <view class="text-xs text-neutral-500">
+      Card banner with title, description, colors, and close button.
+    </view>
+    <view class="flex flex-wrap gap-2 pt-1">
+      <c-button size="sm" color="primary" bind:tap="showDefaultPrimary">Primary</c-button>
+      <c-button size="sm" color="success" bind:tap="showDefaultSuccess">Success</c-button>
+      <c-button size="sm" color="danger" bind:tap="showDefaultError">Error</c-button>
+      <c-button size="sm" color="warning" bind:tap="showDefaultWarning">Warning</c-button>
+      <c-button size="sm" color="info" bind:tap="showDefaultInfo">Info</c-button>
+    </view>
+  </view>
+  <!-- Nuxt UI Action Buttons Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-900">With Actions</view>
+    <view class="text-xs text-neutral-500">Toast with interactive action button (e.g. Undo).</view>
+    <view class="flex flex-wrap gap-2 pt-1">
+      <c-button size="sm" color="primary" variant="outline" bind:tap="showWithAction">
+        Delete with Undo
+      </c-button>
+    </view>
+  </view>
+  <!-- Native iOS/Android HUD Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-900">Native Style (mode: native)</view>
+    <view class="text-xs text-neutral-500">
+      Centered translucent HUD inspired by iOS / Android / WeChat wx.showToast.
+    </view>
+    <view class="flex flex-wrap gap-2 pt-1">
+      <c-button size="sm" color="neutral" bind:tap="showNativeSuccess">Success HUD</c-button>
+      <c-button size="sm" color="neutral" bind:tap="showNativeError">Error HUD</c-button>
+      <c-button size="sm" color="neutral" bind:tap="showNativeLoading">Loading HUD</c-button>
+    </view>
+  </view>
+  <!-- Native Pill Style Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-900">Native Pill Capsule</view>
+    <view class="text-xs text-neutral-500">Compact capsule pill at bottom or top of screen.</view>
+    <view class="flex flex-wrap gap-2 pt-1">
+      <c-button size="sm" color="neutral" variant="outline" bind:tap="showNativeBottomPill">
+        Bottom Pill
+      </c-button>
+      <c-button size="sm" color="neutral" variant="outline" bind:tap="showNativeTopPill">
+        Top Pill
+      </c-button>
+    </view>
+  </view>
+  <!-- Clear All Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-900">Programmatic Clear</view>
+    <view class="text-xs text-neutral-500">Clear all active toasts immediately.</view>
+    <view class="flex flex-wrap gap-2 pt-1">
+      <c-button size="sm" color="neutral" variant="soft" bind:tap="clearAllToasts">
+        Clear All
+      </c-button>
+    </view>
+  </view>
+</view>

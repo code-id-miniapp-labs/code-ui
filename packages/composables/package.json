@@ -24,6 +24,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@code-ui/miniapp": "workspace:*",
     "@code-ui/utils": "workspace:*"
   },
   "devDependencies": {

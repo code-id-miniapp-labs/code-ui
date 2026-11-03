@@ -90,6 +90,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/textarea/src",
       ),
+      "@code-ui/toast": resolve(
+        import.meta.dirname,
+        "packages/machines/toast/src",
+      ),
     },
   },
   test: {

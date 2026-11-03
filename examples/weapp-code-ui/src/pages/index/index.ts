@@ -176,6 +176,13 @@ Page({
         badge: "Interactive",
         path: "/pages/tabs/index",
       },
+      {
+        id: "toast",
+        name: "Toast",
+        desc: "Toast notifications with Nuxt UI and native iOS/Android HUD modes triggered via useToast() composable.",
+        badge: "Feedback",
+        path: "/pages/toast/index",
+      },
     ],
   },
 

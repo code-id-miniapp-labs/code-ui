@@ -29,3 +29,4 @@ export { default as swipeCell } from "./swipe-cell";
 export { default as tabs } from "./tabs";
 export { default as tabsItem } from "./tabs-item";
 export { default as textarea } from "./textarea";
+export { default as toast } from "./toast";

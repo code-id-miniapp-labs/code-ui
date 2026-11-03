@@ -26,7 +26,8 @@
     "pages/stepper/index",
     "pages/accordion/index",
     "pages/swipe-cell/index",
-    "pages/tabs/index"
+    "pages/tabs/index",
+    "pages/toast/index"
   ],
   "window": {},
   "style": "v2",

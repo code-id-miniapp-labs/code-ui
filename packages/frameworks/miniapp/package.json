@@ -65,6 +65,11 @@
       "types": "./dist/behaviors/avatar-group.d.ts",
       "import": "./dist/behaviors/avatar-group.js",
       "require": "./dist/behaviors/avatar-group.cjs"
+    },
+    "./behaviors/toast": {
+      "types": "./dist/behaviors/toast.d.ts",
+      "import": "./dist/behaviors/toast.js",
+      "require": "./dist/behaviors/toast.cjs"
     }
   },
   "scripts": {

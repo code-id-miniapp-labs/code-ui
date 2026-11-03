@@ -28,6 +28,7 @@ export function toCamelCase(str: string): string {
  * icons are automatically included in the stylesheet compilation scan.
  */
 export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
+  app: ["toast"],
   accordion: ["accordion-item", "icon"],
   "accordion-item": ["icon"],
   stepper: ["stepper-item", "icon"],
@@ -50,6 +51,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
   radio: ["icon"],
   switch: ["icon"],
   textarea: ["icon"],
+  toast: ["icon", "button", "progress"],
 };
 
 function matchComponentName(

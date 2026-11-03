@@ -72,11 +72,40 @@ interface HostRecord {
 type PendingOp = (host: HostRecord) => void;
 
 const ACTIVE_KEY = "*";
-const hosts: HostRecord[] = [];
-const hostByInstance = new WeakMap<object, HostRecord>();
-const pageSignals = new WeakMap<object, PageAppSignals>();
-const pending = new Map<string, PendingOp[]>();
-let orderCounter = 0;
+
+interface AppRegistry {
+  hosts: HostRecord[];
+  hostByInstance: WeakMap<object, HostRecord>;
+  pageSignals: WeakMap<object, PageAppSignals>;
+  pending: Map<string, PendingOp[]>;
+  orderCounter: number;
+}
+
+const globalScope = (
+  typeof globalThis !== "undefined"
+    ? globalThis
+    : typeof window !== "undefined"
+      ? window
+      : typeof global !== "undefined"
+        ? global
+        : {}
+) as any;
+
+if (!globalScope.__CODE_UI_APP_REGISTRY__) {
+  globalScope.__CODE_UI_APP_REGISTRY__ = {
+    hosts: [],
+    hostByInstance: new WeakMap(),
+    pageSignals: new WeakMap(),
+    pending: new Map(),
+    orderCounter: 0,
+  };
+}
+
+const appRegistry: AppRegistry = globalScope.__CODE_UI_APP_REGISTRY__;
+const hosts = appRegistry.hosts;
+const hostByInstance = appRegistry.hostByInstance;
+const pageSignals = appRegistry.pageSignals;
+const pending = appRegistry.pending;
 
 export function linkAppChildToParent(parent: any, child: any): void {
   if (!parent || !child) return;
@@ -450,14 +479,14 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
   const signals = getPageAppSignals(instance);
   const record: HostRecord = {
     instance,
-    pageId: getPageIdOf(instance) ?? `cui-app-${orderCounter + 1}`,
+    pageId: getPageIdOf(instance) ?? `cui-app-${appRegistry.orderCounter + 1}`,
     adapter,
     signals,
     insets: new Map(),
     locks: new Set(),
     scales: new Map(),
     visible: true,
-    order: ++orderCounter,
+    order: ++appRegistry.orderCounter,
   };
   hosts.push(record);
   hostByInstance.set(instance, record);
@@ -511,7 +540,7 @@ export function setAppHostVisible(instance: any, visible: boolean): void {
   const record = hostByInstance.get(instance);
   if (!record) return;
   record.visible = visible;
-  if (visible) record.order = ++orderCounter;
+  if (visible) record.order = ++appRegistry.orderCounter;
 }
 
 export function getAppHost(owner?: any): any {
@@ -1038,7 +1067,7 @@ export function refreshAppMetrics(): AppMetrics {
 export function __resetAppRegistry(): void {
   hosts.length = 0;
   pending.clear();
-  orderCounter = 0;
+  appRegistry.orderCounter = 0;
   cachedMetrics = null;
   refreshAppMetrics();
 }

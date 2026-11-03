@@ -56,6 +56,7 @@ import type {
   TextareaValueChangeDetails,
   TextareaLineChangeDetails,
 } from "@code-ui/textarea";
+import type { ToastProps } from "@code-ui/toast";
 import type { ThemeColor } from "@code-ui/core";
 
 export interface CuiCommonElementProps {
@@ -659,4 +660,25 @@ export interface CuiTabsItemElementProps extends CuiCommonElementProps {
   badge?: string | number;
   disabled?: boolean;
   lazy?: boolean;
+}
+
+export interface CuiToastElementProps extends CuiCommonElementProps {
+  ui?: ToastProps["ui"];
+  mode?: ToastProps["mode"];
+  color?: ToastProps["color"];
+  variant?: ToastProps["variant"];
+  orientation?: ToastProps["orientation"];
+  placement?: ToastProps["placement"];
+  title?: string;
+  description?: string;
+  icon?: string;
+  duration?: number;
+  open?: boolean;
+  close?: boolean;
+  closeIcon?: string;
+  actions?: ToastProps["actions"];
+  progress?: boolean;
+  onOpenChange?: (event: WechatMiniprogram.CustomEvent<{ open: boolean }>) => void;
+  onDismiss?: (event: WechatMiniprogram.CustomEvent) => void;
+  onAction?: (event: WechatMiniprogram.CustomEvent<{ action: any; index: number }>) => void;
 }

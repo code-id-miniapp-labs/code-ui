@@ -1,6 +1,8 @@
 {
   "component": true,
   "styleIsolation": "apply-shared",
-  "usingComponents": {}
+  "usingComponents": {
+    "c-toast": "../toast/index"
+  }
 }
 

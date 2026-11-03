@@ -255,6 +255,10 @@ export default defineConfig({
               name: "behaviors/avatar-group",
               test: /[\\/]behaviors[\\/]avatar-group/,
             },
+            {
+              name: "behaviors/toast",
+              test: /[\\/]behaviors[\\/]toast/,
+            },
           ],
         },
       },

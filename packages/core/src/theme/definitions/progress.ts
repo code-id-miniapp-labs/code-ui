@@ -117,13 +117,22 @@ export default function progressTheme(options: ThemeOptions = {}) {
         false: {},
       },
     },
-    compoundVariants: (colors as readonly string[]).map((color) => ({
-      color: color as (typeof colors)[number],
-      class: {
-        range: `bg-${color}`,
-        circleRange: `text-${color}`,
+    compoundVariants: [
+      ...(colors as readonly string[]).map((color) => ({
+        color: color as (typeof colors)[number],
+        class: {
+          range: color === "neutral" ? "bg-neutral-900 dark:bg-white" : `bg-${color}`,
+          circleRange: color === "neutral" ? "text-neutral-900 dark:text-white" : `text-${color}`,
+        },
+      })),
+      {
+        color: "error" as any,
+        class: {
+          range: "bg-danger",
+          circleRange: "text-danger",
+        },
       },
-    })),
+    ],
     defaultVariants: {
       color: "primary",
       size: "md",
