@@ -7,3 +7,11 @@
   }
 }
 
+@-webkit-keyframes cui-toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

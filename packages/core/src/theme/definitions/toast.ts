@@ -18,7 +18,8 @@ export default function toastTheme(options: ThemeOptions = {}) {
       actions: "flex items-center gap-2",
       action: "",
       closeTrigger: "shrink-0 cursor-pointer transition-colors",
-      progress: "absolute bottom-0 left-0 h-0.5",
+      progress:
+        "absolute left-0 right-0 h-0.5 overflow-hidden pointer-events-none z-10",
     },
     variants: {
       mode: {
@@ -33,7 +34,7 @@ export default function toastTheme(options: ThemeOptions = {}) {
           actions: "mt-2.5 flex items-center gap-2",
           closeTrigger:
             "p-1 -m-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors shrink-0",
-          progress: "absolute bottom-0 left-0 h-0.5",
+          progress: "h-0.5",
         },
         native: {
           root: "flex flex-col items-center justify-center p-4 rounded-2xl bg-neutral-900/85 backdrop-blur-md text-white shadow-2xl text-center min-w-[120px] max-w-[200px] min-h-[100px]",
@@ -85,6 +86,14 @@ export default function toastTheme(options: ThemeOptions = {}) {
           root: "fixed bottom-0 left-1/2 -translate-x-1/2 w-[calc(100vw-32px)] max-w-sm mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))+32rpx)] z-[100]",
         },
       },
+      progressPosition: {
+        top: {
+          progress: "top-0",
+        },
+        bottom: {
+          progress: "bottom-0",
+        },
+      },
     },
     compoundVariants: [
       // Native mode + horizontal orientation = Pill style
@@ -94,7 +103,7 @@ export default function toastTheme(options: ThemeOptions = {}) {
         class: {
           root: "flex-row items-center px-4 py-2.5 rounded-full min-w-0 max-w-xs min-h-0 gap-2.5",
           wrapper: "flex-row items-center gap-1.5",
-          title: "text-xs font-medium text-white text-left",
+          title: "text-xs font-medium text-white",
           description: "text-xs text-neutral-300",
           icon: "w-4 h-4 mb-0",
         },
@@ -105,7 +114,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
         placement: "top",
         class: {
           root: "fixed top-0 left-1/2 -translate-x-1/2 inset-x-auto w-auto mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))+32rpx)] z-[100]",
-          title: "text-xs font-medium text-white text-left",
         },
       },
       {
@@ -113,7 +121,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
         placement: "center",
         class: {
           root: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-auto z-[100]",
-          title: "text-xs font-medium text-white text-left",
         },
       },
       {
@@ -121,11 +128,10 @@ export default function toastTheme(options: ThemeOptions = {}) {
         placement: "bottom",
         class: {
           root: "fixed bottom-0 left-1/2 -translate-x-1/2 inset-x-auto w-auto mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))+32rpx)] z-[100]",
-          title: "text-xs font-medium text-white text-left",
         },
       },
       // 1. Outline (Nuxt UI v4 Default Style):
-      // Clean elevated white card with neutral border and semantic colored icon + progress bar
+      // Clean elevated white card with neutral border and semantic colored icon
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
         variant: "outline" as const,
@@ -138,10 +144,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
             color === "neutral"
               ? "text-neutral-900 dark:text-white"
               : `text-${color}`,
-          progress:
-            color === "neutral"
-              ? "bg-neutral-900 dark:bg-white"
-              : `bg-${color}`,
         },
       })),
       {
@@ -153,7 +155,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           title: "text-neutral-900 dark:text-white",
           description: "text-neutral-500 dark:text-neutral-400",
           icon: "text-danger",
-          progress: "bg-danger",
         },
       },
 
@@ -171,7 +172,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           description: "text-white/85",
           icon: "text-white",
           closeTrigger: "text-white/70 hover:text-white",
-          progress: "bg-white/40",
         },
       })),
       {
@@ -184,7 +184,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           description: "text-white/85",
           icon: "text-white",
           closeTrigger: "text-white/70 hover:text-white",
-          progress: "bg-white/40",
         },
       },
 
@@ -214,10 +213,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
             color === "neutral"
               ? "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white"
               : `text-${color}/70 hover:text-${color}`,
-          progress:
-            color === "neutral"
-              ? "bg-neutral-900 dark:bg-white"
-              : `bg-${color}`,
         },
       })),
       {
@@ -230,7 +225,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           description: "text-danger/80",
           icon: "text-danger",
           closeTrigger: "text-danger/70 hover:text-danger",
-          progress: "bg-danger",
         },
       },
 
@@ -260,10 +254,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
             color === "neutral"
               ? "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white"
               : `text-${color}/70 hover:text-${color}`,
-          progress:
-            color === "neutral"
-              ? "bg-neutral-900 dark:bg-white"
-              : `bg-${color}`,
         },
       })),
       {
@@ -276,7 +266,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           description: "text-danger/80",
           icon: "text-danger",
           closeTrigger: "text-danger/70 hover:text-danger",
-          progress: "bg-danger",
         },
       },
     ],
@@ -284,8 +273,9 @@ export default function toastTheme(options: ThemeOptions = {}) {
       mode: "default",
       color: "neutral",
       variant: "outline",
-      orientation: "horizontal",
+      orientation: "vertical",
       placement: "top",
+      progressPosition: "bottom",
     },
   });
 }

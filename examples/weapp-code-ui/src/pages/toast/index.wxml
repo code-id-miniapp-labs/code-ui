@@ -17,6 +17,7 @@
       <c-button size="sm" color="danger" bind:tap="showDefaultError">Error</c-button>
       <c-button size="sm" color="warning" bind:tap="showDefaultWarning">Warning</c-button>
       <c-button size="sm" color="info" bind:tap="showDefaultInfo">Info</c-button>
+      <c-button size="sm" color="neutral" variant="outline" bind:tap="showProgressTop">Progress Top</c-button>
     </view>
   </view>
   <!-- Nuxt UI Action Buttons Section -->

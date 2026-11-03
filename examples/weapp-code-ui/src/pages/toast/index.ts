@@ -59,6 +59,17 @@ Page({
     });
   },
 
+  showProgressTop() {
+    toast.show({
+      title: "Top Progress Bar",
+      description: "Progress indicator positioned at the top edge.",
+      icon: "i-lucide-arrow-down-to-line",
+      color: "primary",
+      progressPosition: "top",
+      duration: 4000,
+    });
+  },
+
   showNativeSuccess() {
     toast.show({
       title: "Completed",

@@ -21,8 +21,9 @@ describe("toastTheme (@code-ui/core)", () => {
       mode: "default",
       color: "neutral",
       variant: "outline",
-      orientation: "horizontal",
+      orientation: "vertical",
       placement: "top",
+      progressPosition: "bottom",
     });
   });
 

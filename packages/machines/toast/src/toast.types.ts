@@ -69,7 +69,7 @@ export interface ToastProps {
   /** Auto-dismiss duration in ms (0 = persistent) */
   duration?: number | undefined;
   /** Whether to show countdown progress bar in default mode */
-  progress?: boolean | undefined;
+  progress?: boolean | { color?: string } | undefined;
   /** Position of the progress bar in default mode ('top' | 'bottom') */
   progressPosition?: ToastProgressPosition | undefined;
   /** Controlled open state */
@@ -102,19 +102,6 @@ export type ToastEvent =
   | { type: "TRIGGER_ACTION"; action: ToastAction; index: number };
 
 export interface ToastContext {
-  mode: ToastMode;
-  color: ToastColor;
-  variant: ToastVariant;
-  orientation: ToastOrientation;
-  placement: ToastPlacement;
-  title: string;
-  description: string;
-  icon: string;
-  duration: number;
-  progress: boolean;
-  progressPosition: ToastProgressPosition;
-  close: boolean;
-  actions: ToastAction[];
   ui: ToastUI;
 }
 
@@ -160,28 +147,6 @@ export interface ToastApi {
   dismissing: boolean;
   /** Whether countdown is paused */
   paused: boolean;
-  /** Active display mode */
-  mode: ToastMode;
-  /** Active color variant */
-  color: ToastColor;
-  /** Active style variant */
-  variant: ToastVariant;
-  /** Active layout orientation */
-  orientation: ToastOrientation;
-  /** Target placement */
-  placement: ToastPlacement;
-  /** Title text */
-  title: string;
-  /** Description text */
-  description: string;
-  /** Resolved icon name or path */
-  icon: string;
-  /** Whether countdown progress bar is enabled */
-  progress: boolean;
-  /** Position of the countdown progress bar ('top' | 'bottom') */
-  progressPosition: ToastProgressPosition;
-  /** Whether close button is enabled */
-  close: boolean;
   /** Actions array pre-computed for WXML rendering */
   actions: Array<{
     label: string;

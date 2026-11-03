@@ -24,6 +24,8 @@ export interface ToastOptions {
   orientation?: "horizontal" | "vertical" | undefined;
   placement?: "top" | "center" | "bottom" | undefined;
   duration?: number | undefined;
+  progress?: boolean | { color?: string } | undefined;
+  progressPosition?: "top" | "bottom" | undefined;
   close?: boolean | undefined;
   closeIcon?: string | undefined;
   actions?: ToastAction[] | undefined;

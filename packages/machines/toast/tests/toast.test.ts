@@ -30,11 +30,10 @@ describe("Toast Machine", () => {
     expect(machine.computed("isPaused")).toBe(false);
 
     const api = connectToast(machine.service);
+    expect(api.state).toBe("open");
     expect(api.open).toBe(true);
     expect(api.visible).toBe(true);
-    expect(api.title).toBe("Notice");
-    expect(api.description).toBe("Operation successful");
-    expect(api.mode).toBe("default");
+    expect(api.paused).toBe(false);
 
     machine.stop();
   });

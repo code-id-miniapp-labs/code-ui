@@ -5,12 +5,14 @@ import {
   clearToasts,
   dismissToast,
   findActiveToastHost,
-  getToasts,
+  getToastManager,
   registerToastHost,
   removeToast,
   unregisterToastHost,
   updateToast,
 } from "../src/behaviors/toast";
+
+const getToasts = (host: any) => getToastManager(host)?.toasts() ?? [];
 
 describe("toast behavior", () => {
   beforeEach(() => {

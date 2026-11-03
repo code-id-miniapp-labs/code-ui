@@ -17,6 +17,7 @@ import {
   addToast,
   clearToasts,
   dismissToast,
+  getToastManager,
   registerToastHost,
   removeToast,
   unregisterToastHost,
@@ -202,6 +203,7 @@ Component(
           },
           { max: this.data.maxToasts ?? 2 },
         );
+        this.toastManager = getToastManager(this);
         if (typeof getCurrentPages === "function") {
           try {
             const pages = getCurrentPages();

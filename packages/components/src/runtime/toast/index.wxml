@@ -1,22 +1,26 @@
-<view wx:if="{{toast ? toast.visible : true}}" id="{{toast.rootProps.id}}" class="{{classes.root}}" style="{{rootStyle}}" data-scope="toast" data-part="root" data-id="{{id || toast.rootProps.id}}" data-index="{{index}}" data-state="{{toast.state || 'open'}}" data-mode="{{resolvedMode}}" data-color="{{toast.color || color || 'neutral'}}" data-variant="{{toast.variant || variant || 'outline'}}" data-placement="{{toast.placement || placement || 'top'}}" bindtouchstart="handleTouchStart" bindtouchend="handleTouchEnd" bindtouchcancel="handleTouchEnd">
+<view wx:if="{{toast ? toast.visible : true}}" id="{{toast.rootProps.id}}" class="{{classes.root}}" style="{{rootStyle}}" data-scope="toast" data-part="root" data-id="{{id || toast.rootProps.id}}" data-index="{{index}}" data-state="{{toast.state || 'open'}}" data-mode="{{mode || 'default'}}" data-color="{{color || 'neutral'}}" data-variant="{{variant || 'outline'}}" data-placement="{{placement || 'top'}}" data-progress-position="{{progressPosition || 'bottom'}}" bindtouchstart="handleTouchStart" bindtouchend="handleTouchEnd" bindtouchcancel="handleTouchEnd">
+  <!-- Progress Bar (single node positioned via theme) -->
+  <view wx:if="{{mode !== 'native' && progress !== false}}" class="{{classes.progress}}" style="{{progressStyle}}" data-scope="toast" data-part="progress">
+    <c-progress className="w-full h-full" color="{{resolvedProgressColor}}" size="2xs" value="{{100}}" ui="{{progressUi}}" />
+  </view>
+
   <c-icon wx:if="{{resolvedIcon}}" name="{{resolvedIcon}}" className="{{classes.icon}}" />
   <view class="{{classes.wrapper}}" data-scope="toast" data-part="wrapper">
-    <view wx:if="{{resolvedTitle}}" class="{{classes.title}}" data-scope="toast" data-part="title">
-      {{resolvedTitle}}
+    <view wx:if="{{title}}" class="{{classes.title}}" data-scope="toast" data-part="title">
+      {{title}}
     </view>
     <slot wx:else name="title" />
-    <view wx:if="{{resolvedDescription}}" class="{{classes.description}}" data-scope="toast" data-part="description">
-      {{resolvedDescription}}
+    <view wx:if="{{description}}" class="{{classes.description}}" data-scope="toast" data-part="description">
+      {{description}}
     </view>
     <slot wx:else name="description" />
-    <view wx:if="{{resolvedMode !== 'native' && toast.actions && toast.actions.length > 0}}" class="{{classes.actions}}" data-scope="toast" data-part="actions">
+    <view wx:if="{{mode !== 'native' && toast.actions && toast.actions.length > 0}}" class="{{classes.actions}}" data-scope="toast" data-part="actions">
       <c-button wx:for="{{toast.actions}}" wx:key="index" size="xs" color="{{item.color || 'neutral'}}" variant="{{item.variant || 'outline'}}" data-index="{{item.index}}" catch:tap="handleActionTap">
         {{item.label}}
       </c-button>
     </view>
   </view>
-  <view wx:if="{{resolvedMode !== 'native' && (close !== false)}}" id="{{toast.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger" aria-label="{{toast.closeTriggerProps['aria-label']}}" catchtap="handleCloseTap">
+  <view wx:if="{{mode !== 'native' && (close !== false)}}" id="{{toast.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger" aria-label="{{toast.closeTriggerProps['aria-label']}}" catchtap="handleCloseTap">
     <c-icon name="{{closeIcon || 'close'}}" className="w-4 h-4" />
   </view>
-  <c-progress wx:if="{{resolvedMode !== 'native' && (progress !== false)}}" id="{{toast.progressProps.id}}" class="{{classes.progress}}" className="w-full" color="{{resolvedProgressColor}}" size="2xs" value="{{100}}" ui="{{progressUi}}" style="{{progressStyle}}" data-scope="toast" data-part="progress" />
 </view>

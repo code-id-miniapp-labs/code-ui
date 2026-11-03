@@ -2,15 +2,27 @@ import { createMachine } from "@code-ui/core";
 import { isNotNull } from "@code-ui/utils";
 import type {
   ToastAction,
-  ToastContext,
   ToastMachine,
-  ToastProps,
   ToastSchema,
   ToastUI,
 } from "./toast.types";
 import { defaultToastProps } from "./toast.props";
 
 const DISMISS_ANIMATION_DURATION = 200;
+
+const activeToastTransitions = {
+  "CONTROLLED.CLOSE": {
+    target: "dismissing" as const,
+  },
+  DISMISS: {
+    target: "dismissing" as const,
+    actions: ["invokeOnClose" as const],
+  },
+  TRIGGER_ACTION: {
+    target: "dismissing" as const,
+    actions: ["invokeOnAction" as const, "invokeOnClose" as const],
+  },
+};
 
 export const toastMachine: ToastMachine = createMachine<ToastSchema>({
   props: ({ props }) => ({
@@ -33,45 +45,12 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     startedAt: undefined,
   }),
 
-  context: ({ prop, bindable }) => {
-    const propBindable = <K extends keyof ToastContext & keyof ToastProps>(
-      key: K,
-      defaultValue: ToastContext[K],
-    ) =>
-      bindable<ToastContext[K]>(() => ({
-        value: prop(key) as ToastContext[K] | undefined,
-        defaultValue,
-      }));
-
-    return {
-      mode: propBindable("mode", defaultToastProps.mode ?? "default"),
-      color: propBindable("color", defaultToastProps.color ?? "neutral"),
-      variant: propBindable("variant", defaultToastProps.variant ?? "outline"),
-      orientation: propBindable(
-        "orientation",
-        defaultToastProps.orientation ?? "horizontal",
-      ),
-      placement: propBindable(
-        "placement",
-        defaultToastProps.placement ?? "top",
-      ),
-      title: propBindable("title", ""),
-      description: propBindable("description", ""),
-      icon: propBindable("icon", ""),
-      duration: propBindable("duration", defaultToastProps.duration ?? 4000),
-      progress: propBindable("progress", Boolean(defaultToastProps.progress ?? true)),
-      progressPosition: propBindable(
-        "progressPosition",
-        defaultToastProps.progressPosition ?? "bottom",
-      ),
-      close: propBindable("close", Boolean(defaultToastProps.close)),
-      actions: propBindable("actions", []),
-      ui: bindable<ToastUI>(() => ({
-        value: prop("ui"),
-        defaultValue: {},
-      })),
-    };
-  },
+  context: ({ prop, bindable }) => ({
+    ui: bindable<ToastUI>(() => ({
+      value: prop("ui"),
+      defaultValue: {},
+    })),
+  }),
 
   computed: {
     isOpen: ({ state }) => state.hasTag("open"),
@@ -92,6 +71,8 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     }
   },
 
+  exit: ["cleanup"],
+
   states: {
     closed: {
       tags: ["closed"],
@@ -108,20 +89,10 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
       tags: ["open"],
       effects: ["manageDismissTimer"],
       on: {
-        "CONTROLLED.CLOSE": {
-          target: "dismissing",
-        },
-        DISMISS: {
-          target: "dismissing",
-          actions: ["invokeOnClose"],
-        },
+        ...activeToastTransitions,
         PAUSE: {
           target: "paused",
           actions: ["pauseTimer"],
-        },
-        TRIGGER_ACTION: {
-          target: "dismissing",
-          actions: ["invokeOnAction", "invokeOnClose"],
         },
       },
     },
@@ -129,19 +100,9 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     paused: {
       tags: ["open", "paused"],
       on: {
-        "CONTROLLED.CLOSE": {
-          target: "dismissing",
-        },
+        ...activeToastTransitions,
         RESUME: {
           target: "open",
-        },
-        DISMISS: {
-          target: "dismissing",
-          actions: ["invokeOnClose"],
-        },
-        TRIGGER_ACTION: {
-          target: "dismissing",
-          actions: ["invokeOnAction", "invokeOnClose"],
         },
       },
     },
@@ -200,6 +161,20 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
         if (timer !== undefined) {
           clearTimeout(timer);
           refs.set("timer", undefined);
+        }
+        refs.set("remainingTime", undefined);
+        refs.set("startedAt", undefined);
+      },
+      cleanup: ({ refs }) => {
+        const timer = refs.get("timer");
+        if (timer !== undefined) {
+          clearTimeout(timer);
+          refs.set("timer", undefined);
+        }
+        const dismissTimer = refs.get("dismissTimer");
+        if (dismissTimer !== undefined) {
+          clearTimeout(dismissTimer);
+          refs.set("dismissTimer", undefined);
         }
         refs.set("remainingTime", undefined);
         refs.set("startedAt", undefined);

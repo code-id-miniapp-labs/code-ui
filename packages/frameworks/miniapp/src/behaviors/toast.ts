@@ -1,3 +1,5 @@
+import { computed, effect, signal } from "alien-signals";
+
 export interface ToastAction {
   label: string;
   onClick?: (() => void) | undefined;
@@ -19,6 +21,8 @@ export type ToastSlotName =
 
 export type ToastUI = Partial<Record<ToastSlotName, string>>;
 
+export type ToastPlacement = "top" | "center" | "bottom";
+
 export interface ToastEntry {
   id: string;
   title?: string | undefined;
@@ -28,9 +32,9 @@ export interface ToastEntry {
   color?: string | undefined;
   variant?: string | undefined;
   orientation?: "horizontal" | "vertical" | undefined;
-  placement?: "top" | "center" | "bottom" | undefined;
+  placement?: ToastPlacement | undefined;
   duration?: number | undefined;
-  progress?: boolean | undefined;
+  progress?: boolean | { color?: string } | undefined;
   progressPosition?: "top" | "bottom" | undefined;
   open?: boolean | undefined;
   close?: boolean | undefined;
@@ -40,6 +44,8 @@ export interface ToastEntry {
   className?: string | undefined;
   stackIndex?: number | undefined;
   offset?: number | undefined;
+
+  updatedAt?: number | undefined;
   onAction?:
     | ((details: { action: ToastAction; index: number }) => void)
     | undefined;
@@ -48,196 +54,223 @@ export interface ToastEntry {
 
 export interface ToastManagerOptions {
   max?: number | undefined;
-  threshold?: number | undefined;
   onChange?: ((toasts: ToastEntry[]) => void) | undefined;
 }
 
-function estimateToastHeight(t: ToastEntry): number {
-  const mode = t.mode ?? "default";
-  const orientation = t.orientation ?? "horizontal";
-  if (mode === "native") {
-    return orientation === "horizontal" ? 44 : 100;
-  }
-  let height = 56;
-  if (t.description) {
-    const lines = t.description.length > 38 ? 2 : 1;
-    height += lines * 18 + 4;
-  }
-  if (t.actions && t.actions.length > 0) {
-    height += 38;
-  }
-  return height;
+export function resolveToastPlacement(
+  t: Pick<ToastEntry, "placement" | "mode" | "orientation">,
+): ToastPlacement {
+  if (t.placement) return t.placement;
+  if (t.mode === "native" && t.orientation !== "horizontal") return "center";
+  return "top";
 }
 
-export function computeToastStackIndices(
-  toasts: ToastEntry[],
-  threshold = 12,
-): ToastEntry[] {
-  const accumulatedOffsets: Record<string, number> = {
-    top: 0,
-    center: 0,
-    bottom: 0,
-  };
-  const counts: Record<string, number> = { top: 0, center: 0, bottom: 0 };
-
-  return toasts.map((t) => {
-    const placement =
-      t.placement ||
-      (t.mode === "native" && t.orientation !== "horizontal"
-        ? "center"
-        : "top");
-
-    const stackIndex = counts[placement] ?? 0;
-    const currentOffset = accumulatedOffsets[placement] ?? 0;
-
-    counts[placement] = stackIndex + 1;
-
-    if (placement !== "center") {
-      const itemHeight = estimateToastHeight(t);
-      accumulatedOffsets[placement] = currentOffset + itemHeight + threshold;
-    }
-
-    return {
-      ...t,
-      stackIndex,
-      offset: currentOffset,
-    };
-  });
+export function normalizeToastEntries(toasts: ToastEntry[]): ToastEntry[] {
+  return toasts.map((t) => ({
+    ...t,
+    placement: resolveToastPlacement(t),
+    stackIndex: 0,
+    offset: 0,
+  }));
 }
 
-/**
- * ToastManager encapsulates queue management, stacking calculation,
- * per-placement replacement, and configurable max limits for a single host.
- */
 export class ToastManager {
-  private toasts: ToastEntry[] = [];
-  private max: number;
-  private threshold: number;
-  private onChange?: ((toasts: ToastEntry[]) => void) | undefined;
+  readonly rawToasts = signal<ToastEntry[]>([]);
+  readonly max = signal<number>(2);
+
+  readonly toasts = computed<ToastEntry[]>(() =>
+    normalizeToastEntries(this.rawToasts()),
+  );
+
+  onChange?: ((toasts: ToastEntry[]) => void) | undefined;
+  private stopEffect?: (() => void) | undefined;
+  private isInitialized = false;
 
   constructor(options: ToastManagerOptions = {}) {
-    this.max = options.max !== undefined && options.max > 0 ? options.max : 2;
-    this.threshold = options.threshold ?? 12;
+    this.max(options.max !== undefined && options.max > 0 ? options.max : 2);
     this.onChange = options.onChange;
+
+    this.stopEffect = effect(() => {
+      const current = this.toasts();
+      if (!this.isInitialized) {
+        this.isInitialized = true;
+        if (current.length === 0) return;
+      }
+      this.onChange?.(current);
+    });
   }
 
   setMax(max: number): void {
-    this.max = max > 0 ? max : 2;
+    const nextMax = max > 0 ? max : 2;
+    if (this.max() === nextMax) return;
+    this.max(nextMax);
     this.enforceLimits();
   }
 
-  getMax(): number {
-    return this.max;
-  }
-
-  setOnChange(onChange?: ((toasts: ToastEntry[]) => void) | undefined): void {
-    this.onChange = onChange;
-  }
-
-  getToasts(): ToastEntry[] {
-    return [...this.toasts];
-  }
-
-  private normalizePlacement(t: ToastEntry): "top" | "center" | "bottom" {
-    if (t.placement) return t.placement;
-    if (t.mode === "native" && t.orientation !== "horizontal") return "center";
-    return "top";
-  }
-
   private enforceLimits(): void {
-    let changed = false;
-    while (this.toasts.length > this.max) {
-      const evicted = this.toasts.shift();
-      if (evicted) {
-        evicted.onDismiss?.();
-        changed = true;
-      }
+    const current = this.rawToasts();
+    const maxVal = this.max();
+    if (current.length <= maxVal) return;
+
+    const list = [...current];
+    const evictedList: ToastEntry[] = [];
+
+    while (list.length > maxVal) {
+      const evicted = list.shift();
+      if (evicted) evictedList.push(evicted);
     }
-    if (changed) {
-      this.notify();
+
+    this.rawToasts(list);
+    for (const evicted of evictedList) {
+      evicted.onDismiss?.();
     }
   }
 
   add(entry: ToastEntry): string {
-    const placement = this.normalizePlacement(entry);
+    const placement = resolveToastPlacement(entry);
+    const now = Date.now();
     const item: ToastEntry = {
       ...entry,
       placement,
+      open: entry.open ?? true,
+      updatedAt: now,
     };
 
-    // 1. If an existing toast with the same id exists, update in-place
-    const existingIdIndex = this.toasts.findIndex((t) => t.id === item.id);
-    if (existingIdIndex !== -1) {
-      this.toasts[existingIdIndex] = {
-        ...this.toasts[existingIdIndex],
+    const current = this.rawToasts();
+    const list = [...current];
+
+    const existingIdIndex = list.findIndex((t) => t.id === item.id);
+    const prevItem = list[existingIdIndex];
+    if (existingIdIndex !== -1 && prevItem) {
+      const updatedItem: ToastEntry = {
+        ...prevItem,
         ...item,
+        placement: resolveToastPlacement({ ...prevItem, ...item }),
+        open: entry.open ?? true,
+        updatedAt: now,
       };
-      this.notify();
+
+      const evictedList: ToastEntry[] = [];
+      const filtered = list.filter((t, idx) => {
+        if (idx === existingIdIndex) return true;
+        if (resolveToastPlacement(t) === updatedItem.placement) {
+          evictedList.push(t);
+          return false;
+        }
+        return true;
+      });
+
+      const targetIdx = filtered.findIndex((t) => t.id === item.id);
+      filtered[targetIdx] = updatedItem;
+
+      this.rawToasts(filtered);
+      for (const evicted of evictedList) {
+        evicted.onDismiss?.();
+      }
       return item.id;
     }
 
-    // 2. Replaceable per placement:
-    // If another toast already exists at this SAME placement, replace it
-    const samePlacementIndex = this.toasts.findIndex(
-      (t) => this.normalizePlacement(t) === placement,
+    const evictedList: ToastEntry[] = [];
+
+    const samePlacementIndex = list.findIndex(
+      (t) => resolveToastPlacement(t) === placement,
     );
     if (samePlacementIndex !== -1) {
-      const [replaced] = this.toasts.splice(samePlacementIndex, 1);
-      replaced?.onDismiss?.();
+      const [replaced] = list.splice(samePlacementIndex, 1);
+      if (replaced) evictedList.push(replaced);
     }
 
-    // 3. Max capacity across different placements:
-    // If toasts array already at max limit, evict the oldest toast (FIFO)
-    while (this.toasts.length >= this.max) {
-      const evicted = this.toasts.shift();
-      evicted?.onDismiss?.();
+    const maxVal = this.max();
+    while (list.length >= maxVal) {
+      const evicted = list.shift();
+      if (evicted) evictedList.push(evicted);
     }
 
-    // 4. Append the new toast
-    this.toasts.push(item);
-    this.notify();
+    list.push(item);
+    this.rawToasts(list);
+
+    for (const evicted of evictedList) {
+      evicted.onDismiss?.();
+    }
+
     return item.id;
   }
 
   dismiss(id: string): void {
-    const target = this.toasts.find((t) => t.id === id);
-    if (target) {
-      target.open = false;
-      this.notify();
-    }
+    const current = this.rawToasts();
+    const idx = current.findIndex((t) => t.id === id);
+    const target = current[idx];
+    if (idx === -1 || !target || target.open === false) return;
+
+    const list = [...current];
+    list[idx] = {
+      ...target,
+      open: false,
+    };
+    this.rawToasts(list);
   }
 
   remove(id: string): void {
-    const idx = this.toasts.findIndex((t) => t.id === id);
-    if (idx !== -1) {
-      const [removed] = this.toasts.splice(idx, 1);
-      removed?.onDismiss?.();
-      this.notify();
-    }
+    const current = this.rawToasts();
+    const idx = current.findIndex((t) => t.id === id);
+    if (idx === -1) return;
+
+    const list = [...current];
+    const [removed] = list.splice(idx, 1);
+    this.rawToasts(list);
+    removed?.onDismiss?.();
   }
 
   clear(): void {
-    for (const t of this.toasts) {
+    const current = this.rawToasts();
+    if (current.length === 0) return;
+
+    this.rawToasts([]);
+    for (const t of current) {
       t.onDismiss?.();
     }
-    this.toasts = [];
-    this.notify();
   }
 
   update(id: string, patch: Partial<Omit<ToastEntry, "id">>): void {
-    const target = this.toasts.find((t) => t.id === id);
-    if (target) {
-      Object.assign(target, patch);
-      if (patch.placement || patch.mode || patch.orientation) {
-        target.placement = this.normalizePlacement(target);
+    const current = this.rawToasts();
+    const idx = current.findIndex((t) => t.id === id);
+    const prev = current[idx];
+    if (idx === -1 || !prev) return;
+
+    const updated: ToastEntry = {
+      ...prev,
+      ...patch,
+      id: prev.id,
+      updatedAt: Date.now(),
+    };
+    updated.placement = resolveToastPlacement(updated);
+
+    const evictedList: ToastEntry[] = [];
+    const nextList = current.filter((t, i) => {
+      if (i === idx) return true;
+      if (resolveToastPlacement(t) === updated.placement) {
+        evictedList.push(t);
+        return false;
       }
-      this.notify();
+      return true;
+    });
+
+    const targetIdx = nextList.findIndex((t) => t.id === id);
+    if (targetIdx !== -1) {
+      nextList[targetIdx] = updated;
+    }
+
+    this.rawToasts(nextList);
+    for (const evicted of evictedList) {
+      evicted.onDismiss?.();
     }
   }
 
-  notify(): void {
-    const computed = computeToastStackIndices(this.toasts, this.threshold);
-    this.onChange?.(computed);
+  destroy(): void {
+    this.clear();
+    this.stopEffect?.();
+    this.stopEffect = undefined;
+    this.onChange = undefined;
   }
 }
 
@@ -245,7 +278,6 @@ export interface ToastHostRecord {
   instance: any;
   pageId: string;
   manager: ToastManager;
-  visible: boolean;
   order: number;
 }
 
@@ -260,6 +292,7 @@ export interface ToastRegistry {
 }
 
 const ACTIVE_KEY = "*";
+const MAX_PENDING_PER_KEY = 20;
 
 const globalScope = (
   typeof globalThis !== "undefined"
@@ -304,26 +337,12 @@ function getPageIdOf(instance: any): string | undefined {
       const id = instance.__page__.getPageId();
       if (id !== undefined && id !== null && id !== "") return String(id);
     }
-    if (
-      instance.$page &&
-      typeof instance.$page.getPageId === "function"
-    ) {
+    if (instance.$page && typeof instance.$page.getPageId === "function") {
       const id = instance.$page.getPageId();
       if (id !== undefined && id !== null && id !== "") return String(id);
     }
   } catch {}
   return undefined;
-}
-
-function getTopPageId(): string | undefined {
-  if (typeof getCurrentPages !== "function") return undefined;
-  try {
-    const pages = getCurrentPages();
-    const top = pages[pages.length - 1];
-    return getPageIdOf(top);
-  } catch {
-    return undefined;
-  }
 }
 
 function findHostByPageId(pageId: string): ToastHostRecord | undefined {
@@ -336,17 +355,14 @@ function findHostByPageId(pageId: string): ToastHostRecord | undefined {
 
 export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
   if (owner) {
-    // 1. Direct host instance
     const own = registry.hostByInstance.get(owner);
     if (own) return own;
 
-    // 2. Owner has __cuiApp attached (page or component)
     if (owner.__cuiApp) {
       const appHost = registry.hostByInstance.get(owner.__cuiApp);
       if (appHost) return appHost;
     }
 
-    // 3. Owner has __cuiAppParent attached (relation)
     if (owner.__cuiAppParent) {
       const parentHost = registry.hostByInstance.get(owner.__cuiAppParent);
       if (parentHost) return parentHost;
@@ -360,7 +376,6 @@ export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
     }
   }
 
-  // 5. Active page check
   if (typeof getCurrentPages === "function") {
     try {
       const pages = getCurrentPages();
@@ -379,16 +394,8 @@ export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
     } catch {}
   }
 
-  const topPageId = getTopPageId();
-  if (topPageId) {
-    const host = findHostByPageId(topPageId);
-    if (host) return host;
-  }
-
-  // 6. Best visible host
   let best: ToastHostRecord | undefined;
   for (const host of registry.hosts) {
-    if (!host.visible) continue;
     if (!best || host.order > best.order) best = host;
   }
   return best ?? registry.hosts[registry.hosts.length - 1];
@@ -401,9 +408,12 @@ function withToastHost(owner: any, op: PendingToastOp): void {
     return;
   }
   const key = (owner && getPageIdOf(owner)) || ACTIVE_KEY;
-  const queue = registry.pending.get(key);
-  if (queue) queue.push(op);
-  else registry.pending.set(key, [op]);
+  const queue = registry.pending.get(key) ?? [];
+  if (queue.length >= MAX_PENDING_PER_KEY) {
+    queue.shift();
+  }
+  queue.push(op);
+  registry.pending.set(key, queue);
 }
 
 function flushPending(host: ToastHostRecord): void {
@@ -412,7 +422,9 @@ function flushPending(host: ToastHostRecord): void {
     const queue = registry.pending.get(key);
     if (!queue) continue;
     registry.pending.delete(key);
-    for (const op of queue) op(host);
+    for (const op of queue) {
+      op(host);
+    }
   }
 }
 
@@ -424,12 +436,15 @@ export function registerToastHost(
   if (!instance) return;
   const existing = registry.hostByInstance.get(instance);
   if (existing) {
-    if (onChange) existing.manager.setOnChange(onChange);
+    if (onChange) existing.manager.onChange = onChange;
     if (options?.max !== undefined) existing.manager.setMax(options.max);
+    existing.order = ++registry.orderCounter;
+    flushPending(existing);
     return;
   }
 
-  const pageId = getPageIdOf(instance) ?? `toast-host-${registry.hosts.length + 1}`;
+  const pageId =
+    getPageIdOf(instance) ?? `toast-host-${++registry.orderCounter}`;
   const manager = new ToastManager({
     max: options?.max ?? 2,
     onChange,
@@ -439,7 +454,6 @@ export function registerToastHost(
     instance,
     pageId,
     manager,
-    visible: true,
     order: ++registry.orderCounter,
   };
 
@@ -450,9 +464,16 @@ export function registerToastHost(
 
 export function unregisterToastHost(instance: any): void {
   if (!instance) return;
+  const record = registry.hostByInstance.get(instance);
+  if (record) {
+    record.manager.destroy();
+    registry.pending.delete(record.pageId);
+    registry.hostByInstance.delete(instance);
+  }
   const idx = registry.hosts.findIndex((h) => h.instance === instance);
-  if (idx !== -1) registry.hosts.splice(idx, 1);
-  registry.hostByInstance.delete(instance);
+  if (idx !== -1) {
+    registry.hosts.splice(idx, 1);
+  }
 }
 
 export function updateToastHostConfig(
@@ -471,18 +492,20 @@ export function addToast(
   owner?: any,
 ): string {
   const id = entry.id || `toast-${++registry.toastIdCounter}`;
+  const mode = entry.mode ?? "default";
   const rawColor = entry.color || "neutral";
   const color = rawColor === "error" ? "danger" : rawColor;
+
   const toastItem: ToastEntry = {
-    open: true,
-    mode: "default",
-    duration: entry.duration !== undefined ? entry.duration : 4000,
-    progress: entry.progress !== undefined ? entry.progress : true,
-    progressPosition: entry.progressPosition || "bottom",
-    variant: entry.variant || "outline",
     ...entry,
-    color,
     id,
+    mode,
+    color,
+    open: entry.open ?? true,
+    duration: entry.duration ?? (mode === "native" ? 1500 : 4000),
+    progress: entry.progress ?? mode !== "native",
+    progressPosition: entry.progressPosition ?? "bottom",
+    variant: entry.variant ?? "outline",
   };
 
   withToastHost(owner, (host) => {
@@ -520,12 +543,15 @@ export function updateToast(
   });
 }
 
-export function getToasts(owner?: any): ToastEntry[] {
+export function getToastManager(owner?: any): ToastManager | undefined {
   const host = findActiveToastHost(owner);
-  return host ? host.manager.getToasts() : [];
+  return host?.manager;
 }
 
 export function __resetToastRegistry(): void {
+  for (const host of registry.hosts) {
+    host.manager.destroy();
+  }
   registry.hosts.length = 0;
   registry.pending.clear();
   registry.toastIdCounter = 0;

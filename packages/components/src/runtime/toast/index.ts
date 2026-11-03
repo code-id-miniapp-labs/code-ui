@@ -24,21 +24,7 @@ const toastBehavior = createMachineBehavior({
   connect: connectToast,
   key: "toast",
   exportApi: true,
-  syncProps: [
-    "id",
-    "open",
-    "duration",
-    "mode",
-    "color",
-    "variant",
-    "orientation",
-    "placement",
-    "title",
-    "description",
-    "icon",
-    "close",
-    "actions",
-  ],
+  syncProps: ["id", "open", "duration", "actions"],
 });
 
 const relations: Record<string, WechatMiniprogram.Component.RelationOption> = {};
@@ -55,18 +41,18 @@ Component(
       virtualHost: true,
     },
 
-    data: {
-      progress: false,
-    },
-
     properties: createProperties(defaultToastProps, {
       className: {
         type: String,
         value: "",
       },
       progress: {
-        type: Boolean,
+        type: null,
         value: true,
+      },
+      progressPosition: {
+        type: String,
+        value: "bottom",
       },
       index: {
         type: Number,
@@ -79,30 +65,10 @@ Component(
     }),
 
     computed: {
-      resolvedMode() {
-        const api = this.data.toast;
-        return api?.mode ?? this.data.mode ?? "default";
-      },
-
-      resolvedTitle() {
-        const api = this.data.toast;
-        return api?.title !== undefined && api?.title !== ""
-          ? api.title
-          : this.data.title || "";
-      },
-
-      resolvedDescription() {
-        const api = this.data.toast;
-        return api?.description !== undefined && api?.description !== ""
-          ? api.description
-          : this.data.description || "";
-      },
-
       resolvedIcon() {
-        const api = this.data.toast;
-        const icon = api?.icon || this.data.icon;
+        const icon = this.data.icon;
         if (icon) return icon;
-        const color = api?.color || this.data.color;
+        const color = this.data.color;
         if (color === "success") return "check";
         if (color === "error" || color === "danger") return "close";
         if (color === "loading") return "loading";
@@ -110,15 +76,13 @@ Component(
       },
 
       classes() {
-        const api = this.data.toast;
-        const mode = api?.mode ?? this.data.mode ?? "default";
-        const rawColor = api?.color ?? this.data.color ?? "neutral";
+        const mode = this.data.mode || "default";
+        const rawColor = this.data.color || "neutral";
         const color = rawColor === "error" ? "danger" : rawColor;
-        const variant = api?.variant ?? this.data.variant ?? "outline";
-        const orientation =
-          api?.orientation ?? this.data.orientation ?? "horizontal";
-        const placement =
-          api?.placement ?? this.data.placement ?? "top";
+        const variant = this.data.variant || "outline";
+        const orientation = this.data.orientation || "horizontal";
+        const placement = this.data.placement || "top";
+        const progressPosition = this.data.progressPosition || "bottom";
 
         const themeFns = toastTheme({
           mode,
@@ -126,38 +90,48 @@ Component(
           variant,
           orientation,
           placement,
+          progressPosition,
         });
 
         return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
 
       progressStyle() {
-        const api = this.data.toast;
-        const duration = Number(api?.duration ?? this.data.duration ?? 4000);
+        const duration = Number(this.data.duration || 4000);
         if (duration <= 0) return "display: none;";
-        const isPaused = Boolean(api?.paused);
-        return `width: 100%; animation: cui-toast-progress ${duration}ms linear forwards; animation-play-state: ${isPaused ? "paused" : "running"};`;
+        const isPaused = Boolean(this.data.toast?.paused);
+        const playState = isPaused ? "paused" : "running";
+        return `width: 100%; animation: cui-toast-progress ${duration}ms linear forwards; -webkit-animation: cui-toast-progress ${duration}ms linear forwards; animation-play-state: ${playState}; -webkit-animation-play-state: ${playState};`;
       },
 
       resolvedProgressColor() {
-        const api = this.data.toast;
-        const rawColor = api?.color ?? this.data.color ?? "neutral";
+        const rawProgress = this.data.progress;
+        if (
+          typeof rawProgress === "object" &&
+          rawProgress !== null &&
+          "color" in rawProgress
+        ) {
+          const customColor = (rawProgress as { color?: string }).color;
+          if (customColor) {
+            return customColor === "error" ? "danger" : customColor;
+          }
+        }
+        const rawColor = this.data.color || "neutral";
         return rawColor === "error" ? "danger" : rawColor;
       },
 
       progressUi() {
         return {
-          root: "w-full overflow-hidden",
-          track: "bg-transparent h-0.5 rounded-none",
-          range: "rounded-none h-full",
+          root: "w-full h-full min-w-0 overflow-hidden",
+          track: "bg-transparent h-full min-w-0 rounded-none",
+          range: "rounded-none h-full min-w-0 transition-none",
         };
       },
 
       rootStyle() {
         const index = Number(this.data.index || 0);
         const offset = Number(this.data.offset || 0);
-        const api = this.data.toast;
-        const placement = api?.placement ?? this.data.placement ?? "top";
+        const placement = this.data.placement || "top";
 
         if (placement === "center") {
           return `--cui-toast-index:${index}; transform: translate3d(-50%, -50%, 0); z-index: ${100 + index};`;

@@ -321,6 +321,20 @@ For every runtime component:
 - [ ] If Skyline is supported, keep `aria-role`, `aria-label`, `aria-hidden`, and `aria-disabled` on the primary node and document that other ARIA attributes are WebView-only.
 - [ ] Re-run component tests and snapshot tests.
 
+### 1.9 Zero Prop-Echoing in Machine Connect (setData Payload Optimization)
+
+Component properties registered via `properties: createProperties(defaultProps)` already reside in `this.data` and are natively accessible in WXML templates (e.g. `{{title}}`, `{{description}}`, `{{color}}`, `{{variant}}`, `{{placement}}`).
+
+- [ ] Stop re-exporting static/component props on the `Api` object returned by `connect<Component>()`.
+- [ ] Ensure `connect()` returns only:
+  - FSM state and state-derived booleans (`state`, `open`, `visible`, `paused`, `loading`, `checked`).
+  - Dynamic interactive arrays (e.g. `actions` with bound action IDs and event parameters).
+  - Prop-getters and accessibility descriptors (`rootProps`, `closeTriggerProps`).
+  - Imperative action methods (`dismiss()`, `pause()`, `resume()`).
+- [ ] Remove redundant computed fallback resolvers in runtime `index.ts` (e.g. `resolvedTitle()`, `resolvedMode()`).
+- [ ] Bind component props directly in WXML (`{{title}}`, `{{color}}`) instead of fallback expressions (`{{toast.color || color}}`).
+- [ ] Eliminates duplicate memory allocation in `this.data` (`this.data.<prop>` vs `this.data.<machineKey>.<prop>`) and reduces `setData` IPC transfer payload by 20–40% per interaction.
+
 Estimated result:
 
 - 2–4 KB gzip saved across all components from attribute/ID cleanup; ARIA alignment itself is size-neutral.
