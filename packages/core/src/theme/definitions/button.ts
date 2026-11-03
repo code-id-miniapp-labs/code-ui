@@ -11,7 +11,7 @@ export default function buttonTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "relative inline-flex items-center justify-center font-sans font-medium select-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 transition-colors appearance-none",
+      root: "inline-flex rounded-md items-center justify-center font-medium select-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 transition-colors appearance-none",
       label: "truncate",
       icon: "shrink-0",
       spinner: "shrink-0",
@@ -39,35 +39,35 @@ export default function buttonTheme(options: ThemeOptions = {}) {
       },
       size: {
         xs: {
-          root: "h-7 px-2.5 text-xs rounded-lg gap-1.5",
+          root: "px-2 py-1 text-xs gap-1",
           icon: "w-3.5 h-3.5",
           spinner: "w-3.5 h-3.5",
           leadingIcon: "w-3.5 h-3.5",
           trailingIcon: "w-3.5 h-3.5",
         },
         sm: {
-          root: "h-8 px-3 text-xs rounded-lg gap-1.5",
+          root: "px-2.5 py-1.5 text-xs gap-1.5",
           icon: "w-4 h-4",
           spinner: "w-4 h-4",
           leadingIcon: "w-4 h-4",
           trailingIcon: "w-4 h-4",
         },
         md: {
-          root: "h-9 px-4 text-sm rounded-xl gap-2",
+          root: "px-2.5 py-1.5 text-sm gap-1.5",
           icon: "w-4 h-4",
           spinner: "w-4 h-4",
           leadingIcon: "w-4 h-4",
           trailingIcon: "w-4 h-4",
         },
         lg: {
-          root: "h-10 px-5 text-sm rounded-xl gap-2",
+          root: "px-3 py-2 text-sm gap-2",
           icon: "w-5 h-5",
           spinner: "w-5 h-5",
           leadingIcon: "w-5 h-5",
           trailingIcon: "w-5 h-5",
         },
         xl: {
-          root: "h-11 px-6 text-base rounded-2xl gap-2.5",
+          root: "px-3 py-2 text-base gap-2",
           icon: "w-5 h-5",
           spinner: "w-5 h-5",
           leadingIcon: "w-5 h-5",

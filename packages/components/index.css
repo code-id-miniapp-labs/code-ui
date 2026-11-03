@@ -6,3 +6,32 @@
   --color-accented: var(--color-neutral-200);
   --color-inverted: var(--color-neutral-900);
 }
+
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+/* WeChat MiniProgram button reset */
+button {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+button:not([size=mini]) {
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+}
+
+button::after {
+  border: none;
+}
+
+button.w-full,
+button[class*="w-full"],
+button[data-block="true"] {
+  width: 100%;
+}

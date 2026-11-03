@@ -6,7 +6,7 @@ export default defineConfig({
     collections: ["lucide", "tabler"],
     loading: "i-lucide-loader",
     check: "i-lucide-check",
-    close: "i-lucide-close",
+    close: "i-lucide-x",
     minus: "i-lucide-minus",
     chevronDown: "i-lucide-chevron-down",
   },
