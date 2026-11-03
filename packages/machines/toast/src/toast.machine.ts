@@ -18,10 +18,16 @@ const activeToastTransitions = {
     target: "dismissing" as const,
     actions: ["invokeOnClose" as const],
   },
-  TRIGGER_ACTION: {
-    target: "dismissing" as const,
-    actions: ["invokeOnAction" as const, "invokeOnClose" as const],
-  },
+  TRIGGER_ACTION: [
+    {
+      guard: "shouldCloseOnAction" as const,
+      target: "dismissing" as const,
+      actions: ["invokeOnAction" as const, "invokeOnClose" as const],
+    },
+    {
+      actions: ["invokeOnAction" as const],
+    },
+  ],
 };
 
 export const toastMachine: ToastMachine = createMachine<ToastSchema>({
@@ -124,6 +130,12 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
   },
 
   implementations: {
+    guards: {
+      shouldCloseOnAction: ({ event }) =>
+        event.type === "TRIGGER_ACTION" &&
+        Boolean((event.action as ToastAction)?.closeOnClick),
+    },
+
     actions: {
       invokeOnOpen: ({ prop }) => {
         prop("onOpenChange")?.({ open: true, id: prop("id") });

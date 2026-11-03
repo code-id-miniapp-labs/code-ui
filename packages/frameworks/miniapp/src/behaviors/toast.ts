@@ -6,6 +6,7 @@ export interface ToastAction {
   color?: string | undefined;
   variant?: string | undefined;
   id?: string | undefined;
+  closeOnClick?: boolean | undefined;
 }
 
 export type ToastSlotName =
