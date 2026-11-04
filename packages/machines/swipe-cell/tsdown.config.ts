@@ -1,4 +1,11 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { defineConfig } from "tsdown";
 
@@ -15,7 +22,15 @@ export default defineConfig({
       if (existsSync("src/wxs")) {
         mkdirSync("dist/wxs", { recursive: true });
         for (const file of readdirSync("src/wxs")) {
-          copyFileSync(join("src/wxs", file), join("dist/wxs", file));
+          if (!file.endsWith(".wxs")) continue;
+          const source = readFileSync(join("src/wxs", file), "utf8");
+          writeFileSync(
+            join("dist/wxs", file),
+            source.replace(
+              /require\(\s*['"][^'"]*\/dom\.wxs['"]\s*\)/g,
+              "require('./dom.wxs')",
+            ),
+          );
         }
       }
       const utilsDomWxs = resolve(process.cwd(), "../../utils/src/wxs/dom.wxs");
@@ -26,4 +41,3 @@ export default defineConfig({
     },
   },
 });
-

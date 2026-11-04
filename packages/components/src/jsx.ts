@@ -34,6 +34,13 @@ import type {
   ProgressProps,
   ProgressValueChangeDetails,
 } from "@code-ui/progress";
+import type {
+  PullDownRefreshChangeDetails,
+  PullDownRefreshDragDetails,
+  PullDownRefreshProps,
+  PullDownRefreshRefreshDetails,
+  PullDownRefreshScrollDetails,
+} from "@code-ui/pull-down-refresh";
 import type { QrCodeProps, QrCodeValueChangeDetails } from "@code-ui/qr-code";
 import type {
   RadioGroupProps,
@@ -456,6 +463,44 @@ export interface CuiProgressElementProps extends CuiCommonElementProps {
   ) => void;
 }
 
+export interface CuiPullDownRefreshElementProps extends CuiCommonElementProps {
+  ui?: PullDownRefreshProps["ui"];
+  value?: boolean | null;
+  defaultValue?: boolean;
+  disabled?: boolean;
+  threshold?: number;
+  maxPullDistance?: number;
+  refreshTimeout?: number;
+  successDuration?: number;
+  loadingTexts?: string[];
+  duration?: number;
+  showScrollbar?: boolean;
+  enableBackToTop?: boolean;
+  scrollIntoView?: string;
+  upperThreshold?: number;
+  lowerThreshold?: number;
+  scrollWithAnimation?: boolean;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<PullDownRefreshChangeDetails>,
+  ) => void;
+  onRefresh?: (
+    event: WechatMiniprogram.CustomEvent<PullDownRefreshRefreshDetails>,
+  ) => void | Promise<unknown>;
+  onTimeout?: (event: WechatMiniprogram.CustomEvent) => void;
+  onScroll?: (
+    event: WechatMiniprogram.CustomEvent<PullDownRefreshScrollDetails>,
+  ) => void;
+  onScrollToUpper?: (event: WechatMiniprogram.CustomEvent) => void;
+  onScrollToLower?: (event: WechatMiniprogram.CustomEvent) => void;
+  onDragStart?: (event: WechatMiniprogram.CustomEvent) => void;
+  onDrag?: (
+    event: WechatMiniprogram.CustomEvent<PullDownRefreshDragDetails>,
+  ) => void;
+  onDragEnd?: (
+    event: WechatMiniprogram.CustomEvent<PullDownRefreshDragDetails>,
+  ) => void;
+}
+
 export interface CuiQrCodeElementProps extends CuiCommonElementProps {
   ui?: QrCodeProps["ui"];
   value?: string;
@@ -678,7 +723,11 @@ export interface CuiToastElementProps extends CuiCommonElementProps {
   closeIcon?: string;
   actions?: ToastProps["actions"];
   progress?: boolean;
-  onOpenChange?: (event: WechatMiniprogram.CustomEvent<{ open: boolean }>) => void;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<{ open: boolean }>,
+  ) => void;
   onDismiss?: (event: WechatMiniprogram.CustomEvent) => void;
-  onAction?: (event: WechatMiniprogram.CustomEvent<{ action: any; index: number }>) => void;
+  onAction?: (
+    event: WechatMiniprogram.CustomEvent<{ action: any; index: number }>,
+  ) => void;
 }

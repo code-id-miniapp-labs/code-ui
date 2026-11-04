@@ -88,6 +88,12 @@ declare module "virtual:cui/theme/progress" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/pull-down-refresh" {
+  import type { default as pullDownRefreshTheme } from "@code-ui/core/src/theme/definitions/pull-down-refresh";
+  const theme: ReturnType<typeof pullDownRefreshTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/qr-code" {
   import type { default as qrCodeTheme } from "@code-ui/core/src/theme/definitions/qr-code";
   const theme: ReturnType<typeof qrCodeTheme>;

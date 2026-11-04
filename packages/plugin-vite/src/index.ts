@@ -363,7 +363,14 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
           updatedInBundle,
           appWrapperOpts,
         );
-        handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj, typedBundle);
+        if (this.meta.watchMode) {
+          handleTreeShake(
+            treeShakeOpts,
+            projectRoot,
+            viteConfigObj,
+            typedBundle,
+          );
+        }
 
         for (const [fileName, item] of Object.entries(typedBundle)) {
           if (

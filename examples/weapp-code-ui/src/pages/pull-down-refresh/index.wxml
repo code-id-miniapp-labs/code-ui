@@ -1,0 +1,16 @@
+<view class="h-screen">
+  <c-pull-down-refresh class="h-full" threshold="{{30}}" maxPullDistance="{{50}}" loadingTexts="{{loadingTexts}}" bind:refresh="onRefresh">
+    <view slot="header" class="px-4 pt-4 pb-2 bg-white">
+      <text class="text-lg font-bold">PullDownRefresh</text>
+      <text class="block text-xs text-neutral-500">
+        Drag down from the top to trigger a refresh.
+      </text>
+    </view>
+    <view class="p-4 space-y-3 pb-16">
+      <view wx:for="{{items}}" wx:key="id" class="p-4 bg-white border border-neutral-200 rounded-xl">
+        <text class="font-medium">{{item.title}}</text>
+        <text class="block text-xs text-neutral-500 mt-1">{{item.description}}</text>
+      </view>
+    </view>
+  </c-pull-down-refresh>
+</view>

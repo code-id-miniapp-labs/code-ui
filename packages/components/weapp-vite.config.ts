@@ -142,7 +142,12 @@ function syncWxsFiles(): Plugin {
         }
         for (const file of wxsFiles) {
           const fileName = path.basename(file);
-          const raw = fs.readFileSync(file, "utf8");
+          const raw = fs
+            .readFileSync(file, "utf8")
+            .replace(
+              /require\(\s*['"][^'"]*\/dom\.wxs['"]\s*\)/g,
+              "require('./dom.wxs')",
+            );
           const minified = raw
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/(^|[^:])\/\/.*/g, "$1")
