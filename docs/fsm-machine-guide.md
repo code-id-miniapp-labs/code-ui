@@ -3,10 +3,10 @@
 Reference for creating or refactoring machines in `packages/machines/<name>/src/<name>.machine.ts`.
 Read this before adding `watch`, new context fields, or new state transitions.
 
-## TL;DR — 11 rules
+## TL;DR — 13 rules
 
 1. **One writer per value.** A value lives in exactly one place: prop, context, computed, state, or ref.
-2. **Never mirror props into context inside `watch`.** `bindable` already re-reads props on `context.get` (`packages/frameworks/miniapp/src/bindable.ts:19-30,43`).
+2. **Never mirror props into context inside `watch`.** `bindable` already re-reads props lazily on `context.get` (see `bindable` in `packages/frameworks/miniapp/src/bindable.ts`).
 3. **Keep FSM state and context orthogonal.** State = mutually exclusive modes. Context = data. If one derives from the other, derive it with `computed`.
 4. **Derived data belongs in `computed`, never in `watch` or duplicate context keys.**
 5. **`watch` has only two jobs:** prop → FSM state sync, and imperative subscriptions (bus/form rebind). Nothing else.
@@ -16,6 +16,21 @@ Read this before adding `watch`, new context fields, or new state transitions.
 9. **Refs own handles.** Timers, buses, disposers, form bindings, and previous-value snapshots go in `refs`, with cleanup in `exit`.
 10. **`connect` is a read-only adapter.** No writes, no machine logic. Precompute WXML arrays there.
 11. **Zero prop-echoing in `connect` (Do not re-export component props on `Api`).** Component props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible in WXML templates directly as `{{title}}`, `{{color}}`, etc. `connect()` must never return static/component props on `Api`. Return only FSM state, state-derived booleans, dynamic prop getters, dynamic arrays (e.g. `actions`), and imperative methods.
+
+12. **Keep snapshots stable.** `connect()` runs on every notification and its output goes through `diffSnapshot` → `setData`. Return plain data only, reuse unchanged slices, and keep per-frame values out of context when WXS can own them (see [Performance and snapshot hygiene](#performance-and-snapshot-hygiene)).
+13. **The machine is the only place for logic.** Runtime `index.ts` stays a thin adapter (no timers, DOM measurement, or custom `observers`). Timers live in state-scoped `effects`; measurement is declarative or done in WXS (see `AGENTS.md`, rule 6).
+
+## When to create a machine
+
+Do not write a machine for components with no interaction state. Over-engineering costs bundle size and per-update CPU.
+
+| Component kind | Machine? | Examples |
+|---|---|---|
+| Presentational / container (only theme + props) | No. Theme in `packages/core`, runtime imports `../_shared/base` only | `card`, `chip`, `badge`, `avatar`, `divider`, `skeleton`, `icon`, `kbd`, `alert` |
+| Has interactive or timed state (open/closed, loading, drag, timers) | Yes | `button`, `drawer`, `pin-input`, `toast`, `tabs`, `dialog` |
+| Form control or parent/child relation | Yes, plus bus and relation behaviors | `checkbox`, `radio`, `stepper`, `form`, `input` |
+
+Rule of thumb: if the component has no mutually exclusive modes, no timers, and no events that change what it renders, it does not need a machine. If `progress` only renders a value from props, keep it presentational.
 
 ## Data flow
 
@@ -242,6 +257,32 @@ To achieve 60/120fps fluid dragging:
    - Remains the authoritative single source of truth for normalized values, clamping, form synchronization, and emitting `onChange`/`onChangeEnd`.
    - On `touchend` (or external `value` prop updates), data flows from FSM -> `setData` -> WXS `change:rect` / `change:value` to ensure convergence.
 
+## Performance and snapshot hygiene
+
+Machine cost is small. The expensive part is `setData`, which serializes across the JS and render threads. Output flows like this:
+
+```
+signals ──▶ connect() snapshot ──▶ toSerializableSnapshot (drops functions)
+        ──▶ diffSnapshot (flat delta paths) ──▶ nextTick batch ──▶ setData
+```
+
+What is already handled by the framework (`packages/frameworks/miniapp/src/connect.ts`, `packages/utils/src/diff.ts`):
+
+- Functions are stripped before diffing, so closures recreated by `connect()` do not create deltas.
+- Only changed paths are sent (`button.state`, `items[2].checked`).
+- Multiple updates in one tick coalesce into a single `setData`.
+
+What machine authors must still do:
+
+- **Return only what WXML reads.** Every extra field costs diffing and payload.
+- **Prefer stable shapes.** Keep the same keys across states. Removed or `undefined` keys force a whole-object write.
+- **Avoid large arrays that change length often.** A length change sends the whole array.
+- **No per-frame context writes** for drag, pull, or slider positions. Let WXS drive the view and report on start, end, and thresholds (see the gesture section below).
+- **No `watch` on the hot path.** Each read inside `watch` is a dependency that re-runs it.
+- **Add a no-op test.** A transition that changes nothing must produce a `null` delta.
+
+Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](./bundle-size-optimization.md).
+
 ## Refactoring playbook
 
 1. **Inventory writers.** `grep -n "context.set\|state.set\|refs.set" <machine>.ts`.
@@ -259,7 +300,8 @@ To achieve 60/120fps fluid dragging:
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
-| Prop-echoing in `connect` `Api` | `title`, `description`, `color`, `variant` re-exported in `Api` | Double memory in `this.data`, inflated `setData` IPC payload, and fallback clutter (`toast.title \|\| title`). Fix: Read props directly from WeChat component data in WXML and runtime. |
+| Prop-echoing in `connect` `Api` | `title`, `description`, `color`, `variant` re-exported in `Api` | See rule 11. Read props directly from component data in WXML and runtime. |
+| Unstable `connect` output | New objects or closures for unchanged slices; per-frame values in context | See rule 12. Reuse slices, return data-only snapshots, move drag values to WXS. |
 | Omitted controlled prop in `defaultProps` | MiniProgram `createProperties` creates no observer; parent `setData({ value })` fails to reach machine | Include every controlled prop in `defaultProps` (`value: null as any`) |
 | Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
 | Driving high-frequency drag gestures via JSCore `setData` | 16-50ms IPC roundtrip latency causes thumb/slider to lag behind touch gestures | Use WXS view driver to mutate DOM transform/width directly on Webview thread; throttle IPC event calls to machine |
@@ -312,7 +354,8 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
   }),
 
   computed: {
-    isDisabled: ({ context }) => Boolean(context.get("disabled")),
+    // read the prop directly; do not mirror it into context
+    isDisabled: ({ prop }) => Boolean(prop("disabled")),
   },
 
   // ONLY prop → state and imperative subscriptions
@@ -343,10 +386,18 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
   },
 
   states: {
-    idle: { tags: ["idle"] },
+    idle: { tags: ["idle"], on: { START: { target: "running" } } },
+    // timers belong to state-scoped effects; the cleanup runs on state exit
+    running: { tags: ["busy"], effects: ["autoStop"] },
   },
 
   implementations: {
+    effects: {
+      autoStop: ({ send }) => {
+        const id = setTimeout(() => send({ type: "STOP" }), 1000);
+        return () => clearTimeout(id);
+      },
+    },
     guards: {
       isInteractive: ({ computed }) => !computed("isDisabled"),
     },
@@ -400,3 +451,31 @@ it("syncs controlled props into state", async () => {
 ```
 
 Prefer asserting `api.*` / `computed(...)` over raw context keys; context is an implementation detail.
+
+Also cover these cases:
+
+```ts
+import { diffSnapshot } from "@code-ui/utils";
+
+// no-op transition produces no setData
+it("emits a null delta for a no-op event", () => {
+  const machine = new MiniappMachine(exampleMachine, {});
+  machine.start();
+  const before = connectExample(machine.service);
+  machine.send({ type: "SET_VALUE", value: "" }); // same as current
+  const after = connectExample(machine.service);
+  expect(diffSnapshot(before, after, "example")).toBeNull();
+  machine.stop();
+});
+
+// cleanup disposes timers and bus listeners
+it("cleans up on stop()", () => {
+  const machine = new MiniappMachine(exampleMachine, {});
+  machine.start();
+  machine.stop();
+  expect(machine.service.refs.get("busDisposers")).toEqual([]);
+});
+```
+
+- **Bus:** register a child, emit a group snapshot, assert the child state, then unlink (`undefined`) and assert the old listener is disposed.
+- **Controlled props:** call `updateProps` for every key in `defaultProps` and assert the machine reacts.

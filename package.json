@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "vitest bench --run",
+    "size": "node scripts/size-report.mjs",
     "lint": "oxlint packages",
     "lint:fix": "oxlint --fix packages",
     "format": "oxfmt packages",

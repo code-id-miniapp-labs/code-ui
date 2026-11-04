@@ -70,6 +70,45 @@ Attribute distribution across all WXML:
 
 Attribute cleanup realistically saves **2–4 KB gzip across all components**, or **1–2 KB for the reference set**. It does not close the ~43 KB gap to Vant. Its real value is smaller `setData` payloads and fewer WXML attributes to diff and render.
 
+## Measurement Log
+
+### 2026-11-04 — Per-component and per-chunk baseline (`pnpm size`)
+
+Script: `scripts/size-report.mjs` (reachability from each `runtime/<name>`, per-file `gzip -9`). Run after `pnpm --filter @code-ui/components build`.
+
+Sum of runtime component files: 121.0 KB gzip. Sum of all dist files: 159.4 KB gzip.
+
+Per-component own cost (gzip KB, own files only, excluding shared chunks):
+
+| Tier | Components |
+|---|---|
+| ≥ 5 KB | `form` 7.1, `qr-code` 6.9, `slider` 6.3, `pin-input` 5.3, `textarea` 5.2, `stepper` 5.2, `tabs` 5.2, `toast` 5.0, `progress` 5.0 |
+| 3–5 KB | `checkbox` 4.8, `swipe-cell` 4.5, `input` 4.5, `checkbox-group` 4.4, `accordion-item` 4.3, `stepper-item` 4.2, `radio-group` 4.0, `drawer` 3.9, `pull-down-refresh` 3.9, `switch` 3.7, `button` 3.6, `radio` 3.4, `tabs-item` 3.3, `form-field` 3.2, `accordion` 3.1 |
+| < 2 KB (presentational) | `avatar` 1.4, `divider` 1.3, `chip` 1.2, `badge` 1.0, `card` 1.0, `avatar-group` 0.9, `icon` 0.6, `skeleton` 0.6 |
+
+Findings:
+
+- The cost cliff is machine vs. no machine: presentational components own about 1 KB, interactive ones 3–7 KB. Every shared chunk below is reached by nearly all of them.
+- **Shared floor is about 13.7 KB gzip for a presentational component and about 19–24 KB for an interactive one** (`shared` column). A single `c-button` page costs about 23.3 KB total.
+- `toast` has the largest shared cost (29.8 KB) because it reaches `behaviors/app.js` (3.5 KB), `behaviors/toast.js` (1.7 KB) and the app runtime in addition to the machine runtime.
+- `progress` owns 5.0 KB with its machine. Decision: keep it a machine; reduce its size inside the machine instead (see Phase 3.2/3.3).
+
+Shared chunks (gzip KB, reached by N components):
+
+| Chunk | Gzip | N |
+|---|---:|---:|
+| `common.js` | 9.2 | 33 |
+| `weapp-vendors/miniapp-behavior.js` | 5.6 | 25 |
+| `behaviors/app.js` | 3.5 | 3 |
+| `computed-behavior.js` | 2.8 | 33 |
+| `alien-signals.js` | 1.7 | 33 |
+| `behaviors/form.js` | 1.7 | 10 |
+| `wxs/*-gesture.wxs` (each, single owner) | 1.1–1.7 | 1 |
+
+`tv` + class-conflict dedupe (`packages/components/src/utils/variants.ts`, 831 lines) bundled alone with esbuild: 9.7 KB minified, **3.7 KB gzip, about 40% of `common.js`**. It is a custom implementation (no `tailwind-merge`, no `tailwind-variants` dependency). Most of it is `computeUtilityKey`, the Tailwind conflict-group mapper. It runs on every slot resolution, including the default path, because built-in themes rely on variants overriding base classes (see Phase 3.1b).
+
+Conclusion: the biggest single lever in the shared base is the `tv` runtime, and the conflict mapper in particular. It cannot simply be made optional at runtime; the saving has to come from resolving conflicts at build time and then shrinking or omitting the mapper.
+
 ## Targets
 
 | Metric | Current | Target | Stretch |
@@ -347,11 +386,36 @@ Goal: stop paying for DOM measurement, event bridge, and other helpers in compon
 
 Current `common.js` is 28.9 KB raw / 9.1 KB gzip and contains multiple concerns.
 
+### Result of the first experiment (2026-11-04) — read before continuing
+
+Tooling: `scripts/chunk-breakdown.mjs <chunk.js>` (needs a build with `sourcemap: true`) lists the source modules inside a chunk.
+
+`common.js` contents (raw chars): `src/utils/variants.ts` 9.3 KB, `machines/form/dist/context.js` 6.9 KB, `utils/dist/index.js` 5.7 KB, `core/dist/index.js` 4.8 KB, `context/dist/index.js` 2.2 KB, `anatomy/dist/index.js` 0.6 KB, `src/utils/ui.ts` 0.1 KB. Every entry requires it, so a presentational `card` loads form context code it never uses.
+
+Experiment: add a `codeSplitting` group `theme-runtime` matching `src/utils/{variants,ui}.ts`. Rolldown then moved `core` and `utils` with it (22.2 KB raw) and left form context, `context`, and `anatomy` (6.9 KB raw) in `common.js`, which only machine components require.
+
+| Measurement | Before | After |
+|---|---:|---:|
+| `card` total reachable (gzip) | 14.7 KB | 12.7 KB |
+| `icon` / `skeleton` / `badge` | 14.4 / 14.3 / 14.8 KB | 12.4 / 12.3 / 12.8 KB |
+| `button` total reachable | 23.3 KB | 23.8 KB |
+| Most interactive components | — | +0.4 to +0.7 KB |
+| Sum of all dist files | 159.4 KB | 161.5 KB |
+
+Conclusion: **splitting `common.js` does not reduce app size.** Package size is the union of everything the app uses. An app that uses both `card` and `button` loads both chunks, so a split only adds per-chunk overhead and loses shared gzip context. The split only helps a page that uses presentational components alone, and only if the base library supports per-page injection (`lazyCodeLoading: "requiredComponents"`, about 2.11.1+). It is a startup/evaluation optimization, not a byte optimization. The experiment was reverted.
+
+Implications for the plan:
+
+- Byte reduction must remove code, not move it. Candidates found in `common.js`: the `tv` conflict mapper (3.7 KB gzip, Phase 3.1b), `utils/dist/index.js` (5.7 KB raw; audit which exports are actually used), and the form context (6.9 KB raw; used only by form-bound machines but shipped to all).
+- If startup evaluation matters more than bytes, keep this split and enable `lazyCodeLoading`. This needs a newer base library than 2.3.5.
+- The `form-runtime` group (`machines/form/dist` + `context/dist`) was tried separately and produced a 38.9 KB chunk required by every component; do not use that regex.
+
 ### 2.1 Analyze the chunk
 
-- [ ] Run `pnpm --filter @code-ui/components analyze`.
-- [ ] Identify which modules are reachable from each component.
-- [ ] Split `common.js` by concern:
+- [x] Identify which modules are in `common.js` (`scripts/chunk-breakdown.mjs`).
+- [ ] Audit `utils/dist/index.js`: list which exports the runtime reaches and whether `@code-ui/utils` can be imported through subpaths so unused helpers drop out.
+- [ ] Audit why `core/dist/index.js` ships machine code to presentational components (`ui.ts` only needs `getConfig`/`getComponentConfig`); a `@code-ui/core/config` subpath entry would let it tree-shake.
+- [ ] Split `common.js` by concern only if lazy code loading is adopted (see conclusion above).
   - `core`: signals bridge, computed behavior, normalization, diff
   - `theme`: `tv`, `cn`, `escape` — likely needed by all components
   - `dom`: `createSelectorQuery`, rect, scroll, viewport measurement
@@ -393,17 +457,32 @@ Estimated result:
 
 Goal: reduce the code generated for each interactive component without removing FSM or `tv`.
 
-### 3.1 Make `progress` presentational
+### 3.1 `progress` stays a machine — shrink it instead
 
-`progress` is currently 10.5 KB raw / 5.0 KB gzip in the reference bundle. It has no meaningful mutually exclusive modes.
+Decision (2026-11-04): keep `progress` as a machine. It owns 5.0 KB gzip, so reduce size inside the machine rather than removing it.
 
-- [ ] Confirm it does not need FSM states or transitions.
-- [ ] Move its value derivation into `computed` / `connect`, or a presentational helper.
-- [ ] Remove the machine dependency if it is not required.
+- [ ] Audit `progress` machine states, computed values, and connect output for unused fields.
+- [ ] Apply the connect/theme consolidation from 3.2 and 3.3 first and re-measure.
 - [ ] Preserve the public API and class output.
 - [ ] Add snapshot tests before and after.
 
-Expected saving: 2–3 KB gzip in the reference bundle.
+### 3.1b `tv` conflict mapper: build-time resolution (revised after measurement)
+
+Measured: `variants.ts` is about 3.7 KB gzip, roughly 40% of `common.js`, and most of that is the Tailwind conflict mapper (`computeUtilityKey`).
+
+**Correction (2026-11-04):** the original idea was to load the mapper only when `ui`/`class` overrides are present. That is not valid. `mergeRaw` runs the dedupe on every call, and themes rely on it: evaluating every variant combination of every shipped theme showed that about 18% of slot outputs (9,300 of 52,518) contain conflicts between different tokens that the mapper resolves (for example a size variant overriding a base class, as in `accordionItem` with `size: "sm"`). The default path therefore depends on it. Also, a lazily `require`d chunk still counts toward package size, so lazy evaluation would not reduce bytes.
+
+Revised plan:
+
+- [ ] In `plugin-vite`, resolve conflicts at build time: emit each theme with its default-path slot strings already deduped (a per-theme lookup keyed by variant combination, or pre-merged variant and compound entries).
+- [ ] At runtime, the default path becomes a lookup or plain `cx` join with no mapper call. The mapper is called only when `ui`, `class`, or global overrides are present. This is a CPU win and is the prerequisite for any later byte win.
+- [ ] Byte reduction then needs one of: (a) make `computeUtilityKey` smaller (table-driven prefix map instead of branches), or (b) have the plugin detect whether any WXML in the consuming project uses `ui=`/`class=` on code-ui components and omit the mapper when none do. Measure both before choosing.
+- [ ] Keep exact class output for the default path (snapshot test comparing current `resolveSlots` against the new path for every variant combination).
+- [ ] Keep `ui`/`class` override behavior identical, including conflict replacement (`text-red-500` replacing `text-white`).
+- [ ] Remove the duplicated evaluation logic between `tvFn` and `tvFn.__raw` in `variants.ts` (about 100 lines copied); gzip already compresses duplicates well, so this is a maintenance win more than a size win.
+- [ ] Re-measure `common.js` and per-component `theme` modules. Lookup tables must not grow `own` size more than they save, because they add data per theme.
+
+Expected saving: unknown until (a) or (b) is measured. Do not assume the earlier 1.5–3 KB figure.
 
 ### 3.2 Consolidate connect and attribute builders
 
@@ -426,17 +505,16 @@ Keep `tv`, but reduce the amount of theme data shipped per component.
 
 ### 3.4 Production minification
 
-- [ ] Verify `process.env.NODE_ENV` branches are replaced and dead-code-eliminated in the WeChat build.
-- [ ] Remove debug logging and development-only guards from production output.
-- [ ] Evaluate the commented `terserOptions` in `packages/components/weapp-vite.config.ts`:
-  - `toplevel: true`
-  - `passes: 3`
-  - `drop_console: true`
-  - module-level mangling
-- [ ] Measure build time, output size, and runtime behavior before enabling.
-- [ ] Do not enable property mangling globally. If used, restrict it to internal machine fields and add regression tests.
+Result (2026-11-04): **no gain.** Building with `minify: "terser"` and the prepared options (`toplevel`, `passes: 3`, `drop_console`, `drop_debugger`, toplevel mangle) produced 159.6 KB gzip across dist versus 159.4 KB with the default minifier, and the main package report went from 478 KB to 481 KB. The default oxc minifier is already near the floor for this code. The terser options are left out of `weapp-vite.config.ts` (a comment records the measurement).
 
-Estimated result: 4–8 KB gzip for the reference bundle.
+Leftover dev-only code in production output is small: `console.warn`/`console.error` in `computed-behavior.js` and `bindable`/`machine.debug` `console.log` calls in `weapp-vendors/miniapp-behavior.js`. There is no `process.env.NODE_ENV` or `__DEV__` residue.
+
+- [x] Evaluate the commented `terserOptions` — measured, no benefit, not adopted.
+- [x] Verify `process.env.NODE_ENV` branches — none remain in output.
+- [ ] Optional: gate `debug` logging in `bindable`/`machine` behind a build-time constant so it is removed from production (expected saving: a few hundred bytes).
+- [ ] Do not enable property mangling globally.
+
+Estimated result revised: under 0.5 KB. The earlier 4–8 KB estimate was wrong; further savings must come from structural changes (Phases 2, 3.1b, 3.2, 3.3) rather than minifier settings.
 
 ## Phase 4 — CSS Reduction
 
@@ -449,6 +527,68 @@ The demo `app.wxss` is 132.2 KB raw / 16.5 KB gzip. It is generated by Tailwind 
 - [ ] Add a CSS budget: <=13 KB gzip for the reference app.
 - [ ] Consider shipping a prebuilt minimal utility CSS for consumers who do not use Tailwind directly.
 - [ ] Do not replace Tailwind classes with per-component WXSS; it would increase total CSS and break `tv` overrides.
+
+## Phase 4.5 — Runtime CPU and `setData` Performance
+
+Bundle size is not the same as runtime cost. The signal graph (alien-signals), FSM transitions, and `tv` are cheap compared to a `setData` call, which serializes across the JS and render threads. This phase targets that boundary.
+
+### Already in place (do not redo)
+
+- `diffSnapshot` (`packages/utils/src/diff.ts`) sends flat delta paths (`button.state`, `items[2].checked`) and skips unchanged values.
+- `connectToPage` (`packages/frameworks/miniapp/src/connect.ts`) strips functions via `toSerializableSnapshot` before diffing, so closures recreated by `connect()` do not produce deltas.
+- Deltas are coalesced and flushed once per tick via `nextTick(flushSetData)`.
+
+### 4.5.1 Skip rebuilding unchanged snapshots (highest impact)
+
+Today `update()` runs the full `connect()`, `toSerializableSnapshot`, and `diffSnapshot` on every machine notification. The diff saves IPC cost, not JS-thread cost.
+
+- [ ] Measure `update()` duration for slider, swipe-cell, pin-input, and progress during continuous interaction.
+- [ ] Skip `update()` when the notification did not change any signal read by `connect()` (version or dirty check on the subscribed signals).
+- [ ] Cache `rootProps`/`labelProps` objects per (state, variant) key so `connect()` returns stable references and `isEqual` short-circuits on `Object.is`.
+
+### 4.5.2 Make diffing cheaper
+
+- [ ] `isEqual` compares functions with `toString()`. This is expensive and only needed if functions reach it. Since `toSerializableSnapshot` already strips them, strip first and drop the function branch on the hot path.
+- [ ] `toSerializableSnapshot` allocates a `WeakSet` and a per-object copy on every update. Reuse one `WeakSet` per instance, or build the data-only snapshot directly in `connect()` and expose methods separately.
+- [ ] In `diffSnapshot`, a changed array length sends the whole array. For data-driven lists (`items` in tabs, checkbox-group, accordion) consider keyed or append-only deltas.
+- [ ] Run `isEqual` once per key. `diffSnapshot` currently compares, then recurses and compares again for nested objects.
+
+### 4.5.3 Memoize `tv` and `resolveSlots`
+
+- [ ] Memoize `resolveSlots` per component instance on (variant inputs, `ui`, `class`) and skip it when nothing changed.
+- [ ] Expose the result as a computed signal so it recomputes only when an input signal changes.
+- [ ] Cache class-merge results globally by key for common combinations (for example `solid/primary/md`), since many instances share them.
+- [ ] Send only slots whose class string changed (already handled by the diff once the result is stable).
+- [ ] Benchmark compound-variant growth: `createColorCompoundVariants` is O(colors × variants) per theme.
+
+### 4.5.4 High-frequency gestures
+
+Continuous drag produces one `setData` per event even with the diff.
+
+- [ ] Move continuous visual updates (drag offset, pull distance, slider thumb position) to WXS on the render thread, as `pull-down-refresh` already does.
+- [ ] Send state to JS only on start, end, and threshold crossings.
+- [ ] Throttle remaining updates to one `setData` per frame.
+- [ ] Prefer CSS transitions or animations over per-frame JS for progress and spinner effects.
+
+### 4.5.5 Lists and large pages
+
+- [ ] Verify that 50+ instances of `c-button`/`c-checkbox` on one page do not exceed one `setData` per instance at mount.
+- [ ] Consider lazy machine creation for off-screen instances.
+- [ ] Avoid `watch` on the hot path (see `docs/fsm-machine-guide.md`).
+
+### 4.5.6 Instrumentation
+
+- [ ] Add a dev-only counter for `setData` calls and payload bytes per component (JSON size of the delta).
+- [ ] Add a test that a no-op transition yields a `null` delta for every machine.
+- [ ] Add a benchmark page in `examples/weapp-code-ui` rendering 50 buttons and 50 checkboxes, recording mount time and `setData` count.
+- [ ] Compare against a Vant Weapp baseline using the same page.
+- [ ] Add budgets: no more than 1 `setData` per interaction per component, and payload at most 1 KB for state toggles.
+
+Estimated result:
+
+- 20–50% less JS-thread time per update in high-frequency components (4.5.1–4.5.2).
+- Smooth drag through WXS, with no per-frame IPC (4.5.4).
+- Fewer recomputations of theme classes (4.5.3).
 
 ## Phase 5 — CI, Documentation, and Versioning
 
@@ -479,7 +619,8 @@ The demo `app.wxss` is 132.2 KB raw / 16.5 KB gzip. It is generated by Tailwind 
 | 6 | `progress` presentational + connect consolidation | 3–5 KB |
 | 7 | Theme config compaction + production minification | 4–8 KB |
 | 8 | CSS budget and Tailwind scan cleanup | 3–5 KB |
-| 9 | Docs, migration notes, AGENTS update | 0 KB |
+| 9 | Runtime perf: `setData` instrumentation, `update()` skipping, `resolveSlots` memoization, WXS gestures | 0 KB (CPU/IPC only) |
+| 10 | Docs, migration notes, AGENTS update | 0 KB |
 
 ## Definition of Done
 
