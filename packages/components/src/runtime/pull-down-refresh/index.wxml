@@ -1,0 +1,17 @@
+<wxs src="../../.wxs/machines/pull-down-refresh/src/wxs/pull-down-refresh-gesture.wxs" module="gesture" />
+<scroll-view id="{{pullDownRefresh.rootProps.id}}" class="{{classes.root}}" data-scope="pull-down-refresh" data-part="root" data-state="{{pullDownRefresh.state}}" data-disabled="{{pullDownRefresh.disabled}}" data-refreshing="{{pullDownRefresh.refreshing}}" data-at-top="{{pullDownRefresh.atTop}}" data-track-id="{{pullDownRefresh.trackProps.id}}" data-tips-id="{{pullDownRefresh.tipsProps.id}}" data-threshold="{{pullDownRefresh.threshold}}" data-max-distance="{{pullDownRefresh.maxPullDistance}}" data-duration="{{pullDownRefresh.duration}}" data-enabled="{{pullDownRefresh.canPull}}" scroll-y enhanced bounces="{{false}}" enable-back-to-top="{{enableBackToTop}}" scroll-into-view="{{scrollIntoView}}" upper-threshold="{{upperThreshold}}" lower-threshold="{{lowerThreshold}}" show-scrollbar="{{showScrollbar}}" scroll-with-animation="{{scrollWithAnimation}}" bindtouchstart="{{gesture.onTouchStart}}" bindtouchmove="{{gesture.onTouchMove}}" bindtouchend="{{gesture.onTouchEnd}}" bindtouchcancel="{{gesture.onTouchCancel}}" bindscroll="handleScroll" bindscrolltoupper="handleScrollToUpper" bindscrolltolower="handleScrollToLower">
+  <view id="{{pullDownRefresh.headerProps.id}}" class="{{classes.header}}" data-scope="pull-down-refresh" data-part="header">
+    <slot name="header" />
+  </view>
+  <view id="{{pullDownRefresh.trackProps.id}}" class="{{classes.track}}" data-scope="pull-down-refresh" data-part="track" data-state="{{pullDownRefresh.state}}" data-pulling="{{pullDownRefresh.pulling}}" data-armed="{{pullDownRefresh.armed}}" data-offset="{{pullDownRefresh.trackProps['data-offset']}}" data-tips-id="{{pullDownRefresh.tipsProps.id}}" data-threshold="{{pullDownRefresh.threshold}}" data-max-distance="{{pullDownRefresh.maxPullDistance}}" data-duration="{{pullDownRefresh.duration}}" bar-height="{{pullDownRefresh.barHeight}}" change:bar-height="{{gesture.onBarHeightChange}}" style="{{pullDownRefresh.trackStyle}}">
+    <view id="{{pullDownRefresh.tipsProps.id}}" class="{{classes.tips}}" data-scope="pull-down-refresh" data-part="tips" data-state="{{pullDownRefresh.state}}" role="{{pullDownRefresh.tipsProps.role}}" aria-live="{{pullDownRefresh.tipsProps['aria-live']}}" style="{{pullDownRefresh.tipsStyle}}">
+      <c-icon wx:if="{{pullDownRefresh.status === 2}}" name="{{loadingIcon}}" className="{{classes.indicator}}" />
+      <view wx:if="{{pullDownRefresh.text}}" class="{{classes.text}}">
+        {{pullDownRefresh.text}}
+      </view>
+    </view>
+    <view id="{{pullDownRefresh.contentProps.id}}" class="{{classes.content}}" data-scope="pull-down-refresh" data-part="content">
+      <slot />
+    </view>
+  </view>
+</scroll-view>

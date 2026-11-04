@@ -46,6 +46,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/progress/src",
       ),
+      "@code-ui/pull-down-refresh": resolve(
+        import.meta.dirname,
+        "packages/machines/pull-down-refresh/src",
+      ),
       "@code-ui/qr-code": resolve(
         import.meta.dirname,
         "packages/machines/qr-code/src",

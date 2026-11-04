@@ -53,7 +53,11 @@ describe("MiniappMachine Event & Promise Interception", () => {
     expect(typeof onTapFn).toBe("function");
 
     const returnedPromise = onTapFn?.({});
-    expect(returnedPromise !== null && typeof returnedPromise === "object" && typeof (returnedPromise as any).then === "function").toBe(true);
+    expect(
+      returnedPromise !== null &&
+        typeof returnedPromise === "object" &&
+        typeof (returnedPromise as any).then === "function",
+    ).toBe(true);
 
     resolveAction();
     await returnedPromise;
@@ -91,6 +95,36 @@ describe("MiniappMachine Event & Promise Interception", () => {
     expect(result).toBe(pending);
 
     resolveAction();
+    await result;
+    machine.stop();
+  });
+
+  it("captures a custom event handler promise when detail exposes setPromise", async () => {
+    let resolveRefresh!: () => void;
+    const pending = new Promise<void>((res) => {
+      resolveRefresh = res;
+    });
+    const page: Record<string, any> = {
+      onRefresh: vi.fn(() => pending),
+    };
+    (globalThis as any).getCurrentPages = () => [page];
+
+    const component = {
+      selectOwnerComponent: () => null,
+      triggerEvent: vi.fn(() => {
+        page.onRefresh();
+      }),
+    };
+
+    const machine = new MiniappMachine(createSchema(), { component });
+    machine.start();
+
+    const result = (machine.prop as any)("onRefresh")({
+      setPromise: vi.fn(),
+    }) as Promise<void>;
+    expect(result).toBe(pending);
+
+    resolveRefresh();
     await result;
     machine.stop();
   });
@@ -161,4 +195,3 @@ describe("MiniappMachine Event & Promise Interception", () => {
     machine.stop();
   });
 });
-

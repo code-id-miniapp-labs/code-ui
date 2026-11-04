@@ -1,4 +1,4 @@
-var dom = require('./dom.wxs');
+var dom = require('../../../../utils/src/wxs/dom.wxs');
 
 var startX = 0;
 var startY = 0;

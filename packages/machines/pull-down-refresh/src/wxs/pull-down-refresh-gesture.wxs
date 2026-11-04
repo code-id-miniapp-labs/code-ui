@@ -1,0 +1,260 @@
+var dom = require('../../../../utils/src/wxs/dom.wxs');
+
+var startY = 0;
+var currentOffset = 0;
+var isDragging = false;
+
+var _trackEl = null;
+var _tipsEl = null;
+var _threshold = 50;
+var _maxDistance = 80;
+var _duration = 300;
+
+var EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+var _throttledCallMove = dom.throttle(function(ownerInstance, data) {
+  if (ownerInstance) {
+    ownerInstance.callMethod('handleTouchMove', data);
+  }
+}, 16);
+
+function _toNumber(value, fallback) {
+  var parsed = Number(value);
+  return isNaN(parsed) ? fallback : parsed;
+}
+
+function _isDisabled(dataset) {
+  return dataset.disabled === true || dataset.disabled === 'true';
+}
+
+function _isEnabled(dataset) {
+  if (_isDisabled(dataset)) return false;
+  return !(dataset.enabled === false || dataset.enabled === 'false');
+}
+
+function _readConfig(dataset) {
+  _threshold = Math.max(0, _toNumber(dataset.threshold, 50));
+  _maxDistance = Math.max(0, _toNumber(dataset.maxDistance, 80));
+  _duration = Math.max(0, _toNumber(dataset.duration, 300));
+}
+
+function _selectEls(ownerInstance, dataset) {
+  _trackEl = dataset.trackId
+    ? dom.selectEl(ownerInstance, '#' + dataset.trackId)
+    : null;
+  _tipsEl = dataset.tipsId
+    ? dom.selectEl(ownerInstance, '#' + dataset.tipsId)
+    : null;
+}
+
+function _clampOffset(offset) {
+  if (offset <= 0) return 0;
+  return offset > _maxDistance ? _maxDistance : offset;
+}
+
+function _applyDrag(rawOffset) {
+  var offset = _clampOffset(rawOffset);
+  var tipsHeight = Math.min(offset, _threshold);
+
+  if (_trackEl) {
+    _trackEl.setStyle(
+      'transition: none; transform: translate3d(0, ' + offset + 'px, 0);'
+    );
+  }
+  if (_tipsEl) {
+    _tipsEl.setStyle('transition: none; height: ' + tipsHeight + 'px;');
+  }
+
+  return offset;
+}
+
+function _animateTo(offset) {
+  var tipsHeight = Math.min(offset, _threshold);
+  var timing = 'transition: transform ' + _duration + 'ms ' + EASE + ';';
+  var tipsTiming = 'transition: height ' + _duration + 'ms ' + EASE + ';';
+
+  if (_trackEl) {
+    _trackEl.setStyle(
+      timing + ' transform: translate3d(0, ' + offset + 'px, 0);'
+    );
+  }
+  if (_tipsEl) {
+    _tipsEl.setStyle(tipsTiming + ' height: ' + tipsHeight + 'px;');
+  }
+}
+
+function _resetGesture() {
+  _trackEl = null;
+  _tipsEl = null;
+  isDragging = false;
+  currentOffset = 0;
+  startY = 0;
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
+}
+
+function onTouchStart(event, ownerInstance) {
+  var touch = dom.getTouch(event);
+  var dataset = dom.getDataset(event);
+  if (!touch) return;
+
+  // Always capture a fresh baseline for the gesture, even when pulling is not
+  // available yet (refreshing, success hold, or list scrolled down). Otherwise
+  // the next pull would be measured against the start of an older gesture and
+  // need several drags before it can reach the threshold.
+  _readConfig(dataset);
+  _selectEls(ownerInstance, dataset);
+
+  startY = touch.clientY;
+  currentOffset = 0;
+  isDragging = false;
+
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
+}
+
+function onTouchMove(event, ownerInstance) {
+  var touch = dom.getTouch(event);
+  var dataset = dom.getDataset(event);
+  if (!touch) return;
+
+  if (!isDragging) {
+    // The pull may only begin while the list is idle at the top. Until then,
+    // keep re-arming the baseline so a gesture that becomes eligible mid-drag
+    // (e.g. a refresh that just finished) starts from the current touch point.
+    if (!_isEnabled(dataset)) {
+      startY = touch.clientY;
+      return;
+    }
+  } else if (_isDisabled(dataset)) {
+    return;
+  }
+
+  var offset = touch.clientY - startY;
+  if (offset <= 0) {
+    if (isDragging) {
+      currentOffset = 0;
+      _applyDrag(0);
+      _throttledCallMove(ownerInstance, { offset: 0 });
+    }
+    return;
+  }
+
+  if (!isDragging) {
+    isDragging = true;
+    ownerInstance.callMethod('handleTouchStart', {
+      clientY: touch.clientY,
+      startY: startY
+    });
+  }
+
+  currentOffset = _applyDrag(offset);
+  _throttledCallMove(ownerInstance, { offset: offset });
+}
+
+function onTouchEnd(event, ownerInstance) {
+  if (!isDragging) {
+    _resetGesture();
+    return;
+  }
+
+  var touch = dom.getChangedTouch(event);
+  var offset = touch ? touch.clientY - startY : currentOffset;
+  if (offset < 0) offset = 0;
+
+  var effectiveOffset = _clampOffset(offset);
+  var passed = effectiveOffset >= _threshold;
+  var target = passed ? _threshold : 0;
+
+  _animateTo(target);
+
+  isDragging = false;
+  currentOffset = target;
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
+
+  ownerInstance.callMethod('handleTouchEnd', {
+    offset: offset,
+    passed: passed
+  });
+
+  _trackEl = null;
+  _tipsEl = null;
+}
+
+function onTouchCancel(event, ownerInstance) {
+  if (!isDragging) {
+    _resetGesture();
+    return;
+  }
+
+  _animateTo(0);
+
+  isDragging = false;
+  currentOffset = 0;
+  if (_throttledCallMove && _throttledCallMove.reset) {
+    _throttledCallMove.reset();
+  }
+
+  ownerInstance.callMethod('handleTouchEnd', {
+    offset: 0,
+    passed: false
+  });
+
+  _trackEl = null;
+  _tipsEl = null;
+}
+
+function onBarHeightChange(newValue, oldValue, ownerInstance, instance) {
+  if (isDragging) return;
+
+  var trackEl =
+    instance ||
+    _trackEl ||
+    dom.selectEl(ownerInstance, '[data-part="track"]');
+  if (!trackEl) return;
+
+  var dataset = trackEl.getDataset ? trackEl.getDataset() : {};
+  var threshold = Math.max(0, _toNumber(dataset.threshold, _threshold));
+  var maxDistance = Math.max(0, _toNumber(dataset.maxDistance, _maxDistance));
+  var duration = Math.max(0, _toNumber(dataset.duration, _duration));
+  var barHeight = _toNumber(newValue, 0);
+
+  if (barHeight < 0) barHeight = 0;
+  if (barHeight > maxDistance) barHeight = maxDistance;
+
+  var tipsEl = dataset.tipsId
+    ? dom.selectEl(ownerInstance, '#' + dataset.tipsId)
+    : _tipsEl;
+  var tipsHeight = Math.min(barHeight, threshold);
+  var isInitial = oldValue === undefined || oldValue === null;
+
+  if (isInitial) {
+    trackEl.setStyle('transform: translate3d(0, ' + barHeight + 'px, 0);');
+    if (tipsEl) {
+      tipsEl.setStyle('height: ' + tipsHeight + 'px;');
+    }
+    return;
+  }
+
+  var timing = 'transition: transform ' + duration + 'ms ' + EASE + ';';
+  var tipsTiming = 'transition: height ' + duration + 'ms ' + EASE + ';';
+
+  trackEl.setStyle(
+    timing + ' transform: translate3d(0, ' + barHeight + 'px, 0);'
+  );
+  if (tipsEl) {
+    tipsEl.setStyle(tipsTiming + ' height: ' + tipsHeight + 'px;');
+  }
+}
+
+module.exports = {
+  onTouchStart: onTouchStart,
+  onTouchMove: onTouchMove,
+  onTouchEnd: onTouchEnd,
+  onTouchCancel: onTouchCancel,
+  onBarHeightChange: onBarHeightChange
+};

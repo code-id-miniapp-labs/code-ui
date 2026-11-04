@@ -164,12 +164,18 @@ export function createEventBridge(component: any, eventName: string) {
     detail?: any,
     options?: WechatMiniprogram.Component.TriggerEventOption,
   ): Promise<any> | undefined => {
+    const supportsAsyncDetail =
+      detail &&
+      typeof detail === "object" &&
+      typeof detail.setPromise === "function";
+    const canCaptureAsync = isAction || Boolean(supportsAsyncDetail);
+
     let asyncPromise: Promise<any> | undefined;
     const capture = (promise: Promise<any>) => {
       asyncPromise = promise;
     };
 
-    if (isAction && detail && typeof detail === "object") {
+    if (canCaptureAsync && detail && typeof detail === "object") {
       const origSetPromise = detail.setPromise;
       try {
         Object.defineProperty(detail, "setPromise", {
@@ -186,7 +192,7 @@ export function createEventBridge(component: any, eventName: string) {
       }
     }
 
-    const owner = isAction ? resolveOwner(component) : undefined;
+    const owner = canCaptureAsync ? resolveOwner(component) : undefined;
     const restore =
       owner && typeof owner === "object"
         ? interceptOwnerPromises(owner, capture)

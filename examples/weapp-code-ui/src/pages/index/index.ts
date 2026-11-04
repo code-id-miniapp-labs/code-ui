@@ -65,6 +65,13 @@ Page({
         path: "/pages/progress/index",
       },
       {
+        id: "pull-down-refresh",
+        name: "PullDownRefresh",
+        desc: "Gesture-driven pull-to-refresh scroll container with configurable threshold, loading states, and a success phase.",
+        badge: "Interactive",
+        path: "/pages/pull-down-refresh/index",
+      },
+      {
         id: "switch",
         name: "Switch",
         desc: "Toggle switch, controlled checked, custom colors, sizes, and Form link.",

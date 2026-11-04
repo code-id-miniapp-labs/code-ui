@@ -22,6 +22,7 @@
     "cui-input": "runtime/input/index",
     "cui-pin-input": "runtime/pin-input/index",
     "cui-progress": "runtime/progress/index",
+    "cui-pull-down-refresh": "runtime/pull-down-refresh/index",
     "cui-qr-code": "runtime/qr-code/index",
     "cui-radio": "runtime/radio/index",
     "cui-radio-group": "runtime/radio-group/index",

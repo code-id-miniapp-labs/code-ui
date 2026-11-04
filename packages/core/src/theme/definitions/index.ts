@@ -17,6 +17,7 @@ export { default as icon } from "./icon";
 export { default as input } from "./input";
 export { default as pinInput } from "./pin-input";
 export { default as progress } from "./progress";
+export { default as pullDownRefresh } from "./pull-down-refresh";
 export { default as qrCode } from "./qr-code";
 export { default as radio } from "./radio";
 export { default as radioGroup } from "./radio-group";

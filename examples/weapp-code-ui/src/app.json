@@ -11,6 +11,7 @@
     "pages/input/index",
     "pages/pin-input/index",
     "pages/progress/index",
+    "pages/pull-down-refresh/index",
     "pages/switch/index",
     "pages/slider/index",
     "pages/checkbox/index",

@@ -128,6 +128,12 @@
       "require": "./dist/runtime/progress/index.js"
     },
     "./progress/*": "./dist/runtime/progress/*",
+    "./pull-down-refresh": {
+      "types": "./dist/runtime/pull-down-refresh/index.d.ts",
+      "import": "./dist/runtime/pull-down-refresh/index.js",
+      "require": "./dist/runtime/pull-down-refresh/index.js"
+    },
+    "./pull-down-refresh/*": "./dist/runtime/pull-down-refresh/*",
     "./qr-code": {
       "types": "./dist/runtime/qr-code/index.d.ts",
       "import": "./dist/runtime/qr-code/index.js",
@@ -248,6 +254,7 @@
     "@code-ui/miniapp": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
     "@code-ui/progress": "workspace:*",
+    "@code-ui/pull-down-refresh": "workspace:*",
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",

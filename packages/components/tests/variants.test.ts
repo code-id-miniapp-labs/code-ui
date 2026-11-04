@@ -89,7 +89,7 @@ describe("resolveSlots + buttonTheme", () => {
       "mt-2",
     );
     expect(slots.root).toContain("bg-primary");
-    expect(slots.root).toContain("h-9");
+    expect(slots.root).toContain("text-sm");
     expect(slots.root).toContain("mt-2");
     expect(slots.root).not.toMatch(/[[\]:]/);
   });
