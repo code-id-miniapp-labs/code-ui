@@ -10,8 +10,10 @@ import {
 import {
   formMachine,
   connectForm,
-  injectFormBus,
+  injectFormHost,
   bindFormField,
+  type FormHostContext,
+  type FormRule,
   type FormProps,
   type FormSchema,
 } from "../src";
@@ -48,29 +50,25 @@ function createPinInputInstance(props: PinInputProps = {}) {
   };
 }
 
-function registerFieldRules(
-  bus: any,
+async function registerFieldRules(
+  host: FormHostContext,
   name: string,
   rules: FormRule[],
-  required = false,
 ) {
-  bus?.emit("field:rules", {
-    name,
-    getRules: () => rules,
-    required,
-  });
+  host.setFieldRules(name, () => rules);
+  await flush();
 }
 
 describe("formMachine & PinInput integration", () => {
-  it("provides FormBus on parent component and injects it into child PinInput via @code-ui/context", () => {
+  it("provides FormHost on parent component and injects it into child PinInput via @code-ui/context", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 
     const form = createFormInstance({ component: formComp });
-    const injectedBus = injectFormBus(pinComp);
+    const injectedHost = injectFormHost(pinComp);
 
-    expect(injectedBus).toBeDefined();
-    expect(injectedBus).toBe(form.api().bus);
+    expect(injectedHost).toBeDefined();
+    expect(injectedHost).toBe(form.api().formContext);
 
     const pin = createPinInputInstance({
       component: pinComp,
@@ -78,6 +76,7 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       defaultValue: ["1", "2", "", ""],
     });
+    await flush();
 
     expect(form.api().getValues()).toEqual({ otp: "12" });
     expect(pin.api().valueAsString).toBe("12");
@@ -94,11 +93,12 @@ describe("formMachine & PinInput integration", () => {
       name: "passcode",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "passcode", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "passcode", [
       formRules.required("Passcode is required"),
     ]);
 
-    expect(injectFormBus(pinComp)).toBe(form.api().bus);
+    expect(injectFormHost(pinComp)).toBe(form.api().formContext);
     expect(form.api().getValues()).toEqual({ passcode: "" });
 
     pin.api().handleBlur();
@@ -109,7 +109,7 @@ describe("formMachine & PinInput integration", () => {
     expect(pin.api().invalid).toBe(true);
   });
 
-  it("validates Vuetify-style rules on PinInput when EventBus emits input, change, and blur", async () => {
+  it("validates Vuetify-style rules on PinInput when host context emits input, change, and blur", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 
@@ -119,7 +119,8 @@ describe("formMachine & PinInput integration", () => {
       name: "pin",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "pin", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin", [
       formRules.required("PIN is required"),
       (val: string) => val.length === 4 || "PIN must be 4 digits",
     ]);
@@ -127,7 +128,7 @@ describe("formMachine & PinInput integration", () => {
     expect(form.api().isValid).toBe(true);
     expect(form.api().errorBag).toEqual({});
 
-    // User types 1st digit -> triggers input & change on FormBus
+    // User types 1st digit -> triggers input & change on FormHost
     pin.send({ type: "INPUT.CHANGE", index: 0, value: "1" });
     await flush();
 
@@ -163,7 +164,8 @@ describe("formMachine & PinInput integration", () => {
       name: "pin",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "pin", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin", [
       formRules.exactLength(4, "Enter 4 digits"),
     ]);
 
@@ -210,7 +212,8 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       defaultValue: ["1", "2", "3", "4"],
     });
-    registerFieldRules(form.api().bus, "otp", [asyncRule]);
+    await flush();
+    await registerFieldRules(form.api().formContext, "otp", [asyncRule]);
 
     const validatePromise = form.api().validate();
     expect(form.api().isValidating).toBe(true);
@@ -245,14 +248,18 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       defaultValue: ["1", "2", "3", "4"],
     });
-    registerFieldRules(form.api().bus, "pin1", [formRules.exactLength(4)]);
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin1", [
+      formRules.exactLength(4),
+    ]);
 
     const pin2 = createPinInputInstance({
       component: pin2Comp,
       name: "pin2",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "pin2", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin2", [
       formRules.required("Second PIN is required"),
       formRules.exactLength(4),
     ]);
@@ -292,7 +299,8 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       defaultValue: ["0", "0", "0", "0"],
     });
-    registerFieldRules(form.api().bus, "pin", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin", [
       (val: string) => val === "1234" || "Must be 1234",
     ]);
 
@@ -327,7 +335,10 @@ describe("formMachine & PinInput integration", () => {
       name: "pin",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "pin", [formRules.required("Required")]);
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin", [
+      formRules.required("Required"),
+    ]);
 
     await form.api().validate();
     expect(form.api().hasErrors).toBe(true);
@@ -343,7 +354,7 @@ describe("formMachine & PinInput integration", () => {
     expect(pin.api().valueAsString).toBe("12");
   });
 
-  it("supports manual server error injection via setErrors() and propagates to child fields", () => {
+  it("supports manual server error injection via setErrors() and propagates to child fields", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 
@@ -354,6 +365,7 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       defaultValue: ["1", "2", "3", "4"],
     });
+    await flush();
 
     form.api().setErrors({
       otp: "OTP has expired, please request a new one",
@@ -366,7 +378,7 @@ describe("formMachine & PinInput integration", () => {
     expect(pin.api().invalid).toBe(true);
   });
 
-  it("propagates Form-level disabled and readOnly props to registered child controls", () => {
+  it("propagates Form-level disabled and readOnly props to registered child controls", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 
@@ -379,6 +391,7 @@ describe("formMachine & PinInput integration", () => {
       name: "otp",
       length: 4,
     });
+    await flush();
 
     expect(pin.api().disabled).toBe(true);
     expect(pin.api().rootProps["data-disabled"]).toBe("true");
@@ -411,6 +424,7 @@ describe("formMachine & PinInput integration", () => {
       },
       getRules: () => [formRules.required(), formRules.email()],
     });
+    await flush();
 
     let confirmVal = "other@example.com";
     const confirmField = bindFormField({
@@ -429,6 +443,7 @@ describe("formMachine & PinInput integration", () => {
         formRules.sameAs("email", "Emails must match"),
       ],
     });
+    await flush();
 
     const res1 = await form.api().validate();
     expect(res1.valid).toBe(false);
@@ -450,7 +465,9 @@ describe("formMachine & PinInput integration", () => {
     });
 
     emailField.dispose();
+    await flush();
     confirmField.dispose();
+    await flush();
   });
 
   it("supports declarative FormRuleObject descriptors and JSON-cloned formRules for WXML data bindings", async () => {
@@ -471,7 +488,8 @@ describe("formMachine & PinInput integration", () => {
       name: "pin",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "pin", serializedRules);
+    await flush();
+    await registerFieldRules(form.api().formContext, "pin", serializedRules);
 
     const res1 = await form.api().validate();
     expect(res1.valid).toBe(false);
@@ -514,6 +532,7 @@ describe("formMachine & PinInput integration", () => {
       component: standalonePinComp,
       length: 4,
     });
+    await flush();
 
     // 2. Form PinInput (has name="pin") attaches BEFORE <c-form>!
     const pin = createPinInputInstance({
@@ -521,10 +540,11 @@ describe("formMachine & PinInput integration", () => {
       name: "pin",
       length: 4,
     });
+    await flush();
 
     // 3. <c-form> attaches AFTER its <slot /> children
     const form = createFormInstance({ component: formComp });
-    registerFieldRules(form.api().bus, "pin", [
+    await registerFieldRules(form.api().formContext, "pin", [
       { required: true, message: "PIN required" },
       { exactLength: 4, message: "Must be 4 digits" },
     ]);
@@ -564,7 +584,8 @@ describe("formMachine & PinInput integration", () => {
       name: "dynamicPin",
       length: 4,
     });
-    registerFieldRules(form.api().bus, "dynamicPin", [
+    await flush();
+    await registerFieldRules(form.api().formContext, "dynamicPin", [
       formRules.required("PIN is required"),
       formRules.exactLength(4, "Must be 4 digits"),
     ]);
@@ -581,6 +602,7 @@ describe("formMachine & PinInput integration", () => {
 
     // 2. Dynamically unmount PinInput (wx:if="{{ false }}" -> detached -> machine.stop())
     pin.machine.stop();
+    await flush();
 
     // Error state, errorBag, and stale value should all be cleaned up automatically
     expect(form.api().state).toBe("idle");
@@ -633,7 +655,8 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       component: loginPinComp,
     });
-    registerFieldRules(loginForm.api().bus, "pin", [
+    await flush();
+    await registerFieldRules(loginForm.api().formContext, "pin", [
       { required: true, exactLength: 4, message: "Login PIN required" },
     ]);
 
@@ -644,7 +667,8 @@ describe("formMachine & PinInput integration", () => {
       length: 6,
       component: transferPinComp,
     });
-    registerFieldRules(transferForm.api().bus, "pin", [
+    await flush();
+    await registerFieldRules(transferForm.api().formContext, "pin", [
       { required: true, exactLength: 6, message: "Transfer PIN required" },
     ]);
 
@@ -676,7 +700,7 @@ describe("formMachine & PinInput integration", () => {
     expect(onTransferSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("isolates two forms on the same Page via direct formBus linking without form props on child inputs", async () => {
+  it("isolates two forms on the same Page via direct formContext linking without form props on child inputs", async () => {
     const sharedPage = createMockComponent();
     const form1Comp = createMockComponent(sharedPage);
     const form2Comp = createMockComponent(sharedPage);
@@ -705,20 +729,23 @@ describe("formMachine & PinInput integration", () => {
       length: 4,
       component: pin1Comp,
     });
+    await flush();
     const pin2 = createPinInputInstance({
       id: "pin-2",
       name: "pin",
       length: 6,
       component: pin2Comp,
     });
+    await flush();
 
     // Simulate relations linking formBus dynamically
-    pin1.machine.updateProps({ formBus: form1.api().bus });
-    pin2.machine.updateProps({ formBus: form2.api().bus });
-    registerFieldRules(form1.api().bus, "pin", [
+    pin1.machine.updateProps({ formContext: form1.api().formContext });
+    pin2.machine.updateProps({ formContext: form2.api().formContext });
+    await flush();
+    await registerFieldRules(form1.api().formContext, "pin", [
       { required: true, exactLength: 4, message: "PIN 1 required" },
     ]);
-    registerFieldRules(form2.api().bus, "pin", [
+    await registerFieldRules(form2.api().formContext, "pin", [
       { required: true, exactLength: 6, message: "PIN 2 required" },
     ]);
     await flush();
@@ -751,7 +778,7 @@ describe("formMachine & PinInput integration", () => {
     expect(onForm2Submit).toHaveBeenCalledTimes(1);
   });
 
-  it("supports rules declared on field wrapper via field:rules event and emits field:error on validation", async () => {
+  it("supports wrapper rules and reactive errors through the host facade", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 
@@ -766,48 +793,26 @@ describe("formMachine & PinInput integration", () => {
       name: "securityPin",
       length: 4,
     });
+    await flush();
 
-    const bus = form.api().bus;
-    expect(bus).toBeDefined();
+    const host = form.api().formContext;
+    expect(host).toBeDefined();
 
-    // Mock form-field behavior listening to bus
-    let receivedError: string[] = [];
-    let receivedValid = true;
-    bus.on("field:error", (payload: any) => {
-      if (payload.name === "securityPin") {
-        receivedError = payload.errors;
-        receivedValid = payload.isValid;
-      }
-    });
-
-    let resetCalled = false;
-    bus.on("reset", () => {
-      resetCalled = true;
-    });
-
-    let clearErrorsCalled = false;
-    bus.on("clear-errors", () => {
-      clearErrorsCalled = true;
-    });
-
-    // Form-field emits its rules to the bus
-    bus.emit("field:rules", {
-      name: "securityPin",
-      getRules: () => [
-        formRules.required("Security PIN is required"),
-        formRules.exactLength(4, "Must be exactly 4 digits"),
-      ],
-      required: true,
-    });
+    host.setFieldRules("securityPin", () => [
+      formRules.required("Security PIN is required"),
+      formRules.exactLength(4, "Must be exactly 4 digits"),
+    ]);
     await flush();
 
     // Trigger blur on empty pin input -> fails validation
     pin.api().handleBlur();
     await flush();
 
-    expect(receivedValid).toBe(false);
-    expect(receivedError).toEqual(["Security PIN is required"]);
-    expect(form.api().errorBag.securityPin).toEqual(["Security PIN is required"]);
+    expect(host.errors("securityPin").length).toBeGreaterThan(0);
+    expect(host.errors("securityPin")).toEqual(["Security PIN is required"]);
+    expect(form.api().errorBag.securityPin).toEqual([
+      "Security PIN is required",
+    ]);
     expect(pin.api().invalid).toBe(true);
 
     // Enter partial input (2 digits) -> fails exactLength(4)
@@ -815,29 +820,31 @@ describe("formMachine & PinInput integration", () => {
     pin.api().handleBlur();
     await flush();
 
-    expect(receivedValid).toBe(false);
-    expect(receivedError).toEqual(["Must be exactly 4 digits"]);
-    expect(form.api().errorBag.securityPin).toEqual(["Must be exactly 4 digits"]);
+    expect(host.errors("securityPin").length).toBeGreaterThan(0);
+    expect(host.errors("securityPin")).toEqual(["Must be exactly 4 digits"]);
+    expect(form.api().errorBag.securityPin).toEqual([
+      "Must be exactly 4 digits",
+    ]);
 
     // Enter complete valid input (4 digits) -> passes validation
     pin.api().setValue("1234");
     pin.api().handleBlur();
     await flush();
 
-    expect(receivedValid).toBe(true);
-    expect(receivedError).toEqual([]);
+    expect(host.errors("securityPin")).toEqual([]);
+    expect(host.errors("securityPin")).toEqual([]);
     expect(form.api().errorBag.securityPin).toBeUndefined();
     expect(pin.api().invalid).toBe(false);
 
     // Test clearErrors
     form.api().resetValidation();
     await flush();
-    expect(clearErrorsCalled).toBe(true);
+    expect(host.errors("securityPin")).toEqual([]);
 
     // Test form reset
     form.api().reset();
     await flush();
-    expect(resetCalled).toBe(true);
+    expect(host.errors("securityPin")).toEqual([]);
     expect(pin.api().valueAsString).toBe("");
   });
 
@@ -851,33 +858,23 @@ describe("formMachine & PinInput integration", () => {
       name: "code",
       length: 4,
     });
+    await flush();
 
-    const bus = form.api().bus;
-    let fieldErrors: string[] = [];
-    bus.on("field:error", (payload: any) => {
-      if (payload.name === "code") {
-        fieldErrors = payload.errors;
-      }
-    });
-
-    // Field wrapper has only numeric rule, but required: true with label
+    const host = form.api().formContext;
     const label = "Verification Code";
-    bus.emit("field:rules", {
-      name: "code",
-      getRules: () => [
-        formRules.required(`${label} is required`),
-        formRules.numeric("Must be numeric"),
-      ],
-      required: true,
-    });
+    host.setFieldRules("code", () => [
+      formRules.required(`${label} is required`),
+      formRules.numeric("Must be numeric"),
+    ]);
     await flush();
 
     const submitRes = await form.api().submit();
     expect(submitRes.valid).toBe(false);
-    expect(fieldErrors).toEqual(["Verification Code is required"]);
+    expect(host.errors("code")).toEqual(["Verification Code is required"]);
 
     form.machine.stop();
     pin.machine.stop();
+    await flush();
   });
 
   it("safely handles JSON-serialized RegExp objects across MiniProgram bridge and validates email", async () => {
@@ -907,6 +904,7 @@ describe("formMachine & PinInput integration", () => {
       },
       getRules: () => serializedRules,
     });
+    await flush();
 
     // 1. Invalid email 'iji' (contained characters from [object Object] which caused bug)
     emailVal = "iji";
@@ -937,6 +935,7 @@ describe("formMachine & PinInput integration", () => {
     expect(form.api().errorBag).toEqual({});
 
     emailField.dispose();
+    await flush();
     form.machine.stop();
   });
 
@@ -957,6 +956,7 @@ describe("formMachine & PinInput integration", () => {
         { email: true, message: "Invalid email" },
       ],
     });
+    await flush();
 
     emailVal = "iji";
     emailField.emitInput("iji");
@@ -969,6 +969,7 @@ describe("formMachine & PinInput integration", () => {
     expect(form.api().errorBag).toEqual({});
 
     emailField.dispose();
+    await flush();
     form.machine.stop();
   });
 
@@ -984,10 +985,9 @@ describe("formMachine & PinInput integration", () => {
       id: "code-input",
       getName: () => "code",
       getValue: () => val,
-      getRules: () => [
-        { pattern: "^[0-9]{4}$", message: "Must be 4 digits" },
-      ],
+      getRules: () => [{ pattern: "^[0-9]{4}$", message: "Must be 4 digits" }],
     });
+    await flush();
 
     val = "abc";
     field.emitInput("abc");
@@ -1015,10 +1015,9 @@ describe("formMachine & PinInput integration", () => {
       id: "code-input",
       getName: () => "code",
       getValue: () => val,
-      getRules: () => [
-        { pattern: /^[0-9]+$/g, message: "Digits only" },
-      ],
+      getRules: () => [{ pattern: /^[0-9]+$/g, message: "Digits only" }],
     });
+    await flush();
 
     // Run 5 sequential validations with the exact same value
     for (let i = 0; i < 5; i++) {
@@ -1049,6 +1048,7 @@ describe("formMachine & PinInput integration", () => {
         { pattern: {} as any, message: "Invalid format" },
       ],
     });
+    await flush();
 
     // Since pattern: {} is empty and has no source, it must not create /[object Object]/
     field.emitInput("iji");
@@ -1059,7 +1059,7 @@ describe("formMachine & PinInput integration", () => {
     form.machine.stop();
   });
 
-  it("never sets undefined on form.values or form.fieldStates during setErrors, setValues, and reset", () => {
+  it("never sets undefined on form.values or form.fieldStates during setErrors, setValues, and reset", async () => {
     const formComp = createMockComponent();
     const form = createFormInstance({ component: formComp });
 

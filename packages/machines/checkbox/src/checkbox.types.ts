@@ -6,11 +6,12 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
 import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox.anatomy";
 
 export type CheckboxState = "checked" | "unchecked" | "indeterminate";
@@ -44,8 +45,10 @@ export interface CheckboxProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: CheckboxUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -103,10 +106,6 @@ export type CheckboxEvent =
 export interface CheckboxContext {
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: CheckboxSize | "";
   invalid: boolean;
   required: boolean;
   color: CheckboxColor;
@@ -122,6 +121,11 @@ export interface CheckboxContext {
 }
 
 export interface CheckboxComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+
   isChecked: boolean;
   isIndeterminate: boolean;
   isInteractive: boolean;
@@ -137,7 +141,6 @@ export interface CheckboxRefs {
   initialIndeterminate?: boolean | undefined;
   lastChecked?: boolean | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export interface CheckboxSchema extends MachineSchema {

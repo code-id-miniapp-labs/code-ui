@@ -1,7 +1,6 @@
+import { formMachine, connectForm } from "@code-ui/form";
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { FormBusEvents } from "@code-ui/form";
 import { pinInputMachine } from "../src/pin-input.machine";
 import { connectPinInput } from "../src/pin-input.connect";
 
@@ -618,60 +617,49 @@ describe("Pin Input Machine", () => {
   });
 
   describe("FormField & Form Cascading (Disabled and Size)", () => {
-    it("inherits disabled and size from form-field via field:state bus event", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives wrapper disabled and size from the form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(pinInputMachine, {
         name: "otp",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      let api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.size).toBe("md");
-      expect(api.inputs[0]?.inputProps.disabled).toBe(false);
-
-      // Wrapper form-field broadcasts disabled=true and size="sm"
-      bus.emit("field:state", { name: "otp", disabled: true, size: "sm" });
       await flush();
-
-      api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.size).toBe("sm");
-      expect(api.inputs[0]?.inputProps.disabled).toBe(true);
-
-      // Wrapper form-field updates to disabled=false and size="lg"
-      bus.emit("field:state", { name: "otp", disabled: false, size: "lg" });
+      host.setFieldState("otp", { disabled: true, size: "sm" });
       await flush();
-
-      api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.size).toBe("lg");
-      expect(api.inputs[0]?.inputProps.disabled).toBe(false);
-
+      expect(connectPinInput(machine.service).disabled).toBe(true);
+      expect(connectPinInput(machine.service).size).toBe("sm");
+      host.setFieldState("otp", { disabled: false, size: "lg" });
+      await flush();
+      expect(connectPinInput(machine.service).disabled).toBe(false);
+      expect(connectPinInput(machine.service).size).toBe("lg");
       machine.stop();
+      form.stop();
     });
 
-    it("allows explicit child size to override wrapper size", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives wrapper disabled and size from the form host with explicit size priority", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(pinInputMachine, {
         name: "otp",
+        formContext: host,
         size: "lg",
-        formBus: bus,
       });
       machine.start();
-
-      let api = connectPinInput(machine.service);
-      expect(api.size).toBe("lg");
-
-      // Wrapper sets size="sm", but explicit child prop is "lg"
-      bus.emit("field:state", { name: "otp", size: "sm" });
       await flush();
-
-      api = connectPinInput(machine.service);
-      expect(api.size).toBe("lg");
-
+      host.setFieldState("otp", { disabled: true, size: "sm" });
+      await flush();
+      expect(connectPinInput(machine.service).disabled).toBe(true);
+      expect(connectPinInput(machine.service).size).toBe("lg");
+      host.setFieldState("otp", { disabled: false, size: "lg" });
+      await flush();
+      expect(connectPinInput(machine.service).disabled).toBe(false);
+      expect(connectPinInput(machine.service).size).toBe("lg");
       machine.stop();
+      form.stop();
     });
 
     it("supports direct fieldDisabled and fieldSize props from WeChat relations", async () => {
@@ -703,34 +691,25 @@ describe("Pin Input Machine", () => {
       machine.stop();
     });
 
-    it("reacts when form:state disables the entire form", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives disabled and readOnly from the reactive form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(pinInputMachine, {
         name: "otp",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      let api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(false);
-
-      // Form disabled
-      bus.emit("form:state", { disabled: true, readOnly: false });
+      form.updateProps({ disabled: true, readOnly: true });
       await flush();
-
-      api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.inputs[0]?.inputProps.disabled).toBe(true);
-
-      // Form re-enabled
-      bus.emit("form:state", { disabled: false, readOnly: false });
+      expect(connectPinInput(machine.service).disabled).toBe(true);
+      expect(connectPinInput(machine.service).readOnly).toBe(true);
+      form.updateProps({ disabled: false, readOnly: false });
       await flush();
-
-      api = connectPinInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.inputs[0]?.inputProps.disabled).toBe(false);
-
+      expect(connectPinInput(machine.service).disabled).toBe(false);
+      expect(connectPinInput(machine.service).readOnly).toBe(false);
       machine.stop();
+      form.stop();
     });
 
     it("syncs state when controlled value prop is dynamically updated via updateProps", async () => {

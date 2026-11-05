@@ -3,12 +3,7 @@ import type {
   ComponentUI,
   ResolvedUI,
 } from "@code-ui/anatomy";
-import type {
-  Machine,
-  MachineSchema,
-  Params,
-  Service,
-} from "@code-ui/core";
+import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   TabsColor,
   TabsGroupContext,
@@ -73,10 +68,15 @@ export interface TabsItemComputed {
   resolvedValue: string | number;
   isSelected: boolean;
   isDisabled: boolean;
+  color: TabsColor;
+  size: TabsSize;
+  fitted: boolean;
+  index: number;
+  orientation: TabsOrientation;
+  variant: TabsVariant;
 }
 
-export type TabsItemEvent =
-  | { type: "SELECT" };
+export type TabsItemEvent = { type: "SELECT" };
 
 export type TabsItemState = "idle";
 

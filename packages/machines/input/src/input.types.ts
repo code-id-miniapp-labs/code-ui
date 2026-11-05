@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./input.anatomy";
 
 export type InputState = "idle" | "focused";
@@ -45,8 +46,10 @@ export interface InputProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: InputUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -153,10 +156,6 @@ export interface InputContext {
   highlight: boolean;
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: InputSize | "";
   invalid: boolean;
   placeholder: string;
   type: InputType;
@@ -175,6 +174,12 @@ export interface InputContext {
 }
 
 export interface InputComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isEmpty: boolean;
   isDisabled: boolean;
   isFilled: boolean;
@@ -187,7 +192,6 @@ export interface InputComputed {
 export interface InputRefs {
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export type InputAction =

@@ -1,5 +1,8 @@
 import { createMachine } from "@code-ui/core";
-import { setupFormFieldSync, cleanupFormFieldSync } from "@code-ui/form/context";
+import {
+  setupFormFieldSync,
+  cleanupFormFieldSync,
+} from "@code-ui/form/context";
 import { isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   SwitchContext,
@@ -31,15 +34,12 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
       : Boolean(prop("defaultChecked"));
     return {
       initialChecked: initial,
-      currentFormBus: prop("formBus"),
       formField: undefined,
     };
   },
 
   context: ({ prop, bindable }) => {
-    const propBindable = <
-      K extends keyof SwitchContext & keyof SwitchProps,
-    >(
+    const propBindable = <K extends keyof SwitchContext & keyof SwitchProps>(
       key: K,
       defaultValue: SwitchContext[K],
     ) =>
@@ -48,21 +48,9 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
         defaultValue,
       }));
 
-    const stateBindable = <K extends keyof SwitchContext>(
-      _key: K,
-      defaultValue: SwitchContext[K],
-    ) =>
-      bindable<SwitchContext[K]>(() => ({
-        defaultValue,
-      }));
-
     return {
       disabled: propBindable("disabled", false),
       readOnly: propBindable("readOnly", false),
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
 
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
@@ -89,38 +77,63 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
   },
 
   computed: {
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "switch")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "switch")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "switch").length,
+      );
+    },
     isChecked: ({ state }) => state.matches("checked"),
-    isDisabled: ({ context }) =>
+    isDisabled: ({ context, computed }) =>
       Boolean(
         context.get("disabled") ||
-        context.get("formDisabled") ||
-        context.get("fieldDisabled"),
+        computed("formDisabled") ||
+        computed("fieldDisabled"),
       ),
-    isReadOnly: ({ context }) =>
-      Boolean(context.get("readOnly") || context.get("formReadOnly")),
+    isReadOnly: ({ context, computed }) =>
+      Boolean(context.get("readOnly") || computed("formReadOnly")),
     isInteractive: ({ context, computed }) =>
       !context.get("loading") &&
       !computed("isDisabled") &&
       !computed("isReadOnly"),
-    effectiveSize: ({ context }) => {
+    effectiveSize: ({ context, computed }) => {
       const rawSize = context.get("size");
-      const fieldSize = context.get("fieldSize");
+      const fieldSize = computed("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
         : ((fieldSize || rawSize || "md") as SwitchSize);
     },
   },
 
-  watch: ({ prop, refs, state }) => {
+  watch: ({ prop, state }) => {
     const controlledChecked = prop("checked");
     if (isNotNull(controlledChecked)) {
       const targetState = controlledChecked ? "checked" : "unchecked";
       if (!state.matches(targetState)) state.set(targetState);
-    }
-    const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
     }
   },
 
@@ -200,7 +213,7 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus"),
+            getHost: () => prop("formContext"),
             id: scope.id ?? "switch",
             getFormId: () => context.get("form") || prop("form") || "",
             getName: () => context.get("name") || prop("name") || "",
@@ -214,25 +227,9 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
               state.set(initial ? "checked" : "unchecked");
             },
             focus: () => {},
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );

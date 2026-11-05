@@ -67,7 +67,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         : Array(len).fill("");
     return {
       initialValue: [...initial],
-      currentFormBus: prop("formBus"),
       formField: undefined,
     };
   },
@@ -156,10 +155,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       highlight: propBindable("highlight", false),
       disabled: propBindable("disabled", false),
       readOnly: propBindable("readOnly", false),
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
 
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
@@ -184,6 +179,36 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
   },
 
   computed: {
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "pin-input")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "pin-input")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "pin-input").length,
+      );
+    },
     valueAsString: ({ context }) => context.get("value").join(""),
     isValueComplete: ({ context }) => {
       const val = context.get("value");
@@ -192,25 +217,19 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     },
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
-    isReadOnly: ({ context }) =>
-      context.get("formReadOnly") || context.get("readOnly"),
-    isDisabled: ({ context }) =>
-      context.get("formDisabled") ||
-      context.get("fieldDisabled") ||
+    isReadOnly: ({ context, computed }) =>
+      computed("formReadOnly") || context.get("readOnly"),
+    isDisabled: ({ context, computed }) =>
+      computed("formDisabled") ||
+      computed("fieldDisabled") ||
       context.get("disabled"),
-    effectiveSize: ({ context }) =>
-      context.get("size") || context.get("fieldSize") || "md",
+    effectiveSize: ({ context, computed }) =>
+      (context.get("size") ||
+        computed("fieldSize") ||
+        "md") as PinInputContext["size"],
 
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
-  },
-
-  watch: ({ prop, refs }) => {
-    const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
-    }
   },
 
   entry: ["setupFormField"],
@@ -292,7 +311,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus"),
+            getHost: () => prop("formContext"),
             id: scope.id ?? "pin-input",
             getFormId: () => context.get("form") || prop("form") || "",
             getName: () => context.get("name") || prop("name") || "",
@@ -315,10 +334,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             focus: () => {
               if (
                 context.get("disabled") ||
-                context.get("formDisabled") ||
-                context.get("fieldDisabled") ||
+                computed("formDisabled") ||
+                computed("fieldDisabled") ||
                 context.get("readOnly") ||
-                context.get("formReadOnly")
+                computed("formReadOnly")
               ) {
                 return;
               }
@@ -328,25 +347,9 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               state.set("focused");
               context.set("focusedIndex", targetIdx);
             },
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );

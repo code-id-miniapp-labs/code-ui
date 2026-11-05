@@ -64,7 +64,6 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       initialChecked,
       initialIndeterminate,
       lastChecked: initialChecked,
-      currentFormBus: prop("formBus"),
       formField: undefined,
     };
   },
@@ -81,20 +80,7 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
         defaultValue,
       }));
 
-    const stateBindable = <K extends keyof CheckboxContext>(
-      _key: K,
-      defaultValue: CheckboxContext[K],
-    ) =>
-      bindable<CheckboxContext[K]>(() => ({
-        defaultValue,
-      }));
-
     return {
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
-
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
         return {
@@ -120,6 +106,37 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   },
 
   computed: {
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "checkbox")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "checkbox")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("groupContext")?.invalid() ||
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "checkbox").length,
+      );
+    },
     isChecked: ({ context, prop, state }) => {
       const group = prop("groupContext") as CheckboxGroupContext | undefined;
       if (group) {
@@ -128,26 +145,28 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       return state.matches("checked");
     },
     isIndeterminate: ({ state }) => state.matches("indeterminate"),
-    isDisabled: ({ context, prop }) => {
+    isDisabled: ({ context, prop, computed }) => {
       const group = prop("groupContext") as CheckboxGroupContext | undefined;
       return Boolean(
-        context.get("formDisabled") ||
-          group?.disabled() ||
-          context.get("fieldDisabled") ||
-          context.get("disabled"),
+        computed("formDisabled") ||
+        group?.disabled() ||
+        computed("fieldDisabled") ||
+        context.get("disabled"),
       );
     },
-    isReadOnly: ({ context }) =>
-      Boolean(context.get("readOnly") || context.get("formReadOnly")),
+    isReadOnly: ({ context, computed, prop }) =>
+      Boolean(
+        prop("groupContext")?.readOnly() ||
+        context.get("readOnly") ||
+        computed("formReadOnly"),
+      ),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
-    isInvalid: ({ context, prop }) => {
+    effectiveSize: ({ context, prop, computed }) => {
       const group = prop("groupContext") as CheckboxGroupContext | undefined;
-      return Boolean(group?.invalid() || context.get("invalid"));
-    },
-    effectiveSize: ({ context, prop }) => {
-      const group = prop("groupContext") as CheckboxGroupContext | undefined;
-      return group?.size() || context.get("fieldSize") || context.get("size");
+      return (group?.size() ||
+        computed("fieldSize") ||
+        context.get("size")) as CheckboxContext["size"];
     },
     effectiveColor: ({ context, prop }) => {
       const group = prop("groupContext") as CheckboxGroupContext | undefined;
@@ -156,11 +175,6 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
   },
 
   watch: ({ prop, refs, state }) => {
-    const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
-    }
 
     if (prop("groupContext")) return;
 
@@ -291,9 +305,7 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       },
 
       selectGroup: ({ context, prop }) => {
-        const group = prop("groupContext") as
-          | CheckboxGroupContext
-          | undefined;
+        const group = prop("groupContext") as CheckboxGroupContext | undefined;
         group?.toggleValue(context.get("value"));
       },
 
@@ -313,7 +325,7 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus"),
+            getHost: () => prop("formContext"),
             id: scope.id ?? "checkbox",
             getFormId: () => context.get("form") || prop("form") || "",
             getName: () =>
@@ -338,25 +350,9 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
               );
             },
             focus: () => {},
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );
@@ -365,7 +361,6 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       cleanupFormField: ({ refs }) => {
         cleanupFormFieldSync(refs);
       },
-
     },
   },
 });

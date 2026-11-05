@@ -1,6 +1,7 @@
 import type { CheckboxGroupProps } from "./checkbox-group.types";
 
 export const defaultCheckboxGroupProps: CheckboxGroupProps = {
+  formContext: undefined,
   value: null,
   defaultValue: [],
   disabled: false,

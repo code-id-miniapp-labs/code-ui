@@ -54,7 +54,7 @@
     <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
       <view class="text-sm font-bold text-neutral-900 mb-1">Connected with Form & Validation</view>
       <view class="text-xs text-neutral-400 mb-4">
-        Integrated with c-form and c-form-field via EventBus. Automatic validation, error highlights, and reset.
+        Integrated with c-form and c-form-field. Automatic validation, error highlights, and reset.
       </view>
       <c-form id="feedback-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleFormSubmit" bind:error="handleFormError">
         <view class="flex flex-col gap-4">

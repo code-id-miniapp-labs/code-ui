@@ -1,9 +1,13 @@
 import { createMachine } from "@code-ui/core";
-import type { FormRule } from "@code-ui/form";
+import { effect, signal } from "alien-signals";
+import { onProvide } from "@code-ui/context";
+import { getFormHostKey, injectFormHost } from "@code-ui/form/context";
+import type { FormHostContext, FormRule } from "@code-ui/form";
 import { isEmpty } from "@code-ui/utils";
 import { defaultFormFieldProps } from "./form-field.props";
 import type {
   FormFieldContext,
+  FormFieldParams,
   FormFieldMachine,
   FormFieldProps,
   FormFieldSchema,
@@ -45,129 +49,27 @@ function getEffectiveFieldRules(
   return list;
 }
 
-function emitFieldState(params: any) {
-  const bus = params.refs.get("currentFormBus") ?? params.prop("formBus");
-  if (!bus) return;
-  const name = params.context.get("name") || params.prop("name");
-  const effectiveDisabled = Boolean(
-    params.context.get("disabled") || params.context.get("formDisabled"),
-  );
-  const size = params.context.get("size");
-  bus.emit("field:state", {
-    name: name || undefined,
-    disabled: effectiveDisabled,
-    size,
-  });
+function clearPublishedField(params: FormFieldParams) {
+  const host = params.refs.get("publishedHost");
+  const name = params.refs.get("publishedName");
+  if (host && name) {
+    host.setFieldRules(name, () => []);
+    host.setFieldState(name, {});
+  }
+  params.refs.set("publishedHost", undefined);
+  params.refs.set("publishedName", "");
 }
 
-function emitFieldRules(params: any) {
-  const bus = params.refs.get("currentFormBus") ?? params.prop("formBus");
-  if (!bus) return;
-  const name = params.context.get("name") || params.prop("name");
-
-  if (name) {
-    bus.emit("field:rules", {
-      name,
-      getRules: () => params.computed("effectiveRules"),
-      required: Boolean(params.context.get("required")),
-    });
+function setupHostInjection({ prop, refs }: FormFieldParams) {
+  refs.get("stopInjection")?.();
+  refs.set("stopInjection", undefined);
+  refs.set("injectionForm", prop("form"));
+  const component = prop("component");
+  const update = refs.get("injectedHost");
+  update(injectFormHost(component, prop("form")));
+  if (component) {
+    refs.set("stopInjection", onProvide(component, getFormHostKey(prop("form")), update));
   }
-
-  emitFieldState(params);
-}
-
-function teardownBus(params: any) {
-  const disposers = params.refs.get("busDisposers");
-  if (disposers && disposers.length > 0) {
-    for (let i = 0; i < disposers.length; i++) {
-      disposers[i]?.();
-    }
-    params.refs.set("busDisposers", []);
-  }
-
-  const prevBus = params.refs.get("currentFormBus");
-  const name = params.context.get("name");
-  if (prevBus && name) {
-    prevBus.emit("field:rules", {
-      name,
-      getRules: () => [],
-      required: false,
-    });
-  }
-
-  params.refs.set("currentFormBus", undefined);
-}
-
-function bindBus(params: any) {
-  teardownBus(params);
-
-  const bus = params.prop("formBus");
-  if (!bus) return;
-
-  params.refs.set("currentFormBus", bus);
-
-  const disposers: Array<() => void> = [];
-
-  disposers.push(
-    bus.on("field:error", (payload: any) => {
-      if (payload?.name === params.context.get("name")) {
-        if (!payload.isValid && payload.errors && payload.errors.length > 0) {
-          params.send({
-            type: "ERROR.SET",
-            error: payload.errors[0] || "Invalid value",
-          });
-        } else {
-          params.send({ type: "ERROR.CLEAR" });
-        }
-      }
-    }),
-  );
-
-  disposers.push(
-    bus.on("reset", (payload: any) => {
-      const currentName = params.context.get("name");
-      if (
-        !payload?.name ||
-        payload.name === currentName ||
-        (Array.isArray(payload.name) && payload.name.includes(currentName))
-      ) {
-        params.send({ type: "RESET" });
-      }
-    }),
-  );
-
-  disposers.push(
-    bus.on("clear-errors", (payload: any) => {
-      const currentName = params.context.get("name");
-      if (
-        !payload?.name ||
-        payload.name === currentName ||
-        (Array.isArray(payload.name) && payload.name.includes(currentName))
-      ) {
-        params.send({ type: "ERROR.CLEAR" });
-      }
-    }),
-  );
-
-  disposers.push(
-    bus.on("form:state", (payload: any) => {
-      const nextDisabled = Boolean(payload?.disabled);
-      const nextReadOnly = Boolean(payload?.readOnly);
-      const prevDisabled = Boolean(params.context.get("formDisabled"));
-      const prevReadOnly = Boolean(params.context.get("formReadOnly"));
-
-      if (prevDisabled === nextDisabled && prevReadOnly === nextReadOnly) {
-        return;
-      }
-
-      params.context.set("formDisabled", nextDisabled);
-      params.context.set("formReadOnly", nextReadOnly);
-      emitFieldState(params);
-    }),
-  );
-
-  params.refs.set("busDisposers", disposers);
-  emitFieldRules(params);
 }
 
 export const formFieldMachine: FormFieldMachine =
@@ -184,9 +86,12 @@ export const formFieldMachine: FormFieldMachine =
         : "valid";
     },
 
-    refs: ({ prop }) => ({
-      currentFormBus: prop("formBus"),
-      busDisposers: [],
+    refs: () => ({
+      injectedHost: signal<FormHostContext | undefined>(undefined),
+      stopInjection: undefined,
+      injectionForm: undefined,
+      publishedHost: undefined,
+      publishedName: "",
     }),
 
     context: ({ prop, bindable }) => {
@@ -220,8 +125,6 @@ export const formFieldMachine: FormFieldMachine =
         innerError: stateBindable("innerError", ""),
         required: propBindable("required", false),
         disabled: propBindable("disabled", false),
-        formDisabled: stateBindable("formDisabled", false),
-        formReadOnly: stateBindable("formReadOnly", false),
         rules: propBindable("rules", []),
         size: propBindable("size", "md"),
         ui: propBindable("ui", {}),
@@ -229,27 +132,35 @@ export const formFieldMachine: FormFieldMachine =
     },
 
     computed: {
-      displayError: ({ context }) =>
-        context.get("error") || context.get("innerError") || "",
+      host: ({ prop, refs }) => {
+        const host = prop("formContext");
+        return host === undefined ? refs.get("injectedHost")() : host;
+      },
+      isDisabled: ({ context, computed }) =>
+        Boolean(context.get("disabled") || computed("host")?.disabled()),
+      isReadOnly: ({ computed }) => computed("host")?.readOnly() ?? false,
+      displayError: ({ context, computed }) =>
+        context.get("error") ||
+        computed("host")?.errors(context.get("name"))[0] ||
+        context.get("innerError") ||
+        "",
       displayHelp: ({ context }) =>
         context.get("help") || context.get("helperText") || "",
       invalid: ({ state, computed }) =>
         state.matches("invalid") || Boolean(computed("displayError")),
-      effectiveRules: ({ context }) =>
+      effectiveRules: ({ context, computed }) =>
         getEffectiveFieldRules(
           context.get("rules"),
           Boolean(context.get("required")),
-          Boolean(context.get("disabled")),
+          computed("isDisabled"),
           context.get("label") || context.get("name") || "",
         ),
     },
 
     watch: (params) => {
-      const nextBus = params.prop("formBus");
-      if (nextBus !== params.refs.get("currentFormBus")) {
-        bindBus(params);
+      if (params.prop("form") !== params.refs.get("injectionForm")) {
+        setupHostInjection(params);
       }
-
       const targetState = params.computed("displayError") ? "invalid" : "valid";
       if (!params.state.matches(targetState)) {
         params.state.set(targetState);
@@ -257,8 +168,8 @@ export const formFieldMachine: FormFieldMachine =
     },
 
     effects: ["trackFieldProps"],
-    entry: ["setupBus"],
-    exit: ["cleanupBus"],
+    entry: ["setupHost"],
+    exit: ["cleanupHost"],
 
     on: {
       "ERROR.SET": {
@@ -297,34 +208,38 @@ export const formFieldMachine: FormFieldMachine =
           context.set("innerError", "");
         },
 
-        setupBus: (params) => {
-          bindBus(params);
-        },
-
-        cleanupBus: (params) => {
-          teardownBus(params);
+        setupHost: setupHostInjection,
+        cleanupHost: (params) => {
+          params.refs.get("stopInjection")?.();
+          params.refs.set("stopInjection", undefined);
+          clearPublishedField(params);
+          params.refs.get("injectedHost")(undefined);
         },
       },
 
       effects: {
         trackFieldProps: (params) => {
-          let initial = true;
-          params.track(
-            [
-              () => params.prop("name"),
-              () => params.prop("rules")?.length,
-              () => params.prop("required"),
-              () => params.prop("disabled"),
-              () => params.prop("size"),
-            ],
-            () => {
-              if (initial) {
-                initial = false;
-                return;
-              }
-              emitFieldRules(params);
-            },
-          );
+          return effect(() => {
+            params.prop("rules");
+            params.prop("required");
+            params.prop("label");
+            const host = params.computed("host");
+            const name = params.context.get("name");
+            if (
+              host !== params.refs.get("publishedHost") ||
+              name !== params.refs.get("publishedName")
+            ) {
+              clearPublishedField(params);
+            }
+            if (!host || !name) return;
+            params.refs.set("publishedHost", host);
+            params.refs.set("publishedName", name);
+            host.setFieldRules(name, () => params.computed("effectiveRules"));
+            host.setFieldState(name, {
+              disabled: params.context.get("disabled"),
+              size: params.context.get("size"),
+              });
+          });
         },
       },
     },

@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { FormBusEvents } from "@code-ui/form";
 import { formMachine, connectForm } from "@code-ui/form";
 import { textareaMachine } from "../src/textarea.machine";
 import { connectTextarea } from "../src/textarea.connect";
@@ -365,153 +363,127 @@ describe("Textarea Machine", () => {
   });
 
   describe("Form & FormField Connection", () => {
-    it("registers with Form bus and emits input/change on value changes", async () => {
-      const bus = createEventBus<FormBusEvents>();
-      const onRegister = vi.fn();
-      const onInput = vi.fn();
-      const onChange = vi.fn();
-
-      bus.on("register", onRegister);
-      bus.on("input", onInput);
-      bus.on("change", onChange);
-
+    it("registers with the form host and notifies input/change", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
+      const register = vi.spyOn(host, "register");
+      const notify = vi.spyOn(host, "notify");
       const machine = new MiniappMachine(textareaMachine, {
         name: "bio",
-        defaultValue: "Developer",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      expect(onRegister).toHaveBeenCalledTimes(1);
-      expect(onRegister).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "bio",
-        }),
+      await flush();
+      expect(register).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "bio" }),
       );
-
-      const api = connectTextarea(machine.service);
-      api.handleInput({ detail: { value: "Full Stack Developer" } });
+      connectTextarea(machine.service).handleInput({
+        detail: { value: "updated" },
+      });
       await flush();
+      expect(notify).toHaveBeenCalledWith(
+        "input",
+        expect.objectContaining({ name: "bio", value: "updated" }),
+      );
+      expect(notify).toHaveBeenCalledWith(
+        "change",
+        expect.objectContaining({ name: "bio", value: "updated" }),
+      );
+      machine.stop();
+      form.stop();
+    });
 
-      expect(onInput).toHaveBeenCalledWith({
+    it("notifies the form host on focus and blur", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
+      const notify = vi.spyOn(host, "notify");
+      const machine = new MiniappMachine(textareaMachine, {
         name: "bio",
-        value: "Full Stack Developer",
-        id: expect.any(String),
+        formContext: host,
       });
-      expect(onChange).toHaveBeenCalledWith({
+      machine.start();
+      connectTextarea(machine.service).handleFocus({});
+      await flush();
+      connectTextarea(machine.service).handleBlur({});
+      await flush();
+      expect(notify).toHaveBeenCalledWith(
+        "focus",
+        expect.objectContaining({ name: "bio" }),
+      );
+      expect(notify).toHaveBeenCalledWith(
+        "blur",
+        expect.objectContaining({ name: "bio" }),
+      );
+      machine.stop();
+      form.stop();
+    });
+
+    it("derives wrapper disabled and size from the form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
+      const machine = new MiniappMachine(textareaMachine, {
         name: "bio",
-        value: "Full Stack Developer",
-        id: expect.any(String),
-      });
-
-      machine.stop();
-    });
-
-    it("emits focus and blur on Form bus", async () => {
-      const bus = createEventBus<FormBusEvents>();
-      const onFocus = vi.fn();
-      const onBlur = vi.fn();
-
-      bus.on("focus", onFocus);
-      bus.on("blur", onBlur);
-
-      const machine = new MiniappMachine(textareaMachine, {
-        name: "description",
-        defaultValue: "Sample note",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      const api = connectTextarea(machine.service);
-      api.handleFocus({});
       await flush();
-
-      expect(onFocus).toHaveBeenCalledWith({
-        name: "description",
-        value: "Sample note",
-        id: expect.any(String),
-      });
-
-      api.handleBlur({});
+      host.setFieldState("bio", { disabled: true, size: "sm" });
       await flush();
-
-      expect(onBlur).toHaveBeenCalledWith({
-        name: "description",
-        value: "Sample note",
-        id: expect.any(String),
-      });
-
+      expect(connectTextarea(machine.service).disabled).toBe(true);
+      expect(connectTextarea(machine.service).size).toBe("sm");
+      host.setFieldState("bio", { disabled: false, size: "lg" });
+      await flush();
+      expect(connectTextarea(machine.service).disabled).toBe(false);
+      expect(connectTextarea(machine.service).size).toBe("lg");
       machine.stop();
+      form.stop();
     });
 
-    it("inherits disabled and size from form-field via field:state bus event", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives disabled and readOnly from the reactive form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(textareaMachine, {
-        name: "description",
-        formBus: bus,
+        name: "bio",
+        formContext: host,
       });
       machine.start();
-
-      let api = connectTextarea(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.size).toBe("md");
-
-      bus.emit("field:state", {
-        name: "description",
-        disabled: true,
-        size: "lg",
-      });
+      form.updateProps({ disabled: true, readOnly: true });
       await flush();
-
-      api = connectTextarea(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.size).toBe("lg");
-
-      machine.stop();
-    });
-
-    it("inherits disabled and readOnly from form:state bus event", async () => {
-      const bus = createEventBus<FormBusEvents>();
-      const machine = new MiniappMachine(textareaMachine, {
-        name: "content",
-        formBus: bus,
-      });
-      machine.start();
-
-      let api = connectTextarea(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.readOnly).toBe(false);
-
-      bus.emit("form:state", { disabled: true, readOnly: true });
+      expect(connectTextarea(machine.service).disabled).toBe(true);
+      expect(connectTextarea(machine.service).readOnly).toBe(true);
+      form.updateProps({ disabled: false, readOnly: false });
       await flush();
-
-      api = connectTextarea(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.readOnly).toBe(true);
-
+      expect(connectTextarea(machine.service).disabled).toBe(false);
+      expect(connectTextarea(machine.service).readOnly).toBe(false);
       machine.stop();
+      form.stop();
     });
 
     it("handles full end-to-end integration with formMachine", async () => {
-      const bus = createEventBus<FormBusEvents>();
       const formService = new MiniappMachine(formMachine, {
-        bus,
         defaultValue: { bio: "Original bio" },
         rules: {
           bio: [
             {
               validator: (val: any) =>
-                val && String(val).length >= 5 ? true : "Bio must be at least 5 chars",
+                val && String(val).length >= 5
+                  ? true
+                  : "Bio must be at least 5 chars",
             },
           ],
         },
       });
       formService.start();
+      const host = connectForm(formService.service).formContext;
 
       const textareaService = new MiniappMachine(textareaMachine, {
         name: "bio",
         defaultValue: "Original bio",
-        formBus: bus,
+        formContext: host,
       });
       textareaService.start();
 

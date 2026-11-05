@@ -1,6 +1,7 @@
 import type { RadioGroupProps } from "./radio-group.types";
 
 export const defaultRadioGroupProps: RadioGroupProps = {
+  formContext: undefined,
   value: null,
   defaultValue: null,
   disabled: false,

@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./form.anatomy";
 
 export type FormState =
@@ -106,9 +106,6 @@ export interface FormFieldRegistration {
   isDisabled?: (() => boolean) | undefined;
   component?: MiniAppComponent | undefined;
   onValidationChange?: ((state: FormFieldValidationState) => void) | undefined;
-  onFormStateChange?:
-    | ((state: { disabled: boolean; readOnly: boolean }) => void)
-    | undefined;
 }
 
 export interface FormValidationResult {
@@ -131,33 +128,25 @@ export interface FormErrorDetails {
   values: Record<string, any>;
 }
 
-export type FormBusEvents = {
-  register: FormFieldRegistration;
-  unregister: { name: string; id?: string | undefined };
-  input: { name: string; value: any; id?: string | undefined };
-  change: { name: string; value: any; id?: string | undefined };
-  blur: { name: string; value?: any; id?: string | undefined };
-  focus: { name: string; value?: any; id?: string | undefined };
-  validate: { name?: string | undefined; result: FormValidationResult };
-  reset: { name?: string | string[] | undefined };
-  "clear-errors": { name?: string | string[] | undefined };
-  submit: FormSubmitDetails;
-  error: FormErrorDetails;
-  "field:error": { name: string; errors: string[]; isValid: boolean };
-  "field:rules": {
-    name: string;
-    getRules: () => FormRule[];
-    required?: boolean | undefined;
-  };
-  "form:state": { disabled: boolean; readOnly: boolean };
-  "field:state": {
-    name: string;
-    disabled?: boolean | undefined;
-    size?: string | undefined;
-  };
-};
-
-export type FormEventBus = EventBus<FormBusEvents>;
+export interface FormHostContext {
+  disabled(): boolean;
+  readOnly(): boolean;
+  errors(name: string): string[];
+  fieldState(
+    name: string,
+  ): { disabled?: boolean | undefined; size?: string | undefined } | undefined;
+  register(field: FormFieldRegistration): () => void;
+  unregister(name: string, id?: string): void;
+  notify(
+    trigger: "input" | "change" | "blur" | "focus",
+    payload: { name: string; value?: any; id?: string | undefined },
+  ): void;
+  setFieldRules(name: string, getRules: () => FormRule[]): void;
+  setFieldState(
+    name: string,
+    state: { disabled?: boolean | undefined; size?: string | undefined },
+  ): void;
+}
 
 export type FormAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type FormUI = ComponentUI<typeof anatomy>;
@@ -172,8 +161,6 @@ export interface FormProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional pre-created Form EventBus instance (injected/provided via @code-ui/context) */
-  bus?: EventBus<FormBusEvents> | undefined;
   /** Custom UI slot classes */
   ui?: FormUI | undefined;
   /** Initial / controlled form values map */
@@ -220,6 +207,12 @@ export interface FormProps {
 }
 
 export type FormEvent =
+  | { type: "FIELD.RULES"; name: string; getRules: () => FormRule[] }
+  | {
+      type: "FIELD.STATE";
+      name: string;
+      state: NonNullable<ReturnType<FormHostContext["fieldState"]>>;
+    }
   | { type: "FIELD.REGISTER"; field: FormFieldRegistration }
   | { type: "FIELD.UNREGISTER"; name: string; id?: string | undefined }
   | {
@@ -259,9 +252,16 @@ export type FormEvent =
   | { type: "RESET_VALIDATION"; name?: string | string[] | undefined }
   | {
       type: "SET_ERRORS";
-      errors: FormErrorBag | Record<string, string | string[]> | FormFieldError[];
+      errors:
+        | FormErrorBag
+        | Record<string, string | string[]>
+        | FormFieldError[];
     }
-  | { type: "SET_VALUES"; values: Record<string, any>; validate?: boolean | undefined }
+  | {
+      type: "SET_VALUES";
+      values: Record<string, any>;
+      validate?: boolean | undefined;
+    }
   | {
       type: "SET_FIELD_VALUE";
       name: string;
@@ -275,6 +275,10 @@ export interface FormContext {
   errorBag: FormErrorBag;
   errors: FormFieldError[];
   fieldStates: Record<string, FormFieldState>;
+  fieldOverrides: Record<
+    string,
+    NonNullable<ReturnType<FormHostContext["fieldState"]>>
+  >;
   dirtyFields: string[];
   touchedFields: string[];
   validatingFields: string[];
@@ -302,11 +306,10 @@ export interface FormComputed {
 }
 
 export interface FormRefs {
-  bus: EventBus<FormBusEvents>;
+  hostContext: FormHostContext;
   fields: Map<string, FormFieldRegistration>;
   fieldRules: Map<string, () => FormRule[]>;
   validationTokens: Map<string, number>;
-  busDisposers: Array<() => void>;
 }
 
 export interface FormSchema extends MachineSchema {
@@ -366,8 +369,8 @@ export interface FormApi {
   disabled: boolean;
   /** Whether the form is read-only */
   readOnly: boolean;
-  /** Underlying Form EventBus instance */
-  bus: EventBus<FormBusEvents>;
+  /** Stable reactive facade shared with descendant fields. */
+  formContext: FormHostContext;
   /** Validate all registered fields or specific field(s) */
   validate(name?: string | string[]): Promise<FormValidationResult>;
   /** Validate all fields, focus/scroll on error if invalid, or fire submit if valid */
@@ -389,7 +392,10 @@ export interface FormApi {
   /** Get value of a specific field */
   getFieldValue(name: string): any;
   /** Set multiple field values programmatically */
-  setValues(values: Record<string, any>, options?: { validate?: boolean }): void;
+  setValues(
+    values: Record<string, any>,
+    options?: { validate?: boolean },
+  ): void;
   /** Set a single field value programmatically */
   setFieldValue(
     name: string,

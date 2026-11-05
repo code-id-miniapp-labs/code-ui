@@ -3,7 +3,7 @@
   <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
     <view class="text-xl font-extrabold text-neutral-950">Form & Validation</view>
     <view class="text-xs text-neutral-500 mt-1">
-      EventBus context injection, validation rules, errorBag, focusOnError, and multi-form isolation.
+      Reactive form context, validation rules, errorBag, focusOnError, and multi-form isolation.
     </view>
   </view>
   <view class="px-5 flex flex-col gap-8">
@@ -69,7 +69,7 @@
       </c-form>
     </c-card>
     <!-- Form 2: Quick Transfer (Coexisting Form) -->
-    <c-card title="Independent Form 2: Quick Transfer" description="Coexists on the same Page with zero cross-talk between form buses.">
+    <c-card title="Independent Form 2: Quick Transfer" description="Coexists on the same Page with zero cross-talk between forms.">
       <c-form id="transfer-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleTransferSubmit" bind:error="handleTransferError">
         <view class="flex flex-col gap-4">
           <c-form-field name="transferPin" label="6-Digit Transfer PIN" description="Instant transfer authorization ($250.00)" required="{{true}}">

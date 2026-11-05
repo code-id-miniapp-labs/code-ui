@@ -1,7 +1,7 @@
 import type { MachinePlugin } from "../plugin";
 
-function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
+function getServiceHost(service: any) {
+  return service?.refs?.get ? service.refs.get("hostContext") : undefined;
 }
 
 /**
@@ -40,14 +40,11 @@ export function shouldLinkField(parent: any, child: any): boolean {
   return true;
 }
 
-export function linkFieldToParentBus(parent: any, child: any, bus: any) {
-  if (!shouldLinkField(parent, child)) return;
-  child.__codeUiFormBus = bus;
+export function linkFieldToParentHost(parent: any, child: any, host: any) {
+  if (!host || !shouldLinkField(parent, child)) return;
+  child.__codeUiFormHost = host;
   if (child.__codeUiMachine) {
-    child.__codeUiMachine.updateProps({ formBus: bus });
-  }
-  if (typeof child.__codeUiBindFormBus === "function") {
-    child.__codeUiBindFormBus(bus);
+    child.__codeUiMachine.updateProps({ formContext: host });
   }
   if (child.__codeUiFieldChildren && Array.isArray(child.__codeUiFieldChildren)) {
     for (const nested of child.__codeUiFieldChildren) {
@@ -56,17 +53,18 @@ export function linkFieldToParentBus(parent: any, child: any, bus: any) {
   }
 }
 
-export function unlinkFieldFromParentBus(parent: any, child: any) {
-  const parentBus =
-    parent.__codeUiFormBus ?? getServiceBus(parent.__codeUiMachine?.service);
-  if (child.__codeUiFormBus && child.__codeUiFormBus === parentBus) {
-    child.__codeUiFormBus = undefined;
+export function unlinkFieldFromParentHost(parent: any, child: any) {
+  if (Array.isArray(parent.__codeUiPendingFields)) {
+    parent.__codeUiPendingFields = parent.__codeUiPendingFields.filter((field: any) => field !== child);
+  }
+  const parentHost =
+    parent.__codeUiFormHost ?? getServiceHost(parent.__codeUiMachine?.service);
+  if (child.__codeUiFormHost && child.__codeUiFormHost === parentHost) {
+    child.__codeUiFormHost = undefined;
     if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({ formBus: undefined });
+      child.__codeUiMachine.updateProps({ formContext: null });
     }
-    if (typeof child.__codeUiUnlinkFormBus === "function") {
-      child.__codeUiUnlinkFormBus();
-    }
+
   }
 }
 
@@ -76,7 +74,7 @@ export function getFormFieldWrapperDisabled(wrapper: any, snapshot?: any): boole
   }
   if (wrapper.__codeUiMachine?.service?.context) {
     const ctx = wrapper.__codeUiMachine.service.context;
-    return Boolean(ctx.get("disabled") || ctx.get("formDisabled"));
+    return wrapper.__codeUiMachine.service.computed?.("isDisabled") ?? Boolean(ctx.get("disabled"));
   }
   const api = (wrapper as any).__codeUiApi;
   if (api && typeof api.disabled === "boolean") {
@@ -128,9 +126,9 @@ export function updateChildFromFormFieldWrapper(
   const disabled = getFormFieldWrapperDisabled(wrapper, snapshot);
   const size = getFormFieldWrapperSize(wrapper, snapshot);
   const wrapperName = getFormFieldWrapperName(wrapper, snapshot);
-  const bus =
-    wrapper.__codeUiFormBus ??
-    getServiceBus(wrapper.__codeUiMachine?.service);
+  const host =
+    wrapper.__codeUiFormHost ??
+    getServiceHost(wrapper.__codeUiMachine?.service);
   if (child.__codeUiMachine) {
     const patch: Record<string, any> = {
       fieldDisabled: disabled,
@@ -139,16 +137,12 @@ export function updateChildFromFormFieldWrapper(
     if (wrapperName && !child.data?.name) {
       patch.name = wrapperName;
     }
-    if (bus && !child.__codeUiFormBus) {
-      child.__codeUiFormBus = bus;
-      patch.formBus = bus;
+    if (host && !child.__codeUiFormHost) {
+      child.__codeUiFormHost = host;
+      patch.formContext = host;
     }
     child.__codeUiMachine.updateProps(patch);
-    if (patch.name || patch.formBus) {
-      child.__codeUiMachine.service?.refs
-        ?.get?.("formField")
-        ?.rebind?.(patch.formBus);
-    }
+
   }
 }
 
@@ -193,11 +187,11 @@ export const cuiFormFieldBehavior: any =
             type: "ancestor",
             target: cuiFormParentBehavior,
             linked(this: any, target: any) {
-              const bus =
-                target.__codeUiFormBus ??
-                getServiceBus(target.__codeUiMachine?.service);
-              if (bus) {
-                linkFieldToParentBus(target, this, bus);
+              const host =
+                target.__codeUiFormHost ??
+                getServiceHost(target.__codeUiMachine?.service);
+              if (host) {
+                linkFieldToParentHost(target, this, host);
               } else {
                 target.__codeUiPendingFields =
                   target.__codeUiPendingFields || [];
@@ -205,7 +199,7 @@ export const cuiFormFieldBehavior: any =
               }
             },
             unlinked(this: any, target: any) {
-              unlinkFieldFromParentBus(target, this);
+              unlinkFieldFromParentHost(target, this);
             },
           },
         },
@@ -225,17 +219,17 @@ export function setupFormRelations(
       type: "descendant",
       target: cuiFormFieldBehavior,
       linked(this: any, target: any) {
-        const bus =
-          this.__codeUiFormBus ?? getServiceBus(this.__codeUiMachine?.service);
-        if (!bus) {
+        const host =
+          this.__codeUiFormHost ?? getServiceHost(this.__codeUiMachine?.service);
+        if (!host) {
           this.__codeUiPendingFields = this.__codeUiPendingFields || [];
           this.__codeUiPendingFields.push(target);
           return;
         }
-        linkFieldToParentBus(this, target, bus);
+        linkFieldToParentHost(this, target, host);
       },
       unlinked(this: any, target: any) {
-        unlinkFieldFromParentBus(this, target);
+        unlinkFieldFromParentHost(this, target);
       },
     };
   }
@@ -258,18 +252,18 @@ export function setupFormRelations(
       type: "ancestor",
       target: cuiFormParentBehavior,
       linked(this: any, target: any) {
-        const bus =
-          target.__codeUiFormBus ??
-          getServiceBus(target.__codeUiMachine?.service);
-        if (bus) {
-          linkFieldToParentBus(target, this, bus);
+        const host =
+          target.__codeUiFormHost ??
+          getServiceHost(target.__codeUiMachine?.service);
+        if (host) {
+          linkFieldToParentHost(target, this, host);
         } else {
           target.__codeUiPendingFields = target.__codeUiPendingFields || [];
           target.__codeUiPendingFields.push(this);
         }
       },
       unlinked(this: any, target: any) {
-        unlinkFieldFromParentBus(target, this);
+        unlinkFieldFromParentHost(target, this);
       },
     };
 
@@ -299,12 +293,12 @@ export function handleFormAttached(
     const parents = instance.getRelationNodes("cuiFormParent");
     if (parents && parents.length > 0) {
       const parent = parents[0];
-      const bus =
-        parent.__codeUiFormBus ??
-        getServiceBus(parent.__codeUiMachine?.service);
-      if (bus && shouldLinkField(parent, instance)) {
-        initialProps.formBus = bus;
-        instance.__codeUiFormBus = bus;
+      const host =
+        parent.__codeUiFormHost ??
+        getServiceHost(parent.__codeUiMachine?.service);
+      if (host && shouldLinkField(parent, instance)) {
+        initialProps.formContext = host;
+        instance.__codeUiFormHost = host;
       }
     }
   }
@@ -325,12 +319,12 @@ export function handleFormAttached(
       if (wrapperName && !initialProps.name) {
         initialProps.name = wrapperName;
       }
-      const wrapperBus =
-        wrapper.__codeUiFormBus ??
-        getServiceBus(wrapper.__codeUiMachine?.service);
-      if (wrapperBus && !initialProps.formBus) {
-        initialProps.formBus = wrapperBus;
-        instance.__codeUiFormBus = wrapperBus;
+      const wrapperHost =
+        wrapper.__codeUiFormHost ??
+        getServiceHost(wrapper.__codeUiMachine?.service);
+      if (wrapperHost && !initialProps.formContext) {
+        initialProps.formContext = wrapperHost;
+        instance.__codeUiFormHost = wrapperHost;
       }
     }
   }
@@ -362,15 +356,15 @@ export function handleFormMachineStarted(
   }
 
   if (options.formParent) {
-    const bus = getServiceBus(machine.service);
-    if (bus) {
-      instance.__codeUiFormBus = bus;
+    const host = getServiceHost(machine.service);
+    if (host) {
+      instance.__codeUiFormHost = host;
     }
 
     const pending = instance.__codeUiPendingFields;
     if (pending && Array.isArray(pending)) {
       for (let i = 0; i < pending.length; i++) {
-        linkFieldToParentBus(instance, pending[i], bus);
+        linkFieldToParentHost(instance, pending[i], host);
       }
       instance.__codeUiPendingFields = [];
     }
@@ -378,7 +372,7 @@ export function handleFormMachineStarted(
     if (typeof instance.getRelationNodes === "function") {
       const fields = instance.getRelationNodes("cuiFormField") ?? [];
       for (let i = 0; i < fields.length; i++) {
-        linkFieldToParentBus(instance, fields[i], bus);
+        linkFieldToParentHost(instance, fields[i], host);
       }
     }
   }
@@ -391,13 +385,13 @@ export function handleFormReady(
   },
 ) {
   if (options.formParent && typeof instance.getRelationNodes === "function") {
-    const bus =
-      instance.__codeUiFormBus ??
-      getServiceBus(instance.__codeUiMachine?.service);
-    if (bus) {
+    const host =
+      instance.__codeUiFormHost ??
+      getServiceHost(instance.__codeUiMachine?.service);
+    if (host) {
       const fields = instance.getRelationNodes("cuiFormField") ?? [];
       for (let i = 0; i < fields.length; i++) {
-        linkFieldToParentBus(instance, fields[i], bus);
+        linkFieldToParentHost(instance, fields[i], host);
       }
     }
   }
@@ -412,13 +406,18 @@ export function handleFormDetached(
   },
 ) {
   if (options.formParent) {
-    instance.__codeUiFormBus = undefined;
+    const fields = instance.getRelationNodes?.("cuiFormField") ?? [];
+    for (const field of fields) unlinkFieldFromParentHost(instance, field);
+    instance.__codeUiFormHost = undefined;
     instance.__codeUiPendingFields = [];
   }
   if (options.formField) {
-    instance.__codeUiFormBus = undefined;
+    instance.__codeUiFormHost = undefined;
   }
   if (options.formFieldWrapper) {
+    for (const child of (instance.__codeUiFieldChildren ?? []).slice()) {
+      unlinkFieldFromWrapper(instance, child);
+    }
     instance.__codeUiFieldChildren = [];
     instance.__codeUiOnSnapshot = undefined;
   }

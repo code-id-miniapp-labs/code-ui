@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./pin-input.anatomy";
 
 export type PinInputType = "numeric" | "alphanumeric" | "alphabetic";
@@ -46,8 +47,10 @@ export interface PinInputProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus (defaults to inject(component, FormBusKey)) */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: PinInputUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -109,9 +112,17 @@ export interface PinInputProps {
   /** Callback fired when an invalid character is entered */
   onInvalid?: ((details: PinInputValueInvalidDetails) => void) | undefined;
   /** Callback fired when input receives focus */
-  onFocus?: ((details: { value: string[]; valueAsString: string; index: number }) => void) | undefined;
+  onFocus?:
+    | ((details: {
+        value: string[];
+        valueAsString: string;
+        index: number;
+      }) => void)
+    | undefined;
   /** Callback fired when input loses focus */
-  onBlur?: ((details: { value: string[]; valueAsString: string }) => void) | undefined;
+  onBlur?:
+    | ((details: { value: string[]; valueAsString: string }) => void)
+    | undefined;
 }
 
 export type PinInputEvent =
@@ -133,10 +144,6 @@ export interface PinInputContext {
   highlight: boolean;
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: PinInputSize | "";
   invalid: boolean;
   mask: boolean;
   otp: boolean;
@@ -152,6 +159,12 @@ export interface PinInputContext {
 }
 
 export interface PinInputComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   valueAsString: string;
   isValueComplete: boolean;
   isEmpty: boolean;
@@ -165,7 +178,6 @@ export interface PinInputComputed {
 export interface PinInputRefs {
   initialValue?: string[] | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export interface PinInputSchema extends MachineSchema {

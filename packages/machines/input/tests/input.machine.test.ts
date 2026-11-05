@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { FormBusEvents } from "@code-ui/form";
 import { formMachine, connectForm } from "@code-ui/form";
 import { inputMachine } from "../src/input.machine";
 import { connectInput } from "../src/input.connect";
@@ -303,139 +301,104 @@ describe("Input Machine", () => {
   });
 
   describe("Form & FormField Connection", () => {
-    it("registers with Form bus and emits input/change on value changes", async () => {
-      const bus = createEventBus<FormBusEvents>();
-      const onRegister = vi.fn();
-      const onInput = vi.fn();
-      const onChange = vi.fn();
-
-      bus.on("register", onRegister);
-      bus.on("input", onInput);
-      bus.on("change", onChange);
-
+    it("registers with the form host and notifies input/change", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
+      const register = vi.spyOn(host, "register");
+      const notify = vi.spyOn(host, "notify");
       const machine = new MiniappMachine(inputMachine, {
-        name: "username",
-        defaultValue: "john",
-        formBus: bus,
+        name: "email",
+        formContext: host,
       });
       machine.start();
-
-      expect(onRegister).toHaveBeenCalledTimes(1);
-      expect(onRegister).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "username",
-        }),
+      await flush();
+      expect(register).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "email" }),
       );
-
-      const api = connectInput(machine.service);
-      api.handleInput({ detail: { value: "john_doe" } });
+      connectInput(machine.service).handleInput({
+        detail: { value: "updated" },
+      });
       await flush();
-
-      expect(onInput).toHaveBeenCalledWith({
-        name: "username",
-        value: "john_doe",
-        id: expect.any(String),
-      });
-      expect(onChange).toHaveBeenCalledWith({
-        name: "username",
-        value: "john_doe",
-        id: expect.any(String),
-      });
-
+      expect(notify).toHaveBeenCalledWith(
+        "input",
+        expect.objectContaining({ name: "email", value: "updated" }),
+      );
+      expect(notify).toHaveBeenCalledWith(
+        "change",
+        expect.objectContaining({ name: "email", value: "updated" }),
+      );
       machine.stop();
+      form.stop();
     });
 
-    it("emits focus and blur on Form bus", async () => {
-      const bus = createEventBus<FormBusEvents>();
-      const onFocus = vi.fn();
-      const onBlur = vi.fn();
-
-      bus.on("focus", onFocus);
-      bus.on("blur", onBlur);
-
+    it("notifies the form host on focus and blur", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
+      const notify = vi.spyOn(host, "notify");
       const machine = new MiniappMachine(inputMachine, {
         name: "email",
-        defaultValue: "test@domain.com",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      const api = connectInput(machine.service);
-      api.handleFocus({});
+      connectInput(machine.service).handleFocus({});
       await flush();
-
-      expect(onFocus).toHaveBeenCalledWith({
-        name: "email",
-        value: "test@domain.com",
-        id: expect.any(String),
-      });
-
-      api.handleBlur({});
+      connectInput(machine.service).handleBlur({});
       await flush();
-
-      expect(onBlur).toHaveBeenCalledWith({
-        name: "email",
-        value: "test@domain.com",
-        id: expect.any(String),
-      });
-
+      expect(notify).toHaveBeenCalledWith(
+        "focus",
+        expect.objectContaining({ name: "email" }),
+      );
+      expect(notify).toHaveBeenCalledWith(
+        "blur",
+        expect.objectContaining({ name: "email" }),
+      );
       machine.stop();
+      form.stop();
     });
 
-    it("inherits disabled and size from form-field via field:state bus event", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives wrapper disabled and size from the form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(inputMachine, {
         name: "email",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      let api = connectInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.size).toBe("md");
-
-      // Wrapper form-field broadcasts disabled=true and size="sm"
-      bus.emit("field:state", { name: "email", disabled: true, size: "sm" });
       await flush();
-
-      api = connectInput(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.size).toBe("sm");
-      expect(api.inputProps.disabled).toBe(true);
-
-      // Wrapper updates to disabled=false and size="lg"
-      bus.emit("field:state", { name: "email", disabled: false, size: "lg" });
+      host.setFieldState("email", { disabled: true, size: "sm" });
       await flush();
-
-      api = connectInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.size).toBe("lg");
-      expect(api.inputProps.disabled).toBe(false);
-
+      expect(connectInput(machine.service).disabled).toBe(true);
+      expect(connectInput(machine.service).size).toBe("sm");
+      host.setFieldState("email", { disabled: false, size: "lg" });
+      await flush();
+      expect(connectInput(machine.service).disabled).toBe(false);
+      expect(connectInput(machine.service).size).toBe("lg");
       machine.stop();
+      form.stop();
     });
 
-    it("inherits form-level disabled and readOnly from form:state bus event", async () => {
-      const bus = createEventBus<FormBusEvents>();
+    it("derives disabled and readOnly from the reactive form host", async () => {
+      const form = new MiniappMachine(formMachine, {});
+      form.start();
+      const host = connectForm(form.service).formContext;
       const machine = new MiniappMachine(inputMachine, {
         name: "email",
-        formBus: bus,
+        formContext: host,
       });
       machine.start();
-
-      let api = connectInput(machine.service);
-      expect(api.disabled).toBe(false);
-      expect(api.readOnly).toBe(false);
-
-      bus.emit("form:state", { disabled: true, readOnly: true });
+      form.updateProps({ disabled: true, readOnly: true });
       await flush();
-
-      api = connectInput(machine.service);
-      expect(api.disabled).toBe(true);
-      expect(api.readOnly).toBe(true);
-      expect(api.inputProps.disabled).toBe(true);
-
+      expect(connectInput(machine.service).disabled).toBe(true);
+      expect(connectInput(machine.service).readOnly).toBe(true);
+      form.updateProps({ disabled: false, readOnly: false });
+      await flush();
+      expect(connectInput(machine.service).disabled).toBe(false);
+      expect(connectInput(machine.service).readOnly).toBe(false);
       machine.stop();
+      form.stop();
     });
 
     it("integrates with formMachine: validation error sets invalid=true, reset restores initial value", async () => {
@@ -461,12 +424,12 @@ describe("Input Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       const inputM = new MiniappMachine(inputMachine, {
         name: "email",
         defaultValue: "initial_text",
-        formBus: bus,
+        formContext: host,
         component: inputComp,
       });
       inputM.start();

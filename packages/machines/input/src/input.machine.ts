@@ -9,6 +9,7 @@ import type {
   InputMachine,
   InputProps,
   InputSchema,
+  InputSize,
 } from "./input.types";
 import { defaultInputProps } from "./input.props";
 
@@ -30,7 +31,6 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
     return {
       initialValue: initial,
       formField: undefined,
-      currentFormBus: prop("formBus"),
     };
   },
 
@@ -41,14 +41,6 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
     ) =>
       bindable<InputContext[K]>(() => ({
         value: prop(key) as InputContext[K] | undefined,
-        defaultValue,
-      }));
-
-    const stateBindable = <K extends keyof InputContext>(
-      _key: K,
-      defaultValue: InputContext[K],
-    ) =>
-      bindable<InputContext[K]>(() => ({
         defaultValue,
       }));
 
@@ -79,11 +71,6 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
           defaultValue: false,
         };
       }),
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
       variant: propBindable("variant", "outline"),
       color: propBindable("color", "primary"),
       size: propBindable("size", "md"),
@@ -108,16 +95,46 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
   },
 
   computed: {
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "input")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "input")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "input").length,
+      );
+    },
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
-    isDisabled: ({ context }) =>
+    isDisabled: ({ context, computed }) =>
       Boolean(
-        context.get("formDisabled") ||
-        context.get("fieldDisabled") ||
+        computed("formDisabled") ||
+        computed("fieldDisabled") ||
         context.get("disabled"),
       ),
-    isReadOnly: ({ context }) =>
-      Boolean(context.get("readOnly") || context.get("formReadOnly")),
+    isReadOnly: ({ context, computed }) =>
+      Boolean(context.get("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
     isClearable: ({ context, computed }) =>
@@ -126,16 +143,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         computed("isInteractive") &&
         computed("isFilled"),
       ),
-    effectiveSize: ({ context }) =>
-      context.get("fieldSize") || context.get("size") || "md",
-  },
-
-  watch: ({ prop, refs }) => {
-    const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
-    }
+    effectiveSize: ({ context, computed }) =>
+      (computed("fieldSize") || context.get("size") || "md") as InputSize,
   },
 
   entry: ["setupFormField"],
@@ -198,7 +207,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus"),
+            getHost: () => prop("formContext"),
             id: scope.id ?? "input",
             getFormId: () => context.get("form") || prop("form") || "",
             getName: () => context.get("name") || prop("name") || "",
@@ -219,25 +228,9 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
               if (!computed("isInteractive")) return;
               state.set("focused");
             },
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );

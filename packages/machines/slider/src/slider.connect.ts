@@ -18,7 +18,7 @@ export function connectSlider(service: SliderService): SliderApi {
   const inverted = context.get("inverted");
   const isDisabled = computed("isDisabled");
   const isReadOnly = computed("isReadOnly");
-  const isInvalid = Boolean(context.get("invalid"));
+  const isInvalid = computed("isInvalid");
   const isDragging = computed("isDragging");
   const activeThumbIndex = context.get("activeThumbIndex");
   const values = context.get("value");
@@ -49,36 +49,37 @@ export function connectSlider(service: SliderService): SliderApi {
 
   const thumbs: SliderThumbSnapshot[] = values.map(
     (val: number, index: number) => {
-    let percent = getValueAsPercent(val, min, max);
-    if (inverted) percent = 100 - percent;
-    const id = dom.getThumbId(scope, index);
-    const style =
-      orientation === "vertical"
-        ? `bottom: ${percent}%; transform: translate(-50%, 50%);`
-        : `left: ${percent}%; transform: translate(-50%, -50%);`;
+      let percent = getValueAsPercent(val, min, max);
+      if (inverted) percent = 100 - percent;
+      const id = dom.getThumbId(scope, index);
+      const style =
+        orientation === "vertical"
+          ? `bottom: ${percent}%; transform: translate(-50%, 50%);`
+          : `left: ${percent}%; transform: translate(-50%, -50%);`;
 
-    return {
-      index,
-      value: val,
-      percent,
-      id,
-      style,
-      thumbProps: {
+      return {
+        index,
+        value: val,
+        percent,
         id,
-        "data-scope": "slider",
-        "data-part": "thumb",
-        "data-index": index,
-        "data-disabled": String(isDisabled),
-        "data-dragging": String(activeThumbIndex === index),
-        role: "slider",
-        "aria-valuemin": min,
-        "aria-valuemax": max,
-        "aria-valuenow": val,
-        "aria-orientation": orientation,
-        "aria-disabled": String(isDisabled),
-      },
-    };
-  });
+        style,
+        thumbProps: {
+          id,
+          "data-scope": "slider",
+          "data-part": "thumb",
+          "data-index": index,
+          "data-disabled": String(isDisabled),
+          "data-dragging": String(activeThumbIndex === index),
+          role: "slider",
+          "aria-valuemin": min,
+          "aria-valuemax": max,
+          "aria-valuenow": val,
+          "aria-orientation": orientation,
+          "aria-disabled": String(isDisabled),
+        },
+      };
+    },
+  );
 
   const rawMarks = prop("marks");
   let markerList: Array<{ value: number; label?: string | undefined }> = [];
@@ -351,4 +352,3 @@ export function connectSlider(service: SliderService): SliderApi {
     },
   };
 }
-

@@ -1,8 +1,7 @@
 import type { Machine, Params, Service } from "@code-ui/core";
-import type { FormBusEvents, FormRule } from "@code-ui/form";
-import type { EventBus } from "@code-ui/utils";
+import type { FormHostContext, FormRule } from "@code-ui/form";
+import type { MiniAppComponent } from "@code-ui/utils";
 
-export type FormEventBus = EventBus<FormBusEvents>;
 
 export type FormFieldSize = "xs" | "sm" | "md" | "lg" | "xl";
 
@@ -36,8 +35,9 @@ export interface FormFieldProps {
   rules?: FormRule[] | undefined;
   size?: FormFieldSize | undefined;
   ui?: Record<string, any> | undefined;
-  formBus?: FormEventBus | undefined;
-  component?: unknown | undefined;
+  formContext?: FormHostContext | null | undefined;
+  form?: string | undefined;
+  component?: MiniAppComponent | undefined;
 }
 
 export type FormFieldMachineState = "valid" | "invalid";
@@ -59,19 +59,23 @@ export interface FormFieldContext {
   innerError: string;
   required: boolean;
   disabled: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
   rules: FormRule[];
   size: FormFieldSize;
   ui: Record<string, any>;
 }
 
 export interface FormFieldRefs {
-  currentFormBus: FormEventBus | undefined;
-  busDisposers: Array<() => void>;
+  injectedHost: { (): FormHostContext | undefined; (value: FormHostContext | undefined): void };
+  stopInjection: (() => void) | undefined;
+  injectionForm: string | undefined;
+  publishedHost: FormHostContext | undefined;
+  publishedName: string;
 }
 
 export interface FormFieldComputed {
+  host: FormHostContext | null | undefined;
+  isDisabled: boolean;
+  isReadOnly: boolean;
   displayError: string;
   displayHelp: string;
   invalid: boolean;
@@ -89,8 +93,8 @@ export interface FormFieldSchema {
   action:
     | "setInnerError"
     | "clearInnerError"
-    | "setupBus"
-    | "cleanupBus";
+    | "setupHost"
+    | "cleanupHost";
   effect: "trackFieldProps";
 }
 

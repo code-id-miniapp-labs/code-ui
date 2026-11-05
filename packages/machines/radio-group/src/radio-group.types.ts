@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./radio-group.anatomy";
 
 export type RadioGroupState = "idle";
@@ -65,8 +66,10 @@ export interface RadioGroupProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: RadioGroupUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -136,10 +139,6 @@ export type RadioGroupMachineContext = {
   legend: string;
   items: (string | RadioGroupItemRaw)[];
   ui: RadioGroupUI;
-  fieldDisabled: boolean;
-  fieldSize: RadioGroupSize | "";
-  formDisabled: boolean;
-  formReadOnly: boolean;
 };
 
 export type RadioGroupEvent =
@@ -149,6 +148,13 @@ export type RadioGroupEvent =
   | { type: "SET_INVALID"; invalid: boolean };
 
 export interface RadioGroupComputed {
+  effectiveSize: RadioGroupSize;
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isInteractive: boolean;
   isDisabled: boolean;
   isReadOnly: boolean;
@@ -168,7 +174,6 @@ export interface RadioGroupRefs {
   initialValue?: string | null | undefined;
   groupContext: RadioGroupContext;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export interface RadioGroupSchema extends MachineSchema {

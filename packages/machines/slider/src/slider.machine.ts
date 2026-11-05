@@ -68,8 +68,6 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     return {
       initialValue: initialValues,
       rect: null,
-      currentFormBus: prop("formBus"),
-      currentName: prop("name"),
       formField: undefined,
     };
   },
@@ -95,10 +93,6 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     return {
       disabled: propBindable("disabled", false),
       readOnly: propBindable("readOnly", false),
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: stateBindable("fieldDisabled", false),
-      fieldSize: stateBindable("fieldSize", ""),
 
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
@@ -142,21 +136,51 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
   },
 
   computed: {
-    isDisabled: ({ context }) =>
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "slider")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "slider")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "slider").length,
+      );
+    },
+    isDisabled: ({ context, computed }) =>
       Boolean(
         context.get("disabled") ||
-        context.get("formDisabled") ||
-        context.get("fieldDisabled"),
+        computed("formDisabled") ||
+        computed("fieldDisabled"),
       ),
-    isReadOnly: ({ context }) =>
-      Boolean(context.get("readOnly") || context.get("formReadOnly")),
+    isReadOnly: ({ context, computed }) =>
+      Boolean(context.get("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
     isDragging: ({ state }) => state.matches("dragging"),
     isRange: ({ context }) => context.get("value").length > 1,
-    effectiveSize: ({ prop, context }) => {
+    effectiveSize: ({ prop, computed }) => {
       const rawSize = prop("size");
-      const fieldSize = context.get("fieldSize");
+      const fieldSize = computed("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
         : ((fieldSize || rawSize || "md") as SliderSize);
@@ -172,19 +196,6 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       const max = context.get("max");
       return vals.map((v) => getValueAsPercent(v, min, max));
     },
-  },
-
-  watch: ({ prop, refs }) => {
-    const nextFormBus = prop("formBus");
-    const nextName = prop("name");
-    const busChanged = nextFormBus !== refs.get("currentFormBus");
-    const nameChanged = nextName !== refs.get("currentName");
-
-    if (busChanged || nameChanged) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.set("currentName", nextName);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
-    }
   },
 
   entry: ["setupFormField"],
@@ -427,7 +438,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus") ?? undefined,
+            getHost: () => prop("formContext"),
             id: scope.id ?? "slider",
             getFormId: () => prop("form") ?? "",
             getName: () => prop("name") ?? "",
@@ -445,25 +456,9 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
               context.set("value", [...initial]);
             },
             focus: () => {},
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );

@@ -1,12 +1,14 @@
 # EventBus to Reactive Group Context Refactor Plan
 
-**Status:** Proposed (revised)  
+**Status:** Implemented; retained as the historical migration plan.
 **Date:** 2026-11-05  
 **Scope:** `packages/frameworks/miniapp/src/connect.ts`, `packages/core/src/types.ts`, `packages/machines/*`, `packages/frameworks/miniapp/src/behaviors/*`, `packages/context`, `packages/utils`
 
 ---
 
 ## 1. Executive Summary
+
+Implementation note: all runtime consumers now use reactive facades. `createEventBus`, `EventBus`, and the bus-only `EventHandler` type have been removed from `@code-ui/utils` (breaking public API removal). Native MiniApp `triggerEvent` / `createEventTrigger` remain. Form registration is managed by shared reactive effects, without a manual `rebind` API. References to the former architecture below are historical.
 
 `@code-ui` coordinates compound components (`accordion`, `tabs`, `stepper`, `radio-group`, `checkbox-group`) and form controls (`<c-form>`) with an imperative pub-sub `EventBus` (`createEventBus` in `@code-ui/utils`).
 
@@ -359,6 +361,15 @@ export interface FormContext {
 - [ ] Simplify `checkbox.machine.ts` and `radio.machine.ts`: derive `isChecked`, group `disabled`, `size`, `variant`, `invalid` in `computed`; delete `stateBindable` group mirrors and bus listeners.
 
 ### Phase 5: Form context
+
+**Implemented (2026-11-05).** The inventory and staging below record the original migration plan. Final decisions:
+
+- Removed `FormProps.bus`, `FormApi.bus`, `formBus`, and the form/context bus helpers without compatibility shims. This is a breaking 0.x API change.
+- Added `FormHostContext`, exposed as `FormApi.formContext` and passed to fields through the `formContext` prop. `provideFormHost`, `injectFormHost`, `getFormHostKey`, and `FormHostKey` retain scoped and late deep-slot injection.
+- Host getters read form-owned bindables; field computeds derive validation, disabled/read-only, and wrapper size overrides. Wrapper overrides live in the form's `fieldOverrides` bindable, not parallel signals.
+- Registrations return local unregister disposers. Reset remains an imperative registration operation; wrapper errors derive from the host while local `ERROR.SET` / `ERROR.CLEAR` / `RESET` remain supported.
+- Added reactive integration, scoped injection, late registration, rebind, detach, validation, and reset coverage.
+- Validation: `pnpm test` (747 tests) and `pnpm typecheck` passed. Library packages built successfully; the example build failed with `EEXIST` while copying component output. Workspace lint remains blocked by existing test-file errors.
 
 Inventory (2026-11-05, measured from the current tree):
 

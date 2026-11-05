@@ -1,7 +1,4 @@
-import type {
-  CheckboxApi,
-  CheckboxService,
-} from "./checkbox.types";
+import type { CheckboxApi, CheckboxService } from "./checkbox.types";
 import { parts } from "./checkbox.anatomy";
 import * as dom from "./checkbox.dom";
 
@@ -13,9 +10,7 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
   const indeterminate = computed("isIndeterminate");
   const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
-  const readOnly = Boolean(
-    context.get("readOnly") || context.get("formReadOnly"),
-  );
+  const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
   const required = Boolean(context.get("required"));
 

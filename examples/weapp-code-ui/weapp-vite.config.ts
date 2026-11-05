@@ -30,7 +30,6 @@ export default defineConfig(({ mode }) => {
       generate: {
         extensions: {
           js: "ts",
-          wxss: "scss",
         },
         dirs: {
           component: "src/components",

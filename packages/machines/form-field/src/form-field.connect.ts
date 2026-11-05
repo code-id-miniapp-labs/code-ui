@@ -10,9 +10,7 @@ export function connectFormField(
   const displayHelp = service.computed("displayHelp");
   const isInvalid = service.computed("invalid");
   const size = service.context.get("size") || "md";
-  const disabled = Boolean(
-    service.context.get("disabled") || service.context.get("formDisabled"),
-  );
+  const disabled = service.computed("isDisabled");
   const required = Boolean(service.context.get("required"));
   const effectiveRules = service.computed("effectiveRules");
 

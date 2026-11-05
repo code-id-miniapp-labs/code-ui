@@ -11,6 +11,7 @@ export const defaultCheckboxProps: CheckboxProps = {
   invalid: null,
   color: "primary" as const,
   size: "md" as const,
+  formContext: undefined,
   value: "",
   name: "",
   form: "",

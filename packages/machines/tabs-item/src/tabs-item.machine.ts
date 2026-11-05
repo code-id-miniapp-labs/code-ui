@@ -3,57 +3,83 @@ import type { TabsGroupContext } from "@code-ui/tabs";
 import { defaultTabsItemProps } from "./tabs-item.props";
 import type { TabsItemMachine, TabsItemSchema } from "./tabs-item.types";
 
-export const tabsItemMachine: TabsItemMachine =
-  createMachine<TabsItemSchema>({
-    props: ({ props }) => ({
-      ...defaultTabsItemProps,
-      ...props,
-    }),
+export const tabsItemMachine: TabsItemMachine = createMachine<TabsItemSchema>({
+  props: ({ props }) => ({
+    ...defaultTabsItemProps,
+    ...props,
+  }),
 
-    initialState: () => "idle",
+  initialState: () => "idle",
 
-    computed: {
-      resolvedValue: ({ prop }) => {
-        const v = prop("value");
-        if (v !== undefined && v !== null && v !== "") return v;
-        const idx = prop("groupIndex") ?? prop("index");
-        return idx !== undefined ? idx : "";
-      },
-      isSelected: ({ computed, prop }) => {
-        const direct = prop("selected");
-        if (direct !== undefined && direct !== null) {
-          return Boolean(direct);
-        }
+  computed: {
+    resolvedValue: ({ prop }) => {
+      const v = prop("value");
+      if (v !== undefined && v !== null && v !== "") return v;
+      const idx = prop("groupIndex") ?? prop("index");
+      return idx !== undefined ? idx : "";
+    },
+    isSelected: ({ computed, prop }) => {
+      const direct = prop("selected");
+      if (direct !== undefined && direct !== null) {
+        return Boolean(direct);
+      }
+      const group = prop("groupContext");
+      if (!group) return false;
+      const selfVal = computed("resolvedValue");
+      return selfVal !== "" && selfVal === group.value();
+    },
+    isDisabled: ({ prop }) => {
+      const group = prop("groupContext");
+      return Boolean(prop("disabled") || group?.disabled());
+    },
+    color: ({ prop }) => {
+      const group = prop("groupContext");
+      return group?.color() ?? prop("color") ?? "primary";
+    },
+    fitted: ({ prop }) => {
+      const group = prop("groupContext");
+
+      return Boolean(group?.fitted() ?? prop("groupIndex") ?? false);
+    },
+    orientation: ({ prop }) => {
+      const group = prop("groupContext");
+
+      return group?.orientation() ?? prop("orientation") ?? "horizontal";
+    },
+    index: ({ prop }) => {
+      return prop("index") ?? prop("groupIndex") ?? 0;
+    },
+    size: ({ prop }) => {
+      const group = prop("groupContext");
+
+      return group?.size() ?? prop("size") ?? "md";
+    },
+    variant: ({ prop }) => {
+      const group = prop("groupContext");
+
+      return group?.variant() ?? prop("variant") ?? "pill";
+    },
+  },
+
+  on: {
+    SELECT: {
+      actions: ["selectTab"],
+    },
+  },
+
+  states: {
+    idle: {
+      tags: ["idle"],
+    },
+  },
+
+  implementations: {
+    actions: {
+      selectTab: ({ computed, prop }) => {
+        if (computed("isDisabled")) return;
         const group = prop("groupContext") as TabsGroupContext | undefined;
-        if (!group) return false;
-        const selfVal = computed("resolvedValue");
-        return selfVal !== "" && selfVal === group.value();
-      },
-      isDisabled: ({ prop }) => {
-        const group = prop("groupContext") as TabsGroupContext | undefined;
-        return Boolean(prop("disabled") || group?.disabled());
+        group?.select(computed("resolvedValue"));
       },
     },
-
-    on: {
-      SELECT: {
-        actions: ["selectTab"],
-      },
-    },
-
-    states: {
-      idle: {
-        tags: ["idle"],
-      },
-    },
-
-    implementations: {
-      actions: {
-        selectTab: ({ computed, prop }) => {
-          if (computed("isDisabled")) return;
-          const group = prop("groupContext") as TabsGroupContext | undefined;
-          group?.select(computed("resolvedValue"));
-        },
-      },
-    },
-  });
+  },
+});

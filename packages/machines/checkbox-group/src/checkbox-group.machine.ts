@@ -10,6 +10,7 @@ import type {
   CheckboxGroupMachineContext,
   CheckboxGroupProps,
   CheckboxGroupSchema,
+  CheckboxGroupSize,
 } from "./checkbox-group.types";
 import { defaultCheckboxGroupProps } from "./checkbox-group.props";
 
@@ -32,15 +33,14 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           : [];
       return {
         initialValue: initial,
-        currentFormBus: prop("formBus"),
         formField: undefined,
         groupContext: {
           value: () => context.get("value") ?? [],
           disabled: () => computed("isDisabled"),
           readOnly: () => computed("isReadOnly"),
-          invalid: () => Boolean(context.get("invalid")),
+          invalid: () => computed("isInvalid"),
           color: () => context.get("color") || "primary",
-          size: () => context.get("size") || "md",
+          size: () => computed("effectiveSize"),
           variant: () => context.get("variant") || "outline",
           setValue: (value) => send({ type: "SET_VALUE", value }),
           toggleValue: (value, checked) =>
@@ -58,14 +58,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
       ) =>
         bindable<CheckboxGroupMachineContext[K]>(() => ({
           value: prop(key) as CheckboxGroupMachineContext[K] | undefined,
-          defaultValue,
-        }));
-
-      const stateBindable = <K extends keyof CheckboxGroupMachineContext>(
-        _key: K,
-        defaultValue: CheckboxGroupMachineContext[K],
-      ) =>
-        bindable<CheckboxGroupMachineContext[K]>(() => ({
           defaultValue,
         }));
 
@@ -97,10 +89,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
         form: propBindable("form", ""),
         disabled: propBindable("disabled", false),
         readOnly: propBindable("readOnly", false),
-        formDisabled: stateBindable("formDisabled", false),
-        formReadOnly: stateBindable("formReadOnly", false),
-        fieldDisabled: propBindable("fieldDisabled", false),
-        fieldSize: propBindable("fieldSize", ""),
 
         invalid: bindable<boolean>(() => {
           const rawInvalid = prop("invalid");
@@ -124,24 +112,54 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
     },
 
     computed: {
-      isDisabled: ({ context }) =>
+      effectiveSize: ({ context, computed }) => {
+        const size = context.get("size");
+        return size && size !== "md"
+          ? size
+          : ((computed("fieldSize") || size || "md") as CheckboxGroupSize);
+      },
+      formDisabled: ({ prop, refs }) => {
+        const host = prop("formContext") ?? refs.get("formField")?.host;
+        return host?.disabled() ?? false;
+      },
+      formReadOnly: ({ prop, refs }) => {
+        const host = prop("formContext") ?? refs.get("formField")?.host;
+        return host?.readOnly() ?? false;
+      },
+      fieldDisabled: ({ prop, refs, scope }) => {
+        const host = prop("formContext") ?? refs.get("formField")?.host;
+        return Boolean(
+          prop("fieldDisabled") ||
+          host?.fieldState(prop("name") || scope.id || "checkbox-group")
+            ?.disabled,
+        );
+      },
+      fieldSize: ({ prop, refs, scope }) => {
+        const host = prop("formContext") ?? refs.get("formField")?.host;
+        return (
+          prop("fieldSize") ||
+          host?.fieldState(prop("name") || scope.id || "checkbox-group")
+            ?.size ||
+          ""
+        );
+      },
+      isInvalid: ({ prop, refs, context, scope }) => {
+        const host = prop("formContext") ?? refs.get("formField")?.host;
+        return Boolean(
+          context.get("invalid") ||
+          host?.errors(prop("name") || scope.id || "checkbox-group").length,
+        );
+      },
+      isDisabled: ({ context, computed }) =>
         Boolean(
           context.get("disabled") ||
-          context.get("formDisabled") ||
-          context.get("fieldDisabled"),
+          computed("formDisabled") ||
+          computed("fieldDisabled"),
         ),
-      isReadOnly: ({ context }) =>
-        Boolean(context.get("readOnly") || context.get("formReadOnly")),
+      isReadOnly: ({ context, computed }) =>
+        Boolean(context.get("readOnly") || computed("formReadOnly")),
       isInteractive: ({ computed }) =>
         !computed("isDisabled") && !computed("isReadOnly"),
-    },
-
-    watch: ({ prop, refs }) => {
-      const nextFormBus = prop("formBus");
-      if (nextFormBus !== refs.get("currentFormBus")) {
-        refs.set("currentFormBus", nextFormBus);
-        refs.get("formField")?.rebind(nextFormBus ?? null);
-      }
     },
 
     entry: ["setupFormField"],
@@ -273,7 +291,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           setupFormFieldSync(
             {
               component: prop("component"),
-              bus: prop("formBus"),
+              getHost: () => prop("formContext"),
               id: scope.id ?? "checkbox-group",
               getFormId: () => context.get("form") || prop("form") || "",
               getName: () => context.get("name") || prop("name") || "",
@@ -289,25 +307,9 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
                 context.set("invalid", false);
               },
               focus: () => {},
+              getRules: () => prop("rules") ?? [],
               getValidateOn: () => prop("validateOn"),
               isDisabled: () => computed("isDisabled"),
-              onValidationChange: (isValid) => {
-                context.set("invalid", !isValid);
-              },
-              onStateChange: (s) => {
-                if (s.fieldDisabled !== undefined) {
-                  context.set("fieldDisabled", Boolean(s.fieldDisabled));
-                }
-                if (s.fieldSize !== undefined) {
-                  context.set("fieldSize", s.fieldSize);
-                }
-                if (s.formDisabled !== undefined) {
-                  context.set("formDisabled", Boolean(s.formDisabled));
-                }
-                if (s.formReadOnly !== undefined) {
-                  context.set("formReadOnly", Boolean(s.formReadOnly));
-                }
-              },
             },
             refs,
           );
@@ -316,6 +318,5 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           cleanupFormFieldSync(refs);
         },
       },
-
     },
   });

@@ -254,7 +254,7 @@ describe("Stepper Machine", () => {
     });
   });
 
-  describe("Compound Mode (Stepper + StepperItem via EventBus)", () => {
+  describe("Compound Mode (Stepper + StepperItem via reactive groupContext)", () => {
     it("connects declarative StepperItems to parent Stepper machine and enforces linear guards", async () => {
       const parentMachine = new MiniappMachine(stepperMachine, {
         linear: true,

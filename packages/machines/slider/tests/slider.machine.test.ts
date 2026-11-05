@@ -116,8 +116,11 @@ describe("Slider Machine", () => {
   });
 
   describe("Controlled Value & Props", () => {
-    it("defines value, name, form, and formBus in defaultSliderProps for MiniProgram observer syncing", () => {
-      const defaultProps = sliderMachine.props?.({ props: {}, scope: {} as any });
+    it("defines value, name, form, and formContext in defaultSliderProps for MiniProgram observer syncing", () => {
+      const defaultProps = sliderMachine.props?.({
+        props: {},
+        scope: {} as any,
+      });
       expect(defaultProps).toHaveProperty("value");
       expect(defaultProps?.value).toBeNull();
       expect(defaultProps).toHaveProperty("defaultValue");
@@ -126,7 +129,7 @@ describe("Slider Machine", () => {
       expect(defaultProps?.name).toBe("");
       expect(defaultProps).toHaveProperty("form");
       expect(defaultProps?.form).toBe("");
-      expect(defaultProps).toHaveProperty("formBus");
+      expect(defaultProps).toHaveProperty("formContext");
     });
 
     it("updates thumb and range when value prop changes via button (e.g. Set to 70)", async () => {
@@ -455,7 +458,7 @@ describe("Slider Machine", () => {
   });
 
   describe("Form Integration", () => {
-    it("registers with parent FormBus, validates on change, and resets on form reset", async () => {
+    it("registers with parent form host, validates on change, and resets on form reset", async () => {
       const formComp = {
         setData: vi.fn(),
         triggerEvent: vi.fn(),
@@ -478,11 +481,11 @@ describe("Slider Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       const sliderM = new MiniappMachine(sliderMachine, {
         component: sliderComp,
-        formBus: bus,
+        formContext: host,
         name: "score",
         defaultValue: 40,
         min: 0,
@@ -535,12 +538,12 @@ describe("Slider Machine", () => {
       });
       formM.start();
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       // 1. Single slider
       const singleM = new MiniappMachine(sliderMachine, {
         component: slider1Comp,
-        formBus: bus,
+        formContext: host,
         name: "budget",
         defaultValue: 25,
       });
@@ -549,7 +552,7 @@ describe("Slider Machine", () => {
       // 2. Range slider
       const rangeM = new MiniappMachine(sliderMachine, {
         component: slider2Comp,
-        formBus: bus,
+        formContext: host,
         name: "ageBracket",
         defaultValue: [25, 60],
       });
@@ -580,9 +583,9 @@ describe("Slider Machine", () => {
       });
       formM.start();
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
-      // Starts without name or bus (before relations link)
+      // Starts without name or host (before relations link)
       const sliderM = new MiniappMachine(sliderMachine, {
         component: sliderComp,
         defaultValue: 55,
@@ -593,7 +596,7 @@ describe("Slider Machine", () => {
       // Relations link: updateProps simulates updateChildFromFormFieldWrapper
       sliderM.updateProps({
         name: "inferredBudget",
-        formBus: bus,
+        formContext: host,
       });
       await flush();
 

@@ -1,4 +1,3 @@
-import type { TabsGroupContext } from "@code-ui/tabs";
 import { getContentId, getRootId, getTriggerId } from "./tabs-item.dom";
 import type { TabsItemApi, TabsItemService } from "./tabs-item.types";
 
@@ -11,13 +10,12 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
   const isDisabled = computed("isDisabled");
   const lazy = Boolean(prop("lazy"));
   const tabsId = prop("tabsId");
-  const group = prop("groupContext") as TabsGroupContext | undefined;
-  const orientation = group?.orientation() ?? prop("orientation") ?? "horizontal";
-  const variant = group?.variant() ?? prop("variant") ?? "pill";
-  const color = group?.color() ?? prop("color") ?? "primary";
-  const size = group?.size() ?? prop("size") ?? "md";
-  const fitted = Boolean(group?.fitted() ?? prop("fitted") ?? false);
-  const index = prop("index") ?? prop("groupIndex") ?? 0;
+  const orientation = computed("orientation");
+  const variant = computed("variant");
+  const color = computed("color");
+  const size = computed("size");
+  const fitted = computed("fitted");
+  const index = computed("index");
   const mode = prop("mode") ?? "auto";
   const icon = prop("icon");
   const trailingIcon = prop("trailingIcon");

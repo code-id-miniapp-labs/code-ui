@@ -9,15 +9,15 @@ Read this before adding `watch`, new context fields, or new state transitions.
 2. **Never mirror props into context inside `watch`.** `bindable` already re-reads props lazily on `context.get` (see `bindable` in `packages/frameworks/miniapp/src/bindable.ts`).
 3. **Keep FSM state and context orthogonal.** State = mutually exclusive modes. Context = data. If one derives from the other, derive it with `computed`.
 4. **Derived data belongs in `computed`, never in `watch` or duplicate context keys.**
-5. **`watch` has only two jobs:** prop → FSM state sync, and imperative subscriptions (bus/form rebind). Nothing else.
+5. **`watch` has only two jobs:** genuine prop/computed → FSM state sync, and narrowly necessary external subscriptions. Never manual form registration or rebinding.
 6. **One notification path.** Centralize `emitChange`/payload construction; do not emit from `watch`, `entry`, and `onChange` separately.
 7. **Delete dead events and duplicate transitions.** An event nobody sends (e.g. `CHECK`/`UNCHECK`) is dead weight and a maintenance trap.
 8. **Actions run after the target state is applied.** Read `state.matches(...)` for the new value; do not duplicate what the transition target already does.
-9. **Refs own handles.** Timers, buses, disposers, form bindings, and previous-value snapshots go in `refs`, with cleanup in `exit`.
+9. **Refs own handles and stable facades.** Form bindings, parent group/form facades, disposers, and previous-value snapshots belong in `refs`. Dispose machine-lifetime handles in `exit`; state-scoped effects own their own timer cleanup.
 10. **`connect` is a read-only adapter.** No writes, no machine logic. Precompute WXML arrays there.
 11. **Zero prop-echoing in `connect` (Do not re-export component props on `Api`).** Component props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible in WXML templates directly as `{{title}}`, `{{color}}`, etc. `connect()` must never return static/component props on `Api`. Return only FSM state, state-derived booleans, dynamic prop getters, dynamic arrays (e.g. `actions`), and imperative methods.
 
-12. **Keep snapshots stable.** `connect()` runs on every notification and its output goes through `diffSnapshot` → `setData`. Return plain data only, reuse unchanged slices, and keep per-frame values out of context when WXS can own them (see [Performance and snapshot hygiene](#performance-and-snapshot-hygiene)).
+12. **Keep snapshots stable.** `connect()` runs in a reactive effect and its output goes through `diffSnapshot` → `setData`. Return plain data only, reuse unchanged slices, and keep per-frame values out of context when WXS can own them (see [Performance and snapshot hygiene](#performance-and-snapshot-hygiene)).
 13. **The machine is the only place for logic.** Runtime `index.ts` stays a thin adapter (no timers, DOM measurement, or custom `observers`). Timers live in state-scoped `effects`; measurement is declarative or done in WXS (see `AGENTS.md`, rule 6).
 
 ## When to create a machine
@@ -28,17 +28,19 @@ Do not write a machine for components with no interaction state. Over-engineerin
 |---|---|---|
 | Presentational / container (only theme + props) | No. Theme in `packages/core`, runtime imports `../_shared/base` only | `card`, `chip`, `badge`, `avatar`, `divider`, `skeleton`, `icon`, `kbd`, `alert` |
 | Has interactive or timed state (open/closed, loading, drag, timers) | Yes | `button`, `drawer`, `pin-input`, `toast`, `tabs`, `dialog` |
-| Form control or parent/child relation | Yes, plus bus and relation behaviors | `checkbox`, `radio`, `stepper`, `form`, `input` |
+| Form control or parent/child relation | Yes, plus reactive facades and domain relation behaviors | `checkbox`, `radio`, `stepper`, `form`, `input` |
 
 Rule of thumb: if the component has no mutually exclusive modes, no timers, and no events that change what it renders, it does not need a machine. If `progress` only renders a value from props, keep it presentational.
 
 ## Data flow
 
 ```
-props (signals) ──bindable──▶ context ──computed──▶ connect/API/UI
-                                  ▲
-events ──▶ guard → target → action ┘
-watch: props/state ──▶ FSM state + external subscriptions
+props (signals) ──bindable──▶ context ──computed──▶ connect effect ──▶ API/UI
+                                  ▲       ▲
+events ──▶ guard → target → action ┘       │
+parent-owned signals ──▶ facade getters ──┘
+child intents ──▶ facade methods ──▶ parent send ──▶ parent actions
+watch: props/computed ──▶ FSM state (or narrowly necessary external subscriptions)
 ```
 
 ## Where should this value live?
@@ -48,7 +50,7 @@ watch: props/state ──▶ FSM state + external subscriptions
 | Controlled/uncontrolled input (`value`, `checked`, `open`) | `bindable` with `value: prop(...)` | Do not sync it manually |
 | Array/reference input (`value: number[]`) | `bindable` with `isEqual: isEqual` | Prevents factory re-evaluations from triggering false updates |
 | Internal mutable runtime data | context `bindable` | Only if no other owner exists |
-| Data owned by a parent/group bus | context `stateBindable` | Bus is authoritative, not props |
+| Data owned by a parent group/form | Live facade getters read in `computed` | Parent remains the writer; do not copy its state into child bindables |
 | Derived flags (`isOpen`, `isChecked`, `isDisabled`) | `computed` | Cheap, pure reads |
 | Mutually exclusive modes (`idle`/`focused`, `checked`/`unchecked`) | FSM `state` | Used by guards/transitions/tags |
 | Presentational / component props (`size`, `variant`, `color`, `title`, `description`, `mode`, `ui`, `items`) | Component `properties` (`this.data`) | Do NOT copy into machine context, and do NOT re-export in `connect` `Api` |
@@ -63,36 +65,18 @@ Displayed API fields should be derived (computed or `.matches()`), not stored ag
 ### Allowed
 
 ```ts
-// ✅ props are not events: controlled prop must move the FSM state
+// ✅ props are not events: a controlled prop must move the FSM state
 watch: ({ prop, state }) => {
-  const indeterminate = prop("indeterminate");
-  if (isNotNull(indeterminate) && parseBooleanProp(indeterminate)) {
-    if (!state.matches("indeterminate")) state.set("indeterminate");
-    return;
-  }
-  const checked = prop("checked");
-  if (isNotNull(checked) && !state.matches("indeterminate")) {
-    const target = parseBooleanProp(checked) ? "checked" : "unchecked";
-    if (!state.matches(target)) state.set(target);
-  }
+  const open = prop("open");
+  if (open == null) return;
+  const target = open ? "open" : "closed";
+  if (!state.matches(target)) state.set(target);
 },
 ```
 
-```ts
-// ✅ imperative subscription keyed by a prop, explicitly disposed
-watch: ({ prop, refs, context, state }) => {
-  const next = prop("groupBus");
-  if (next === refs.get("currentGroupBus")) return;
-  refs.set("currentGroupBus", next);
-  for (const dispose of refs.get("busDisposers") ?? []) dispose();
-  refs.set(
-    "busDisposers",
-    next
-      ? [next.on("group:change", (snapshot) => applyGroupState({ context, state }, snapshot))]
-      : [],
-  );
-},
-```
+A computed value may also drive a real FSM mode when transitions depend on that mode. If it only determines a rendered flag (such as group membership), read it in `connect` instead of synchronizing a second owner.
+
+A narrowly necessary external subscription is allowed when an external resource has no reactive facade or existing lifecycle helper. Track only its identity, dispose the previous subscription even on unlink, and clean up on machine exit. This exception is **not** the group/form architecture: do not rebuild their discovery, registration, or propagation in `watch`.
 
 ### Forbidden
 
@@ -107,13 +91,15 @@ watch: ({ context, computed }) => {
   context.set("isOpen", computed("isChecked"));
 },
 
-// ❌ emitting notifications
-watch: ({ context, refs }) => {
-  refs.get("bus").emit("change", snapshot(context));
+// ❌ echoing reactive state as a notification
+watch: ({ context, prop }) => {
+  prop("onChange")?.({ value: context.get("value") });
 },
-// ❌ calling applyGroupState / context.set inside watch
-watch: ({ prop, context, state }) => {
-  applyGroupState({ context, state }, { value: prop("groupValue") });
+
+// ❌ manual form registration / identity bookkeeping
+watch: ({ prop, refs }) => {
+  // Do not compare currentName/currentFormContext, call host.register(),
+  // or dispose/recreate the form binding here. The helper owns this lifecycle.
 },
 
 // ❌ evaluating prop() outside the bindable(() => ...) closure (freezes initial value)
@@ -122,13 +108,11 @@ const b = <T>(val: T, defaultValue: T) =>
 ```
 
 If a value is already in a `bindable`, **do not** `context.set` it from `watch`:
-1. **Lazy prop sync**: `bindable` tracks `lastSeenProp` and syncs prop changes lazily on `get` without invoking `onChange` (while still letting imperative bus listeners call `context.set` when the prop itself hasn't changed).
+1. **Lazy prop sync**: `bindable` tracks `lastSeenProp` and syncs prop changes lazily on `get` without invoking `onChange` (without requiring a manual mirror).
 2. **Untracked writes & state guards in `watch`**:
    - `bindable.set` (`context.set`, `state.set`) executes its internal signal reads inside `setActiveSub(undefined)` (`untracked`), so writing to context or state never subscribes the caller to that signal.
    - `MiniappMachine` passes an untracked `state` view (`get`, `matches`, `hasTag`) to `watch`, so guarding transitions with `if (!state.matches(target)) state.set(target)` or `state.hasTag("open")` inside `watch` **never** subscribes `watch` to FSM state changes. `watch` only re-runs when the `prop(...)` (or `computed(...)`) signals it reads change.
-3. **Group/Form bus lifecycle**:
-   - Initialize `currentGroupBus: prop("groupBus")` in `refs`, subscribe in `entry` (which runs inside `untracked`), and in `watch` only rebind when `prop("groupBus") !== refs.get("currentGroupBus")` (without `if (nextBus && ...)` so unlinking to `undefined` still disposes the previous listener). Return early in `watch` when `nextBus` is active so `watch` only depends on `prop("groupBus")`.
-   - Child machines (`checkbox`, `radio`) whose `group*` values (`groupValue`, `groupDisabled`, `groupInvalid`, `groupColor`, `groupSize`, `groupVariant`) are driven by `groupBus` must use `stateBindable` (initialized from `prop("group*")`), **not** `propBindable`. `groupBus` is authoritative because states like `groupInvalid` and `groupDisabled` can be updated by `<c-form>` validation on the parent group without the parent's WXML props changing.
+3. **Group/form lifecycle belongs to facades and helpers**, not `watch`. Children read live group getters; `bindFormField` / `setupFormFieldSync` independently track host discovery and field registration. There is no `rebind` method to call and no need for machine refs such as `currentName`, `currentFormContext`, or `currentGroupBus`.
 
 ## `watch` vs `effects` (`track`)
 
@@ -136,11 +120,13 @@ Keep the roles of `watch` and `effects` distinct:
 
 | Mechanism | When to use | Examples |
 |---|---|---|
-| `watch: ({ prop, state, refs }) => void` | **Leaf / interactive machines**: prop → FSM state sync (`checked`, `indeterminate`, `open`, `error`) and imperative bus rebinding (`formBus`, `groupBus`). | `checkbox`, `radio`, `switch`, `drawer`, `input`, `textarea`, `pin-input`, `accordion-item`, `stepper-item`, `form-field` |
+| `watch: ({ prop, computed, state }) => void` | Genuine prop/computed → FSM mode sync; narrowly necessary external subscriptions only when no reactive facade/helper exists. | Controlled `checked`, `indeterminate`, `open`, or `error` modes |
 | `states.<state>.effects: ["..."]` | **State-scoped side effects**: timers, animations, or async work active only while in a specific state; returns a cleanup function disposed on state exit. | `button` (`autoResetEffect` in `success`/`error`), `drawer` (`waitForCloseAnimation` in `closing`) |
-| Root `effects: ["track..."]` with `track([deps], fn)` | **Parent coordinator machines**: broadcasting parent prop/context changes (`disabled`, `readOnly`, `size`, `color`, `variant`, controlled `value`/`step`, `rules`) over an `EventBus` to registered children. | `form` (`trackFormState`), `form-field` (`trackFieldProps`), `checkbox-group` (`trackGroupProps`), `radio-group` (`trackGroupProps`), `stepper` (`trackControlledStep`) |
+| Root `effects: ["..."]` / `track([deps], fn)` | Machine-lifetime side effects with explicit dependencies and cleanup, when an actual side effect is needed. Not derived-state copying or parent snapshot broadcasts. | External integration with machine-lifetime ownership |
+| Reactive facade getters + framework `effect(connect)` | Parent/group/form state propagation. Getter reads subscribe the consumer to the underlying `alien-signals` signals. | Group selection, disabled/readOnly, form errors and field state |
+| `bindFormField` / `setupFormFieldSync` | Reactive host discovery and field registration, created once during setup and disposed on exit. | Form controls and groups |
 
-Never move prop → FSM state sync or bus rebinding out of `watch` into `effects`; keep `watch` as the single place for prop-driven state sync and bus rebinding.
+Keep genuine prop/computed → FSM mode sync in `watch`. Do not put form registration there, and do not add root effects to broadcast derived snapshots. A getter dependency is enough for reactive propagation; effects are for actual side effects.
 
 ## State vs context
 
@@ -160,18 +146,89 @@ computed: {
 
 Controlled props still need `watch` to move the FSM state (props are not events), but no context mirror is needed.
 
-For modes that are pure data (e.g. group membership), keep a context value and derive the public flag:
+For parent-owned data (e.g. group membership), read the live facade and derive the public flag without a child mirror:
 
 ```ts
 computed: {
-  isChecked: ({ context, state }) => {
-    const groupValue = context.get("groupValue");
-    return Array.isArray(groupValue)
-      ? groupValue.includes(context.get("value"))
+  isChecked: ({ context, prop, state }) => {
+    const group = prop("groupContext");
+    return group
+      ? group.value().includes(context.get("value"))
       : state.matches("checked");
   },
 }
 ```
+
+## Reactive group and form facades
+
+### Groups: parent writes, children read and send intents
+
+The parent creates one stable facade in `refs`. Its getters read parent context/computed signals lazily, and its methods send events to the parent machine. Domain relation behaviors pass that facade to children as `groupContext`; they do not copy each parent value into child props/context.
+
+```ts
+// Parent machine fragment (CheckboxGroupContext from @code-ui/checkbox-group)
+refs: ({ context, computed, send }) => ({
+  groupContext: {
+    value: () => context.get("value") ?? [],
+    disabled: () => computed("isDisabled"),
+    readOnly: () => computed("isReadOnly"),
+    invalid: () => computed("isInvalid"),
+    color: () => context.get("color") || "primary",
+    size: () => computed("effectiveSize"),
+    variant: () => context.get("variant") || "outline",
+    setValue: (value) => send({ type: "SET_VALUE", value }),
+    toggleValue: (value, checked) =>
+      send({ type: "TOGGLE_VALUE", value, checked }),
+  } satisfies CheckboxGroupContext,
+}),
+
+// Child action: request a change; the parent owns guards and mutation.
+selectGroup: ({ context, prop }) => {
+  prop("groupContext")?.toggleValue(context.get("value"));
+},
+```
+
+Child `computed` reads `groupContext.value()`, `disabled()`, `invalid()`, etc. The framework runs `connect` in an `alien-signals` effect, so those reads subscribe through the facade to parent signals. A stable facade object does not need replacement when its values change. Keep the facade out of serializable API/UI snapshots; return the derived flags WXML needs. Do not introduce child `groupValue`/`groupDisabled` mirrors, `applyGroupState`, broadcast effects, or snapshot listeners. A grouped child's standalone FSM mode need not mirror group selection when the public checked flag is derived from the group getter.
+
+### Forms: setup once, reactive discovery and registration
+
+Use `bindFormField` for a low-level binding, or `setupFormFieldSync` / `cleanupFormFieldSync` from `@code-ui/form/context` for the standard machine integration. `setupFormFieldSync` stores the binding in `refs.formField` and suppresses form input/change echoes during host-driven `setValue`/reset. Supply live getters, especially `getHost: () => prop("formContext")`, rather than capturing the initial host.
+
+```ts
+// Machine fragments for a string-valued control; refs declares formField.
+entry: ["setupFormField"],
+exit: ["cleanupFormField"],
+
+// implementations.actions
+setupFormField: ({ prop, context, computed, refs, scope }) => {
+  setupFormFieldSync(
+    {
+      component: prop("component"),
+      getHost: () => prop("formContext"),
+      id: scope.id ?? "field",
+      getFormId: () => prop("form") || "",
+      getName: () => prop("name") || "",
+      getValue: () => context.get("value"),
+      setValue: (value) => context.set("value", String(value ?? "")),
+      resetValue: () => context.set("value", prop("defaultValue") ?? ""),
+      getRules: () => prop("rules") ?? [],
+      getValidateOn: () => prop("validateOn"),
+      isDisabled: () => computed("isDisabled"),
+    },
+    refs,
+  );
+},
+cleanupFormField: ({ refs }) => cleanupFormFieldSync(refs),
+```
+
+The binding owns two **independent** reactive effects:
+
+- **Discovery** tracks `getHost()` and `getFormId()`. An explicit host wins; `undefined` permits scoped injection and late-provider discovery, while `null` explicitly disconnects. `@code-ui/context` remains responsible for scoped, deep-slot discovery (`inject`, `onProvide`, context requests). It is not a per-value state transport.
+- **Registration** tracks the discovered host and effective field key. A nonempty name is the key; unnamed fields use their id only when rules or an explicit form id make them eligible. Name changes do not restart discovery. Registration remains stable when the host/key are unchanged; unnamed eligibility can depend on rules/form id.
+
+Registration, unregistration, and discovery side effects run **untracked**. Reads performed by `host.register` (including validation, values, errors, disabled state, and rules) must not accidentally subscribe the registration effect and cause registration churn. Field callbacks remain live getters, not captured snapshots.
+
+`BoundFormField.host` is reactive. Read host getters such as `disabled()`, `readOnly()`, `errors(name)`, and `fieldState(name)` in child computed values; `alien-signals` carries those state changes into effect-driven `connect`. No machine `watch` should call `register`, recreate the helper, invoke a nonexistent `rebind`, or maintain `currentName`/`currentFormContext` bookkeeping. Dispose the binding on exit; its cleanup stops both effects, discovery listeners, and registration.
 
 ## Events, transitions, actions
 
@@ -199,17 +256,17 @@ emitChange: ({ state, context, prop, refs }) => {
 
 ## Notifications and framework glue
 
-- Build the payload once: one helper (`emitChange(prop, refs, value)`), called from `onChange` and initial entry only.
-- Do not also emit from `watch`; parent prop changes already reach children through the domain behavior (`onPropChanged` → `sync...Children`) and child prop watchers.
-- Emit **full snapshots**, not deltas. Children must be able to apply a snapshot without querying the parent.
+- Build user-event payloads once in a shared helper, invoked by the appropriate action or `bindable.onChange`. Do not emit an initial change unless the component contract requires it.
+- Do not emit from `watch` or echo programmatic prop changes as user changes.
+- Parent → child state is a reactive read, **not** full-snapshot messaging or broadcast deltas. Domain behaviors link/distribute facade identity; getter reads propagate state changes.
 - `bindable.onChange` is the right place for user-initiated changes. It already fires once per `set`.
 - **Framework event adapter bridge**: Machines MUST invoke pure props like `prop("onTap")(payload)` or `prop("onChange")(payload)`. Never call `prop("component")?.triggerEvent(...)` or `prop("component")?.setData(...)` inside machine code. The MiniApp runtime `createMachinePropGetter` adapter transparently translates these pure callbacks to WeChat's `instance.triggerEvent("tap" | "click" | "change" | "update:modelValue", ...)` and user props.
 
 ## Lifecycle and side effects
 
-- `entry`: initial subscription/setup, initial bus snapshot.
-- `exit`: dispose subscriptions, timers, observers. Always reset refs to empty.
-- `watch` may manage subscriptions that depend on props, but cleanup must be explicit and idempotent.
+- `entry`: create machine-lifetime bindings once (for example, `setupFormFieldSync`). No initial parent snapshot broadcast is needed.
+- `exit`: dispose machine-lifetime bindings/subscriptions and clear their refs. State-scoped effects return their own cleanup.
+- `watch` may manage narrowly necessary external subscriptions, but never form registration/rebinding. Cleanup must be explicit and idempotent.
 - Prefer `track([deps], fn)` for machine-lifetime effects that do not need `watch` reruns; it reruns only when the listed deps change.
 - Do not perform DOM queries / `getRelationNodes` in every action; measure only when needed.
 
@@ -277,7 +334,7 @@ What machine authors must still do:
 - **Return only what WXML reads.** Every extra field costs diffing and payload.
 - **Prefer stable shapes.** Keep the same keys across states. Removed or `undefined` keys force a whole-object write.
 - **Avoid large arrays that change length often.** A length change sends the whole array.
-- **No per-frame context writes** for drag, pull, or slider positions. Let WXS drive the view and report on start, end, and thresholds (see the gesture section below).
+- **No per-frame context writes** for drag, pull, or slider positions. Let WXS drive the view and report on start, end, and thresholds (see the gesture section above).
 - **No `watch` on the hot path.** Each read inside `watch` is a dependency that re-runs it.
 - **Add a no-op test.** A transition that changes nothing must produce a `null` delta.
 
@@ -289,9 +346,9 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 2. **Classify each value.** Assign one owner using the table above. Mark duplicates.
 3. **Delete mirrored context keys and their setters.**
 4. **Convert derivations to `computed`.** Update `connect` to read them.
-5. **Reduce `watch`** to prop→state sync + unavoidable subscriptions. Delete `syncingFromProps`/`prev*` guards that only exist to protect mirroring.
+5. **Reduce `watch`** to genuine prop/computed → FSM state sync + narrowly necessary external subscriptions. Delete `syncingFromProps`/`prev*` guards that only protect mirroring, and manual form registration/rebind bookkeeping. Use live facade getters and the form helper instead.
 6. **Dedupe transitions and actions.** Remove unreachable events; share branches; collapse constant-only actions.
-7. **Centralize notification payloads.** One helper, one initial emit, no emit in `watch`.
+7. **Centralize user notification payloads.** One path, no emit in `watch`, no initial emit unless required by the contract. Remove parent snapshot broadcasts; let reactive getters propagate state.
 8. **Update tests** (`context.get` assertions usually become `computed(...)`/`api.*`).
 9. **Verify:** `pnpm test`, `pnpm --filter @code-ui/<name> typecheck`, `npx oxlint packages/machines/<name>/src packages/machines/<name>/tests`.
 
@@ -306,19 +363,19 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 | Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
 | Driving high-frequency drag gestures via JSCore `setData` | 16-50ms IPC roundtrip latency causes thumb/slider to lag behind touch gestures | Use WXS view driver to mutate DOM transform/width directly on Webview thread; throttle IPC event calls to machine |
 | Clearing transient interactive state in event actions | `activeThumbIndex` cleared on `POINTER_UP` leaves stale state if machine stops or transitions via another path | Clear transient interaction state in `states.<state>.exit` (e.g. `states.dragging.exit: ["clearActiveThumb"]`) |
-| `propBindable` for `group*` bus state | Stale WXML `groupInvalid` / `groupValue` props overwrite `groupBus` updates during validation | Use `stateBindable` initialized from `prop("group*")`; let `groupBus` (`applyGroupState`) own updates |
+| Child mirrors of parent group state | `groupValue`, `groupDisabled`, `applyGroupState`, snapshot listeners/broadcasts | Remove mirrors and transport; read live `groupContext` getters in child computed values |
 | Reading `field.getValue()` during batched controlled input | Controlled prop `watch` flushes on `endBatch()`, so `field.getValue()` returns pre-toggle state during `emitInput`/`emitChange` | Pass `payload.value` (`valueOverride`) directly to `validateSingleField` / `applyFieldErrors` |
-| Moving `watch` logic into `effects` | Using `effects: ["trackProps"]` for prop → state sync or bus rebind | Keep prop → state sync & bus rebinding in `watch`; use `effects` only for state-scoped timers/animations or parent bus broadcasts |
+| Moving FSM mode sync into generic effects | `effects: ["trackProps"]` copies props/computed into FSM modes | Keep genuine mode sync in `watch`; use lifecycle effects for actual side effects, facade getters for parent state |
 | Eager `prop()` outside `bindable` | `const b = (val, def) => bindable(() => ({ value: val }))` | Pass key and read `prop(key)` inside `bindable(() => ...)` |
 | Object literal fallback in `bindable.value` | `value: prop("encoding") ?? {}` creates a new `{}` on every `syncProp()`, overwriting `context.set` | Pass `value: prop("encoding")` and put `{}` in `defaultValue` |
-| Truthy guard on bus rebind | `if (bus && bus !== currentBus)` leaks listener on unlink | Check `if (nextBus !== currentBus)` so `undefined` disposes old listener |
+| Manual form registration/rebinding in `watch` | `currentName`, `currentFormContext`, repeated helper setup, or `rebind` calls | Setup once with reactive `getHost`/name/form getters; let the helper manage discovery and registration |
 | Duplicate tri-state | state + `checked` + `indeterminate` kept in sync | One owner; derive the rest |
 | Emit from multiple places | `onChange` + `watch` + `entry` all emit | Single `emitChange` |
 | Presentational props in context | `size`, `variant`, `ui`, `items` bindables | Read via `prop()` in `connect` |
 | Dead events | `CHECK`/`UNCHECK` typed but never sent | Delete event + transitions |
 | Constant-only actions | `emitTrue` / `emitFalse` clones | One parameterized action |
 | Derivation in `watch` | `context.set("isOpen", ...)` | `computed` |
-| Shared `busDisposers` ref for two domains | form cleanup disposes group listeners | Separate refs per subscription |
+| Tracked registration side effects | Value/error/disabled/rule changes unexpectedly unregister/register a field | Keep discovery and registration effects independent; run register/unregister side effects untracked |
 
 Evidence from this repo:
 
@@ -327,9 +384,10 @@ Evidence from this repo:
 
 ## Minimal skeleton
 
+A no-bus timed interaction. The companion `ExampleSchema` declares states `idle | running`, events `SET_VALUE` (string `value`), `START`, and `STOP`, a string context `value`, and computed `isDisabled`. `defaultExampleProps` declares `value`, `defaultValue: ""`, and `disabled: false`. Add form binding refs/setup only for a component that actually participates in a form.
+
 ```ts
 import { createMachine } from "@code-ui/core";
-import { createEventBus } from "@code-ui/utils";
 import type { ExampleMachine, ExampleSchema } from "./example.types";
 import { defaultExampleProps } from "./example.props";
 
@@ -338,19 +396,12 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
 
   initialState: () => "idle",
 
-  refs: () => ({
-    bus: createEventBus(),
-    busDisposers: [],
-  }),
-
   context: ({ prop, bindable }) => ({
     // controlled/uncontrolled value: bindable syncs props lazily
     value: bindable<string>(() => ({
       value: prop("value"),
       defaultValue: prop("defaultValue") ?? "",
     })),
-    // internal data only when no other owner exists
-    lastValue: bindable<string>(() => ({ defaultValue: "" })),
   }),
 
   computed: {
@@ -358,26 +409,7 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
     isDisabled: ({ prop }) => Boolean(prop("disabled")),
   },
 
-  // ONLY prop → state and imperative subscriptions
-  watch: ({ prop, state, refs, context }) => {
-    // props are not events; move the FSM state explicitly
-    if (prop("open") !== undefined) {
-      const target = prop("open") ? "open" : "closed";
-      if (!state.matches(target)) state.set(target);
-    }
-
-    // subscription lifecycle keyed by prop
-    const nextBus = prop("bus");
-    if (nextBus !== refs.get("currentBus")) {
-      for (const dispose of refs.get("busDisposers")) dispose();
-      refs.set("currentBus", nextBus);
-      refs.set("busDisposers", nextBus ? [nextBus.on("change", () => {})] : []);
-    }
-  },
-
-  entry: ["setup"],
-  exit: ["cleanup"],
-
+  // No watch/refs/setup are needed: no external mode prop or binding exists.
   on: {
     SET_VALUE: {
       guard: "isInteractive",
@@ -386,9 +418,16 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
   },
 
   states: {
-    idle: { tags: ["idle"], on: { START: { target: "running" } } },
-    // timers belong to state-scoped effects; the cleanup runs on state exit
-    running: { tags: ["busy"], effects: ["autoStop"] },
+    idle: {
+      tags: ["idle"],
+      on: { START: { guard: "isInteractive", target: "running" } },
+    },
+    // Cleanup runs on STOP, automatic completion, or machine stop.
+    running: {
+      tags: ["busy"],
+      effects: ["autoStop"],
+      on: { STOP: { target: "idle" } },
+    },
   },
 
   implementations: {
@@ -406,13 +445,6 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
         if (event.type !== "SET_VALUE") return;
         context.set("value", event.value);
       },
-      setup: ({ refs, context }) => {
-        // subscribe once; store disposers in refs
-      },
-      cleanup: ({ refs }) => {
-        for (const dispose of refs.get("busDisposers")) dispose();
-        refs.set("busDisposers", []);
-      },
     },
   },
 });
@@ -423,23 +455,28 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
 - [ ] Each value has exactly one owner.
 - [ ] No `context.set` inside `watch` for values already bound to props.
 - [ ] No `context.set` for computed-only data.
-- [ ] `watch` reads only props it needs (plus state for sync).
+- [ ] `watch` reads only the props/computed needed for genuine FSM mode sync or a narrowly necessary external subscription.
 - [ ] No notifications emitted from `watch`.
 - [ ] Every event in the union has a sender.
 - [ ] Transition targets and actions do not duplicate each other.
-- [ ] Subscriptions have cleanup in `exit` and on rebind.
+- [ ] Form setup runs once with reactive `getHost`/name/form getters; no manual registration, rebind, or identity bookkeeping in `watch`.
+- [ ] Group children read facade getters; facade methods send parent intents. No mirrored group state or snapshot broadcasts.
+- [ ] Machine-lifetime bindings have exit cleanup; external subscriptions also clean up on identity change/unlink; state-scoped effects return cleanup.
 - [ ] `connect` only reads and precomputes; no writes.
-- [ ] Tests cover: initial/default, controlled `updateProps`, user events + guards, programmatic API, group/form bus, `stop()` cleanup.
+- [ ] Tests cover: initial/default, controlled `updateProps`, user events + guards, programmatic API, reactive group/form facades, `stop()` cleanup.
 
 ## Testing pattern
 
 ```ts
 import { MiniappMachine } from "@code-ui/miniapp";
+import { drawerMachine } from "@code-ui/drawer";
+import { expect, it } from "vitest";
 
 const flush = () => new Promise<void>((resolve) => queueMicrotask(resolve));
 
 it("syncs controlled props into state", async () => {
-  const machine = new MiniappMachine(exampleMachine, { open: false });
+  // Use a machine whose schema actually declares closed/open states.
+  const machine = new MiniappMachine(drawerMachine, { open: false });
   machine.start();
 
   machine.updateProps({ open: true });
@@ -455,7 +492,14 @@ Prefer asserting `api.*` / `computed(...)` over raw context keys; context is an 
 Also cover these cases:
 
 ```ts
+import type { Service } from "@code-ui/core";
 import { diffSnapshot } from "@code-ui/utils";
+import { vi } from "vitest";
+// exampleMachine and ExampleSchema are the companion definitions above.
+const connectExample = (service: Service<ExampleSchema>) => ({
+  value: service.context.get("value"),
+  state: service.state.get(),
+});
 
 // no-op transition produces no setData
 it("emits a null delta for a no-op event", () => {
@@ -468,14 +512,24 @@ it("emits a null delta for a no-op event", () => {
   machine.stop();
 });
 
-// cleanup disposes timers and bus listeners
-it("cleans up on stop()", () => {
+it("cleans up the state-scoped timer on stop()", () => {
+  vi.useFakeTimers();
   const machine = new MiniappMachine(exampleMachine, {});
-  machine.start();
-  machine.stop();
-  expect(machine.service.refs.get("busDisposers")).toEqual([]);
+  try {
+    machine.start();
+    machine.send({ type: "START" });
+    expect(vi.getTimerCount()).toBe(1);
+    machine.stop();
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    machine.stop();
+    vi.useRealTimers();
+  }
 });
 ```
 
-- **Bus:** register a child, emit a group snapshot, assert the child state, then unlink (`undefined`) and assert the old listener is disposed.
-- **Controlled props:** call `updateProps` for every key in `defaultProps` and assert the machine reacts.
+- **Groups:** link a child to the parent's facade; update parent selection, disabled/readOnly, and validation state without replacing the facade. Assert child computed/API output updates through the connect effect. Send a child intent and assert the parent handles it; unlink/switch parents and verify old-parent changes no longer affect the child.
+- **Form discovery:** cover late providers, scoped form ids and deep slots, explicit host changes, `null` disconnect, and return to `undefined` discovery. Rename a field without restarting discovery; switch hosts/names without cross-talk.
+- **Form registration:** assert value/error/disabled and named-field rule changes do not churn registration. Test unnamed eligibility changes from rules/form id. Verify host-driven set/reset suppresses form input/change echoes while user notifications still occur.
+- **Cleanup:** stop/dispose and verify discovery listeners, registration, and effects are released. Further old-host/provider changes must not revive a disposed binding.
+- **Controlled props:** call `updateProps` for each relevant declared prop and assert its intended state/computed/API result, not an artificial context mirror.

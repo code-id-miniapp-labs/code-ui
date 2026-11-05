@@ -5,8 +5,14 @@ import { checkboxMachine, connectCheckbox } from "@code-ui/checkbox";
 import { checkboxGroupMachine } from "../src/checkbox-group.machine";
 import { connectCheckboxGroup } from "../src/checkbox-group.connect";
 
-function flush(): Promise<void> {
-  return new Promise((resolve) => queueMicrotask(resolve));
+const tick = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+
+async function flush(): Promise<void> {
+  // Child selection queues the group update, which then queues form validation.
+  await tick();
+  await tick();
+  await tick();
+  await tick();
 }
 
 describe("CheckboxGroup Machine", () => {
@@ -416,7 +422,7 @@ describe("CheckboxGroup Machine", () => {
   });
 
   describe("Form Integration", () => {
-    it("synchronizes with Form bus and validates", async () => {
+    it("synchronizes with Form host and validates", async () => {
       const formComp = { setData: vi.fn(), triggerEvent: vi.fn() };
       const groupComp = {
         setData: vi.fn(),
@@ -438,12 +444,12 @@ describe("CheckboxGroup Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       const groupM = new MiniappMachine(checkboxGroupMachine, {
         name: "skills",
         defaultValue: ["js"],
-        formBus: bus,
+        formContext: host,
         component: groupComp,
         items: ["js", "ts", "python"],
       });
@@ -483,7 +489,7 @@ describe("CheckboxGroup Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const formBus = formApi.bus;
+      const formContext = formApi.formContext;
 
       // Simulate WXML-serialized declarative minLength rule from c-form-field
       const serializedRules = JSON.parse(
@@ -494,11 +500,7 @@ describe("CheckboxGroup Machine", () => {
           },
         ]),
       );
-      formBus?.emit("field:rules", {
-        name: "interests",
-        getRules: () => serializedRules,
-        required: true,
-      });
+      formContext.setFieldRules("interests", () => serializedRules);
 
       const groupComp = {
         setData: vi.fn(),
@@ -514,26 +516,26 @@ describe("CheckboxGroup Machine", () => {
       const groupM = new MiniappMachine(checkboxGroupMachine, {
         name: "interests",
         value: formInterests,
-        formBus,
+        formContext,
         component: groupComp,
       });
       groupM.start();
 
       const groupContext = groupM.service.refs.get("groupContext");
 
-      // Child checkboxes inside c-checkbox-group also receive formBus from c-form relations,
+      // Child checkboxes inside c-checkbox-group also receive formContext from c-form relations,
       // but have no name prop and must NOT register as standalone form fields
       const aiCheckbox = new MiniappMachine(checkboxMachine, {
         value: "ai",
         groupContext,
-        formBus,
+        formContext,
       });
       aiCheckbox.start();
 
       const webCheckbox = new MiniappMachine(checkboxMachine, {
         value: "web",
         groupContext,
-        formBus,
+        formContext,
       });
       webCheckbox.start();
 

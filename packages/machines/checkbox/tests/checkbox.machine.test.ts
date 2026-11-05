@@ -449,7 +449,7 @@ describe("Checkbox Machine", () => {
   });
 
   describe("Form Integration", () => {
-    it("synchronizes with Form bus", async () => {
+    it("synchronizes with Form host", async () => {
       const formComp = {
         setData: vi.fn(),
         triggerEvent: vi.fn(),
@@ -471,12 +471,12 @@ describe("Checkbox Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       const checkboxM = new MiniappMachine(checkboxMachine, {
         name: "agreement",
         defaultChecked: false,
-        formBus: bus,
+        formContext: host,
         component: checkboxComp,
       });
       checkboxM.start();
@@ -518,7 +518,7 @@ describe("Checkbox Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       // Simulate c-form-field registering required rule for "agreement"
       const serializedRules = JSON.parse(
@@ -529,11 +529,7 @@ describe("Checkbox Machine", () => {
           },
         ]),
       );
-      bus?.emit("field:rules", {
-        name: "agreement",
-        getRules: () => serializedRules,
-        required: true,
-      });
+      host.setFieldRules("agreement", () => serializedRules);
 
       const checkboxComp = {
         setData: vi.fn(),
@@ -549,7 +545,7 @@ describe("Checkbox Machine", () => {
       const checkboxM = new MiniappMachine(checkboxMachine, {
         name: "agreement",
         checked: formAgreement,
-        formBus: bus,
+        formContext: host,
         component: checkboxComp,
       });
       checkboxM.start();
@@ -567,7 +563,7 @@ describe("Checkbox Machine", () => {
       expect(formAgreement).toBe(true);
       expect(cApi.checked).toBe(true);
       expect(cApi.invalid).toBe(false);
-      expect( connectForm(formM.service).isValid).toBe(true);
+      expect(connectForm(formM.service).isValid).toBe(true);
       expect(connectForm(formM.service).errorBag).toEqual({});
 
       // 2. User taps checkbox to uncheck it (true -> false)
