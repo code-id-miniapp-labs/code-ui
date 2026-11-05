@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@code-ui/anatomy": "workspace:*",
+    "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/core": "workspace:*",
     "@code-ui/form": "workspace:*",
     "@code-ui/utils": "workspace:*"

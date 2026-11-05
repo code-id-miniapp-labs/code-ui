@@ -3,18 +3,17 @@ import {
   setupFormFieldSync,
   cleanupFormFieldSync,
 } from "@code-ui/form/context";
-import { createEventBus, isNotEmpty, isNotNull } from "@code-ui/utils";
+import { isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
-  RadioGroupBusEvents,
   RadioGroupContext,
   RadioGroupMachine,
+  RadioGroupMachineContext,
   RadioGroupProps,
   RadioGroupSchema,
 } from "./radio-group.types";
 import { defaultRadioGroupProps } from "./radio-group.props";
 import {
   dispatchChangeEvent,
-  emitGroupChange,
   resolveInitialValue,
 } from "./radio-group.utils";
 
@@ -27,31 +26,44 @@ export const radioGroupMachine: RadioGroupMachine =
 
     initialState: () => "idle",
 
-    refs: ({ prop }) => ({
+    refs: ({ prop, context, computed, send }) => ({
       initialValue: resolveInitialValue(prop),
-      bus: createEventBus<RadioGroupBusEvents>(),
       currentFormBus: prop("formBus"),
       formField: undefined,
-      busDisposers: [],
+      groupContext: {
+        value: () => context.get("value"),
+        disabled: () => computed("isDisabled"),
+        readOnly: () => computed("isReadOnly"),
+        invalid: () => Boolean(context.get("invalid")),
+        color: () => context.get("color") || "primary",
+        size: () => context.get("size") || "md",
+        variant: () => context.get("variant") || "outline",
+        select: (value) => send({ type: "SET_VALUE", value }),
+        setValue: (value) =>
+          value === null
+            ? send({ type: "CLEAR" })
+            : send({ type: "SET_VALUE", value }),
+        clear: () => send({ type: "CLEAR" }),
+      } satisfies RadioGroupContext,
     }),
 
-    context: ({ prop, bindable, getRefs, getContext, getComputed }) => {
+    context: ({ prop, bindable, getRefs }) => {
       const propBindable = <
-        K extends keyof RadioGroupContext & keyof RadioGroupProps,
+        K extends keyof RadioGroupMachineContext & keyof RadioGroupProps,
       >(
         key: K,
-        defaultValue: RadioGroupContext[K],
+        defaultValue: RadioGroupMachineContext[K],
       ) =>
-        bindable<RadioGroupContext[K]>(() => ({
-          value: prop(key) as RadioGroupContext[K] | undefined,
+        bindable<RadioGroupMachineContext[K]>(() => ({
+          value: prop(key) as RadioGroupMachineContext[K] | undefined,
           defaultValue,
         }));
 
-      const stateBindable = <K extends keyof RadioGroupContext>(
+      const stateBindable = <K extends keyof RadioGroupMachineContext>(
         _key: K,
-        defaultValue: RadioGroupContext[K],
+        defaultValue: RadioGroupMachineContext[K],
       ) =>
-        bindable<RadioGroupContext[K]>(() => ({
+        bindable<RadioGroupMachineContext[K]>(() => ({
           defaultValue,
         }));
 
@@ -66,14 +78,6 @@ export const radioGroupMachine: RadioGroupMachine =
             defaultValue: initial,
             onChange: (nextVal) => {
               dispatchChangeEvent(prop, getRefs(), nextVal);
-              emitGroupChange(
-                {
-                  refs: getRefs(),
-                  context: getContext(),
-                  computed: getComputed(),
-                },
-                { value: nextVal },
-              );
             },
           };
         }),
@@ -127,9 +131,8 @@ export const radioGroupMachine: RadioGroupMachine =
       }
     },
 
-    effects: ["trackGroupProps"],
-    entry: ["setupFormField", "setupGroupBus"],
-    exit: ["cleanupFormField", "cleanupGroupBus"],
+    entry: ["setupFormField"],
+    exit: ["cleanupFormField"],
 
     on: {
       SET_VALUE: {
@@ -169,41 +172,15 @@ export const radioGroupMachine: RadioGroupMachine =
         clearValue: ({ context }) => {
           context.set("value", null);
         },
-        resetValue: ({ context, refs, prop, computed }) => {
+        resetValue: ({ context, refs, prop }) => {
           const initial = refs.get("initialValue") ?? resolveInitialValue(prop);
           context.set("value", initial);
           context.set("invalid", false);
-          emitGroupChange(
-            { refs, context, computed },
-            { value: initial, invalid: false },
-          );
         },
-        setInvalid: ({ context, refs, computed, event }) => {
+        setInvalid: ({ context, event }) => {
           if ("invalid" in event) {
-            const nextInvalid = Boolean(event.invalid);
-            context.set("invalid", nextInvalid);
-            emitGroupChange(
-              { refs, context, computed },
-              { invalid: nextInvalid },
-            );
+            context.set("invalid", Boolean(event.invalid));
           }
-        },
-        setupGroupBus: ({ refs, context, computed, send }) => {
-          const bus = refs.get("bus");
-          if (bus) {
-            const unsub = bus.on("radio:select", ({ value }) => {
-              send({ type: "SET_VALUE", value });
-            });
-            const disposers = refs.get("busDisposers") || [];
-            disposers.push(unsub);
-            refs.set("busDisposers", disposers);
-            emitGroupChange({ refs, context, computed });
-          }
-        },
-        cleanupGroupBus: ({ refs }) => {
-          const disposers = refs.get("busDisposers") || [];
-          for (const d of disposers) d?.();
-          refs.set("busDisposers", []);
         },
         setupFormField: ({ context, prop, refs, scope, computed }) => {
           setupFormFieldSync(
@@ -222,20 +199,12 @@ export const radioGroupMachine: RadioGroupMachine =
                   refs.get("initialValue") ?? resolveInitialValue(prop);
                 context.set("value", initial);
                 context.set("invalid", false);
-                emitGroupChange(
-                  { refs, context, computed },
-                  { value: initial, invalid: false },
-                );
               },
               focus: () => {},
               getValidateOn: () => prop("validateOn"),
               isDisabled: () => computed("isDisabled"),
               onValidationChange: (isValid) => {
                 context.set("invalid", !isValid);
-                emitGroupChange(
-                  { refs, context, computed },
-                  { invalid: !isValid },
-                );
               },
               onStateChange: (s) => {
                 if (s.fieldDisabled !== undefined) {
@@ -250,7 +219,6 @@ export const radioGroupMachine: RadioGroupMachine =
                 if (s.formReadOnly !== undefined) {
                   context.set("formReadOnly", Boolean(s.formReadOnly));
                 }
-                emitGroupChange({ refs, context, computed });
               },
             },
             refs,
@@ -261,27 +229,5 @@ export const radioGroupMachine: RadioGroupMachine =
         },
       },
 
-      effects: {
-        trackGroupProps: ({ refs, context, computed, track }) => {
-          let initial = true;
-          track(
-            [
-              () => context.get("value"),
-              () => computed("isDisabled"),
-              () => context.get("invalid"),
-              () => context.get("size"),
-              () => context.get("color"),
-              () => context.get("variant"),
-            ],
-            () => {
-              if (initial) {
-                initial = false;
-                return;
-              }
-              emitGroupChange({ refs, context, computed });
-            },
-          );
-        },
-      },
     },
   });

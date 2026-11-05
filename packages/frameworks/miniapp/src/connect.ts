@@ -1,3 +1,4 @@
+import { effect } from "alien-signals";
 import { diffSnapshot, isPlainObject } from "@code-ui/utils";
 import type { MachineSchema, Service } from "@code-ui/core";
 import { type MiniappMachine, nextTick } from "./machine";
@@ -104,11 +105,10 @@ export function connectToPage<
     }
   };
 
-  const unsubscribe = machine.subscribe(update);
-  update(); // Initial sync
+  const dispose = effect(update);
 
   return () => {
-    unsubscribe();
+    dispose();
     pendingDelta = {};
     isBatchScheduled = false;
   };

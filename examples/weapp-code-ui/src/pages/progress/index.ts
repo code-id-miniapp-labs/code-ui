@@ -1,7 +1,14 @@
 Page({
   data: {
     value: 60,
-    colors: ["primary", "neutral", "success", "warning", "danger", "info"] as const,
+    colors: [
+      "primary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
     sizes: ["2xs", "xs", "sm", "md", "lg", "xl", "2xl"] as const,
   },
 
@@ -21,8 +28,7 @@ Page({
 
   toggleIndeterminate() {
     this.setData({
-      value: this.data.value === null ? 60 : null,
+      value: this.data.value === null ? 60 : 0,
     });
   },
 });
-

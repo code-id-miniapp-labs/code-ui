@@ -29,18 +29,6 @@ export type CheckboxGroupOrientation = "horizontal" | "vertical";
 
 export type CheckboxGroupVariant = "outline" | "card";
 
-export interface CheckboxGroupBusEvents {
-  "checkbox:toggle": { value: string };
-  "group:change": {
-    value: string[];
-    disabled: boolean;
-    invalid: boolean;
-    size: CheckboxGroupSize;
-    color: CheckboxGroupColor;
-    variant: CheckboxGroupVariant;
-  };
-}
-
 export type CheckboxGroupAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type CheckboxGroupUI = ComponentUI<typeof anatomy>;
 export type CheckboxGroupResolvedUI = ResolvedUI<typeof anatomy>;
@@ -124,7 +112,20 @@ export interface CheckboxGroupProps {
   onChange?: ((details: CheckboxGroupValueChangeDetails) => void) | undefined;
 }
 
-export type CheckboxGroupContext = {
+export interface CheckboxGroupContext {
+  readonly value: () => string[];
+  readonly disabled: () => boolean;
+  readonly readOnly: () => boolean;
+  readonly invalid: () => boolean;
+  readonly color: () => CheckboxGroupColor;
+  readonly size: () => CheckboxGroupSize;
+  readonly variant: () => CheckboxGroupVariant;
+
+  setValue: (value: string[]) => void;
+  toggleValue: (value: string, checked?: boolean) => void;
+}
+
+export type CheckboxGroupMachineContext = {
   value: string[];
   name: string;
   form: string;
@@ -163,10 +164,9 @@ export interface CheckboxGroupComputed {
 
 export interface CheckboxGroupRefs {
   initialValue?: string[] | undefined;
-  bus?: EventBus<CheckboxGroupBusEvents> | undefined;
+  groupContext: CheckboxGroupContext;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface CheckboxGroupSchema extends MachineSchema {
@@ -174,7 +174,7 @@ export interface CheckboxGroupSchema extends MachineSchema {
   tag: "idle";
   event: CheckboxGroupEvent;
   props: CheckboxGroupProps;
-  context: CheckboxGroupContext;
+  context: CheckboxGroupMachineContext;
   computed: CheckboxGroupComputed;
   refs: CheckboxGroupRefs;
   action: string;

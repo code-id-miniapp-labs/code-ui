@@ -13,7 +13,6 @@ export * from "@code-ui/pull-down-refresh";
 export * from "@code-ui/qr-code";
 export * from "@code-ui/radio";
 export * from "@code-ui/radio-group";
-export type { RadioGroupBusEvents } from "@code-ui/radio-group";
 export * from "@code-ui/slider";
 export * from "@code-ui/stepper";
 export * from "@code-ui/stepper-item";

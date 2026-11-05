@@ -1,9 +1,5 @@
 import type { MachinePlugin } from "../plugin";
 
-function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
-
 /**
  * Shared Behavior reference for `<c-radio-group>` parent components.
  * Used as relations.target to link descendant <c-radio> components natively
@@ -15,35 +11,17 @@ export const cuiRadioGroupParentBehavior: any = cuiRadioGroupBehavior;
 
 export function linkRadioToParentGroup(group: any, radio: any) {
   const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
-  radio.__codeUiRadioGroupBus = bus;
+  const groupContext = service?.refs?.get?.("groupContext");
   if (radio.__codeUiMachine) {
-    const ctx = service?.context;
-    radio.__codeUiMachine.updateProps({
-      groupBus: bus,
-      groupValue: ctx?.get("value"),
-      groupDisabled: ctx?.get("disabled"),
-      groupInvalid: ctx?.get("invalid"),
-      groupSize: ctx?.get("size"),
-      groupColor: ctx?.get("color"),
-      groupVariant: ctx?.get("variant"),
-    });
+    radio.__codeUiMachine.updateProps({ groupContext });
   } else {
     radio.__codeUiPendingRadioGroup = group;
   }
 }
 
 export function unlinkRadioFromParentGroup(_group: any, radio: any) {
-  radio.__codeUiRadioGroupBus = undefined;
   if (radio.__codeUiMachine) {
-    radio.__codeUiMachine.updateProps({
-      groupBus: undefined,
-      groupValue: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupColor: undefined,
-      groupVariant: undefined,
-    });
+    radio.__codeUiMachine.updateProps({ groupContext: undefined });
   }
 }
 
@@ -100,22 +78,9 @@ export function handleRadioAttached(
         : undefined);
     if (parent) {
       const pService = parent.__codeUiMachine?.service;
-      const bus =
-        parent.__codeUiRadioGroupBus ??
-        getServiceBus(pService) ??
-        pService?.refs?.get?.("bus");
-      if (bus) {
-        initialProps.groupBus = bus;
-        instance.__codeUiRadioGroupBus = bus;
-      }
-      if (pService) {
-        const ctx = pService.context;
-        initialProps.groupValue = ctx?.get("value");
-        initialProps.groupDisabled = ctx?.get("disabled");
-        initialProps.groupInvalid = ctx?.get("invalid");
-        initialProps.groupSize = ctx?.get("size");
-        initialProps.groupColor = ctx?.get("color");
-        initialProps.groupVariant = ctx?.get("variant");
+      const groupContext = pService?.refs?.get?.("groupContext");
+      if (groupContext) {
+        initialProps.groupContext = groupContext;
       }
     }
   }

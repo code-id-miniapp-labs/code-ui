@@ -203,7 +203,7 @@ describe("Tabs Machine", () => {
       machine.stop();
     });
 
-    it("broadcasts tabs:change over bus when controlled value updates", async () => {
+    it("exposes the controlled value through the group context", async () => {
       const machine = new MiniappMachine(tabsMachine, {
         value: "account",
         childItems: [
@@ -213,16 +213,49 @@ describe("Tabs Machine", () => {
       });
       machine.start();
 
-      const bus = machine.service.refs.get("bus");
-      const busEvents: any[] = [];
-      bus.on("tabs:change", (e: any) => busEvents.push(e));
+      const group = machine.service.refs.get("groupContext");
+      expect(group.value()).toBe("account");
 
       machine.updateProps({ value: "security" });
       await flush();
 
-      expect(busEvents.length).toBeGreaterThanOrEqual(1);
-      const lastEvent = busEvents[busEvents.length - 1];
-      expect(lastEvent.value).toBe("security");
+      expect(group.value()).toBe("security");
+
+      machine.stop();
+    });
+  });
+
+  describe("Group Context", () => {
+    it("exposes live getters and dispatches selection intents", async () => {
+      const machine = new MiniappMachine(tabsMachine, {
+        orientation: "vertical",
+        variant: "link",
+        color: "danger",
+        size: "lg",
+        fitted: true,
+        items: ["Tab 1", "Tab 2"],
+      });
+      machine.start();
+
+      const group = machine.service.refs.get("groupContext");
+      expect(group.value()).toBe("Tab 1");
+      expect(group.orientation()).toBe("vertical");
+      expect(group.variant()).toBe("link");
+      expect(group.color()).toBe("danger");
+      expect(group.size()).toBe("lg");
+      expect(group.fitted()).toBe(true);
+
+      group.select("Tab 2");
+      await flush();
+      expect(group.value()).toBe("Tab 2");
+
+      group.previous();
+      await flush();
+      expect(group.value()).toBe("Tab 1");
+
+      group.last();
+      await flush();
+      expect(group.value()).toBe("Tab 2");
 
       machine.stop();
     });

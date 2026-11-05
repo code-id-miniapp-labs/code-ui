@@ -27,7 +27,7 @@ describe("useChild with radio-group", () => {
     groupMachine.start();
 
     const groupService = groupMachine.service;
-    const bus = groupService.refs.get("bus");
+    const groupContext = groupService.refs.get("groupContext");
 
     // Create 2 child radios
     const radio1Comp: any = {
@@ -36,7 +36,7 @@ describe("useChild with radio-group", () => {
     const radio1 = new MiniappMachine(radioMachine, {
       component: radio1Comp,
       value: "opt1",
-      groupBus: bus,
+      groupContext,
     });
     radio1.start();
 
@@ -46,7 +46,7 @@ describe("useChild with radio-group", () => {
     const radio2 = new MiniappMachine(radioMachine, {
       component: radio2Comp,
       value: "opt2",
-      groupBus: bus,
+      groupContext,
     });
     radio2.start();
 

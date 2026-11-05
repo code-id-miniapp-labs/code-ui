@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { accordionItemMachine, connectAccordionItem } from "../src";
-import { createEventBus } from "@code-ui/utils";
-import type { AccordionBusEvents } from "@code-ui/accordion";
+import type { AccordionGroupContext } from "@code-ui/accordion";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
@@ -34,40 +33,67 @@ describe("AccordionItem Machine", () => {
     machine.stop();
   });
 
-  it("links to groupBus and synchronizes state", async () => {
-    const bus = createEventBus<AccordionBusEvents>();
-    const onBusToggle = vi.fn();
-    bus.on("item:toggle", onBusToggle);
+  it("reads live state from the parent group context", async () => {
+    const value = ["item-1"];
+    const toggleItem = vi.fn();
+    const groupContext: AccordionGroupContext = {
+      value: () => value,
+      multiple: () => true,
+      collapsible: () => true,
+      disabled: () => false,
+      size: () => "lg",
+      variant: () => "subtle",
+      toggleItem,
+      setItemOpen: vi.fn(),
+      setValue: vi.fn(),
+      expandAll: vi.fn(),
+      collapseAll: vi.fn(),
+    };
 
     const machine = new MiniappMachine(accordionItemMachine, {
       value: "item-1",
-      groupBus: bus,
-      groupValue: [],
+      groupContext,
     });
     machine.start();
 
     let api = connectAccordionItem(machine.service);
-    expect(api.isOpen).toBe(false);
-
-    api.toggle();
-    await flush();
-    expect(onBusToggle).toHaveBeenCalledWith({ value: "item-1" });
-
-    // Simulate parent accordion emitting accordion:change
-    bus.emit("accordion:change", {
-      value: ["item-1"],
-      multiple: false,
-      collapsible: true,
-      disabled: false,
-      size: "lg",
-      variant: "subtle",
-    });
-    await flush();
-
-    api = connectAccordionItem(machine.service);
     expect(api.isOpen).toBe(true);
     expect(api.size).toBe("lg");
     expect(api.variant).toBe("subtle");
+
+    api.toggle();
+    await flush();
+    expect(toggleItem).toHaveBeenCalledWith("item-1");
+
+    machine.stop();
+  });
+
+  it("dispatches setItemOpen intents for programmatic open and close", async () => {
+    const setItemOpen = vi.fn();
+    const groupContext: AccordionGroupContext = {
+      value: () => ["item-1"],
+      multiple: () => false,
+      collapsible: () => true,
+      disabled: () => false,
+      size: () => "md",
+      variant: () => "outline",
+      toggleItem: vi.fn(),
+      setItemOpen,
+      setValue: vi.fn(),
+      expandAll: vi.fn(),
+      collapseAll: vi.fn(),
+    };
+
+    const machine = new MiniappMachine(accordionItemMachine, {
+      value: "item-1",
+      groupContext,
+    });
+    machine.start();
+
+    const api = connectAccordionItem(machine.service);
+    api.close();
+    await flush();
+    expect(setItemOpen).toHaveBeenCalledWith("item-1", false);
 
     machine.stop();
   });
@@ -114,26 +140,30 @@ describe("AccordionItem Machine", () => {
     machine.stop();
   });
 
-  it("prevents collapsing open item when groupCollapsible is false in single selection", async () => {
-    const bus = createEventBus<AccordionBusEvents>();
-    const onBusToggle = vi.fn();
-    bus.on("item:toggle", onBusToggle);
+  it("derives disabled state from the parent group context", async () => {
+    const groupContext: AccordionGroupContext = {
+      value: () => [],
+      multiple: () => false,
+      collapsible: () => false,
+      disabled: () => true,
+      size: () => "md",
+      variant: () => "outline",
+      toggleItem: vi.fn(),
+      setItemOpen: vi.fn(),
+      setValue: vi.fn(),
+      expandAll: vi.fn(),
+      collapseAll: vi.fn(),
+    };
 
     const machine = new MiniappMachine(accordionItemMachine, {
       value: "item-1",
-      groupBus: bus,
-      groupValue: ["item-1"],
-      groupCollapsible: false,
-      groupMultiple: false,
+      groupContext,
     });
     machine.start();
 
     const api = connectAccordionItem(machine.service);
-    expect(api.isOpen).toBe(true);
-
-    api.toggle();
-    await flush();
-    expect(onBusToggle).not.toHaveBeenCalled();
+    expect(api.isDisabled).toBe(true);
+    expect(api.isCollapsible).toBe(false);
 
     machine.stop();
   });

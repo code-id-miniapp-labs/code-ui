@@ -28,18 +28,6 @@ export type RadioGroupOrientation = "horizontal" | "vertical";
 
 export type RadioGroupVariant = "outline" | "card";
 
-export interface RadioGroupBusEvents {
-  "radio:select": { value: string };
-  "group:change": {
-    value: string | null;
-    disabled: boolean;
-    invalid: boolean;
-    size: RadioGroupSize;
-    color: RadioGroupColor;
-    variant: RadioGroupVariant;
-  };
-}
-
 export type RadioGroupAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type RadioGroupUI = ComponentUI<typeof anatomy>;
 export type RadioGroupResolvedUI = ResolvedUI<typeof anatomy>;
@@ -119,7 +107,21 @@ export interface RadioGroupProps {
   onChange?: ((details: RadioGroupValueChangeDetails) => void) | undefined;
 }
 
-export type RadioGroupContext = {
+export interface RadioGroupContext {
+  readonly value: () => string | null;
+  readonly disabled: () => boolean;
+  readonly readOnly: () => boolean;
+  readonly invalid: () => boolean;
+  readonly color: () => RadioGroupColor;
+  readonly size: () => RadioGroupSize;
+  readonly variant: () => RadioGroupVariant;
+
+  select: (value: string) => void;
+  setValue: (value: string | null) => void;
+  clear: () => void;
+}
+
+export type RadioGroupMachineContext = {
   value: string | null;
   name: string;
   form: string;
@@ -160,16 +162,13 @@ export type RadioGroupAction =
   | "setInvalid"
   | "setupFormField"
   | "resetValue"
-  | "setupGroupBus"
-  | "cleanupFormField"
-  | "cleanupGroupBus";
+  | "cleanupFormField";
 
 export interface RadioGroupRefs {
   initialValue?: string | null | undefined;
-  bus?: EventBus<RadioGroupBusEvents> | undefined;
+  groupContext: RadioGroupContext;
   formField?: BoundFormField | undefined;
   currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface RadioGroupSchema extends MachineSchema {
@@ -177,7 +176,7 @@ export interface RadioGroupSchema extends MachineSchema {
   tag: "idle";
   event: RadioGroupEvent;
   props: RadioGroupProps;
-  context: RadioGroupContext;
+  context: RadioGroupMachineContext;
   computed: RadioGroupComputed;
   refs: RadioGroupRefs;
   action: RadioGroupAction;

@@ -358,27 +358,25 @@ describe("CheckboxGroup Machine", () => {
     });
   });
 
-  describe("Child Checkbox Bus Coordination", () => {
-    it("coordinates with descendant Checkbox via groupBus", async () => {
+  describe("Child Checkbox Group Coordination", () => {
+    it("coordinates with descendant Checkbox via groupContext", async () => {
       const groupMachine = new MiniappMachine(checkboxGroupMachine, {
         defaultValue: ["opt1"],
       });
       groupMachine.start();
 
-      const groupBus = groupMachine.service.refs.get("bus");
-      expect(groupBus).toBeDefined();
+      const groupContext = groupMachine.service.refs.get("groupContext");
+      expect(groupContext).toBeDefined();
 
       const child1 = new MiniappMachine(checkboxMachine, {
         value: "opt1",
-        groupBus,
-        groupValue: ["opt1"],
+        groupContext,
       });
       child1.start();
 
       const child2 = new MiniappMachine(checkboxMachine, {
         value: "opt2",
-        groupBus,
-        groupValue: ["opt1"],
+        groupContext,
       });
       child2.start();
 
@@ -386,11 +384,9 @@ describe("CheckboxGroup Machine", () => {
       let c2Api = connectCheckbox(child2.service);
 
       expect(c1Api.checked).toBe(true);
-      expect(child1.state.get()).toBe("checked");
       expect(c2Api.checked).toBe(false);
-      expect(child2.state.get()).toBe("unchecked");
 
-      // User taps child2 -> emits checkbox:toggle to groupBus
+      // User taps child2 -> dispatches a toggle intent to the group context
       c2Api.toggle();
       await flush();
 
@@ -402,7 +398,6 @@ describe("CheckboxGroup Machine", () => {
       c2Api = connectCheckbox(child2.service);
       expect(c1Api.checked).toBe(true);
       expect(c2Api.checked).toBe(true);
-      expect(child2.state.get()).toBe("checked");
 
       // User taps child1 -> unchecks opt1
       c1Api.toggle();
@@ -412,7 +407,6 @@ describe("CheckboxGroup Machine", () => {
         "opt2",
       ]);
       expect(connectCheckbox(child1.service).checked).toBe(false);
-      expect(child1.state.get()).toBe("unchecked");
       expect(connectCheckbox(child2.service).checked).toBe(true);
 
       child1.stop();
@@ -525,22 +519,20 @@ describe("CheckboxGroup Machine", () => {
       });
       groupM.start();
 
-      const groupBus = groupM.service.refs.get("bus");
+      const groupContext = groupM.service.refs.get("groupContext");
 
       // Child checkboxes inside c-checkbox-group also receive formBus from c-form relations,
       // but have no name prop and must NOT register as standalone form fields
       const aiCheckbox = new MiniappMachine(checkboxMachine, {
         value: "ai",
-        groupBus,
-        groupValue: formInterests,
+        groupContext,
         formBus,
       });
       aiCheckbox.start();
 
       const webCheckbox = new MiniappMachine(checkboxMachine, {
         value: "web",
-        groupBus,
-        groupValue: formInterests,
+        groupContext,
         formBus,
       });
       webCheckbox.start();

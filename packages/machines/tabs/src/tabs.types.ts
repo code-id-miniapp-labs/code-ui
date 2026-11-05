@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./tabs.anatomy";
 
 export type TabsOrientation = "horizontal" | "vertical";
@@ -24,19 +24,21 @@ export type TabsAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type TabsUI = ComponentUI<typeof anatomy>;
 export type TabsResolvedUI = ResolvedUI<typeof anatomy>;
 
-export interface TabsChangePayload {
-  value: string | number;
-  orientation: TabsOrientation;
-  variant: TabsVariant;
-  color: TabsColor;
-  size: TabsSize;
-  disabled: boolean;
-  fitted?: boolean | undefined;
-}
+export interface TabsGroupContext {
+  readonly value: () => string | number;
+  readonly orientation: () => TabsOrientation;
+  readonly variant: () => TabsVariant;
+  readonly color: () => TabsColor;
+  readonly size: () => TabsSize;
+  readonly disabled: () => boolean;
+  readonly fitted: () => boolean;
 
-export interface TabsBusEvents {
-  "tabs:change": TabsChangePayload;
-  "item:select": { value: string | number };
+  select: (value: string | number) => void;
+  setValue: (value: string | number) => void;
+  next: () => void;
+  previous: () => void;
+  first: () => void;
+  last: () => void;
 }
 
 export interface TabsItem {
@@ -147,8 +149,7 @@ export type TabsEvent =
   | { type: "LAST" };
 
 export interface TabsRefs {
-  bus?: EventBus<TabsBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
+  groupContext: TabsGroupContext;
 }
 
 export interface TabsSchema extends MachineSchema {

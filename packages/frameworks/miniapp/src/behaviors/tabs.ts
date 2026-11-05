@@ -13,10 +13,6 @@ function getComponentId(instance: any, explicitId?: string): string {
   return id;
 }
 
-function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
-
 /**
  * Shared Behavior reference for `<c-tabs>` / `<cui-tabs>` parent components.
  * Used as relations.target to link descendant <c-tabs-item> components natively.
@@ -27,7 +23,7 @@ export const cuiTabsParentBehavior: any = cuiTabsBehavior;
 
 export function syncTabsChildren(group: any) {
   const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  const groupContext = service?.refs?.get?.("groupContext");
   const relationChildren =
     typeof group.getRelationNodes === "function"
       ? group.getRelationNodes("cuiTabsChild")
@@ -77,26 +73,16 @@ export function syncTabsChildren(group: any) {
   const groupId = group.id || getComponentId(group);
   group.__codeUiId = groupId;
 
-  const ctx = service?.context;
-  const val = ctx?.get("value");
   for (let i = 0; i < declarativeChildren.length; i++) {
     const child = declarativeChildren[i];
     if (!child) continue;
-    child.__codeUiTabsBus = bus;
     child.__codeUiPendingTabs = group;
     child.__codeUiTabsIndex = i;
     child.__codeUiTabsId = groupId;
     if (child.__codeUiMachine) {
       child.__codeUiMachine.updateProps({
         tabsId: groupId,
-        groupBus: bus,
-        groupValue: val,
-        groupOrientation: group.data?.orientation || "horizontal",
-        groupVariant: group.data?.variant || "pill",
-        groupColor: group.data?.color || "primary",
-        groupSize: group.data?.size || "md",
-        groupDisabled: Boolean(group.data?.disabled),
-        groupFitted: Boolean(group.data?.fitted),
+        groupContext,
         groupIndex: i,
       });
     }
@@ -104,21 +90,14 @@ export function syncTabsChildren(group: any) {
 
   for (const child of allChildren) {
     if (!child) continue;
-    child.__codeUiTabsBus = bus;
     child.__codeUiPendingTabs = group;
     child.__codeUiTabsId = groupId;
-  }
-
-  if (bus) {
-    bus.emit("tabs:change", {
-      value: val,
-      orientation: group.data?.orientation || "horizontal",
-      variant: group.data?.variant || "pill",
-      color: group.data?.color || "primary",
-      size: group.data?.size || "md",
-      disabled: Boolean(group.data?.disabled),
-      fitted: Boolean(group.data?.fitted),
-    });
+    if (child.__codeUiMachine) {
+      child.__codeUiMachine.updateProps({
+        tabsId: groupId,
+        groupContext,
+      });
+    }
   }
 }
 
@@ -137,18 +116,11 @@ export function unlinkTabsItemFromParent(group: any, item: any) {
       (c: any) => c !== item,
     );
   }
-  item.__codeUiTabsBus = undefined;
   item.__codeUiPendingTabs = undefined;
   if (item.__codeUiMachine) {
     item.__codeUiMachine.updateProps({
       tabsId: undefined,
-      groupBus: undefined,
-      groupValue: undefined,
-      groupOrientation: undefined,
-      groupVariant: undefined,
-      groupColor: undefined,
-      groupSize: undefined,
-      groupDisabled: undefined,
+      groupContext: undefined,
       groupIndex: undefined,
     });
   }
@@ -220,13 +192,9 @@ export function handleTabsAttached(
         : undefined);
     if (parent) {
       const pService = parent.__codeUiMachine?.service;
-      const bus =
-        parent.__codeUiTabsBus ??
-        getServiceBus(pService) ??
-        pService?.refs?.get?.("bus");
-      if (bus) {
-        initialProps.groupBus = bus;
-        instance.__codeUiTabsBus = bus;
+      const groupContext = pService?.refs?.get?.("groupContext");
+      if (groupContext) {
+        initialProps.groupContext = groupContext;
       }
       if (instance.__codeUiTabsIndex !== undefined) {
         initialProps.groupIndex = instance.__codeUiTabsIndex;
@@ -234,17 +202,6 @@ export function handleTabsAttached(
       const tid = instance.__codeUiTabsId ?? parent.__codeUiId;
       if (tid !== undefined) {
         initialProps.tabsId = tid;
-      }
-      if (pService) {
-        const ctx = pService.context;
-        initialProps.groupValue = ctx?.get("value");
-        initialProps.groupOrientation =
-          parent.data?.orientation || "horizontal";
-        initialProps.groupVariant = parent.data?.variant || "pill";
-        initialProps.groupColor = parent.data?.color || "primary";
-        initialProps.groupSize = parent.data?.size || "md";
-        initialProps.groupDisabled = Boolean(parent.data?.disabled);
-        initialProps.groupFitted = Boolean(parent.data?.fitted);
       }
     }
   }
@@ -286,9 +243,6 @@ export function withTabs(): MachinePlugin {
     },
     onReady(instance) {
       handleTabsReady(instance, { tabs: true });
-    },
-    onPropChanged(instance) {
-      syncTabsChildren(instance);
     },
   };
 }

@@ -1,77 +1,14 @@
 import { createMachine } from "@code-ui/core";
-import type { BindableContext, BindableRefs, PropFn } from "@code-ui/core";
+import type { BindableContext, PropFn } from "@code-ui/core";
+import type { RadioGroupContext } from "@code-ui/radio-group";
 import { isNotEmpty, isNotNull } from "@code-ui/utils";
-import type { EventBus } from "@code-ui/utils";
 import type {
-  RadioColor,
   RadioContext,
-  RadioGroupBusEvents,
-  RadioGroupChangePayload,
   RadioMachine,
-  RadioParams,
   RadioProps,
   RadioSchema,
-  RadioSize,
-  RadioVariant,
 } from "./radio.types";
 import { defaultRadioProps } from "./radio.props";
-
-interface GroupSnapshot {
-  value?: string | null | undefined;
-  disabled?: boolean | undefined;
-  invalid?: boolean | undefined;
-  color?: RadioColor | "" | undefined;
-  size?: RadioSize | "" | undefined;
-  variant?: RadioVariant | "" | undefined;
-}
-
-function applyGroupState(
-  { context, state }: Pick<RadioParams, "context" | "state">,
-  g: GroupSnapshot,
-): void {
-  if (g.value !== undefined) {
-    context.set("groupValue", g.value);
-    const targetState = g.value === context.get("value") ? "checked" : "unchecked";
-    if (!state.matches(targetState)) {
-      state.set(targetState);
-    }
-  }
-  if (g.disabled !== undefined) {
-    context.set("groupDisabled", Boolean(g.disabled));
-  }
-  if (g.invalid !== undefined) {
-    context.set("groupInvalid", Boolean(g.invalid));
-  }
-  if (g.color !== undefined) {
-    context.set("groupColor", g.color);
-  }
-  if (g.size !== undefined) {
-    context.set("groupSize", g.size);
-  }
-  if (g.variant !== undefined) {
-    context.set("groupVariant", g.variant);
-  }
-}
-
-function bindGroupBus(
-  bus: EventBus<RadioGroupBusEvents> | undefined,
-  context: BindableContext<RadioSchema>,
-  state: RadioParams["state"],
-  refs: BindableRefs<RadioSchema>,
-): void {
-  for (const d of refs.get("busDisposers") ?? []) d?.();
-  refs.set("currentGroupBus", bus);
-  refs.set(
-    "busDisposers",
-    bus
-      ? [
-          bus.on("group:change", (gState: RadioGroupChangePayload) => {
-            applyGroupState({ context, state }, gState);
-          }),
-        ]
-      : [],
-  );
-}
 
 function emitRadioChange(
   context: BindableContext<RadioSchema>,
@@ -84,8 +21,8 @@ function emitRadioChange(
 
 const selectToCheckedTransition = [
   {
-    guard: "hasGroupBus",
-    actions: ["selectGroupBus"],
+    guard: "hasGroupContext",
+    actions: ["selectGroup"],
   },
   {
     guard: "isInteractive",
@@ -101,9 +38,9 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
   }),
 
   initialState: ({ prop }) => {
-    const groupVal = prop("groupValue");
-    if (groupVal !== undefined) {
-      return groupVal === prop("value") ? "checked" : "unchecked";
+    const group = prop("groupContext") as RadioGroupContext | undefined;
+    if (group) {
+      return group.value() === prop("value") ? "checked" : "unchecked";
     }
     const rawChecked = prop("checked");
     const initial = isNotNull(rawChecked)
@@ -111,11 +48,6 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       : Boolean(prop("defaultChecked"));
     return initial ? "checked" : "unchecked";
   },
-
-  refs: ({ prop }) => ({
-    currentGroupBus: prop("groupBus"),
-    busDisposers: [],
-  }),
 
   context: ({ prop, bindable }) => {
     const propBindable = <
@@ -126,14 +58,6 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     ) =>
       bindable<RadioContext[K]>(() => ({
         value: prop(key) as RadioContext[K] | undefined,
-        defaultValue,
-      }));
-
-    const stateBindable = <K extends keyof RadioContext>(
-      _key: K,
-      defaultValue: RadioContext[K],
-    ) =>
-      bindable<RadioContext[K]>(() => ({
         defaultValue,
       }));
 
@@ -156,81 +80,50 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       size: propBindable("size", ""),
       variant: propBindable("variant", "outline"),
 
-      groupValue: stateBindable("groupValue", prop("groupValue")),
-      groupDisabled: stateBindable(
-        "groupDisabled",
-        Boolean(prop("groupDisabled")),
-      ),
-      groupInvalid: stateBindable(
-        "groupInvalid",
-        Boolean(prop("groupInvalid")),
-      ),
-      groupColor: stateBindable("groupColor", prop("groupColor") ?? ""),
-      groupSize: stateBindable("groupSize", prop("groupSize") ?? ""),
-      groupVariant: stateBindable("groupVariant", prop("groupVariant") ?? ""),
-
       ui: propBindable("ui", {}),
     };
   },
 
   computed: {
-    isChecked: ({ context, state }) => {
-      const gv = context.get("groupValue");
-      if (gv !== undefined) {
-        return gv === context.get("value");
+    isChecked: ({ context, prop, state }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      if (group) {
+        return group.value() === context.get("value");
       }
       return state.matches("checked");
     },
 
-    isDisabled: ({ context }) =>
-      Boolean(context.get("groupDisabled") || context.get("disabled")),
+    isDisabled: ({ context, prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return Boolean(group?.disabled() || context.get("disabled"));
+    },
 
     isInteractive: ({ computed, context }) =>
       !computed("isDisabled") && !context.get("readOnly"),
 
-    isInvalid: ({ context }) =>
-      Boolean(context.get("invalid") || context.get("groupInvalid")),
+    isInvalid: ({ context, prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return Boolean(context.get("invalid") || group?.invalid());
+    },
 
-    effectiveSize: ({ context }) =>
-      context.get("groupSize") || context.get("size") || "md",
+    effectiveSize: ({ context, prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return group?.size() || context.get("size") || "md";
+    },
 
-    effectiveColor: ({ context }) =>
-      context.get("groupColor") || context.get("color") || "primary",
+    effectiveColor: ({ context, prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return group?.color() || context.get("color") || "primary";
+    },
 
-    effectiveVariant: ({ context }) =>
-      context.get("groupVariant") || context.get("variant") || "outline",
+    effectiveVariant: ({ context, prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return group?.variant() || context.get("variant") || "outline";
+    },
   },
 
-  watch: ({ prop, context, refs, state }) => {
-    const nextBus = prop("groupBus");
-    if (nextBus !== refs.get("currentGroupBus")) {
-      bindGroupBus(nextBus, context, state, refs);
-      if (nextBus) {
-        applyGroupState(
-          { context, state },
-          {
-            value: prop("groupValue"),
-            disabled: prop("groupDisabled"),
-            invalid: prop("groupInvalid"),
-            color: prop("groupColor"),
-            size: prop("groupSize"),
-            variant: prop("groupVariant"),
-          },
-        );
-      }
-    }
-
-    if (nextBus) return;
-
-    const groupVal = prop("groupValue");
-    if (groupVal !== undefined) {
-      context.set("groupValue", groupVal);
-      const targetState = groupVal === prop("value") ? "checked" : "unchecked";
-      if (!state.matches(targetState)) {
-        state.set(targetState);
-      }
-      return;
-    }
+  watch: ({ prop, state }) => {
+    if (prop("groupContext")) return;
 
     const controlledChecked = prop("checked");
     if (isNotNull(controlledChecked)) {
@@ -240,9 +133,6 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       }
     }
   },
-
-  entry: ["setupGroupBus"],
-  exit: ["cleanupGroupBus"],
 
   on: {
     SET_CHECKED: [
@@ -268,13 +158,13 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       tags: ["checked"],
       on: {
         SELECT: {
-          guard: "hasGroupBus",
-          actions: ["selectGroupBus"],
+          guard: "hasGroupContext",
+          actions: ["selectGroup"],
         },
         TOGGLE: [
           {
-            guard: "hasGroupBus",
-            actions: ["selectGroupBus"],
+            guard: "hasGroupContext",
+            actions: ["selectGroup"],
           },
           {
             guard: "isInteractive",
@@ -289,32 +179,20 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
   implementations: {
     guards: {
       isInteractive: ({ computed }) => computed("isInteractive"),
-      hasGroupBus: ({ refs, prop, computed }) =>
-        computed("isInteractive") &&
-        Boolean(refs.get("currentGroupBus") || prop("groupBus")),
+      hasGroupContext: ({ prop, computed }) =>
+        computed("isInteractive") && Boolean(prop("groupContext")),
       isEventChecked: ({ event }) =>
         "checked" in event && Boolean(event.checked),
     },
 
     actions: {
-      selectGroupBus: ({ context, refs, prop }) => {
-        const bus = refs.get("currentGroupBus") || prop("groupBus");
-        bus?.emit("radio:select", { value: context.get("value") });
+      selectGroup: ({ context, prop }) => {
+        const group = prop("groupContext") as RadioGroupContext | undefined;
+        group?.select(context.get("value"));
       },
 
       emitRadioChange: ({ context, prop, state }) => {
         emitRadioChange(context, prop, state.matches("checked"));
-      },
-
-      setupGroupBus: ({ prop, context, state, refs }) => {
-        const bus = prop("groupBus");
-        if (bus) {
-          bindGroupBus(bus, context, state, refs);
-        }
-      },
-
-      cleanupGroupBus: ({ context, state, refs }) => {
-        bindGroupBus(undefined, context, state, refs);
       },
     },
   },

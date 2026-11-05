@@ -13,10 +13,6 @@ function getComponentId(instance: any, explicitId?: string): string {
   return id;
 }
 
-function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
-
 /**
  * Shared Behavior reference for `<c-stepper>` parent components.
  * Used as relations.target to link descendant <c-stepper-item> components natively.
@@ -27,14 +23,14 @@ export const cuiStepperParentBehavior: any = cuiStepperBehavior;
 
 export function syncStepperChildren(group: any) {
   const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  const groupContext = service?.refs?.get?.("groupContext");
   const relationChildren =
     typeof group.getRelationNodes === "function"
       ? group.getRelationNodes("cuiStepperChild")
       : undefined;
   const templateChildren =
     typeof group.selectAllComponents === "function"
-      ? group.selectAllComponents(".cui-stepper-item")
+      ? group.selectAllComponents("c-stepper-item, .cui-stepper-item")
       : undefined;
   const children: any[] =
     Array.isArray(relationChildren) && relationChildren.length > 0
@@ -42,8 +38,8 @@ export function syncStepperChildren(group: any) {
       : Array.isArray(templateChildren) && templateChildren.length > 0
         ? templateChildren
         : group.__codeUiStepperChildren || [];
-
   const total = children.length;
+
   if (group.__codeUiMachine) {
     group.__codeUiMachine.updateProps({ linkedCount: total });
   }
@@ -52,44 +48,19 @@ export function syncStepperChildren(group: any) {
     group.data?.id || group.id || group.__codeUiId || getComponentId(group);
   group.__codeUiId = groupId;
 
-  const ctx = service?.context;
   for (let i = 0; i < total; i++) {
     const child = children[i];
     if (!child) continue;
-    child.__codeUiStepperBus = bus;
     child.__codeUiPendingStepper = group;
     child.__codeUiStepperIndex = i;
-    child.__codeUiStepperIsLast = i === total - 1;
     child.__codeUiStepperId = groupId;
     if (child.__codeUiMachine) {
       child.__codeUiMachine.updateProps({
         stepperId: groupId,
-        groupBus: bus,
-        groupStep: ctx?.get("step"),
-        groupCount: total,
+        groupContext,
         groupIndex: i,
-        groupIsLast: i === total - 1,
-        groupLinear: ctx?.get("linear"),
-        groupOrientation: ctx?.get("orientation"),
-        groupDisabled: ctx?.get("disabled"),
-        groupSize: ctx?.get("size"),
-        groupColor: ctx?.get("color"),
-        groupVariant: ctx?.get("variant"),
       });
     }
-  }
-
-  if (bus && ctx) {
-    bus.emit("stepper:change", {
-      step: ctx.get("step"),
-      count: total,
-      linear: Boolean(ctx.get("linear")),
-      orientation: ctx.get("orientation") || "horizontal",
-      color: ctx.get("color") || "primary",
-      size: ctx.get("size") || "md",
-      variant: ctx.get("variant") || "subtle",
-      disabled: Boolean(ctx.get("disabled")),
-    });
   }
 }
 
@@ -108,21 +79,12 @@ export function unlinkStepperItemFromParentGroup(group: any, item: any) {
       (c: any) => c !== item,
     );
   }
-  item.__codeUiStepperBus = undefined;
   item.__codeUiPendingStepper = undefined;
   if (item.__codeUiMachine) {
     item.__codeUiMachine.updateProps({
-      groupBus: undefined,
-      groupStep: undefined,
-      groupCount: undefined,
+      stepperId: undefined,
+      groupContext: undefined,
       groupIndex: undefined,
-      groupIsLast: undefined,
-      groupLinear: undefined,
-      groupOrientation: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupColor: undefined,
-      groupVariant: undefined,
     });
   }
   syncStepperChildren(group);
@@ -181,19 +143,12 @@ export function handleStepperAttached(
         : undefined);
     if (parent) {
       const pService = parent.__codeUiMachine?.service;
-      const bus =
-        parent.__codeUiStepperBus ??
-        getServiceBus(pService) ??
-        pService?.refs?.get?.("bus");
-      if (bus) {
-        initialProps.groupBus = bus;
-        instance.__codeUiStepperBus = bus;
+      const groupContext = pService?.refs?.get?.("groupContext");
+      if (groupContext) {
+        initialProps.groupContext = groupContext;
       }
       if (instance.__codeUiStepperIndex !== undefined) {
         initialProps.groupIndex = instance.__codeUiStepperIndex;
-      }
-      if (instance.__codeUiStepperIsLast !== undefined) {
-        initialProps.groupIsLast = instance.__codeUiStepperIsLast;
       }
       const sid =
         instance.__codeUiStepperId ??
@@ -202,16 +157,6 @@ export function handleStepperAttached(
         parent.__codeUiId;
       if (sid !== undefined) {
         initialProps.stepperId = sid;
-      }
-      if (pService) {
-        const ctx = pService.context;
-        initialProps.groupStep = ctx?.get("step");
-        initialProps.groupLinear = ctx?.get("linear");
-        initialProps.groupOrientation = ctx?.get("orientation");
-        initialProps.groupDisabled = ctx?.get("disabled");
-        initialProps.groupSize = ctx?.get("size");
-        initialProps.groupColor = ctx?.get("color");
-        initialProps.groupVariant = ctx?.get("variant");
       }
     }
   }
@@ -253,9 +198,6 @@ export function withStepper(): MachinePlugin {
     },
     onReady(instance) {
       handleStepperReady(instance, { stepper: true });
-    },
-    onPropChanged(instance) {
-      syncStepperChildren(instance);
     },
   };
 }

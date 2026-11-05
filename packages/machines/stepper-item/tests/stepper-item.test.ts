@@ -1,11 +1,31 @@
 import { describe, it, expect, vi } from "vitest";
+import { signal } from "alien-signals";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { StepperBusEvents } from "@code-ui/stepper";
+import type { StepperGroupContext } from "@code-ui/stepper";
 import { stepperItemMachine, connectStepperItem } from "../src";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
+}
+
+function makeGroupContext(
+  overrides: Partial<StepperGroupContext> = {},
+): StepperGroupContext {
+  return {
+    step: () => 0,
+    count: () => 0,
+    linear: () => false,
+    orientation: () => "horizontal",
+    color: () => "primary",
+    size: () => "md",
+    variant: () => "subtle",
+    disabled: () => false,
+    setStep: vi.fn(),
+    next: vi.fn(),
+    previous: vi.fn(),
+    reset: vi.fn(),
+    ...overrides,
+  };
 }
 
 describe("StepperItem Machine", () => {
@@ -24,35 +44,31 @@ describe("StepperItem Machine", () => {
     machine.stop();
   });
 
-  it("calculates status correctly based on groupStep and groupLinear", async () => {
-    const bus = createEventBus<StepperBusEvents>();
+  it("calculates status correctly based on group step and linear mode", async () => {
+    const currentStep = signal(0);
+    const group = makeGroupContext({
+      step: () => currentStep(),
+      count: () => 3,
+      linear: () => true,
+    });
 
     const item0 = new MiniappMachine(stepperItemMachine, {
-      groupBus: bus,
-      groupStep: 0,
-      groupCount: 3,
+      groupContext: group,
       groupIndex: 0,
-      groupLinear: true,
       title: "Step 0",
     });
     item0.start();
 
     const item1 = new MiniappMachine(stepperItemMachine, {
-      groupBus: bus,
-      groupStep: 0,
-      groupCount: 3,
+      groupContext: group,
       groupIndex: 1,
-      groupLinear: true,
       title: "Step 1",
     });
     item1.start();
 
     const item2 = new MiniappMachine(stepperItemMachine, {
-      groupBus: bus,
-      groupStep: 0,
-      groupCount: 3,
+      groupContext: group,
       groupIndex: 2,
-      groupLinear: true,
       title: "Step 2",
     });
     item2.start();
@@ -61,17 +77,7 @@ describe("StepperItem Machine", () => {
     expect(connectStepperItem(item1.service).status).toBe("upcoming");
     expect(connectStepperItem(item2.service).status).toBe("disabled");
 
-    // Emit group step change to step 1
-    bus.emit("stepper:change", {
-      step: 1,
-      count: 3,
-      linear: true,
-      orientation: "horizontal",
-      color: "primary",
-      size: "md",
-      variant: "subtle",
-      disabled: false,
-    });
+    currentStep(1);
     await flush();
 
     expect(connectStepperItem(item0.service).status).toBe("completed");
@@ -83,18 +89,17 @@ describe("StepperItem Machine", () => {
     item2.stop();
   });
 
-  it("handles tap and emits item:tap on bus", async () => {
-    const bus = createEventBus<StepperBusEvents>();
-    const onBusTap = vi.fn();
-    bus.on("item:tap", onBusTap);
-
+  it("dispatches tap intents to the group context", async () => {
+    const setStep = vi.fn();
     const onTap = vi.fn();
     const triggerEvent = vi.fn();
 
     const item = new MiniappMachine(stepperItemMachine, {
-      groupBus: bus,
-      groupStep: 0,
-      groupCount: 2,
+      groupContext: makeGroupContext({
+        step: () => 0,
+        count: () => 2,
+        setStep,
+      }),
       groupIndex: 1,
       onTap,
       component: { triggerEvent, setData: vi.fn() },
@@ -114,11 +119,28 @@ describe("StepperItem Machine", () => {
       value: 1,
       status: "upcoming",
     });
-    expect(onBusTap).toHaveBeenCalledWith({
-      index: 1,
-      value: 1,
-    });
+    expect(setStep).toHaveBeenCalledWith(1);
 
+    item.stop();
+  });
+
+  it("blocks taps to unreachable steps in linear mode", async () => {
+    const setStep = vi.fn();
+    const item = new MiniappMachine(stepperItemMachine, {
+      groupContext: makeGroupContext({
+        step: () => 0,
+        count: () => 3,
+        linear: () => true,
+        setStep,
+      }),
+      groupIndex: 2,
+    });
+    item.start();
+
+    connectStepperItem(item.service).handleTap();
+    await flush();
+
+    expect(setStep).not.toHaveBeenCalled();
     item.stop();
   });
 
@@ -140,7 +162,6 @@ describe("StepperItem Machine", () => {
   it("respects explicit completed and status props", () => {
     const itemCompleted = new MiniappMachine(stepperItemMachine, {
       index: 3,
-      groupStep: 2,
       completed: true,
     });
     itemCompleted.start();
@@ -151,13 +172,36 @@ describe("StepperItem Machine", () => {
 
     const itemCustomStatus = new MiniappMachine(stepperItemMachine, {
       index: 1,
-      groupStep: 0,
       status: "completed",
     });
     itemCustomStatus.start();
     const api2 = connectStepperItem(itemCustomStatus.service);
     expect(api2.status).toBe("completed");
     itemCustomStatus.stop();
+  });
+
+  it("resolves presentation values from the group context", () => {
+    const item = new MiniappMachine(stepperItemMachine, {
+      groupContext: makeGroupContext({
+        orientation: () => "vertical",
+        color: () => "danger",
+        size: () => "lg",
+        variant: () => "outline",
+        disabled: () => true,
+      }),
+      groupIndex: 0,
+    });
+    item.start();
+
+    const api = connectStepperItem(item.service);
+    expect(api.orientation).toBe("vertical");
+    expect(api.color).toBe("danger");
+    expect(api.size).toBe("lg");
+    expect(api.variant).toBe("outline");
+    expect(api.isDisabled).toBe(true);
+    expect(api.status).toBe("disabled");
+
+    item.stop();
   });
 
   it("exposes icon and completedIcon in connect api", () => {

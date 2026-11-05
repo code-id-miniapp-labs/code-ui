@@ -262,37 +262,25 @@ describe("Stepper Machine", () => {
       });
       parentMachine.start();
 
-      const bus = parentMachine.service.refs.get("bus");
+      const groupContext = parentMachine.service.refs.get("groupContext");
 
       const item0 = new MiniappMachine(stepperItemMachine, {
-        groupBus: bus,
-        groupStep: 0,
-        groupCount: 3,
+        groupContext,
         groupIndex: 0,
-        groupIsLast: false,
-        groupLinear: true,
         title: "Personal",
       });
       item0.start();
 
       const item1 = new MiniappMachine(stepperItemMachine, {
-        groupBus: bus,
-        groupStep: 0,
-        groupCount: 3,
+        groupContext,
         groupIndex: 1,
-        groupIsLast: false,
-        groupLinear: true,
         title: "Verification",
       });
       item1.start();
 
       const item2 = new MiniappMachine(stepperItemMachine, {
-        groupBus: bus,
-        groupStep: 0,
-        groupCount: 3,
+        groupContext,
         groupIndex: 2,
-        groupIsLast: true,
-        groupLinear: true,
         title: "Review",
       });
       item2.start();
@@ -424,14 +412,10 @@ describe("Stepper Machine", () => {
       });
       parentMachine.start();
 
-      const bus = parentMachine.service.refs.get("bus");
+      const groupContext = parentMachine.service.refs.get("groupContext");
       const item2 = new MiniappMachine(stepperItemMachine, {
-        groupBus: bus,
-        groupStep: 0,
-        groupCount: 4,
+        groupContext,
         groupIndex: 2,
-        groupIsLast: false,
-        groupLinear: false,
         title: "Billing",
       });
       item2.start();
@@ -491,13 +475,10 @@ describe("Stepper Machine", () => {
       });
       parentMachine.start();
 
-      const bus = parentMachine.service.refs.get("bus");
+      const groupContext = parentMachine.service.refs.get("groupContext");
       const itemDone = new MiniappMachine(stepperItemMachine, {
-        groupBus: bus,
-        groupStep: 0,
-        groupCount: 3,
+        groupContext,
         groupIndex: 2,
-        groupIsLast: true,
         title: "Done",
       });
       itemDone.start();

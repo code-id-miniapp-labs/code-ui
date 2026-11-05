@@ -1,9 +1,5 @@
 import { isNotNull } from "@code-ui/utils";
-import type {
-  RadioGroupBusEvents,
-  RadioGroupParams,
-  RadioGroupSchema,
-} from "./radio-group.types";
+import type { RadioGroupSchema } from "./radio-group.types";
 import type { BindableRefs, PropFn } from "@code-ui/core";
 
 export function resolveInitialValue(
@@ -30,25 +26,4 @@ export function dispatchChangeEvent(
     formField.emitInput(val);
     formField.emitChange(val);
   }
-}
-
-export function emitGroupChange(
-  {
-    refs,
-    context,
-    computed,
-  }: Pick<RadioGroupParams, "refs" | "context" | "computed">,
-  overrides?: Partial<RadioGroupBusEvents["group:change"]>,
-) {
-  const bus = refs.get("bus");
-  if (!bus) return;
-  bus.emit("group:change", {
-    value: context.get("value"),
-    disabled: computed("isDisabled"),
-    invalid: Boolean(context.get("invalid")),
-    size: context.get("size") || "md",
-    color: context.get("color") || "primary",
-    variant: context.get("variant") || "outline",
-    ...overrides,
-  });
 }

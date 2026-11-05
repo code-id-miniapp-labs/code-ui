@@ -13,10 +13,6 @@ function getComponentId(instance: any, explicitId?: string): string {
   return id;
 }
 
-function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
-
 /**
  * Shared Behavior reference for `<c-accordion>` / `<cui-accordion>` parent components.
  * Used as relations.target to link descendant <c-accordion-item> components natively.
@@ -27,7 +23,7 @@ export const cuiAccordionParentBehavior: any = cuiAccordionBehavior;
 
 export function syncAccordionChildren(group: any) {
   const service = group.__codeUiMachine?.service;
-  const bus = getServiceBus(service) ?? service?.refs?.get?.("bus");
+  const groupContext = service?.refs?.get?.("groupContext");
   const relationChildren =
     typeof group.getRelationNodes === "function"
       ? group.getRelationNodes("cuiAccordionChild")
@@ -56,38 +52,19 @@ export function syncAccordionChildren(group: any) {
   const groupId = group.id || getComponentId(group);
   group.__codeUiId = groupId;
 
-  const ctx = service?.context;
   for (let i = 0; i < total; i++) {
     const child = children[i];
     if (!child) continue;
-    child.__codeUiAccordionBus = bus;
     child.__codeUiPendingAccordion = group;
     child.__codeUiAccordionIndex = i;
     child.__codeUiAccordionId = groupId;
     if (child.__codeUiMachine) {
       child.__codeUiMachine.updateProps({
         accordionId: groupId,
-        groupBus: bus,
-        groupValue: ctx?.get("value") ?? [],
-        groupMultiple: Boolean(ctx?.get("multiple")),
-        groupCollapsible: ctx?.get("collapsible") !== false,
-        groupDisabled: Boolean(ctx?.get("disabled")),
-        groupSize: ctx?.get("size") || "md",
-        groupVariant: ctx?.get("variant") || "outline",
+        groupContext,
         groupIndex: i,
       });
     }
-  }
-
-  if (bus && ctx) {
-    bus.emit("accordion:change", {
-      value: ctx.get("value") ?? [],
-      multiple: Boolean(ctx.get("multiple")),
-      collapsible: ctx.get("collapsible") !== false,
-      disabled: Boolean(ctx.get("disabled")),
-      size: ctx.get("size") || "md",
-      variant: ctx.get("variant") || "outline",
-    });
   }
 }
 
@@ -106,18 +83,11 @@ export function unlinkAccordionItemFromParent(group: any, item: any) {
       (c: any) => c !== item,
     );
   }
-  item.__codeUiAccordionBus = undefined;
   item.__codeUiPendingAccordion = undefined;
   if (item.__codeUiMachine) {
     item.__codeUiMachine.updateProps({
       accordionId: undefined,
-      groupBus: undefined,
-      groupValue: undefined,
-      groupMultiple: undefined,
-      groupCollapsible: undefined,
-      groupDisabled: undefined,
-      groupSize: undefined,
-      groupVariant: undefined,
+      groupContext: undefined,
       groupIndex: undefined,
     });
   }
@@ -189,13 +159,9 @@ export function handleAccordionAttached(
         : undefined);
     if (parent) {
       const pService = parent.__codeUiMachine?.service;
-      const bus =
-        parent.__codeUiAccordionBus ??
-        getServiceBus(pService) ??
-        pService?.refs?.get?.("bus");
-      if (bus) {
-        initialProps.groupBus = bus;
-        instance.__codeUiAccordionBus = bus;
+      const groupContext = pService?.refs?.get?.("groupContext");
+      if (groupContext) {
+        initialProps.groupContext = groupContext;
       }
       if (instance.__codeUiAccordionIndex !== undefined) {
         initialProps.groupIndex = instance.__codeUiAccordionIndex;
@@ -207,15 +173,6 @@ export function handleAccordionAttached(
         parent.__codeUiId;
       if (aid !== undefined) {
         initialProps.accordionId = aid;
-      }
-      if (pService) {
-        const ctx = pService.context;
-        initialProps.groupValue = ctx?.get("value") ?? [];
-        initialProps.groupMultiple = Boolean(ctx?.get("multiple"));
-        initialProps.groupCollapsible = ctx?.get("collapsible") !== false;
-        initialProps.groupDisabled = Boolean(ctx?.get("disabled"));
-        initialProps.groupSize = ctx?.get("size") || "md";
-        initialProps.groupVariant = ctx?.get("variant") || "outline";
       }
     }
   }
@@ -260,9 +217,6 @@ export function withAccordion(): MachinePlugin {
     },
     onReady(instance) {
       handleAccordionReady(instance, { accordion: true });
-    },
-    onPropChanged(instance) {
-      syncAccordionChildren(instance);
     },
   };
 }
