@@ -3,7 +3,6 @@ import type {
   CheckboxGroupItem,
   CheckboxGroupItemRaw,
   CheckboxGroupService,
-  CheckboxGroupSize,
 } from "./checkbox-group.types";
 import { parts } from "./checkbox-group.anatomy";
 import * as dom from "./checkbox-group.dom";
@@ -15,23 +14,12 @@ export function connectCheckboxGroup(
 
   const currentValue: string[] = context.get("value") ?? [];
   const isInteractive = computed("isInteractive");
-  const disabled = Boolean(
-    context.get("disabled") ||
-      context.get("formDisabled") ||
-      context.get("fieldDisabled"),
-  );
-  const readOnly = Boolean(
-    context.get("readOnly") || context.get("formReadOnly"),
-  );
-  const invalid = Boolean(context.get("invalid"));
+  const disabled = computed("isDisabled");
+  const readOnly = computed("isReadOnly");
+  const invalid = computed("isInvalid");
   const required = Boolean(context.get("required"));
 
-  const rawSize = context.get("size");
-  const fieldSize = context.get("fieldSize");
-  const size =
-    rawSize && rawSize !== "md"
-      ? rawSize
-      : ((fieldSize || rawSize || "md") as CheckboxGroupSize);
+  const size = computed("effectiveSize");
 
   const color = context.get("color");
   const orientation = context.get("orientation");

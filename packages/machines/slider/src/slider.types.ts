@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent, MiniAppRect } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppRect } from "@code-ui/utils";
 import type { anatomy } from "./slider.anatomy";
 
 export type SliderOrientation = "horizontal" | "vertical";
@@ -54,9 +55,8 @@ export interface SliderProps {
   size?: SliderSize | undefined;
   label?: string | undefined;
   marks?: boolean | SliderMark[] | undefined;
-  formBus?: EventBus<FormBusEvents> | null | undefined;
-  formDisabled?: boolean | undefined;
-  formReadOnly?: boolean | undefined;
+  rules?: FormRule[] | undefined;
+  formContext?: FormHostContext | null | undefined;
   fieldDisabled?: boolean | undefined;
   fieldSize?: string | undefined;
   validateOn?: FormValidateOn | undefined;
@@ -72,10 +72,6 @@ export interface SliderProps {
 export interface SliderContext {
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: string;
   invalid: boolean;
   min: number;
   max: number;
@@ -123,6 +119,12 @@ export type SliderEvent =
     };
 
 export interface SliderComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isDisabled: boolean;
   isReadOnly: boolean;
   isInteractive: boolean;
@@ -137,8 +139,6 @@ export interface SliderComputed {
 export interface SliderRefs {
   initialValue: number[];
   rect: MiniAppRect | null;
-  currentFormBus: EventBus<FormBusEvents> | null | undefined;
-  currentName?: string | undefined;
   formField: BoundFormField | undefined;
 }
 

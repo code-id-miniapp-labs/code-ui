@@ -265,7 +265,7 @@ describe("RadioGroup Machine", () => {
   });
 
   describe("Form Integration", () => {
-    it("syncs with formMachine via formBus", async () => {
+    it("syncs with formMachine via formContext", async () => {
       const form = new MiniappMachine(formMachine, {
         defaultValues: { role: "admin" },
         rules: {
@@ -280,7 +280,7 @@ describe("RadioGroup Machine", () => {
       const radio = new MiniappMachine(radioGroupMachine, {
         name: "role",
         defaultValue: "admin",
-        formBus: formApi.bus,
+        formContext: formApi.formContext,
       });
       radio.start();
       await flush();

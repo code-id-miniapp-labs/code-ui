@@ -1,6 +1,7 @@
 import type { TextareaProps } from "./textarea.types";
 
 export const defaultTextareaProps: TextareaProps = {
+  formContext: undefined,
   value: null,
   invalid: null,
   variant: "outline" as const,

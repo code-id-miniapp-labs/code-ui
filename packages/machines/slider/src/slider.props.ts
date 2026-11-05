@@ -1,6 +1,7 @@
 import type { SliderProps } from "./slider.types";
 
 export const defaultSliderProps: SliderProps = {
+  formContext: undefined,
   value: null,
   defaultValue: null,
   name: "",
@@ -19,9 +20,6 @@ export const defaultSliderProps: SliderProps = {
   size: "md",
   label: "",
   marks: false,
-  formBus: null as any,
-  formDisabled: false,
-  formReadOnly: false,
   fieldDisabled: false,
   fieldSize: "",
   className: "",

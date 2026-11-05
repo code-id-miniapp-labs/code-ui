@@ -1,6 +1,7 @@
 import type { InputProps } from "./input.types";
 
 export const defaultInputProps: InputProps = {
+  formContext: undefined,
   value: null,
   invalid: null,
   type: "text",

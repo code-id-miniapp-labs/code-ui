@@ -11,7 +11,7 @@ export function connectSwitch(service: SwitchService): SwitchApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const loading = Boolean(context.get("loading"));
-  const invalid = Boolean(context.get("invalid"));
+  const invalid = computed("isInvalid");
   const required = Boolean(context.get("required"));
   const size = computed("effectiveSize");
   const color = context.get("color");

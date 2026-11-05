@@ -15,7 +15,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
-  const invalid = Boolean(context.get("invalid"));
+  const invalid = computed("isInvalid");
   const variant = context.get("variant");
   const color = context.get("color");
   const highlight = Boolean(context.get("highlight"));
@@ -112,8 +112,10 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     handleLineChange(event?: any) {
       const raw = event?.detail ?? event ?? {};
       const height = typeof raw.height === "number" ? raw.height : 0;
-      const lineHeight = typeof raw.lineHeight === "number" ? raw.lineHeight : 0;
-      const rawLineCount = typeof raw.lineCount === "number" ? raw.lineCount : 1;
+      const lineHeight =
+        typeof raw.lineHeight === "number" ? raw.lineHeight : 0;
+      const rawLineCount =
+        typeof raw.lineCount === "number" ? raw.lineCount : 1;
 
       let lineCount = rawLineCount;
       if (!value || value.length === 0) {

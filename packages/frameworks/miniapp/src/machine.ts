@@ -192,7 +192,12 @@ export class MiniappMachine<T extends MachineSchema> {
     this.computed = this.createComputedFn();
 
     this.refs = createRefs<T>(
-      machine.refs?.({ prop: this.prop, context: this.context }),
+      machine.refs?.({
+        prop: this.prop,
+        context: this.context,
+        computed: this.computed,
+        send: this.send,
+      }),
     );
 
     const stateParams: BindableParams<T["state"]> = {

@@ -252,6 +252,8 @@ interface PropsParams<T extends Dict> {
 interface RefsParams<T extends Dict> {
   prop: PropFn<T>;
   context: BindableContext<T>;
+  computed: ComputedFn<T>;
+  send: (event: EventType<T["event"]>) => void;
 }
 
 export interface Machine<T extends Dict> {

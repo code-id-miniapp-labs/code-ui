@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { accordionMachine, connectAccordion } from "../src";
-import type { AccordionChangePayload } from "../src";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
@@ -220,8 +219,8 @@ describe("Accordion Machine", () => {
     });
   });
 
-  describe("Bus Interaction", () => {
-    it("emits a single full accordion:change payload on token toggle", async () => {
+  describe("Group Context", () => {
+    it("exposes a reactive facade over parent state", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         multiple: true,
         collapsible: false,
@@ -230,49 +229,49 @@ describe("Accordion Machine", () => {
       });
       machine.start();
 
-      const bus = machine.service.refs.get("bus");
-      const changes: AccordionChangePayload[] = [];
-      bus?.on("accordion:change", (payload) => changes.push(payload));
+      const group = machine.service.refs.get("groupContext");
+      expect(group.value()).toEqual([]);
+      expect(group.multiple()).toBe(true);
+      expect(group.collapsible()).toBe(false);
+      expect(group.disabled()).toBe(false);
+      expect(group.size()).toBe("lg");
+      expect(group.variant()).toBe("separated");
 
-      const api = connectAccordion(machine.service);
-      api.toggle("a");
+      group.toggleItem("a");
       await flush();
+      expect(group.value()).toEqual(["a"]);
 
-      expect(changes).toEqual([
-        {
-          value: ["a"],
-          multiple: true,
-          collapsible: false,
-          disabled: false,
-          size: "lg",
-          variant: "separated",
-        },
-      ]);
+      group.setItemOpen("b", true);
+      await flush();
+      expect(group.value()).toEqual(["a", "b"]);
+
+      group.setItemOpen("a", false);
+      await flush();
+      expect(group.value()).toEqual(["b"]);
 
       machine.stop();
     });
 
-    it("listens to item:toggle event on bus", async () => {
+    it("reflects controlled prop updates through the facade", async () => {
       const machine = new MiniappMachine(accordionMachine, {
-        multiple: false,
+        value: ["1"],
+        size: "md",
       });
       machine.start();
 
-      const bus = machine.service.refs.get("bus");
-      expect(bus).toBeDefined();
+      const group = machine.service.refs.get("groupContext");
+      expect(group.value()).toEqual(["1"]);
 
-      bus?.emit("item:toggle", { value: "item-foo" });
+      machine.updateProps({ value: ["2"], size: "sm" });
       await flush();
-      expect(machine.context.get("value")).toEqual(["item-foo"]);
 
-      bus?.emit("item:toggle", { value: "item-bar" });
-      await flush();
-      expect(machine.context.get("value")).toEqual(["item-bar"]);
+      expect(group.value()).toEqual(["2"]);
+      expect(group.size()).toBe("sm");
 
       machine.stop();
     });
 
-    it("supports programmatic data-driven items and toggling via bus", async () => {
+    it("toggles programmatic items through the facade", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         items: [
           { value: "faq-1", label: "FAQ 1" },
@@ -287,22 +286,20 @@ describe("Accordion Machine", () => {
       expect(api.items[0]?.isOpen).toBe(true);
       expect(api.items[1]?.isOpen).toBe(false);
 
-      const bus = machine.service.refs.get("bus");
-      bus?.emit("item:toggle", { value: "faq-2" });
+      const group = machine.service.refs.get("groupContext");
+      group.toggleItem("faq-2");
       await flush();
 
       api = connectAccordion(machine.service);
       expect(api.value).toEqual(["faq-1", "faq-2"]);
-      expect(api.items[0]?.isOpen).toBe(true);
       expect(api.items[1]?.isOpen).toBe(true);
 
-      bus?.emit("item:toggle", { value: "faq-1" });
+      group.toggleItem("faq-1");
       await flush();
 
       api = connectAccordion(machine.service);
       expect(api.value).toEqual(["faq-2"]);
       expect(api.items[0]?.isOpen).toBe(false);
-      expect(api.items[1]?.isOpen).toBe(true);
 
       machine.stop();
     });

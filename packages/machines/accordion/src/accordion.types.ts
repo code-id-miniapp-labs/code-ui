@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./accordion.anatomy";
 
 export type AccordionState = "idle";
@@ -27,9 +27,19 @@ export interface AccordionChangePayload {
   variant: AccordionVariant;
 }
 
-export interface AccordionBusEvents {
-  "accordion:change": AccordionChangePayload;
-  "item:toggle": { value: string; index?: number | undefined };
+export interface AccordionGroupContext {
+  readonly value: () => string[];
+  readonly multiple: () => boolean;
+  readonly collapsible: () => boolean;
+  readonly disabled: () => boolean;
+  readonly size: () => AccordionSize;
+  readonly variant: () => AccordionVariant;
+
+  toggleItem: (value: string) => void;
+  setItemOpen: (value: string, open: boolean) => void;
+  setValue: (value: string[]) => void;
+  expandAll: () => void;
+  collapseAll: () => void;
 }
 
 export type AccordionAnatomyPart = AnatomyPartName<typeof anatomy>;
@@ -121,13 +131,13 @@ export interface AccordionContext {
 }
 
 export interface AccordionRefs {
-  bus: EventBus<AccordionBusEvents>;
-  busDisposers: (() => void)[];
+  groupContext: AccordionGroupContext;
 }
 
 export type AccordionEvent =
   | { type: "VALUE.SET"; value: string | number | (string | number)[] }
   | { type: "VALUE.TOGGLE"; value: string }
+  | { type: "ITEM.SET_OPEN"; value: string; open: boolean }
   | { type: "EXPAND_ALL" }
   | { type: "COLLAPSE_ALL" };
 

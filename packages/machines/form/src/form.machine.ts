@@ -1,15 +1,10 @@
 import { createMachine } from "@code-ui/core";
-import {
-  createEventBus,
-  isEmpty,
-  isEqual,
-  isPromise,
-} from "@code-ui/utils";
-import { provideFormBus } from "./form.context";
+import { isEmpty, isEqual, isPromise } from "@code-ui/utils";
+import { provideFormHost } from "./form.context";
 import { defaultFormProps } from "./form.props";
 import { evaluateRules, shouldValidateOnTrigger } from "./form.eval";
 import type {
-  FormBusEvents,
+  FormHostContext,
   FormContext,
   FormErrorBag,
   FormFieldError,
@@ -133,7 +128,9 @@ function getEffectiveRules(service: ServiceLike, name: string): FormRule[] {
   if (field?.isDisabled?.()) return [];
 
   const fieldRulesFn = service.refs.get("fieldRules")?.get(name);
-  const fieldRules = fieldRulesFn ? fieldRulesFn() : [];
+  const fieldRules = fieldRulesFn
+    ? fieldRulesFn()
+    : (field?.getRules?.() ?? []);
   const formRulesMap = service.prop("rules") ?? {};
   const formLevelRules = formRulesMap[name] ?? [];
 
@@ -206,11 +203,6 @@ function applyFieldErrors(
   });
 
   notifyFieldValidation(field, updatedFieldState);
-  service.refs.get("bus").emit("field:error", {
-    name,
-    errors: [...messages],
-    isValid: messages.length === 0,
-  });
 }
 
 export function validateSingleField(
@@ -337,10 +329,6 @@ export async function validateFormFields(
     values,
   };
 
-  service.refs.get("bus").emit("validate", {
-    name: typeof target === "string" ? target : undefined,
-    result,
-  });
   service.prop("onValidate")?.({ ...result });
 
   return result;
@@ -408,10 +396,6 @@ export function registerFormField(
     [name]: fieldState,
   });
 
-  registration.onFormStateChange?.({
-    disabled: service.context.get("disabled"),
-    readOnly: service.context.get("readOnly"),
-  });
   notifyFieldValidation(registration, fieldState);
 }
 
@@ -675,8 +659,6 @@ export function resetFormValidation(
   if (nextErrors.length === 0 && service.state.get() === "error") {
     service.state.set("idle");
   }
-
-  service.refs.get("bus").emit("clear-errors", { name: target });
 }
 
 export function resetFormFields(
@@ -755,13 +737,11 @@ export function resetFormFields(
     service.context.set("submitCount", 0);
     service.context.set("focusedField", null);
     service.state.set("idle");
-    service.refs.get("bus").emit("reset", { name: undefined });
     service.prop("onReset")?.();
   } else {
     if (nextErrors.length === 0 && service.state.get() === "error") {
       service.state.set("idle");
     }
-    service.refs.get("bus").emit("reset", { name: target });
   }
 }
 
@@ -878,7 +858,6 @@ export async function submitForm(
       errorBag: result.errorBag,
       values: result.values,
     };
-    service.refs.get("bus").emit("error", errorDetails);
     service.prop("onError")?.(errorDetails);
     return result;
   }
@@ -891,7 +870,6 @@ export async function submitForm(
     errorBag: {},
   };
 
-  service.refs.get("bus").emit("submit", submitDetails);
   const submitRet = service.prop("onSubmit")?.(submitDetails);
 
   if (isPromise(submitRet)) {
@@ -919,16 +897,37 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
 
   initialState: () => "idle",
 
-  refs: ({ prop }) => {
-    const existingBus = prop("bus");
-    const bus = existingBus ?? createEventBus<FormBusEvents>();
-
+  refs: ({ context, send }) => {
+    const hostContext: FormHostContext = {
+      disabled: () => context.get("disabled"),
+      readOnly: () => context.get("readOnly"),
+      errors: (name) => context.get("errorBag")[name] ?? [],
+      fieldState: (name) => context.get("fieldOverrides")[name],
+      register: (field) => {
+        send({ type: "FIELD.REGISTER", field });
+        return () =>
+          send({ type: "FIELD.UNREGISTER", name: field.name, id: field.id });
+      },
+      unregister: (name, id) => send({ type: "FIELD.UNREGISTER", name, id }),
+      notify: (trigger, payload) => {
+        const types = {
+          input: "FIELD.INPUT",
+          change: "FIELD.CHANGE",
+          blur: "FIELD.BLUR",
+          focus: "FIELD.FOCUS",
+        } as const;
+        send({ type: types[trigger], ...payload, value: payload.value });
+      },
+      setFieldRules: (name, getRules) =>
+        send({ type: "FIELD.RULES", name, getRules }),
+      setFieldState: (name, state) =>
+        send({ type: "FIELD.STATE", name, state }),
+    };
     return {
-      bus,
+      hostContext,
       fields: new Map<string, FormFieldRegistration>(),
       fieldRules: new Map<string, () => FormRule[]>(),
       validationTokens: new Map<string, number>(),
-      busDisposers: [],
     };
   },
 
@@ -956,10 +955,14 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
         value: prop("value"),
         defaultValue: initialVals,
       })),
-      initialValues: stateBindable("initialValues", cloneFieldValue(initialVals)),
+      initialValues: stateBindable(
+        "initialValues",
+        cloneFieldValue(initialVals),
+      ),
       errorBag: stateBindable("errorBag", {}),
       errors: stateBindable("errors", []),
       fieldStates: stateBindable("fieldStates", {}),
+      fieldOverrides: stateBindable("fieldOverrides", {}),
       dirtyFields: stateBindable("dirtyFields", []),
       touchedFields: stateBindable("touchedFields", []),
       validatingFields: stateBindable("validatingFields", []),
@@ -987,11 +990,12 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
     isSubmitting: ({ state }) => state.get() === "submitting",
   },
 
-  effects: ["trackFormState"],
-  entry: ["setupEventBus"],
-  exit: ["cleanupEventBus"],
+  entry: ["provideHost"],
+  exit: ["cleanupHost"],
 
   on: {
+    "FIELD.RULES": { actions: ["handleFieldRules"] },
+    "FIELD.STATE": { actions: ["handleFieldState"] },
     "FIELD.REGISTER": {
       actions: ["handleFieldRegister"],
     },
@@ -1053,54 +1057,33 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
 
   implementations: {
     actions: {
-      setupEventBus: (params) => {
-        const bus = params.refs.get("bus");
-        const existingDisposers = params.refs.get("busDisposers");
-        for (let i = 0; i < existingDisposers.length; i++) {
-          existingDisposers[i]?.();
-        }
-
-        const disposers = [
-          bus.on("register", (reg) => registerFormField(params, reg)),
-          bus.on("unregister", ({ name, id }) =>
-            unregisterFormField(params, name, id),
-          ),
-          bus.on("input", (payload) =>
-            handleFieldInteraction(params, "input", payload),
-          ),
-          bus.on("change", (payload) =>
-            handleFieldInteraction(params, "change", payload),
-          ),
-          bus.on("blur", (payload) =>
-            handleFieldInteraction(params, "blur", payload),
-          ),
-          bus.on("focus", (payload) =>
-            handleFieldInteraction(params, "focus", payload),
-          ),
-          bus.on("field:rules", ({ name, getRules }) => {
-            params.refs.get("fieldRules").set(name, getRules);
-          }),
-        ];
-
-        params.refs.set("busDisposers", disposers);
-
+      provideHost: (params) => {
         const component = params.prop("component");
         if (component) {
           const formId =
             params.prop("name") ||
-            (component as Record<string, any>)?.id ||
+            component.id ||
             params.prop("id") ||
             params.scope.id;
-          provideFormBus(component, bus, formId);
+          provideFormHost(component, params.refs.get("hostContext"), formId);
         }
       },
-
-      cleanupEventBus: (params) => {
-        const disposers = params.refs.get("busDisposers");
-        for (let i = 0; i < disposers.length; i++) {
-          disposers[i]?.();
+      cleanupHost: ({ refs }) => {
+        refs.get("fields").clear();
+        refs.get("fieldRules").clear();
+        refs.get("validationTokens").clear();
+      },
+      handleFieldRules: ({ event, refs }) => {
+        if (event.type === "FIELD.RULES")
+          refs.get("fieldRules").set(event.name, event.getRules);
+      },
+      handleFieldState: ({ event, context }) => {
+        if (event.type === "FIELD.STATE") {
+          context.set("fieldOverrides", {
+            ...context.get("fieldOverrides"),
+            [event.name]: event.state,
+          });
         }
-        params.refs.set("busDisposers", []);
       },
 
       handleFieldRegister: (p) => {
@@ -1111,10 +1094,13 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
         const ev = p.event as any;
         unregisterFormField(p, ev.name, ev.id);
       },
-      handleFieldInput: (p) => handleFieldInteraction(p, "input", p.event as any),
-      handleFieldChange: (p) => handleFieldInteraction(p, "change", p.event as any),
+      handleFieldInput: (p) =>
+        handleFieldInteraction(p, "input", p.event as any),
+      handleFieldChange: (p) =>
+        handleFieldInteraction(p, "change", p.event as any),
       handleFieldBlur: (p) => handleFieldInteraction(p, "blur", p.event as any),
-      handleFieldFocus: (p) => handleFieldInteraction(p, "focus", p.event as any),
+      handleFieldFocus: (p) =>
+        handleFieldInteraction(p, "focus", p.event as any),
       handleValidate: (p) => {
         const ev = p.event as any;
         void validateFormFields(p, ev.name).then((res) => ev.resolve?.(res));
@@ -1124,7 +1110,8 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
         void submitForm(p).then((res) => ev.resolve?.(res));
       },
       handleReset: (p) => resetFormFields(p, (p.event as any).name),
-      handleResetValidation: (p) => resetFormValidation(p, (p.event as any).name),
+      handleResetValidation: (p) =>
+        resetFormValidation(p, (p.event as any).name),
       handleSetErrors: (p) => setFormErrors(p, (p.event as any).errors),
       handleSetValues: (p) => {
         const ev = p.event as any;
@@ -1133,27 +1120,6 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
       handleSetFieldValue: (p) => {
         const ev = p.event as any;
         setFormValues(p, { [ev.name]: ev.value }, Boolean(ev.validate));
-      },
-    },
-
-    effects: {
-      trackFormState: ({ prop, refs, track }) => {
-        let initial = true;
-        track(
-          [() => prop("disabled"), () => prop("readOnly")],
-          () => {
-            if (initial) {
-              initial = false;
-              return;
-            }
-            const disabled = Boolean(prop("disabled"));
-            const readOnly = Boolean(prop("readOnly"));
-            for (const reg of refs.get("fields").values()) {
-              reg.onFormStateChange?.({ disabled, readOnly });
-            }
-            refs.get("bus")?.emit("form:state", { disabled, readOnly });
-          },
-        );
       },
     },
   },

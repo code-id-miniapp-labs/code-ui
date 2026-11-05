@@ -4,12 +4,12 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type {
-  AccordionBusEvents,
+  AccordionGroupContext,
   AccordionSize,
   AccordionVariant,
 } from "@code-ui/accordion";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./accordion-item.anatomy";
 
 export type AccordionItemState = "idle";
@@ -61,20 +61,8 @@ export interface AccordionItemProps {
 
   /** Connected accordion group id */
   accordionId?: string | undefined;
-  /** Connected accordion group event bus */
-  groupBus?: EventBus<AccordionBusEvents> | undefined;
-  /** Current active values from parent accordion */
-  groupValue?: string[] | null | undefined;
-  /** Parent multiple setting */
-  groupMultiple?: boolean | undefined;
-  /** Parent collapsible setting */
-  groupCollapsible?: boolean | undefined;
-  /** Parent disabled setting */
-  groupDisabled?: boolean | undefined;
-  /** Parent size setting */
-  groupSize?: AccordionSize | "" | undefined;
-  /** Parent variant setting */
-  groupVariant?: AccordionVariant | "" | undefined;
+  /** Live reactive state of the parent accordion */
+  groupContext?: AccordionGroupContext | undefined;
   /** Index in parent accordion */
   groupIndex?: number | undefined;
 
@@ -104,30 +92,12 @@ export interface AccordionItemContext {
   contentHeight: number;
 
   accordionId: string;
-  groupValue: string[] | undefined | null;
-  groupMultiple: boolean;
-  groupCollapsible: boolean;
-  groupDisabled: boolean;
-  groupSize: AccordionSize | "";
-  groupVariant: AccordionVariant | "";
   groupIndex: number;
 
   ui: AccordionItemUI;
 }
 
-export interface AccordionGroupStateSnapshot {
-  value?: string[] | null | undefined;
-  multiple?: boolean | undefined;
-  collapsible?: boolean | undefined;
-  disabled?: boolean | undefined;
-  size?: AccordionSize | "" | undefined;
-  variant?: AccordionVariant | "" | undefined;
-}
-
-export interface AccordionItemRefs {
-  currentGroupBus?: EventBus<AccordionBusEvents> | undefined;
-  busDisposers: (() => void)[];
-}
+export interface AccordionItemRefs {}
 
 export type AccordionItemEvent =
   | { type: "TOGGLE" }

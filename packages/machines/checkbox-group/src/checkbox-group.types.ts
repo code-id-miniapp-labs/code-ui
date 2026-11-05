@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox-group.anatomy";
 
 export type CheckboxGroupState = "idle";
@@ -28,18 +29,6 @@ export type CheckboxGroupSize = "xs" | "sm" | "md" | "lg" | "xl";
 export type CheckboxGroupOrientation = "horizontal" | "vertical";
 
 export type CheckboxGroupVariant = "outline" | "card";
-
-export interface CheckboxGroupBusEvents {
-  "checkbox:toggle": { value: string };
-  "group:change": {
-    value: string[];
-    disabled: boolean;
-    invalid: boolean;
-    size: CheckboxGroupSize;
-    color: CheckboxGroupColor;
-    variant: CheckboxGroupVariant;
-  };
-}
 
 export type CheckboxGroupAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type CheckboxGroupUI = ComponentUI<typeof anatomy>;
@@ -78,8 +67,10 @@ export interface CheckboxGroupProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: CheckboxGroupUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -124,7 +115,20 @@ export interface CheckboxGroupProps {
   onChange?: ((details: CheckboxGroupValueChangeDetails) => void) | undefined;
 }
 
-export type CheckboxGroupContext = {
+export interface CheckboxGroupContext {
+  readonly value: () => string[];
+  readonly disabled: () => boolean;
+  readonly readOnly: () => boolean;
+  readonly invalid: () => boolean;
+  readonly color: () => CheckboxGroupColor;
+  readonly size: () => CheckboxGroupSize;
+  readonly variant: () => CheckboxGroupVariant;
+
+  setValue: (value: string[]) => void;
+  toggleValue: (value: string, checked?: boolean) => void;
+}
+
+export type CheckboxGroupMachineContext = {
   value: string[];
   name: string;
   form: string;
@@ -141,10 +145,6 @@ export type CheckboxGroupContext = {
   max: number | null;
   items: (string | CheckboxGroupItemRaw)[];
   ui: CheckboxGroupUI;
-  fieldDisabled: boolean;
-  fieldSize: CheckboxGroupSize | "";
-  formDisabled: boolean;
-  formReadOnly: boolean;
 };
 
 export type CheckboxGroupEvent =
@@ -156,6 +156,13 @@ export type CheckboxGroupEvent =
   | { type: "SET_INVALID"; invalid: boolean };
 
 export interface CheckboxGroupComputed {
+  effectiveSize: CheckboxGroupSize;
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isDisabled: boolean;
   isReadOnly: boolean;
   isInteractive: boolean;
@@ -163,10 +170,8 @@ export interface CheckboxGroupComputed {
 
 export interface CheckboxGroupRefs {
   initialValue?: string[] | undefined;
-  bus?: EventBus<CheckboxGroupBusEvents> | undefined;
+  groupContext: CheckboxGroupContext;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface CheckboxGroupSchema extends MachineSchema {
@@ -174,7 +179,7 @@ export interface CheckboxGroupSchema extends MachineSchema {
   tag: "idle";
   event: CheckboxGroupEvent;
   props: CheckboxGroupProps;
-  context: CheckboxGroupContext;
+  context: CheckboxGroupMachineContext;
   computed: CheckboxGroupComputed;
   refs: CheckboxGroupRefs;
   action: string;
@@ -222,11 +227,20 @@ export interface CheckboxGroupApi {
   /** Tap handler for precomputed wx:for items */
   handleItemTap: (e?: any) => void;
   /** Get accessible props for an item container */
-  getItemProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Get accessible props for an item outer box (base / control) */
-  getItemControlProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemControlProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Get accessible props for an item inner indicator */
-  getItemIndicatorProps: (item: { value: string; disabled?: boolean | undefined }) => Record<string, any>;
+  getItemIndicatorProps: (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => Record<string, any>;
   /** Underlying bound FormField if registered with `<c-form>` */
   formField?: BoundFormField | undefined;
 }

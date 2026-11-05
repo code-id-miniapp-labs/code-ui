@@ -1,5 +1,8 @@
 import { createMachine } from "@code-ui/core";
-import { setupFormFieldSync, cleanupFormFieldSync } from "@code-ui/form/context";
+import {
+  setupFormFieldSync,
+  cleanupFormFieldSync,
+} from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   TextareaContext,
@@ -27,7 +30,6 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
     return {
       initialValue: initial,
       formField: undefined,
-      currentFormBus: prop("formBus"),
     };
   },
 
@@ -40,14 +42,6 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
     ) =>
       bindable<TextareaContext[K]>(() => ({
         value: prop(key) as TextareaContext[K] | undefined,
-        defaultValue,
-      }));
-
-    const stateBindable = <K extends keyof TextareaContext>(
-      _key: K,
-      defaultValue: TextareaContext[K],
-    ) =>
-      bindable<TextareaContext[K]>(() => ({
         defaultValue,
       }));
 
@@ -77,10 +71,6 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       highlight: propBindable("highlight", false),
       disabled: propBindable("disabled", false),
       readOnly: propBindable("readOnly", false),
-      formDisabled: stateBindable("formDisabled", false),
-      formReadOnly: stateBindable("formReadOnly", false),
-      fieldDisabled: propBindable("fieldDisabled", false),
-      fieldSize: propBindable("fieldSize", ""),
 
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
@@ -108,17 +98,47 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
   },
 
   computed: {
+    formDisabled: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.disabled() ?? false;
+    },
+    formReadOnly: ({ prop, refs }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return host?.readOnly() ?? false;
+    },
+    fieldDisabled: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        prop("fieldDisabled") ||
+        host?.fieldState(prop("name") || scope.id || "textarea")?.disabled,
+      );
+    },
+    fieldSize: ({ prop, refs, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return (
+        prop("fieldSize") ||
+        host?.fieldState(prop("name") || scope.id || "textarea")?.size ||
+        ""
+      );
+    },
+    isInvalid: ({ prop, refs, context, scope }) => {
+      const host = prop("formContext") ?? refs.get("formField")?.host;
+      return Boolean(
+        context.get("invalid") ||
+        host?.errors(prop("name") || scope.id || "textarea").length,
+      );
+    },
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
     characterCount: ({ context }) => (context.get("value") ?? "").length,
-    isDisabled: ({ context }) =>
+    isDisabled: ({ context, computed }) =>
       Boolean(
         context.get("disabled") ||
-        context.get("formDisabled") ||
-        context.get("fieldDisabled"),
+        computed("formDisabled") ||
+        computed("fieldDisabled"),
       ),
-    isReadOnly: ({ context }) =>
-      Boolean(context.get("readOnly") || context.get("formReadOnly")),
+    isReadOnly: ({ context, computed }) =>
+      Boolean(context.get("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
     isClearable: ({ context, computed }) =>
@@ -127,21 +147,13 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
         computed("isInteractive") &&
         computed("isFilled"),
       ),
-    effectiveSize: ({ context }) => {
+    effectiveSize: ({ context, computed }) => {
       const rawSize = context.get("size");
-      const fieldSize = context.get("fieldSize");
+      const fieldSize = computed("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
         : ((fieldSize || rawSize || "md") as TextareaSize);
     },
-  },
-
-  watch: ({ prop, refs }) => {
-    const nextFormBus = prop("formBus");
-    if (nextFormBus !== refs.get("currentFormBus")) {
-      refs.set("currentFormBus", nextFormBus);
-      refs.get("formField")?.rebind(nextFormBus ?? null);
-    }
   },
 
   entry: ["setupFormField"],
@@ -207,7 +219,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
         setupFormFieldSync(
           {
             component: prop("component"),
-            bus: prop("formBus"),
+            getHost: () => prop("formContext"),
             id: scope.id ?? "textarea",
             getFormId: () => context.get("form") || prop("form") || "",
             getName: () => context.get("name") || prop("name") || "",
@@ -228,25 +240,9 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
               if (!computed("isInteractive")) return;
               state.set("focused");
             },
+            getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
             isDisabled: () => computed("isDisabled"),
-            onValidationChange: (isValid) => {
-              context.set("invalid", !isValid);
-            },
-            onStateChange: (s) => {
-              if (s.fieldDisabled !== undefined) {
-                context.set("fieldDisabled", Boolean(s.fieldDisabled));
-              }
-              if (s.fieldSize !== undefined) {
-                context.set("fieldSize", s.fieldSize);
-              }
-              if (s.formDisabled !== undefined) {
-                context.set("formDisabled", Boolean(s.formDisabled));
-              }
-              if (s.formReadOnly !== undefined) {
-                context.set("formReadOnly", Boolean(s.formReadOnly));
-              }
-            },
           },
           refs,
         );

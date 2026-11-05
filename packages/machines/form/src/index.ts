@@ -1,9 +1,9 @@
 export { anatomy, parts } from "./form.anatomy";
 export {
-  FormBusKey,
-  getFormBusKey,
-  provideFormBus,
-  injectFormBus,
+  FormHostKey,
+  getFormHostKey,
+  provideFormHost,
+  injectFormHost,
   bindFormField,
   setupFormFieldSync,
   cleanupFormFieldSync,
@@ -57,8 +57,7 @@ export type {
   FormValidationResult,
   FormSubmitDetails,
   FormErrorDetails,
-  FormBusEvents,
-  FormEventBus,
+  FormHostContext,
   FormAnatomyPart,
   FormUI,
   FormResolvedUI,

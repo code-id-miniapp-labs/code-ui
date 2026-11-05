@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./switch.anatomy";
 
 export type SwitchState = "checked" | "unchecked";
@@ -39,8 +40,10 @@ export interface SwitchProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: SwitchUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -95,10 +98,6 @@ export type SwitchEvent =
 export interface SwitchContext {
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: SwitchSize | "";
   invalid: boolean;
   required: boolean;
   loading: boolean;
@@ -116,6 +115,12 @@ export interface SwitchContext {
 }
 
 export interface SwitchComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isChecked: boolean;
   isDisabled: boolean;
   isReadOnly: boolean;
@@ -126,7 +131,6 @@ export interface SwitchComputed {
 export interface SwitchRefs {
   initialChecked?: boolean | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export interface SwitchSchema extends MachineSchema {

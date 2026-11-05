@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   setupAccordionRelations,
-  syncAccordionChildren,
   linkAccordionItemToParent,
   unlinkAccordionItemFromParent,
   handleAccordionAttached,
@@ -50,9 +49,8 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     await flush();
 
     expect(parentMachine.context.get("linkedCount")).toBe(2);
-    expect(childMachine1.context.get("groupValue")).toEqual(["item-0"]);
-    expect(childMachine1.context.get("groupSize")).toBe("lg");
-    expect(childMachine1.context.get("groupVariant")).toBe("subtle");
+    expect(childMachine1.computed("effectiveSize")).toBe("lg");
+    expect(childMachine1.computed("effectiveVariant")).toBe("subtle");
     expect(childMachine1.computed("isOpen")).toBe(true);
     expect(childMachine2.computed("isOpen")).toBe(false);
 
@@ -61,7 +59,7 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     await flush();
 
     expect(parentMachine.context.get("linkedCount")).toBe(1);
-    expect(child1.__codeUiAccordionBus).toBeUndefined();
+    expect(childMachine1.prop("groupContext")).toBeUndefined();
 
     parentMachine.stop();
     childMachine1.stop();
@@ -93,8 +91,11 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
 
     expect(initialProps.groupIndex).toBe(1);
     expect(initialProps.accordionId).toBe("acc-1");
-    expect(initialProps.groupValue).toEqual(["item-1"]);
-    expect(initialProps.groupSize).toBe("sm");
+    expect(initialProps.groupContext).toBe(
+      parentMachine.service.refs.get("groupContext"),
+    );
+    expect(initialProps.groupContext.value()).toEqual(["item-1"]);
+    expect(initialProps.groupContext.size()).toBe("sm");
 
     parentMachine.stop();
   });
@@ -169,7 +170,6 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
 
     // Reactively update parent value (like setData({ activeValue: ["item-0", "item-1"] }))
     parentMachine.updateProps({ value: ["item-0", "item-1"] });
-    syncAccordionChildren(parentInstance);
     await flush();
 
     expect(childMachine0.computed("isOpen")).toBe(true);
@@ -177,7 +177,6 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
 
     // Collapse all
     parentMachine.updateProps({ value: [] });
-    syncAccordionChildren(parentInstance);
     await flush();
 
     expect(childMachine0.computed("isOpen")).toBe(false);

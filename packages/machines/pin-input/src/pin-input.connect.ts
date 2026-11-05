@@ -39,7 +39,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
-  const invalid = Boolean(context.get("invalid"));
+  const invalid = computed("isInvalid");
   const variant = context.get("variant");
   const color = context.get("color");
   const highlight = Boolean(context.get("highlight"));

@@ -3,35 +3,20 @@ import type {
   ComponentUI,
   ResolvedUI,
 } from "@code-ui/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
-  Machine,
-  MachineSchema,
-  Params,
-  Service,
-} from "@code-ui/core";
-import type {
-  TabsBusEvents,
   TabsColor,
+  TabsGroupContext,
   TabsOrientation,
   TabsSize,
   TabsVariant,
 } from "@code-ui/tabs";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./tabs-item.anatomy";
 
 export type TabsItemAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type TabsItemUI = ComponentUI<typeof anatomy>;
 export type TabsItemResolvedUI = ResolvedUI<typeof anatomy>;
-
-export interface TabsItemGroupStateSnapshot {
-  value?: string | number | undefined;
-  orientation?: TabsOrientation | undefined;
-  variant?: TabsVariant | undefined;
-  color?: TabsColor | undefined;
-  size?: TabsSize | undefined;
-  disabled?: boolean | undefined;
-  fitted?: boolean | undefined;
-}
 
 export interface TabsItemProps {
   id?: string | undefined;
@@ -73,55 +58,34 @@ export interface TabsItemProps {
 
   /** Parent tabs scope ID */
   tabsId?: string | undefined;
-  /** Parent event bus */
-  groupBus?: EventBus<TabsBusEvents> | undefined;
-  /** Active value of parent tabs */
-  groupValue?: string | number | undefined;
-  /** Orientation from parent */
-  groupOrientation?: TabsOrientation | undefined;
-  /** Variant from parent */
-  groupVariant?: TabsVariant | undefined;
-  /** Color from parent */
-  groupColor?: TabsColor | undefined;
-  /** Size from parent */
-  groupSize?: TabsSize | undefined;
-  /** Disabled state from parent */
-  groupDisabled?: boolean | undefined;
-  /** Fitted state from parent */
-  groupFitted?: boolean | undefined;
+  /** Live reactive state of the parent tabs */
+  groupContext?: TabsGroupContext | undefined;
   /** Index among siblings */
   groupIndex?: number | undefined;
-}
-
-export interface TabsItemContext {
-  groupValue?: string | number | undefined;
-  groupDisabled?: boolean | undefined;
 }
 
 export interface TabsItemComputed {
   resolvedValue: string | number;
   isSelected: boolean;
   isDisabled: boolean;
+  color: TabsColor;
+  size: TabsSize;
+  fitted: boolean;
+  index: number;
+  orientation: TabsOrientation;
+  variant: TabsVariant;
 }
 
-export type TabsItemEvent =
-  | { type: "SELECT" };
+export type TabsItemEvent = { type: "SELECT" };
 
 export type TabsItemState = "idle";
-
-export interface TabsItemRefs {
-  currentGroupBus?: EventBus<TabsBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
-}
 
 export interface TabsItemSchema extends MachineSchema {
   state: TabsItemState;
   tag: "idle";
   event: TabsItemEvent;
   props: TabsItemProps;
-  context: TabsItemContext;
   computed: TabsItemComputed;
-  refs: TabsItemRefs;
   action: string;
   effect: string;
   guard: string;

@@ -285,12 +285,12 @@ describe("Switch Machine", () => {
       formM.start();
 
       const formApi = connectForm(formM.service);
-      const bus = formApi.bus;
+      const host = formApi.formContext;
 
       const switchM = new MiniappMachine(switchMachine, {
         name: "agreement",
         defaultChecked: false,
-        formBus: bus,
+        formContext: host,
         component: switchComp,
       });
       switchM.start();

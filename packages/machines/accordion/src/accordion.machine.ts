@@ -1,9 +1,8 @@
 import { createMachine } from "@code-ui/core";
-import type { BindableRefs, PropFn } from "@code-ui/core";
-import { createEventBus, isEqual } from "@code-ui/utils";
+import { isEqual } from "@code-ui/utils";
 import type {
-  AccordionBusEvents,
   AccordionContext,
+  AccordionGroupContext,
   AccordionMachine,
   AccordionProps,
   AccordionSchema,
@@ -26,23 +25,6 @@ function resolveControlledValue(prop: (key: any) => any): string[] | undefined {
   return undefined;
 }
 
-function emitChange(
-  prop: PropFn<AccordionSchema>,
-  refs: BindableRefs<AccordionSchema>,
-  value: string[],
-): void {
-  const bus = refs.get("bus");
-  if (!bus) return;
-  bus.emit("accordion:change", {
-    value,
-    multiple: Boolean(prop("multiple")),
-    collapsible: prop("collapsible") !== false,
-    disabled: Boolean(prop("disabled")),
-    size: prop("size") ?? "md",
-    variant: prop("variant") ?? "outline",
-  });
-}
-
 export const accordionMachine: AccordionMachine =
   createMachine<AccordionSchema>({
     props: ({ props }) => ({
@@ -52,15 +34,24 @@ export const accordionMachine: AccordionMachine =
 
     initialState: () => "idle",
 
-    refs: () => {
-      const bus = createEventBus<AccordionBusEvents>();
-      return {
-        bus,
-        busDisposers: [],
-      };
-    },
+    refs: ({ prop, context, send }) => ({
+      groupContext: {
+        value: () => context.get("value") ?? [],
+        multiple: () => Boolean(prop("multiple")),
+        collapsible: () => prop("collapsible") !== false,
+        disabled: () => Boolean(prop("disabled")),
+        size: () => prop("size") ?? "md",
+        variant: () => prop("variant") ?? "outline",
+        toggleItem: (value) => send({ type: "VALUE.TOGGLE", value }),
+        setItemOpen: (value, open) =>
+          send({ type: "ITEM.SET_OPEN", value, open }),
+        setValue: (value) => send({ type: "VALUE.SET", value }),
+        expandAll: () => send({ type: "EXPAND_ALL" }),
+        collapseAll: () => send({ type: "COLLAPSE_ALL" }),
+      } satisfies AccordionGroupContext,
+    }),
 
-    context: ({ prop, bindable, getRefs }) => {
+    context: ({ prop, bindable }) => {
       const propBindable = <
         K extends keyof AccordionContext & keyof AccordionProps,
       >(
@@ -93,8 +84,6 @@ export const accordionMachine: AccordionMachine =
                 ? nextValue
                 : (nextValue[0] ?? "");
               prop("onUpdateModelValue")?.(modelVal);
-
-              emitChange(prop, getRefs(), nextValue);
             },
           };
         }),
@@ -125,16 +114,15 @@ export const accordionMachine: AccordionMachine =
       },
     },
 
-    entry: ["setupBus"],
-
-    exit: ["cleanupBus"],
-
     on: {
       "VALUE.SET": {
         actions: ["setValueAction"],
       },
       "VALUE.TOGGLE": {
         actions: ["toggleValueAction"],
+      },
+      "ITEM.SET_OPEN": {
+        actions: ["setItemOpenAction"],
       },
       EXPAND_ALL: {
         actions: ["expandAllAction"],
@@ -152,23 +140,6 @@ export const accordionMachine: AccordionMachine =
 
     implementations: {
       actions: {
-        setupBus: ({ refs, send, context, prop }) => {
-          const bus = refs.get("bus");
-          if (!bus) return;
-          const unsub = bus.on("item:toggle", ({ value }) => {
-            send({ type: "VALUE.TOGGLE", value });
-          });
-          refs.set("busDisposers", [unsub]);
-
-          emitChange(prop, refs, context.get("value") ?? []);
-        },
-
-        cleanupBus: ({ refs }) => {
-          const disposers = refs.get("busDisposers") || [];
-          for (const d of disposers) d?.();
-          refs.set("busDisposers", []);
-        },
-
         setValueAction: ({ event, context, computed }) => {
           if (event.type !== "VALUE.SET") return;
           const normalized = normalizeValue(event.value);
@@ -211,6 +182,30 @@ export const accordionMachine: AccordionMachine =
           }
 
           context.set("value", next);
+        },
+
+        setItemOpenAction: ({ event, context, computed }) => {
+          if (event.type !== "ITEM.SET_OPEN") return;
+          if (computed("isDisabled")) return;
+
+          const target = String(event.value);
+          const current = context.get("value") ?? [];
+          const isOpen = current.includes(target);
+          if (isOpen === event.open) return;
+
+          if (event.open) {
+            const next = computed("isMultiple")
+              ? [...current, target]
+              : [target];
+            context.set("value", next);
+            return;
+          }
+
+          if (!computed("isCollapsible") && current.length <= 1) return;
+          context.set(
+            "value",
+            current.filter((v) => v !== target),
+          );
         },
 
         expandAllAction: ({ context, computed }) => {

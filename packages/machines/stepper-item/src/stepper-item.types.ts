@@ -4,10 +4,10 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type {
-  StepperBusEvents,
   StepperColor,
+  StepperGroupContext,
   StepperOrientation,
   StepperSize,
   StepperStatus,
@@ -26,7 +26,8 @@ export interface StepperItemProps {
   ids?: Record<string, any> | undefined;
   stepperId?: string | undefined;
   component?: MiniAppComponent | undefined;
-  groupBus?: EventBus<StepperBusEvents> | undefined;
+  groupContext?: StepperGroupContext | undefined;
+  groupIndex?: number | undefined;
   ui?: StepperItemUI | undefined;
   index?: number | null | undefined;
   title?: string | undefined;
@@ -42,16 +43,6 @@ export interface StepperItemProps {
   color?: StepperColor | "" | undefined;
   size?: StepperSize | "" | undefined;
   variant?: StepperVariant | "" | undefined;
-  groupStep?: number | undefined;
-  groupCount?: number | undefined;
-  groupIndex?: number | undefined;
-  groupIsLast?: boolean | undefined;
-  groupLinear?: boolean | undefined;
-  groupOrientation?: StepperOrientation | "" | undefined;
-  groupDisabled?: boolean | undefined;
-  groupColor?: StepperColor | "" | undefined;
-  groupSize?: StepperSize | "" | undefined;
-  groupVariant?: StepperVariant | "" | undefined;
   onTap?:
     | ((details: {
         index: number;
@@ -77,16 +68,6 @@ export interface StepperItemContext {
   color: StepperColor | "";
   size: StepperSize | "";
   variant: StepperVariant | "";
-  groupStep: number;
-  groupCount: number;
-  groupIndex: number;
-  groupIsLast: boolean;
-  groupLinear: boolean;
-  groupOrientation: StepperOrientation | "";
-  groupDisabled: boolean;
-  groupColor: StepperColor | "";
-  groupSize: StepperSize | "";
-  groupVariant: StepperVariant | "";
   ui: StepperItemUI;
 }
 
@@ -106,11 +87,6 @@ export interface StepperItemComputed {
   effectiveVariant: StepperVariant;
 }
 
-export interface StepperItemRefs {
-  currentGroupBus?: EventBus<StepperBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
-}
-
 export interface StepperItemSchema extends MachineSchema {
   state: StepperItemState;
   tag: "idle";
@@ -118,7 +94,6 @@ export interface StepperItemSchema extends MachineSchema {
   props: StepperItemProps;
   context: StepperItemContext;
   computed: StepperItemComputed;
-  refs: StepperItemRefs;
   action: string;
   effect: string;
   guard: string;

@@ -39,7 +39,7 @@ export function connectForm(service: FormService): FormApi {
   const isValidating = computed("isValidating");
   const isSubmitting = computed("isSubmitting");
 
-  const bus = refs.get("bus");
+  const formContext = refs.get("hostContext");
 
   function getErrorProps(name: string): Record<string, any> {
     return {
@@ -75,7 +75,7 @@ export function connectForm(service: FormService): FormApi {
     submitCount,
     disabled,
     readOnly,
-    bus,
+    formContext,
 
     validate(name?: string | string[]) {
       return validateFormFields(service, name);

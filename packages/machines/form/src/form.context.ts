@@ -1,315 +1,196 @@
 import {
-  createEventBusKey,
+  createInjectionKey,
   inject,
   onProvide,
   provide,
-  provideEventBus,
   resolveContextRequest,
   CONTEXT_REQUEST_EVENT,
 } from "@code-ui/context";
-export { resolveContextRequest, CONTEXT_REQUEST_EVENT };
-import type { EventBusKey } from "@code-ui/context";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import { effect, getActiveSub, setActiveSub, signal } from "alien-signals";
+import type { InjectionKey } from "@code-ui/context";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type {
-  FormBusEvents,
-  FormFieldRegistration,
+  FormHostContext,
   FormFieldValidationState,
   FormRule,
   FormValidateOn,
 } from "./form.types";
 
-/**
- * Injection key used by `<c-form>` to provide its `EventBus` and by form item
- * consumers (`PinInput`, `Input`, `Switch`, `Checkbox`, `Radio`, etc.) to
- * `inject` it via `@code-ui/context`.
- */
-export const FormBusKey: EventBusKey<FormBusEvents> =
-  createEventBusKey<FormBusEvents>("cui:form-bus");
+export { resolveContextRequest, CONTEXT_REQUEST_EVENT };
+export type { FormHostContext } from "./form.types";
 
-const scopedFormBusKeys = new Map<string, EventBusKey<FormBusEvents>>();
+export const FormHostKey = createInjectionKey<FormHostContext>("cui:form-host");
+const scopedFormHostKeys = new Map<string, InjectionKey<FormHostContext>>();
 
-/**
- * Returns a scoped `EventBusKey` for a specific `formId` (when multiple `<c-form>`
- * instances coexist on the same Page), or the default `FormBusKey` when omitted.
- */
-export function getFormBusKey(formId?: string): EventBusKey<FormBusEvents> {
+export function getFormHostKey(formId?: string): InjectionKey<FormHostContext> {
   const normalized = formId?.trim();
-  if (!normalized) return FormBusKey;
-  let key = scopedFormBusKeys.get(normalized);
+  if (!normalized) return FormHostKey;
+  let key = scopedFormHostKeys.get(normalized);
   if (!key) {
-    key = createEventBusKey<FormBusEvents>(`cui:form-bus:${normalized}`);
-    scopedFormBusKeys.set(normalized, key);
+    key = createInjectionKey<FormHostContext>(`cui:form-host:${normalized}`);
+    scopedFormHostKeys.set(normalized, key);
   }
   return key;
 }
 
-/**
- * Creates and provides a `FormBus` on a parent Form component instance.
- * When `formId` (or `component.id`) is present, the bus is also provided under
- * a scoped key (`getFormBusKey(formId)`) so fields with `form="form-id"` can
- * target a specific `<c-form>` when multiple forms share a Page.
- */
-export function provideFormBus(
+export function provideFormHost(
   component: MiniAppComponent,
-  existingBus?: EventBus<FormBusEvents>,
+  host: FormHostContext,
   formId?: string,
-): EventBus<FormBusEvents> {
-  let bus: EventBus<FormBusEvents>;
-  if (existingBus) {
-    provide(component, FormBusKey, existingBus);
-    bus = existingBus;
-  } else {
-    bus = provideEventBus(component, FormBusKey);
-  }
-
+): FormHostContext {
+  provide(component, FormHostKey, host);
   const ids = new Set<string>();
   if (formId?.trim()) ids.add(formId.trim());
-  const compId = (component as Record<string, any>)?.id;
-  if (typeof compId === "string" && compId.trim()) {
-    ids.add(compId.trim());
-  }
-
-  for (const id of ids) {
-    provide(component, getFormBusKey(id), bus);
-  }
-
-  return bus;
+  if (typeof component.id === "string" && component.id.trim())
+    ids.add(component.id.trim());
+  for (const id of ids) provide(component, getFormHostKey(id), host);
+  return host;
 }
 
-/**
- * Injects the ancestor Form's `EventBus` using `inject` from `@code-ui/context`.
- * Returns `undefined` when the component is used standalone outside a `<c-form>`.
- */
-export function injectFormBus(
+export function injectFormHost(
   component: MiniAppComponent | undefined,
   formId?: string,
-): EventBus<FormBusEvents> | undefined {
-  if (!component) return undefined;
-  return inject(component, getFormBusKey(formId));
+): FormHostContext | undefined {
+  return component ? inject(component, getFormHostKey(formId)) : undefined;
 }
 
 export interface BindFormFieldOptions {
-  /** The MiniApp component instance (used to call `inject(component, FormBusKey)`) */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit EventBus (falls back to `injectFormBus(component)`) */
-  bus?: EventBus<FormBusEvents> | undefined;
-  /** Unique component / element id */
+  host?: FormHostContext | undefined;
+  getHost?: (() => FormHostContext | null | undefined) | undefined;
   id: string;
-  /** Optional getter returning the target `<c-form>` id (`form` prop) when multiple forms exist on the same Page */
   getFormId?: (() => string | undefined) | undefined;
-  /** Getter returning the field's `name` prop */
   getName: () => string;
-  /** Getter returning the field's current value */
   getValue: () => any;
-  /** Setter to update the field's value programmatically from Form */
   setValue?: ((value: any) => void) | undefined;
-  /** Handler to reset the field back to its initial/default value */
   resetValue?: (() => void) | undefined;
-  /** Handler to focus the field when `focusOnError` triggers */
   focus?: (() => void) | undefined;
-  /** Getter returning the field's `rules` prop */
   getRules?: (() => FormRule[]) | undefined;
-  /** Getter returning the field's `validateOn` prop */
   getValidateOn?: (() => FormValidateOn | undefined) | undefined;
-  /** Getter returning whether the field is disabled */
   isDisabled?: (() => boolean) | undefined;
-  /** Callback invoked whenever the Form updates this field's validation state */
   onValidationChange?: ((state: FormFieldValidationState) => void) | undefined;
-  /** Callback invoked when Form-level `disabled` or `readOnly` changes */
-  onFormStateChange?:
-    | ((state: { disabled: boolean; readOnly: boolean }) => void)
-    | undefined;
 }
 
 export interface BoundFormField {
-  /** The injected Form EventBus (or `undefined` if not inside a Form) */
-  readonly bus: EventBus<FormBusEvents> | undefined;
-  /** Emit an `input` event to the parent Form */
-  emitInput: (value: any) => void;
-  /** Emit a `change` event to the parent Form */
-  emitChange: (value: any) => void;
-  /** Emit a `blur` event to the parent Form */
-  emitBlur: (value?: any) => void;
-  /** Emit a `focus` event to the parent Form */
-  emitFocus: (value?: any) => void;
-  /** Re-register if the field's `name` or `form` prop changes dynamically, or if a new FormBus is linked */
-  rebind: (newBus?: EventBus<FormBusEvents> | null) => void;
-  /** Unregister the field from the parent Form (call on `detached` / `stop`) */
-  dispose: () => void;
+  readonly host: FormHostContext | undefined;
+  emitInput(value: any): void;
+  emitChange(value: any): void;
+  emitBlur(value?: any): void;
+  emitFocus(value?: any): void;
+  dispose(): void;
 }
 
-/**
- * Connects any form item component or machine (`PinInput`, `Input`, `Switch`,
- * `Checkbox`, `Radio`, etc.) to an ancestor `<c-form>` via `inject(component, FormBusKey)`.
- */
+function untracked<T>(callback: () => T): T {
+  const previous = getActiveSub();
+  setActiveSub(undefined);
+  try {
+    return callback();
+  } finally {
+    setActiveSub(previous);
+  }
+}
+
 export function bindFormField(options: BindFormFieldOptions): BoundFormField {
-  let activeKey = getFormBusKey(options.getFormId?.());
-  let bus =
-    options.bus ??
-    (options.component ? inject(options.component, activeKey) : undefined);
+  const hostSignal = signal<FormHostContext | undefined>(undefined);
+  let activeHost: FormHostContext | undefined;
   let registeredName = "";
+  let unregister: (() => void) | undefined;
   let stopWatchProvide: (() => void) | undefined;
+  let disposed = false;
 
   const getFieldKey = () => {
-    const rawName = options.getName();
-    if (rawName && rawName.trim().length > 0) return rawName;
-    const hasRules = (options.getRules?.()?.length ?? 0) > 0;
-    const hasExplicitForm = Boolean(options.getFormId?.()?.trim());
-    if (hasRules || hasExplicitForm) {
-      return options.id;
-    }
-    return "";
+    const name = options.getName();
+    if (name?.trim()) return name;
+    return (options.getRules?.()?.length ?? 0) > 0 ||
+      options.getFormId?.()?.trim()
+      ? options.id
+      : "";
   };
-
-  const register = () => {
-    if (!bus) return;
-    const nextName = getFieldKey();
-    if (!nextName) {
-      if (registeredName) {
-        bus.emit("unregister", { name: registeredName, id: options.id });
-        registeredName = "";
-      }
-      return;
-    }
-    if (registeredName && registeredName !== nextName) {
-      bus.emit("unregister", { name: registeredName, id: options.id });
-    }
-    registeredName = nextName;
-
-    const registration: FormFieldRegistration = {
-      name: registeredName,
-      id: options.id,
-      getValue: options.getValue,
-      setValue: options.setValue,
-      resetValue: options.resetValue,
-      focus: options.focus,
-      getRules: options.getRules,
-      getValidateOn: options.getValidateOn,
-      isDisabled: options.isDisabled,
-      component: options.component,
-      onValidationChange: options.onValidationChange,
-      onFormStateChange: options.onFormStateChange,
-    };
-
-    bus.emit("register", registration);
-    if (options.getRules) {
-      bus.emit("field:rules", {
-        name: registeredName,
-        getRules: options.getRules,
-      });
-    }
+  const detach = () => {
+    const cleanup = unregister;
+    unregister = undefined;
+    registeredName = "";
+    untracked(() => cleanup?.());
   };
-
-  const subscribeProvide = (key: EventBusKey<FormBusEvents>) => {
-    stopWatchProvide?.();
-    stopWatchProvide = undefined;
-    if (options.component && !options.bus) {
-      stopWatchProvide = onProvide(
-        options.component,
-        key,
-        (providedBus) => {
-          if (bus !== providedBus) {
-            if (bus && registeredName) {
-              bus.emit("unregister", { name: registeredName, id: options.id });
-              registeredName = "";
-            }
-            bus = providedBus;
-            register();
-          }
-        },
-      );
-    }
-  };
-
-  subscribeProvide(activeKey);
-  register();
-
-  return {
-    get bus() {
-      return bus;
-    },
-    emitInput(value: any) {
-      if (!bus) return;
-      const name = getFieldKey();
-      if (!name) return;
-      bus.emit("input", { name, value, id: options.id });
-    },
-    emitChange(value: any) {
-      if (!bus) return;
-      const name = getFieldKey();
-      if (!name) return;
-      bus.emit("change", { name, value, id: options.id });
-    },
-    emitBlur(value?: any) {
-      if (!bus) return;
-      const name = getFieldKey();
-      if (!name) return;
-      bus.emit("blur", {
-        name,
-        value: value !== undefined ? value : options.getValue(),
-        id: options.id,
-      });
-    },
-    emitFocus(value?: any) {
-      if (!bus) return;
-      const name = getFieldKey();
-      if (!name) return;
-      bus.emit("focus", {
-        name,
-        value: value !== undefined ? value : options.getValue(),
-        id: options.id,
-      });
-    },
-    rebind(newBus?: EventBus<FormBusEvents> | null) {
-      if (newBus !== undefined) {
-        const nextBus = newBus === null ? undefined : newBus;
-        if (bus !== nextBus) {
-          if (bus && registeredName) {
-            bus.emit("unregister", { name: registeredName, id: options.id });
-            registeredName = "";
-          }
-          bus = nextBus;
-        }
-        if (nextBus) {
-          stopWatchProvide?.();
-          stopWatchProvide = undefined;
-        }
-      }
-      const nextKey = getFormBusKey(options.getFormId?.());
-      if (nextKey !== activeKey) {
-        if (bus && registeredName) {
-          bus.emit("unregister", { name: registeredName, id: options.id });
-          registeredName = "";
-        }
-        activeKey = nextKey;
-        if (!bus) {
-          bus = options.component
-            ? inject(options.component, activeKey)
-            : undefined;
-          subscribeProvide(activeKey);
-        }
-      }
-      register();
-    },
-    dispose() {
+  const stopDiscovery = effect(() => {
+    const host = options.getHost ? options.getHost() : options.host;
+    const key = getFormHostKey(options.getFormId?.());
+    untracked(() => {
       stopWatchProvide?.();
       stopWatchProvide = undefined;
-      if (!bus || !registeredName) return;
-      if (options.getRules) {
-        bus.emit("field:rules", {
-          name: registeredName,
-          getRules: () => [],
+      if (host !== undefined) {
+        hostSignal(host ?? undefined);
+      } else if (options.component) {
+        hostSignal(inject(options.component, key));
+        stopWatchProvide = onProvide(options.component, key, (next) => {
+          if (!disposed) untracked(() => hostSignal(next));
         });
+      } else {
+        hostSignal(undefined);
       }
-      bus.emit("unregister", { name: registeredName, id: options.id });
-      registeredName = "";
+    });
+  });
+  const stopRegistration = effect(() => {
+    const host = hostSignal();
+    const name = getFieldKey();
+    untracked(() => {
+      if (activeHost === host && registeredName === name) return;
+      detach();
+      activeHost = host;
+      if (!host || !name) return;
+      registeredName = name;
+      unregister = host.register({
+        name,
+        id: options.id,
+        getValue: options.getValue,
+        setValue: options.setValue,
+        resetValue: options.resetValue,
+        focus: options.focus,
+        getRules: options.getRules,
+        getValidateOn: options.getValidateOn,
+        isDisabled: options.isDisabled,
+        component: options.component,
+        onValidationChange: options.onValidationChange,
+      });
+    });
+  });
+
+  const notify = (
+    trigger: "input" | "change" | "blur" | "focus",
+    value: any,
+  ) => {
+    if (disposed) return;
+    const name = getFieldKey();
+    if (name) activeHost?.notify(trigger, { name, value, id: options.id });
+  };
+  return {
+    get host() {
+      return hostSignal();
+    },
+    emitInput: (value) => notify("input", value),
+    emitChange: (value) => notify("change", value),
+    emitBlur: (value) =>
+      notify("blur", value === undefined ? options.getValue() : value),
+    emitFocus: (value) =>
+      notify("focus", value === undefined ? options.getValue() : value),
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      stopDiscovery();
+      stopRegistration();
+      untracked(() => stopWatchProvide?.());
+      stopWatchProvide = undefined;
+      detach();
+      activeHost = undefined;
+      hostSignal(undefined);
     },
   };
 }
 
 export interface FormFieldSyncOptions {
-  component?: any;
-  bus?: EventBus<FormBusEvents> | undefined;
+  component?: MiniAppComponent | undefined;
+  host?: FormHostContext | undefined;
+  getHost?: (() => FormHostContext | null | undefined) | undefined;
   id?: string | undefined;
   getFormId?: (() => string | undefined) | undefined;
   getName: () => string;
@@ -321,14 +202,6 @@ export interface FormFieldSyncOptions {
   getValidateOn?: (() => FormValidateOn | undefined) | undefined;
   isDisabled?: (() => boolean) | undefined;
   onValidationChange?: ((isValid: boolean) => void) | undefined;
-  onStateChange?:
-    | ((state: {
-        fieldDisabled?: boolean | undefined;
-        fieldSize?: any;
-        formDisabled?: boolean | undefined;
-        formReadOnly?: boolean | undefined;
-      }) => void)
-    | undefined;
 }
 
 export function setupFormFieldSync(
@@ -336,105 +209,36 @@ export function setupFormFieldSync(
   refs: any,
 ): BoundFormField {
   refs.get("formField")?.dispose();
-  refs.set("currentFormBus", options.bus);
-
   let suppressEmit = false;
-
-  const bound = bindFormField({
-    component: options.component,
-    bus: options.bus,
-    id: options.id ?? "field",
-    getFormId: options.getFormId,
-    getName: options.getName,
-    getValue: options.getValue,
-    setValue: (rawVal: any) => {
-      suppressEmit = true;
-      try {
-        options.setValue(rawVal);
-      } finally {
-        suppressEmit = false;
-      }
-    },
-    resetValue: () => {
-      suppressEmit = true;
-      try {
-        options.resetValue();
-      } finally {
-        suppressEmit = false;
-      }
-    },
-    focus: options.focus,
-    getRules: options.getRules,
-    getValidateOn: options.getValidateOn,
-    isDisabled: options.isDisabled,
-    onValidationChange: (valState) => {
-      options.onValidationChange?.(valState.isValid);
-    },
-    onFormStateChange: ({ disabled, readOnly }) => {
-      options.onStateChange?.({
-        formDisabled: disabled,
-        formReadOnly: readOnly,
-      });
-    },
-  });
-
-  let disposers: Array<() => void> = [];
-  const clearDisposers = () => {
-    for (let i = 0; i < disposers.length; i++) {
-      disposers[i]?.();
+  const suppress = (fn: () => void) => {
+    const previous = suppressEmit;
+    suppressEmit = true;
+    try {
+      fn();
+    } finally {
+      suppressEmit = previous;
     }
-    disposers = [];
   };
-  const subscribeBusListeners = (
-    activeBus: EventBus<FormBusEvents> | undefined,
-  ) => {
-    clearDisposers();
-    if (!activeBus) return;
-    disposers.push(
-      activeBus.on("field:state", (payload: any) => {
-        const currentName = options.getName();
-        if (!payload?.name || payload.name === currentName) {
-          options.onStateChange?.({
-            fieldDisabled: payload.disabled,
-            fieldSize: payload.size,
-          });
-        }
-      }),
-      activeBus.on("form:state", (payload: any) => {
-        options.onStateChange?.({
-          formDisabled: payload?.disabled,
-          formReadOnly: payload?.readOnly,
-        });
-      }),
-    );
+  const bound = bindFormField({
+    ...options,
+    id: options.id ?? "field",
+    setValue: (value) => suppress(() => options.setValue(value)),
+    resetValue: () => suppress(options.resetValue),
+    onValidationChange: (state) => options.onValidationChange?.(state.isValid),
+  });
+  const emitInput = bound.emitInput;
+  const emitChange = bound.emitChange;
+  bound.emitInput = (value) => {
+    if (!suppressEmit) emitInput(value);
   };
-  subscribeBusListeners(bound.bus);
-
-  const origEmitInput = bound.emitInput.bind(bound);
-  const origEmitChange = bound.emitChange.bind(bound);
-  const origRebind = bound.rebind.bind(bound);
-  const origDispose = bound.dispose.bind(bound);
-  bound.emitInput = (val: any) => {
-    if (!suppressEmit) origEmitInput(val);
+  bound.emitChange = (value) => {
+    if (!suppressEmit) emitChange(value);
   };
-  bound.emitChange = (val: any) => {
-    if (!suppressEmit) origEmitChange(val);
-  };
-  bound.rebind = (newBus?: EventBus<FormBusEvents> | null) => {
-    origRebind(newBus);
-    subscribeBusListeners(bound.bus);
-  };
-  bound.dispose = () => {
-    clearDisposers();
-    origDispose();
-  };
-
   refs.set("formField", bound);
   return bound;
 }
 
-export function cleanupFormFieldSync(refs: any) {
+export function cleanupFormFieldSync(refs: any): void {
   refs.get("formField")?.dispose();
   refs.set("formField", undefined);
-  refs.set("currentFormBus", undefined);
 }

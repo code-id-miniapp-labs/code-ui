@@ -36,9 +36,6 @@ export function cleanupComponentId(instance: any): void {
   instanceIds.delete(instance);
 }
 
-export function getServiceBus(service: any) {
-  return service?.refs?.get ? service.refs.get("bus") : undefined;
-}
 export {
   wxButtonBehavior,
 } from "./behaviors/button";
@@ -54,8 +51,8 @@ export {
   handleFormMachineStarted,
   handleFormReady,
   handleFormDetached,
-  linkFieldToParentBus,
-  unlinkFieldFromParentBus,
+  linkFieldToParentHost,
+  unlinkFieldFromParentHost,
   linkFieldToWrapper,
   unlinkFieldFromWrapper,
   updateChildFromFormFieldWrapper,

@@ -3,7 +3,7 @@
 ## 1. Overview
 
 - **Purpose:** Displays progress through a sequence of numbered or labeled steps in a multi-step process, workflow, wizard, or checkout flow.
-- **Category:** Interactive Compound Stateful Component (Zag.js-inspired FSM + Connect pattern + MiniProgram `relations` + EventBus).
+- **Category:** Interactive Compound Stateful Component (Zag.js-inspired FSM + Connect pattern + MiniProgram `relations` + reactive `groupContext`).
 - **Reference:** Zag.js `@zag-js/steps`, Ark UI Stepper, & Nuxt UI v4 `UStepper`.
 - **Target Platform:** WeChat MiniProgram (`weapp`) with responsive Tailwind styling via `virtual:cui/theme/stepper` and `virtual:cui/theme/stepper-item`.
 
@@ -107,49 +107,32 @@ Zag.js-compliant API exposing state getters and action methods:
 
 ## 4. MiniApp Behaviors & Relations (`@code-ui/miniapp`)
 
-Communication between `<c-stepper>` and `<c-stepper-item>` in declarative mode is orchestrated by WeChat MiniProgram `relations` and a typed reactive `EventBus`.
+Communication between `<c-stepper>` and `<c-stepper-item>` in declarative mode is orchestrated by WeChat MiniProgram `relations` and a shared reactive `StepperGroupContext`.
 
 ### Architecture: How Declarative Items Connect to the Machine
 
-```
-┌────────────────────────────────────────────────────────┐
-│  <c-stepper> (Host Component)                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ Stepper Machine (@code-ui/stepper)               │  │
-│  │ - context: { step, count, linear, disabled }     │  │
-│  │ - guards: [canNavigateStep] (enforces linear)    │  │
-│  │ - refs: { bus: createEventBus() }                │  │
-│  └───────────────────────┬──────────────────────────┘  │
-│                          │                             │
-│   MiniProgram relations  │                             │
-│   (cuiStepperBehavior)   │ bus.emit("stepper:change")  │
-│                          ▼                             │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-       ┌───────────────────┴───────────────────┐
-       ▼                                       ▼
-┌──────────────────────────────┐ ┌──────────────────────────────┐
-│ <c-stepper-item> (Index: 0)  │ │ <c-stepper-item> (Index: 1)  │
-│ (stepperItemMachine)         │ │ (stepperItemMachine)         │
-│                              │ │                              │
-│ - Listens to "stepper:change"│ │ - Listens to "stepper:change"│
-│ - Computes status:           │ │ - Computes status:           │
-│   "completed" | "current"... │ │   "completed" | "current"... │
-│ - On Tap:                    │ │ - On Tap:                    │
-│   bus.emit("item:tap", {0})  │ │   bus.emit("item:tap", {1})  │
-└──────────────────────────────┘ └──────────────────────────────┘
+```text
+<c-stepper> / stepperMachine
+  refs.groupContext
+    getters: step(), count(), linear(), orientation(),
+             color(), size(), variant(), disabled()
+    commands: setStep(step), next(), previous(), reset()
+          │
+          │ MiniProgram relations inject groupContext,
+          │ groupIndex, and stepperId into child props
+          ▼
+<c-stepper-item> / stepperItemMachine
+  computed values read groupContext getters reactively
+  tap → groupContext.setStep(resolvedIndex)
+      → parent STEP.SET event → canNavigateStep guard
 ```
 
-### 1. The Shared Event Bus (`stepperBus`)
-Held inside the parent stepper machine's `refs.bus = createEventBus<StepperBusEvents>()`:
-- **`stepper:change`**: Broadcast from the machine to all `<c-stepper-item>` children whenever active `step`, `linear`, `orientation`, `color`, `size`, or `disabled` updates.
-- **`item:tap`**: Sent from a child `<c-stepper-item>` to the parent machine when clicked:
-  ```ts
-  interface StepperItemTapEvent {
-    index: number;
-    value?: string | number;
-  }
-  ```
+### 1. The Shared Reactive Context (`groupContext`)
+
+The parent machine creates a `StepperGroupContext` in `refs.groupContext`:
+- **Reactive getters**: `step()` reads the active step, `count()` reads computed `totalCount`, and `linear()`, `orientation()`, `color()`, `size()`, `variant()`, and `disabled()` read parent props. Child computed values consume these getters directly rather than copying parent state.
+- **Commands**: `setStep(step)`, `next()`, `previous()`, and `reset()` send `STEP.SET`, `STEP.NEXT`, `STEP.PREV`, and `STEP.RESET` to the parent machine.
+- **Item taps**: After its own `canTap` guard, the child calls `groupContext.setStep(resolvedIndex)`. The parent validates the resulting `STEP.SET` event with `canNavigateStep`.
 
 ### 2. Auto-Registration & Dynamic Indexing
 When developers declare items declaratively:
@@ -160,11 +143,11 @@ When developers declare items declaratively:
   <c-stepper-item title="Step 3" />
 </c-stepper>
 ```
-1. The parent queries its linked nodes via `this.getRelationNodes(...)`.
-2. For each child without an explicit `index` prop, the parent automatically assigns its 0-based index.
-3. The child is passed the `groupBus`, initial `groupStep`, `groupLinear`, `orientation`, `color`, and `size`.
-4. The parent machine updates `{ type: "COUNT.SET", count: linkedChildren.length }`.
-5. The final child is marked with `isLast: true`, automatically suppressing the trailing separator line.
+1. `withStepper()` and `withStepperItem()` link parent and child components through `cuiStepperChild` / `cuiStepperParent` relations.
+2. `syncStepperChildren` resolves children from relation nodes, template components, or the tracked linked children, then updates the parent machine's `linkedCount` prop.
+3. Each child machine receives `stepperId`, the shared `groupContext`, and its 0-based `groupIndex` through `updateProps`. An explicit child `index` takes precedence over `groupIndex`.
+4. Child computed values read the shared context reactively; parent state is not copied into child props.
+5. Unless explicitly overridden by `isLast`, the child derives `resolvedIsLast` from its resolved index and `groupContext.count()`, suppressing the final separator. Unlinking clears the child's injected props and resynchronizes the remaining children.
 
 ---
 

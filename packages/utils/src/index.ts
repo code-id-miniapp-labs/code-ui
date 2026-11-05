@@ -21,15 +21,13 @@ export type {
   MiniAppComponent,
 } from "./dom";
 
-export { triggerEvent, createEventTrigger, createEventBus } from "./event";
+export { triggerEvent, createEventTrigger } from "./event";
 export type {
   MiniAppBaseEvent,
   MiniAppCustomEvent,
   MiniAppTouchEvent,
   TriggerEventOptions,
   EventTrigger,
-  EventHandler,
-  EventBus,
 } from "./event";
 
 export { isEqual } from "./equal";

@@ -1,16 +1,11 @@
 import { createMachine } from "@code-ui/core";
-import type { BindableContext, BindableRefs, ComputedFn } from "@code-ui/core";
-import { createEventBus } from "@code-ui/utils";
 import type {
-  StepperBusEvents,
-  StepperColor,
   StepperContext,
+  StepperGroupContext,
   StepperMachine,
   StepperOrientation,
   StepperProps,
   StepperSchema,
-  StepperSize,
-  StepperVariant,
 } from "./stepper.types";
 import { defaultStepperProps } from "./stepper.props";
 import {
@@ -18,27 +13,6 @@ import {
   performScrollUpdate,
   resolveControlledStep,
 } from "./stepper.utils";
-
-function emitStepperChange(
-  context: BindableContext<StepperSchema>,
-  computed: ComputedFn<StepperSchema>,
-  refs: BindableRefs<StepperSchema>,
-  stepOverride?: number,
-) {
-  const bus = refs.get("bus");
-  if (!bus) return;
-  bus.emit("stepper:change", {
-    step: stepOverride ?? context.get("step"),
-    count: computed("totalCount"),
-    linear: Boolean(context.get("linear")),
-    orientation: (context.get("orientation") ||
-      "horizontal") as StepperOrientation,
-    color: (context.get("color") || "primary") as StepperColor,
-    size: (context.get("size") || "md") as StepperSize,
-    variant: (context.get("variant") || "subtle") as StepperVariant,
-    disabled: Boolean(context.get("disabled")),
-  });
-}
 
 export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   props: ({ props }) => ({
@@ -48,17 +22,30 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
 
   initialState: () => "idle",
 
-  refs: ({ prop }) => {
+  refs: ({ prop, context, computed, send }) => {
     const controlled = resolveControlledStep(prop);
     const initial = controlled ?? Number(prop("defaultStep") ?? 0);
     return {
       initialStep: initial,
-      bus: createEventBus<StepperBusEvents>(),
-      busDisposers: [],
+      groupContext: {
+        step: () => context.get("step"),
+        count: () => computed("totalCount"),
+        linear: () => Boolean(prop("linear")),
+        orientation: () =>
+          (prop("orientation") ?? "horizontal") as StepperOrientation,
+        color: () => prop("color") ?? "primary",
+        size: () => prop("size") ?? "md",
+        variant: () => prop("variant") ?? "subtle",
+        disabled: () => Boolean(prop("disabled")),
+        setStep: (step) => send({ type: "STEP.SET", step }),
+        next: () => send({ type: "STEP.NEXT" }),
+        previous: () => send({ type: "STEP.PREV" }),
+        reset: () => send({ type: "STEP.RESET" }),
+      } satisfies StepperGroupContext,
     };
   },
 
-  context: ({ prop, bindable, getRefs, getContext, getComputed }) => {
+  context: ({ prop, bindable, getComputed }) => {
     const propBindable = <K extends keyof StepperContext & keyof StepperProps>(
       key: K,
       defaultValue: StepperContext[K],
@@ -100,8 +87,6 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
           if (totalCount > 0 && nextStep >= totalCount - 1) {
             prop("onComplete")?.({ step: nextStep });
           }
-
-          emitStepperChange(getContext(), getComputed(), getRefs(), nextStep);
         },
       })),
 
@@ -194,8 +179,6 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   },
 
   effects: ["trackControlledStep"],
-  entry: ["setupStepperBus"],
-  exit: ["cleanupStepperBus"],
 
   on: {
     "STEP.SET": {
@@ -360,29 +343,10 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       clearFocusedIndex: ({ context }) => {
         context.set("focusedIndex", null);
       },
-
-      setupStepperBus: ({ context, computed, refs, send }) => {
-        const bus = refs.get("bus");
-        if (bus) {
-          const unsub = bus.on("item:tap", ({ index, value }) => {
-            send({ type: "STEP.SET", step: index, value });
-          });
-          const disposers = refs.get("busDisposers") || [];
-          disposers.push(unsub);
-          refs.set("busDisposers", disposers);
-          emitStepperChange(context, computed, refs);
-        }
-      },
-
-      cleanupStepperBus: ({ refs }) => {
-        const disposers = refs.get("busDisposers") || [];
-        for (const unsub of disposers) unsub?.();
-        refs.set("busDisposers", []);
-      },
     },
 
     effects: {
-      trackControlledStep: ({ prop, context, computed, refs, scope, track }) => {
+      trackControlledStep: ({ prop, context, computed, scope, track }) => {
         let initial = true;
         track(
           [() => resolveControlledStep(prop)],
@@ -400,7 +364,6 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
                 scope,
                 nextControlled,
               );
-              emitStepperChange(context, computed, refs, nextControlled);
             }
           },
         );

@@ -12,7 +12,7 @@ export interface MachinePlugin<T extends MachineSchema = any> {
     relations: Record<string, WechatMiniprogram.Component.RelationOption>,
   ) => void;
 
-  /** Hook before machine is instantiated; can mutate initialProps (e.g. inject formBus) */
+  /** Hook before machine is instantiated; can mutate initialProps (e.g. inject formContext) */
   onAttached?: (instance: any, initialProps: Record<string, any>) => void;
 
   /** Hook immediately after machine is created and assigned to instance */

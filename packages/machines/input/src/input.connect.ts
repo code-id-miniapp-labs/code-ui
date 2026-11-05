@@ -9,11 +9,9 @@ export function connectInput(service: InputService): InputApi {
   const isFocused = currentState === "focused";
   const value = context.get("value") ?? "";
   const disabled = computed("isDisabled");
-  const readOnly = Boolean(
-    context.get("readOnly") || context.get("formReadOnly"),
-  );
+  const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
-  const invalid = Boolean(context.get("invalid"));
+  const invalid = computed("isInvalid");
   const variant = context.get("variant");
   const color = context.get("color");
   const highlight = Boolean(context.get("highlight"));

@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./stepper.anatomy";
 
 export type StepperState = "idle" | "focused";
@@ -25,20 +25,20 @@ export type StepperVariant = "subtle" | "solid" | "outline";
 
 export type StepperStatus = "completed" | "current" | "upcoming" | "disabled";
 
-export interface StepperChangePayload {
-  step: number;
-  count: number;
-  linear: boolean;
-  orientation: StepperOrientation;
-  color: StepperColor;
-  size: StepperSize;
-  variant: StepperVariant;
-  disabled: boolean;
-}
+export interface StepperGroupContext {
+  readonly step: () => number;
+  readonly count: () => number;
+  readonly linear: () => boolean;
+  readonly orientation: () => StepperOrientation;
+  readonly color: () => StepperColor;
+  readonly size: () => StepperSize;
+  readonly variant: () => StepperVariant;
+  readonly disabled: () => boolean;
 
-export interface StepperBusEvents {
-  "stepper:change": StepperChangePayload;
-  "item:tap": { index: number; value?: string | number | undefined };
+  setStep: (step: number) => void;
+  next: () => void;
+  previous: () => void;
+  reset: () => void;
 }
 
 export type StepperAnatomyPart = AnatomyPartName<typeof anatomy>;
@@ -176,8 +176,7 @@ export interface StepperComputed {
 
 export interface StepperRefs {
   initialStep?: number | undefined;
-  bus?: EventBus<StepperBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
+  groupContext: StepperGroupContext;
 }
 
 export interface StepperSchema extends MachineSchema {

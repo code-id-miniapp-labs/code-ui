@@ -1,11 +1,10 @@
 import { createMachine } from "@code-ui/core";
-import { createEventBus } from "@code-ui/utils";
 import { defaultTabsProps } from "./tabs.props";
 import { performTabsScrollUpdate } from "./tabs.utils";
 import type {
   NormalizedTabItem,
-  TabsBusEvents,
   TabsColor,
+  TabsGroupContext,
   TabsItem,
   TabsMachine,
   TabsOrientation,
@@ -35,24 +34,6 @@ export function normalizeItems(
   });
 }
 
-function emitTabsChange(
-  prop: any,
-  refs: any,
-  valueOverride?: string | number,
-) {
-  const bus = refs?.get?.("bus");
-  if (!bus) return;
-  const currentVal = valueOverride ?? prop("value");
-  bus.emit("tabs:change", {
-    value: currentVal !== null && currentVal !== undefined ? currentVal : "",
-    orientation: (prop("orientation") ?? "horizontal") as TabsOrientation,
-    variant: (prop("variant") ?? "pill") as TabsVariant,
-    color: (prop("color") ?? "primary") as TabsColor,
-    size: (prop("size") ?? "md") as TabsSize,
-    disabled: Boolean(prop("disabled")),
-  });
-}
-
 export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   props: ({ props }) => ({
     ...defaultTabsProps,
@@ -61,15 +42,25 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
 
   initialState: () => "idle",
 
-  refs: () => {
-    const bus = createEventBus<TabsBusEvents>();
-    return {
-      bus,
-      busDisposers: [],
-    };
-  },
+  refs: ({ prop, computed, send }) => ({
+    groupContext: {
+      value: () => computed("selectedValue"),
+      orientation: () => (prop("orientation") ?? "horizontal") as TabsOrientation,
+      variant: () => (prop("variant") ?? "pill") as TabsVariant,
+      color: () => (prop("color") ?? "primary") as TabsColor,
+      size: () => (prop("size") ?? "md") as TabsSize,
+      disabled: () => Boolean(prop("disabled")),
+      fitted: () => Boolean(prop("fitted")),
+      select: (value) => send({ type: "SELECT", value }),
+      setValue: (value) => send({ type: "SET_VALUE", value }),
+      next: () => send({ type: "NEXT" }),
+      previous: () => send({ type: "PREV" }),
+      first: () => send({ type: "FIRST" }),
+      last: () => send({ type: "LAST" }),
+    } satisfies TabsGroupContext,
+  }),
 
-  context: ({ prop, bindable, getRefs }) => ({
+  context: ({ prop, bindable }) => ({
     value: bindable<string | number>(() => {
       const rawVal = prop("value");
       const controlledVal =
@@ -94,7 +85,6 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
             value,
             index: index >= 0 ? index : 0,
           });
-          emitTabsChange(prop, getRefs(), value);
         },
       };
     }),
@@ -141,8 +131,6 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   },
 
   effects: ["trackControlledValue"],
-  entry: ["setupBus"],
-  exit: ["cleanupBus"],
 
   on: {
     SELECT: {
@@ -209,19 +197,6 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
       },
     },
     actions: {
-      setupBus: ({ refs, send, prop, computed }) => {
-        const bus = refs.get("bus");
-        if (!bus) return;
-        const unsub = bus.on("item:select", ({ value }: { value: string | number }) => {
-          send({ type: "SELECT", value });
-        });
-        refs.set("busDisposers", [unsub]);
-        emitTabsChange(prop, refs, computed("selectedValue"));
-      },
-      cleanupBus: ({ refs }) => {
-        for (const d of refs.get("busDisposers") ?? []) d?.();
-        refs.set("busDisposers", []);
-      },
       selectTab: ({ context, event }) => {
         if (event.type !== "SELECT" && event.type !== "SET_VALUE") return;
         context.set("value", event.value);
@@ -294,7 +269,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
       },
     },
     effects: {
-      trackControlledValue: ({ prop, refs, context, computed, scope, track }) => {
+      trackControlledValue: ({ prop, context, computed, scope, track }) => {
         let initial = true;
         track(
           [
@@ -314,7 +289,6 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
               return;
             }
             performTabsScrollUpdate(context, computed, prop, scope);
-            emitTabsChange(prop, refs, computed("selectedValue"));
           },
         );
       },

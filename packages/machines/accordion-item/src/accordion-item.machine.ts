@@ -1,15 +1,10 @@
 import { createMachine } from "@code-ui/core";
-import type { BindableRefs } from "@code-ui/core";
-import { isEqual } from "@code-ui/utils";
-import type { EventBus } from "@code-ui/utils";
 import type {
-  AccordionBusEvents,
-  AccordionChangePayload,
+  AccordionGroupContext,
   AccordionSize,
   AccordionVariant,
 } from "@code-ui/accordion";
 import type {
-  AccordionGroupStateSnapshot,
   AccordionItemContext,
   AccordionItemMachine,
   AccordionItemParams,
@@ -17,36 +12,6 @@ import type {
   AccordionItemSchema,
 } from "./accordion-item.types";
 import { defaultAccordionItemProps } from "./accordion-item.props";
-
-export type { AccordionGroupStateSnapshot };
-
-export function applyGroupState(
-  context: AccordionItemParams["context"],
-  g: AccordionGroupStateSnapshot,
-) {
-  if (Array.isArray(g.value)) {
-    if (!isEqual(g.value, context.get("groupValue"))) {
-      context.set("groupValue", g.value);
-    }
-  } else if (g.value === undefined && context.get("groupValue") !== undefined) {
-    context.set("groupValue", undefined);
-  }
-  if (g.multiple !== undefined) {
-    context.set("groupMultiple", Boolean(g.multiple));
-  }
-  if (g.collapsible !== undefined) {
-    context.set("groupCollapsible", Boolean(g.collapsible));
-  }
-  if (g.disabled !== undefined) {
-    context.set("groupDisabled", Boolean(g.disabled));
-  }
-  if (g.size !== undefined && g.size !== "") {
-    context.set("groupSize", g.size);
-  }
-  if (g.variant !== undefined && g.variant !== "") {
-    context.set("groupVariant", g.variant);
-  }
-}
 
 function measureBodyHeight(
   scope: AccordionItemParams["scope"] | undefined,
@@ -65,36 +30,12 @@ function measureBodyHeight(
     .catch(() => {});
 }
 
-function bindGroupBus(
-  bus: EventBus<AccordionBusEvents> | undefined,
-  context: AccordionItemParams["context"],
-  refs: BindableRefs<AccordionItemSchema>,
-  scope?: AccordionItemParams["scope"],
-): void {
-  for (const d of refs.get("busDisposers") ?? []) d?.();
-  refs.set("currentGroupBus", bus);
-  refs.set(
-    "busDisposers",
-    bus
-      ? [
-          bus.on("accordion:change", (gState: AccordionChangePayload) => {
-            applyGroupState(context, gState);
-            if (Array.isArray(gState.value) && gState.value.length > 0) {
-              measureBodyHeight(scope, context);
-            }
-          }),
-        ]
-      : [],
-  );
-}
-
 function setItemOpen(
   {
     context,
     computed,
-    refs,
     prop,
-  }: Pick<AccordionItemParams, "context" | "computed" | "refs" | "prop">,
+  }: Pick<AccordionItemParams, "context" | "computed" | "prop">,
   nextOpen: boolean,
   isTap = false,
 ): void {
@@ -104,9 +45,13 @@ function setItemOpen(
     prop("onTap")?.(details);
   }
 
-  const bus = refs.get("currentGroupBus") || prop("groupBus");
-  if (bus) {
-    bus.emit("item:toggle", { value: val });
+  const group = prop("groupContext") as AccordionGroupContext | undefined;
+  if (group) {
+    if (isTap) {
+      group.toggleItem(val);
+    } else {
+      group.setItemOpen(val, nextOpen);
+    }
     return;
   }
 
@@ -122,11 +67,6 @@ export const accordionItemMachine: AccordionItemMachine =
     }),
 
     initialState: () => "idle",
-
-    refs: ({ prop }) => ({
-      currentGroupBus: prop("groupBus"),
-      busDisposers: [],
-    }),
 
     context: ({ prop, bindable }) => {
       const propBindable = <
@@ -164,29 +104,8 @@ export const accordionItemMachine: AccordionItemMachine =
         variant: propBindable("variant", ""),
         collapsible: propBindable("collapsible", true),
         contentHeight: propBindable("contentHeight", 0),
-
         accordionId: propBindable("accordionId", ""),
-        groupValue: bindable<AccordionItemContext["groupValue"]>(() => ({
-          value: prop("groupValue"),
-          defaultValue: prop("groupValue"),
-          isEqual,
-        })),
-        groupMultiple: propBindable(
-          "groupMultiple",
-          Boolean(prop("groupMultiple")),
-        ),
-        groupCollapsible: propBindable(
-          "groupCollapsible",
-          prop("groupCollapsible") !== false,
-        ),
-        groupDisabled: propBindable(
-          "groupDisabled",
-          Boolean(prop("groupDisabled")),
-        ),
-        groupSize: propBindable("groupSize", prop("groupSize") ?? ""),
-        groupVariant: propBindable("groupVariant", prop("groupVariant") ?? ""),
         groupIndex: propBindable("groupIndex", 0),
-
         ui: propBindable("ui", {}),
       };
     },
@@ -208,61 +127,48 @@ export const accordionItemMachine: AccordionItemMachine =
         return context.get("id") || "0";
       },
 
-      isOpen: ({ context, computed, refs, prop }) => {
-        const gv = context.get("groupValue");
-        if (
-          Array.isArray(gv) &&
-          Boolean(
-            refs.get("currentGroupBus") ||
-              prop("groupBus") ||
-              prop("groupValue") !== undefined,
-          )
-        ) {
-          return gv.includes(computed("resolvedValue"));
+      isOpen: ({ context, computed, prop }) => {
+        const group = prop("groupContext") as
+          | AccordionGroupContext
+          | undefined;
+        if (group) {
+          return group.value().includes(computed("resolvedValue"));
         }
         return Boolean(context.get("open"));
       },
 
-      isDisabled: ({ context }) => {
-        return Boolean(context.get("disabled") || context.get("groupDisabled"));
+      isDisabled: ({ context, prop }) => {
+        const group = prop("groupContext") as
+          | AccordionGroupContext
+          | undefined;
+        return Boolean(context.get("disabled") || group?.disabled());
       },
 
-      isCollapsible: ({ context, refs, prop }) => {
-        const hasGroup = Boolean(
-          refs.get("currentGroupBus") ||
-            prop("groupBus") ||
-            context.get("accordionId") ||
-            context.get("groupValue") !== undefined,
-        );
-        if (hasGroup) {
-          const gCollapsible = context.get("groupCollapsible");
-          if (gCollapsible !== undefined) return Boolean(gCollapsible);
-        }
-        return context.get("collapsible") !== false;
+      isCollapsible: ({ context, prop }) => {
+        const group = prop("groupContext") as
+          | AccordionGroupContext
+          | undefined;
+        return group
+          ? group.collapsible()
+          : context.get("collapsible") !== false;
       },
 
-      effectiveSize: ({ context }): AccordionSize => {
-        return (context.get("size") ||
-          context.get("groupSize") ||
-          "md") as AccordionSize;
+      effectiveSize: ({ context, prop }): AccordionSize => {
+        const group = prop("groupContext") as
+          | AccordionGroupContext
+          | undefined;
+        return (context.get("size") || group?.size() || "md") as AccordionSize;
       },
 
-      effectiveVariant: ({ context }): AccordionVariant => {
+      effectiveVariant: ({ context, prop }): AccordionVariant => {
+        const group = prop("groupContext") as
+          | AccordionGroupContext
+          | undefined;
         return (context.get("variant") ||
-          context.get("groupVariant") ||
+          group?.variant() ||
           "outline") as AccordionVariant;
       },
     },
-
-    watch: ({ prop, context, refs, scope }) => {
-      const nextBus = prop("groupBus");
-      if (nextBus !== refs.get("currentGroupBus")) {
-        bindGroupBus(nextBus, context, refs, scope);
-      }
-    },
-
-    entry: ["setupGroupBus"],
-    exit: ["cleanupGroupBus"],
 
     on: {
       MEASURE: {
@@ -311,25 +217,14 @@ export const accordionItemMachine: AccordionItemMachine =
         },
 
         handleTapAction: (params) => {
-          const { context, computed, refs, prop } = params;
+          const { computed, prop } = params;
           const isOpen = computed("isOpen");
           const isCollapsible = computed("isCollapsible");
-          const bus = refs.get("currentGroupBus") || prop("groupBus");
-          const groupValue = context.get("groupValue");
-          const isMultiple = Boolean(context.get("groupMultiple"));
+          const group = prop("groupContext") as
+            | AccordionGroupContext
+            | undefined;
 
-          if (isOpen && !isCollapsible) {
-            if (bus) {
-              if (
-                !isMultiple ||
-                (Array.isArray(groupValue) && groupValue.length <= 1)
-              ) {
-                return;
-              }
-            } else {
-              return;
-            }
-          }
+          if (!group && isOpen && !isCollapsible) return;
 
           setItemOpen(params, !isOpen, true);
         },
@@ -344,20 +239,6 @@ export const accordionItemMachine: AccordionItemMachine =
             return;
           }
           setItemOpen(params, false);
-        },
-
-        setupGroupBus: ({ prop, context, computed, refs, scope }) => {
-          const bus = prop("groupBus");
-          if (bus) {
-            bindGroupBus(bus, context, refs, scope);
-          }
-          if (computed("isOpen")) {
-            measureBodyHeight(scope, context);
-          }
-        },
-
-        cleanupGroupBus: ({ context, refs }) => {
-          bindGroupBus(undefined, context, refs);
         },
       },
     },

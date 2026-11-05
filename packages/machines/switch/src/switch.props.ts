@@ -10,6 +10,7 @@ export const defaultSwitchProps: SwitchProps = {
   loading: false,
   color: "primary" as const,
   size: "md" as const,
+  formContext: undefined,
   value: "on",
   name: "",
   form: "",

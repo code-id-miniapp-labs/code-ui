@@ -1,11 +1,32 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { signal } from "alien-signals";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { TabsBusEvents } from "@code-ui/tabs";
+import type { TabsGroupContext } from "@code-ui/tabs";
 import { tabsItemMachine, connectTabsItem } from "../src";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
+}
+
+function makeGroupContext(
+  overrides: Partial<TabsGroupContext> = {},
+): TabsGroupContext {
+  return {
+    value: () => "home",
+    orientation: () => "horizontal",
+    variant: () => "pill",
+    color: () => "primary",
+    size: () => "md",
+    disabled: () => false,
+    fitted: () => false,
+    select: vi.fn(),
+    setValue: vi.fn(),
+    next: vi.fn(),
+    previous: vi.fn(),
+    first: vi.fn(),
+    last: vi.fn(),
+    ...overrides,
+  };
 }
 
 describe("TabsItem Machine", () => {
@@ -26,10 +47,10 @@ describe("TabsItem Machine", () => {
     machine.stop();
   });
 
-  it("becomes selected when groupValue matches value", () => {
+  it("becomes selected when the group value matches", () => {
     const machine = new MiniappMachine(tabsItemMachine, {
       value: "account",
-      groupValue: "account",
+      groupContext: makeGroupContext({ value: () => "account" }),
     });
     machine.start();
 
@@ -39,41 +60,25 @@ describe("TabsItem Machine", () => {
     machine.stop();
   });
 
-  it("updates isSelected via groupBus tabs:change event", async () => {
-    const bus = createEventBus<TabsBusEvents>();
+  it("reads live selection state from the group context", async () => {
+    const current = signal<string | number>("home");
+    const group = makeGroupContext({ value: () => current() });
     const machine = new MiniappMachine(tabsItemMachine, {
       value: "account",
-      groupBus: bus,
-      groupValue: "home",
+      groupContext: group,
     });
     machine.start();
 
     let api = connectTabsItem(machine.service);
     expect(api.isSelected).toBe(false);
 
-    bus.emit("tabs:change", {
-      value: "account",
-      orientation: "horizontal",
-      variant: "pill",
-      color: "primary",
-      size: "md",
-      disabled: false,
-    });
+    current("account");
     await flush();
-
     api = connectTabsItem(machine.service);
     expect(api.isSelected).toBe(true);
 
-    bus.emit("tabs:change", {
-      value: "other",
-      orientation: "horizontal",
-      variant: "pill",
-      color: "primary",
-      size: "md",
-      disabled: false,
-    });
+    current("other");
     await flush();
-
     api = connectTabsItem(machine.service);
     expect(api.isSelected).toBe(false);
 
@@ -91,23 +96,18 @@ describe("TabsItem Machine", () => {
 
     const machine2 = new MiniappMachine(tabsItemMachine, {
       value: "account",
-      groupDisabled: true,
+      groupContext: makeGroupContext({ disabled: () => true }),
     });
     machine2.start();
     expect(connectTabsItem(machine2.service).isDisabled).toBe(true);
     machine2.stop();
   });
 
-  it("emits item:select on parent bus when select is called", async () => {
-    const bus = createEventBus<TabsBusEvents>();
-    let selectedValue: string | number | undefined;
-    bus.on("item:select", ({ value }) => {
-      selectedValue = value;
-    });
-
+  it("dispatches select intents to the group context", async () => {
+    const select = vi.fn();
     const machine = new MiniappMachine(tabsItemMachine, {
       value: "profile",
-      groupBus: bus,
+      groupContext: makeGroupContext({ select }),
     });
     machine.start();
 
@@ -115,7 +115,30 @@ describe("TabsItem Machine", () => {
     api.select();
     await flush();
 
-    expect(selectedValue).toBe("profile");
+    expect(select).toHaveBeenCalledWith("profile");
+    machine.stop();
+  });
+
+  it("resolves presentational values from the group context", () => {
+    const machine = new MiniappMachine(tabsItemMachine, {
+      value: "profile",
+      groupContext: makeGroupContext({
+        orientation: () => "vertical",
+        variant: () => "link",
+        color: () => "danger",
+        size: () => "lg",
+        fitted: () => true,
+      }),
+    });
+    machine.start();
+
+    const api = connectTabsItem(machine.service);
+    expect(api.orientation).toBe("vertical");
+    expect(api.variant).toBe("link");
+    expect(api.color).toBe("danger");
+    expect(api.size).toBe("lg");
+    expect(api.fitted).toBe(true);
+
     machine.stop();
   });
 
@@ -124,14 +147,16 @@ describe("TabsItem Machine", () => {
       id: "tab1",
       tabsId: "demo",
       value: "profile",
-      groupValue: "profile",
+      groupContext: makeGroupContext({ value: () => "profile" }),
     });
     machine.start();
 
     const api = connectTabsItem(machine.service);
     expect(api.contentProps.id).toBe("cui-tabs-item-tab1-content");
     expect(api.contentProps.role).toBe("tabpanel");
-    expect(api.contentProps["aria-labelledby"]).toBe("cui-tabs-demo-trigger-profile");
+    expect(api.contentProps["aria-labelledby"]).toBe(
+      "cui-tabs-demo-trigger-profile",
+    );
     expect(api.contentProps["data-state"]).toBe("active");
     expect(api.contentProps.hidden).toBe(false);
 

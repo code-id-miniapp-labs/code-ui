@@ -3,7 +3,7 @@
 ## 1. Overview
 
 - **Purpose:** Represents an individual step within a multi-step `<c-stepper>` sequence, displaying step status (completed, current, upcoming, disabled), indicator bubble (number, checkmark, or custom icon), title, description, and connecting separator line.
-- **Category:** Interactive Stateful Child Component (`@code-ui/stepper-item` Zag.js-inspired FSM + Connect pattern + MiniProgram `relations` & EventBus).
+- **Category:** Interactive Stateful Child Component (`@code-ui/stepper-item` Zag.js-inspired FSM + Connect pattern + MiniProgram `relations` & reactive `groupContext`).
 - **Reference:** Zag.js `@zag-js/steps`, Ark UI Stepper, & Nuxt UI v4 `UStepper` item structure.
 - **Target Platform:** WeChat MiniProgram (`weapp`) with responsive Tailwind styling via `virtual:cui/theme/stepper-item`.
 
@@ -47,33 +47,29 @@ _Implemented in `packages/machines/stepper-item/` (`@code-ui/stepper-item`)_
 | `color`            | `StepperColor \| ""`       | `""`    | Color variant override.                                                            |
 | `size`             | `StepperSize \| ""`        | `""`    | Size variant override.                                                             |
 | `stepperId`        | `string`                   | `""`    | Parent stepper unique ID.                                                          |
-| `groupStep`        | `number`                   | `0`     | Active step index broadcast from parent stepper.                                   |
-| `groupCount`       | `number`                   | `0`     | Total step count broadcast from parent stepper.                                    |
-| `groupLinear`      | `boolean`                  | `false` | Linear mode flag broadcast from parent stepper.                                    |
-| `groupOrientation` | `StepperOrientation \| ""` | `""`    | Orientation broadcast from parent stepper.                                         |
-| `groupDisabled`    | `boolean`                  | `false` | Global disabled flag broadcast from parent stepper.                                |
-| `groupColor`       | `StepperColor \| ""`       | `""`    | Color broadcast from parent stepper.                                               |
-| `groupSize`        | `StepperSize \| ""`        | `""`    | Size scale broadcast from parent stepper.                                          |
+
+Parent linkage is supplied through the `groupContext` (`StepperGroupContext | undefined`) and `groupIndex` (`number | undefined`) props, not copied into context fields. The shared context exposes reactive parent getters and navigation commands.
 
 ### Computed Values
 
 - **`resolvedIndex`**: Step index (defaults to `groupIndex` or `0` if not set).
-- **`resolvedIsLast`**: `true` if `isLast === true`, or `groupIsLast === true`, or `resolvedIndex >= groupCount - 1`.
-- **`isCompleted`**: `true` if explicit `completed`, or explicit `status === "completed"`, or `resolvedIndex < groupStep`.
-- **`isCurrent`**: `true` if explicit `status === "current"`, or `resolvedIndex === groupStep`.
-- **`isUpcoming`**: `true` if neither completed nor current, or `resolvedIndex > groupStep`.
-- **`isDisabled`**: `true` if explicit `disabled`, or `groupDisabled`, or in linear mode when `resolvedIndex > groupStep + 1`.
+- **`resolvedIsLast`**: Uses an explicit `isLast` override; otherwise `true` when the shared count is positive and `resolvedIndex === groupContext.count() - 1`.
+- **`isCompleted`**: Uses an explicit `completed` override, then completed status; otherwise reads the shared step and count to determine completion.
+- **`isCurrent`**: Respects explicit completion/status overrides; otherwise compares `resolvedIndex` with `groupContext.step()` (standalone items default to index `0` as current).
+- **`isUpcoming`**: Respects explicit upcoming status; otherwise excludes completed/current items and compares `resolvedIndex` with the shared step (or `0` without a group).
+- **`isDisabled`**: `true` if explicit `disabled`, or `groupContext?.disabled()`, or in linear mode when `resolvedIndex > groupContext.step() + 1`.
 - **`status`**: Resolved semantic status: `"completed" | "current" | "upcoming" | "disabled"`.
-- **`effectiveOrientation`**: `orientation || groupOrientation || "horizontal"`.
-- **`effectiveColor`**: `color || groupColor || "primary"`.
-- **`effectiveSize`**: `size || groupSize || "md"`.
+- **`effectiveOrientation`**: `orientation || groupContext?.orientation() || "horizontal"`.
+- **`effectiveColor`**: `color || groupContext?.color() || "primary"`.
+- **`effectiveSize`**: `size || groupContext?.size() || "md"`.
 
-### Event Bus Synchronization
+### Reactive Group Context
 
-Each `<c-stepper-item>` subscribes to the parent stepper machine's `stepper:change` event via `refs.bus`:
+Each `<c-stepper-item>` receives the parent machine's `refs.groupContext` through its `groupContext` prop, alongside `groupIndex` and `stepperId`, via MiniProgram relations:
 
-- Automatically synchronizes `groupStep`, `groupCount`, `groupLinear`, `groupOrientation`, `groupDisabled`, `groupColor`, and `groupSize`.
-- On user tap, dispatches `bus.emit("item:tap", { index: resolvedIndex, value })` to the parent stepper machine, which validates progression via its state guards (`canNavigateStep`).
+- Computed values read `step()`, `count()`, `linear()`, `orientation()`, `disabled()`, `color()`, `size()`, and `variant()` directly from the shared context, without copying parent state into child context fields.
+- On user tap, the child applies its `canTap` guard, invokes `onTap` with `{ index, value, status }`, and calls `groupContext?.setStep(resolvedIndex)`. This sends `STEP.SET` to the parent machine, which validates progression with `canNavigateStep`.
+- Unlinking clears the injected `groupContext`, `groupIndex`, and `stepperId` props.
 
 ---
 

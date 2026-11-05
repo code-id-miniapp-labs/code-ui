@@ -3,7 +3,6 @@ import type {
   RadioGroupItem,
   RadioGroupItemRaw,
   RadioGroupService,
-  RadioGroupSize,
 } from "./radio-group.types";
 import { parts } from "./radio-group.anatomy";
 import * as dom from "./radio-group.dom";
@@ -13,30 +12,22 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
 
   const currentValue = context.get("value");
   const isInteractive = computed("isInteractive");
-  const disabled = Boolean(
-    context.get("disabled") ||
-    context.get("formDisabled") ||
-    context.get("fieldDisabled"),
-  );
-  const readOnly = Boolean(
-    context.get("readOnly") || context.get("formReadOnly"),
-  );
-  const invalid = Boolean(context.get("invalid"));
+  const disabled = computed("isDisabled");
+  const readOnly = computed("isReadOnly");
+  const invalid = computed("isInvalid");
   const required = Boolean(context.get("required"));
 
-  const rawSize = context.get("size");
-  const fieldSize = context.get("fieldSize");
-  const size =
-    rawSize && rawSize !== "md"
-      ? rawSize
-      : ((fieldSize || rawSize || "md") as RadioGroupSize);
+  const size = computed("effectiveSize");
 
   const color = context.get("color");
   const orientation = context.get("orientation");
   const variant = context.get("variant");
   const legend = context.get("legend") ?? "";
 
-  const getItemProps = (item: { value: string; disabled?: boolean | undefined }) => {
+  const getItemProps = (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => {
     const itemChecked = currentValue === item.value;
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
@@ -49,7 +40,10 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     };
   };
 
-  const getItemControlProps = (item: { value: string; disabled?: boolean | undefined }) => {
+  const getItemControlProps = (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => {
     const itemChecked = currentValue === item.value;
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
@@ -67,7 +61,10 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     };
   };
 
-  const getItemIndicatorProps = (item: { value: string; disabled?: boolean | undefined }) => {
+  const getItemIndicatorProps = (item: {
+    value: string;
+    disabled?: boolean | undefined;
+  }) => {
     const itemChecked = currentValue === item.value;
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
@@ -91,8 +88,14 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
       disabled: itemDisabled,
       checked: itemChecked,
       itemProps: getItemProps({ value: itemValue, disabled: itemDisabled }),
-      controlProps: getItemControlProps({ value: itemValue, disabled: itemDisabled }),
-      indicatorProps: getItemIndicatorProps({ value: itemValue, disabled: itemDisabled }),
+      controlProps: getItemControlProps({
+        value: itemValue,
+        disabled: itemDisabled,
+      }),
+      indicatorProps: getItemIndicatorProps({
+        value: itemValue,
+        disabled: itemDisabled,
+      }),
     };
     if (item.color) result.color = item.color;
     if (item.variant) result.variant = item.variant;

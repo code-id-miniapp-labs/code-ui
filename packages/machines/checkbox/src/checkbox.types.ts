@@ -6,10 +6,12 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox.anatomy";
 
 export type CheckboxState = "checked" | "unchecked" | "indeterminate";
@@ -27,22 +29,6 @@ export type CheckboxColor =
 
 export type CheckboxSize = "xs" | "sm" | "md" | "lg" | "xl";
 
-export type CheckboxVariant = "outline" | "card";
-
-export interface CheckboxGroupChangePayload {
-  value: string[];
-  disabled: boolean;
-  invalid: boolean;
-  size: CheckboxSize;
-  color: CheckboxColor;
-  variant?: CheckboxVariant | string | undefined;
-}
-
-export interface CheckboxGroupBusEvents {
-  "group:change": CheckboxGroupChangePayload;
-  "checkbox:toggle": { value: string };
-}
-
 export type CheckboxAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type CheckboxUI = ComponentUI<typeof anatomy>;
 export type CheckboxResolvedUI = ResolvedUI<typeof anatomy>;
@@ -59,26 +45,16 @@ export interface CheckboxProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: CheckboxUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
-  /** Optional Checkbox Group EventBus */
-  groupBus?: EventBus<CheckboxGroupBusEvents> | undefined;
-  /** Checkbox Group value when controlled by group */
-  groupValue?: string[] | undefined;
-  /** Checkbox Group disabled state */
-  groupDisabled?: boolean | undefined;
-  /** Checkbox Group invalid state */
-  groupInvalid?: boolean | undefined;
-  /** Checkbox Group color override */
-  groupColor?: CheckboxColor | "" | undefined;
-  /** Checkbox Group size override */
-  groupSize?: CheckboxSize | "" | undefined;
-  /** Checkbox Group variant override */
-  groupVariant?: CheckboxVariant | string | undefined;
+  /** Live reactive state of the parent checkbox group */
+  groupContext?: CheckboxGroupContext | undefined;
   /** Form field name for hidden input and Form registration */
   name?: string | undefined;
   /** Value submitted with the form when checked (defaults to 'on') */
@@ -130,16 +106,6 @@ export type CheckboxEvent =
 export interface CheckboxContext {
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: CheckboxSize | "";
-  groupValue: string[] | undefined;
-  groupDisabled: boolean;
-  groupInvalid: boolean;
-  groupColor: CheckboxColor | "";
-  groupSize: CheckboxSize | "";
-  groupVariant: string;
   invalid: boolean;
   required: boolean;
   color: CheckboxColor;
@@ -155,6 +121,11 @@ export interface CheckboxContext {
 }
 
 export interface CheckboxComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+
   isChecked: boolean;
   isIndeterminate: boolean;
   isInteractive: boolean;
@@ -170,9 +141,6 @@ export interface CheckboxRefs {
   initialIndeterminate?: boolean | undefined;
   lastChecked?: boolean | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
-  currentGroupBus?: EventBus<CheckboxGroupBusEvents> | undefined;
-  busDisposers?: Array<() => void> | undefined;
 }
 
 export interface CheckboxSchema extends MachineSchema {
@@ -247,13 +215,4 @@ export interface CheckboxApi {
   descriptionProps: Record<string, any>;
   /** Props for hidden input */
   hiddenInputProps: Record<string, any>;
-}
-
-export interface GroupStateSnapshot {
-  value?: string[] | undefined;
-  disabled?: boolean | undefined;
-  invalid?: boolean | undefined;
-  color?: CheckboxColor | "" | undefined;
-  size?: CheckboxSize | "" | undefined;
-  variant?: string | undefined;
 }

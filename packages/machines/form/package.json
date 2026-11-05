@@ -1,7 +1,7 @@
 {
   "name": "@code-ui/form",
   "version": "0.0.1",
-  "description": "Form state machine, validation rules, and EventBus context for code-ui",
+  "description": "Form state machine, validation rules, and reactive host context for code-ui",
   "files": [
     "dist"
   ],

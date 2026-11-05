@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { createEventBus } from "@code-ui/utils";
-import type { FormBusEvents } from "@code-ui/form";
+import { formMachine, connectForm } from "@code-ui/form";
+import { provideFormHost, resolveContextRequest } from "@code-ui/form/context";
 import { formFieldMachine } from "../src/form-field.machine";
 import { connectFormField } from "../src/form-field.connect";
 
@@ -69,140 +69,190 @@ describe("formFieldMachine", () => {
     machine.stop();
   });
 
-  it("binds to form EventBus and responds to field:error, reset, and clear-errors", async () => {
-    const bus = createEventBus<FormBusEvents>();
-    let broadcastedRules: any = null;
-
-    bus.on("field:rules", (payload) => {
-      broadcastedRules = payload;
-    });
-
+  it("derives validation errors and clears them on reset", async () => {
+    const form = new MiniappMachine(formMachine, {});
+    form.start();
+    const api = connectForm(form.service);
+    const unregister = api.formContext.register({ name: "pin", id: "pin-input", getValue: () => "" });
     const machine = new MiniappMachine(formFieldMachine, {
-      name: "pin",
-      label: "PIN",
-      required: true,
-      formBus: bus,
+      name: "pin", label: "PIN", required: true, formContext: api.formContext,
     });
     machine.start();
-
-    // Verify rules were broadcasted on bus
-    expect(broadcastedRules).not.toBeNull();
-    expect(broadcastedRules.name).toBe("pin");
-    expect(broadcastedRules.getRules().length).toBe(1);
-
-    // Simulate validation error from Form
-    bus.emit("field:error", {
-      name: "pin",
-      errors: ["PIN must be 4 digits"],
-      isValid: false,
-    });
     await flush();
-
+    expect(form.refs.get("fieldRules").get("pin")?.()).toHaveLength(1);
+    api.setErrors({ pin: ["Invalid PIN"] });
+    await flush();
     expect(machine.state.get()).toBe("invalid");
-    expect(machine.computed("displayError")).toBe("PIN must be 4 digits");
-
-    const api = connectFormField(machine.service);
-    expect(api.invalid).toBe(true);
-    expect(api.displayError).toBe("PIN must be 4 digits");
-    expect(api.rootProps["data-invalid"]).toBe("true");
-
-    // Simulate clear-errors
-    bus.emit("clear-errors", { name: "pin" });
+    expect(connectFormField(machine.service).displayError).toBe("Invalid PIN");
+    api.clearErrors("pin");
     await flush();
-
     expect(machine.state.get()).toBe("valid");
-    expect(machine.computed("displayError")).toBe("");
+    api.setErrors({ pin: ["Invalid PIN"] });
+    api.reset();
+    await flush();
     expect(connectFormField(machine.service).invalid).toBe(false);
-
-    // Simulate error again and then reset
-    bus.emit("field:error", {
-      name: "pin",
-      errors: ["Invalid PIN"],
-      isValid: false,
-    });
-    await flush();
-    expect(machine.state.get()).toBe("invalid");
-
-    bus.emit("reset", { name: "pin" });
-    await flush();
-    expect(machine.state.get()).toBe("valid");
-    expect(machine.computed("displayError")).toBe("");
-
     machine.stop();
+    unregister();
+    form.stop();
   });
 
-  it("reactively updates disabled state when form:state is emitted on bus", async () => {
-    const bus = createEventBus<FormBusEvents>();
+  it("derives disabled/readOnly and publishes only local wrapper overrides", async () => {
+    const form = new MiniappMachine(formMachine, {});
+    form.start();
+    const host = connectForm(form.service).formContext;
     const machine = new MiniappMachine(formFieldMachine, {
-      name: "pin",
-      formBus: bus,
+      name: "otp", size: "lg", required: true, formContext: host,
     });
     machine.start();
-
-    expect(connectFormField(machine.service).disabled).toBe(false);
-
-    bus.emit("form:state", { disabled: true, readOnly: false });
     await flush();
-
-    const api = connectFormField(machine.service);
-    expect(api.disabled).toBe(true);
-    expect(api.rootProps["data-disabled"]).toBe("true");
-    expect(api.labelProps["data-disabled"]).toBe("true");
-
-    bus.emit("form:state", { disabled: false, readOnly: false });
+    expect(host.fieldState("otp")).toEqual({ disabled: false, size: "lg" });
+    form.updateProps({ disabled: true, readOnly: true });
     await flush();
-
-    expect(connectFormField(machine.service).disabled).toBe(false);
-    machine.stop();
-  });
-
-  it("broadcasts field:state with disabled and size on bus, updating reactively", async () => {
-    const bus = createEventBus<FormBusEvents>();
-    const stateEvents: any[] = [];
-
-    bus.on("field:state", (payload) => {
-      stateEvents.push(payload);
-    });
-
-    const machine = new MiniappMachine(formFieldMachine, {
-      name: "otp",
-      size: "lg",
-      disabled: false,
-      formBus: bus,
-    });
-    machine.start();
-
-    // Initial broadcast
-    expect(stateEvents.length).toBeGreaterThanOrEqual(1);
-    const lastEvent = stateEvents[stateEvents.length - 1];
-    expect(lastEvent).toEqual({
-      name: "otp",
-      disabled: false,
-      size: "lg",
-    });
-
-    // When form:state disables the form
-    bus.emit("form:state", { disabled: true, readOnly: false });
-    await flush();
-
-    const disabledEvent = stateEvents[stateEvents.length - 1];
-    expect(disabledEvent).toEqual({
-      name: "otp",
-      disabled: true,
-      size: "lg",
-    });
-
-    // When form-field size changes
+    expect(connectFormField(machine.service).disabled).toBe(true);
+    expect(machine.computed("isReadOnly")).toBe(true);
+    expect(machine.computed("effectiveRules")).toEqual([]);
+    expect(host.fieldState("otp")?.disabled).toBe(false);
     machine.updateProps({ size: "sm" });
     await flush();
-
-    const sizeEvent = stateEvents[stateEvents.length - 1];
-    expect(sizeEvent).toEqual({
-      name: "otp",
-      disabled: true,
-      size: "sm",
-    });
-
+    expect(host.fieldState("otp")?.size).toBe("sm");
     machine.stop();
+    await flush();
+    expect(host.fieldState("otp")).toEqual({});
+    expect(form.refs.get("fieldRules").get("otp")?.()).toEqual([]);
+    form.stop();
+  });
+
+  it("cleans old publications on name and host changes and tracks same-length rule replacement", async () => {
+    const first = new MiniappMachine(formMachine, {});
+    const second = new MiniappMachine(formMachine, {});
+    first.start(); second.start();
+    const host = connectForm(first.service).formContext;
+    const nextHost = connectForm(second.service).formContext;
+    const machine = new MiniappMachine(formFieldMachine, {
+      name: "old", formContext: host, rules: [{ minLength: 2 }],
+    });
+    machine.start();
+    machine.updateProps({ name: "new", rules: [{ minLength: 4 }] });
+    await flush();
+    expect(host.fieldState("old")).toEqual({});
+    expect(first.refs.get("fieldRules").get("old")?.()).toEqual([]);
+    expect(first.refs.get("fieldRules").get("new")?.()).toEqual([{ minLength: 4 }]);
+    machine.updateProps({ formContext: nextHost });
+    await flush();
+    expect(host.fieldState("new")).toEqual({});
+    expect(nextHost.fieldState("new")?.size).toBe("md");
+    machine.stop(); first.stop(); second.stop();
+  });
+
+  it("updates scoped injection when the explicit form changes", async () => {
+    const provider: any = {};
+    const component: any = {
+      triggerEvent: (_name: string, detail: unknown) => resolveContextRequest(provider, { detail }),
+    };
+    const first = new MiniappMachine(formMachine, {});
+    const second = new MiniappMachine(formMachine, {});
+    first.start(); second.start();
+    const firstHost = connectForm(first.service).formContext;
+    const secondHost = connectForm(second.service).formContext;
+    provideFormHost(provider, firstHost, "first");
+    provideFormHost(provider, secondHost, "second");
+    const machine = new MiniappMachine(formFieldMachine, {
+      name: "scoped", form: "first", component, required: true,
+    });
+    machine.start();
+    await flush();
+    expect(machine.computed("host")).toBe(firstHost);
+    machine.updateProps({ form: "second" });
+    await flush();
+    expect(machine.computed("host")).toBe(secondHost);
+    expect(firstHost.fieldState("scoped")).toEqual({});
+    expect(secondHost.fieldState("scoped")?.size).toBe("md");
+    machine.stop(); first.stop(); second.stop();
+  });
+
+  it("keeps null disconnected from scoped injection until undefined restores fallback", async () => {
+    const provider: any = {};
+    const component: any = {
+      triggerEvent: (_name: string, detail: unknown) => resolveContextRequest(provider, { detail }),
+    };
+    const form = new MiniappMachine(formMachine, {});
+    form.start();
+    const host = connectForm(form.service).formContext;
+    provideFormHost(provider, host, "scoped");
+    const machine = new MiniappMachine(formFieldMachine, {
+      name: "field", form: "scoped", component, required: true,
+    });
+    machine.start();
+    await flush();
+    expect(machine.computed("host")).toBe(host);
+    expect(form.refs.get("fieldRules").get("field")?.()).toHaveLength(1);
+
+    machine.updateProps({ formContext: null });
+    await flush();
+    expect(machine.computed("host")).toBeNull();
+    expect(host.fieldState("field")).toEqual({});
+    expect(form.refs.get("fieldRules").get("field")?.()).toEqual([]);
+    form.updateProps({ disabled: true, readOnly: true });
+    connectForm(form.service).setErrors({ field: ["Stale error"] });
+    provideFormHost(provider, host, "scoped");
+    await flush();
+    expect(machine.computed("host")).toBeNull();
+    expect(machine.computed("isDisabled")).toBe(false);
+    expect(machine.computed("isReadOnly")).toBe(false);
+    expect(machine.computed("displayError")).toBe("");
+
+    machine.updateProps({ formContext: undefined });
+    await flush();
+    expect(machine.computed("host")).toBe(host);
+    expect(machine.computed("isDisabled")).toBe(true);
+    expect(machine.computed("displayError")).toBe("Stale error");
+    machine.stop();
+    form.stop();
+  });
+
+  it("starts explicitly disconnected and ignores late scoped injection", async () => {
+    const provider: any = {};
+    const component: any = {
+      triggerEvent: (_name: string, detail: unknown) => resolveContextRequest(provider, { detail }),
+    };
+    const form = new MiniappMachine(formMachine, {});
+    form.start();
+    const host = connectForm(form.service).formContext;
+    const machine = new MiniappMachine(formFieldMachine, {
+      name: "field", form: "scoped", component, formContext: null, required: true,
+    });
+    machine.start();
+    expect(machine.computed("host")).toBeNull();
+    provideFormHost(provider, host, "scoped");
+    await flush();
+    expect(machine.computed("host")).toBeNull();
+    expect(host.fieldState("field")).toBeUndefined();
+    expect(form.refs.get("fieldRules").has("field")).toBe(false);
+    machine.stop();
+    form.stop();
+  });
+
+  it("injects a late scoped host through deep slots and disposes its listener", async () => {
+    const provider: any = { id: "deep-form" };
+    const component: any = {
+      triggerEvent: (_name: string, detail: unknown) => resolveContextRequest(provider, { detail }),
+    };
+    const form = new MiniappMachine(formMachine, {});
+    form.start();
+    const host = connectForm(form.service).formContext;
+    const machine = new MiniappMachine(formFieldMachine, {
+      name: "deep", form: "deep-form", component, required: true,
+    });
+    machine.start();
+    expect(machine.computed("host")).toBeUndefined();
+    provideFormHost(provider, host, "deep-form");
+    await flush();
+    expect(machine.computed("host")).toBe(host);
+    expect(form.refs.get("fieldRules").get("deep")?.()).toHaveLength(1);
+    machine.stop();
+    provideFormHost(provider, host, "deep-form");
+    await flush();
+    expect(form.refs.get("fieldRules").get("deep")?.()).toEqual([]);
+    form.stop();
   });
 });

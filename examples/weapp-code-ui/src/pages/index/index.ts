@@ -137,7 +137,7 @@ Page({
       {
         id: "form",
         name: "Form & Validation",
-        desc: "EventBus validation engine with errorBag, rules, focusOnError & coexisting forms.",
+        desc: "Form validation engine with errorBag, rules, focusOnError & coexisting forms.",
         badge: "Form",
         path: "/pages/form/index",
       },

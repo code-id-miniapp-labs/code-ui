@@ -6,10 +6,11 @@ import type {
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type {
   BoundFormField,
-  FormBusEvents,
+  FormHostContext,
+  FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { EventBus, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./textarea.anatomy";
 
 export type TextareaState = "idle" | "focused";
@@ -45,8 +46,10 @@ export interface TextareaProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Optional explicit Form EventBus */
-  formBus?: EventBus<FormBusEvents> | undefined;
+  /** Field-level validation rules */
+  rules?: FormRule[] | undefined;
+  /** Optional explicit reactive form host */
+  formContext?: FormHostContext | null | undefined;
   /** Custom UI slot classes */
   ui?: TextareaUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
@@ -167,10 +170,6 @@ export interface TextareaContext {
   highlight: boolean;
   disabled: boolean;
   readOnly: boolean;
-  formDisabled: boolean;
-  formReadOnly: boolean;
-  fieldDisabled: boolean;
-  fieldSize: TextareaSize | "";
   invalid: boolean;
   placeholder: string;
   maxlength: number;
@@ -189,6 +188,12 @@ export interface TextareaContext {
 }
 
 export interface TextareaComputed {
+  formDisabled: boolean;
+  formReadOnly: boolean;
+  fieldDisabled: boolean;
+  fieldSize: string;
+  isInvalid: boolean;
+
   isEmpty: boolean;
   isFilled: boolean;
   isDisabled: boolean;
@@ -202,7 +207,6 @@ export interface TextareaComputed {
 export interface TextareaRefs {
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
-  currentFormBus?: EventBus<FormBusEvents> | undefined;
 }
 
 export interface TextareaSchema extends MachineSchema {

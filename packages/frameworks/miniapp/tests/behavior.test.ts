@@ -8,6 +8,9 @@ import {
   withFormParent,
   withFormField,
   withFormFieldWrapper,
+  handleFormMachineStarted,
+  handleFormDetached,
+  unlinkFieldFromParentHost,
   withRadioGroup,
   withRadioItem,
   cuiRadioGroupBehavior,
@@ -37,7 +40,7 @@ afterEach(() => {
 
 describe("createMachineBehavior - formParent & formField relations", () => {
   const dummyMachine = createMachine({
-    props: () => ({ formBus: undefined, name: "", form: "" }),
+    props: () => ({ formContext: undefined, name: "", form: "" }),
     initialState: () => "idle",
     states: { idle: {} },
   });
@@ -69,7 +72,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
     expect(fieldBehavior.relations.cuiFormParent.target).toBe(cuiFormParentBehavior);
   });
 
-  it("links child field to parent formBus via relations.linked", () => {
+  it("links child field to parent formContext via relations.linked", () => {
     const parentBehavior = createMachineBehavior({
       machine: dummyMachine,
       plugins: [withFormParent()],
@@ -79,13 +82,13 @@ describe("createMachineBehavior - formParent & formField relations", () => {
       plugins: [withFormField()],
     });
 
-    const mockBus = { emit: vi.fn(), on: vi.fn() };
+    const mockHost = { emit: vi.fn(), on: vi.fn() };
 
     // Create parent component instance
     const parentComp: any = {
       id: "form-1",
       data: { id: "form-1" },
-      __codeUiFormBus: mockBus,
+      __codeUiFormHost: mockHost,
     };
 
     // Create child component instance
@@ -100,13 +103,40 @@ describe("createMachineBehavior - formParent & formField relations", () => {
 
     // Trigger parent linked(child)
     parentBehavior.relations.cuiFormField.linked.call(parentComp, childComp);
-    expect(childComp.__codeUiFormBus).toBe(mockBus);
-    expect(updatePropsSpy).toHaveBeenCalledWith({ formBus: mockBus });
+    expect(childComp.__codeUiFormHost).toBe(mockHost);
+    expect(updatePropsSpy).toHaveBeenCalledWith({ formContext: mockHost });
 
     // Trigger unlinked(child)
     parentBehavior.relations.cuiFormField.unlinked.call(parentComp, childComp);
-    expect(childComp.__codeUiFormBus).toBeUndefined();
-    expect(updatePropsSpy).toHaveBeenCalledWith({ formBus: undefined });
+    expect(childComp.__codeUiFormHost).toBeUndefined();
+    expect(updatePropsSpy).toHaveBeenCalledWith({ formContext: null });
+  });
+
+  it("links queued fields from the hostContext ref and drops unlinked pending fields", () => {
+    const host = {};
+    const updateProps = vi.fn();
+    const field = { data: {}, __codeUiMachine: { updateProps } };
+    const removed = { data: {}, __codeUiMachine: { updateProps: vi.fn() } };
+    const parent: any = { __codeUiPendingFields: [field, removed] };
+    unlinkFieldFromParentHost(parent, removed);
+    handleFormMachineStarted(parent, { service: { refs: { get: () => host } } }, { formParent: true });
+    expect(updateProps).toHaveBeenCalledWith({ formContext: host });
+    expect(removed.__codeUiMachine.updateProps).not.toHaveBeenCalled();
+    expect(parent.__codeUiPendingFields).toEqual([]);
+  });
+
+  it("unlinks registered fields and disposes their bindings when the parent detaches", () => {
+    const host = {};
+
+    const updateProps = vi.fn();
+    const field: any = {
+      __codeUiFormHost: host,
+      __codeUiMachine: { updateProps },
+    };
+    const parent: any = { __codeUiFormHost: host, getRelationNodes: () => [field] };
+    handleFormDetached(parent, { formParent: true });
+    expect(updateProps).toHaveBeenCalledWith({ formContext: null });
+    expect(field.__codeUiFormHost).toBeUndefined();
   });
 
   it("respects explicit form prop matching parent ID", () => {
@@ -115,11 +145,11 @@ describe("createMachineBehavior - formParent & formField relations", () => {
       plugins: [withFormParent()],
     });
 
-    const mockBus1 = { id: "bus-1" };
+    const mockHost1 = { id: "host-1" };
     const parentComp: any = {
       id: "target-form",
       data: { id: "target-form" },
-      __codeUiFormBus: mockBus1,
+      __codeUiFormHost: mockHost1,
     };
 
     const updatePropsMatch = vi.fn();
@@ -138,7 +168,7 @@ describe("createMachineBehavior - formParent & formField relations", () => {
 
     // Linking matching child succeeds
     parentBehavior.relations.cuiFormField.linked.call(parentComp, matchingChild);
-    expect(updatePropsMatch).toHaveBeenCalledWith({ formBus: mockBus1 });
+    expect(updatePropsMatch).toHaveBeenCalledWith({ formContext: mockHost1 });
 
     // Linking other child is ignored
     parentBehavior.relations.cuiFormField.linked.call(parentComp, otherChild);
