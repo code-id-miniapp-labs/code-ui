@@ -67,19 +67,18 @@ Component(
         if (icon) return icon;
         const color = this.data.color;
         if (color === "success") return "check";
-        if (color === "error" || color === "danger") return "close";
+        if (color === "danger") return "close";
         if (color === "loading") return "loading";
         return "";
       },
 
       classes() {
-        const mode = this.data.mode || "default";
-        const rawColor = this.data.color || "neutral";
-        const color = rawColor === "error" ? "danger" : rawColor;
-        const variant = this.data.variant || "outline";
-        const orientation = this.data.orientation || "horizontal";
-        const placement = this.data.placement || "top";
-        const progressPosition = this.data.progressPosition || "bottom";
+        const mode = this.data.mode;
+        const color = this.data.color;
+        const variant = this.data.variant;
+        const orientation = this.data.orientation;
+        const placement = this.data.placement;
+        const progressPosition = this.data.progressPosition;
 
         const themeFns = toastTheme({
           mode,
@@ -110,7 +109,7 @@ Component(
         ) {
           const customColor = (rawProgress as { color?: string }).color;
           if (customColor) {
-            return customColor === "error" ? "danger" : customColor;
+            return customColor;
           }
         }
         const rawColor = this.data.color || "neutral";
@@ -128,7 +127,7 @@ Component(
       rootStyle() {
         const index = Number(this.data.index || 0);
         const offset = Number(this.data.offset || 0);
-        const placement = this.data.placement || "top";
+        const placement = this.data.placement;
 
         if (placement === "center") {
           return `--cui-toast-index:${index}; transform: translate3d(-50%, -50%, 0); z-index: ${100 + index};`;

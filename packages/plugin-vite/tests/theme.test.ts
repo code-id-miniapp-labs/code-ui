@@ -2,7 +2,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { generateThemeCSS, SHADES } from "../src/core/theme";
+import {
+  extractClassesFromThemeConfig,
+  generateThemeCSS,
+  SHADES,
+} from "../src/core/theme";
 import { transformAppStyle } from "../src/core/style-inject";
 import { PluginConfigManager } from "../src/core/config";
 import { collectUsedComponents } from "../src/core/used-components";
@@ -118,10 +122,28 @@ describe("generateThemeCSS", () => {
     expect(css).toContain("--color-info-500: var(--color-blue-500");
     expect(css).toContain("--ui-color-info-500: var(--color-blue-500");
   });
+
+  it("skips dark token overrides for a light color system", () => {
+    const css = generateThemeCSS({ colorSystem: "light" });
+
+    expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
+    expect(css).not.toContain("@media (prefers-color-scheme: dark)");
+    expect(css).not.toContain('page[data-theme="dark"], .dark');
+    expect(css).not.toContain("--ui-primary: var(--ui-color-primary-400);");
+  });
+
+  it("uses dark token values as defaults for a dark color system", () => {
+    const css = generateThemeCSS({ colorSystem: "dark" });
+
+    expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
+    expect(css).toContain("--ui-primary: var(--ui-color-primary-400);");
+    expect(css).not.toContain("@media (prefers-color-scheme: dark)");
+    expect(css).not.toContain('page[data-theme="dark"], .dark');
+  });
 });
 
 import { codeUI, compileComponentTheme } from "../src/index";
-import { buttonTheme, drawerTheme } from "@code-ui/core";
+import { buttonTheme, drawerTheme, toastTheme } from "@code-ui/core";
 
 describe("codeUI virtual themes", () => {
   it("compiles button theme with active colors and overrides", () => {
@@ -149,6 +171,54 @@ describe("codeUI virtual themes", () => {
       (cv: any) => cv.color === "brand" && cv.variant === "solid",
     );
     expect(brandCompound?.class?.root).toContain("bg-brand");
+  });
+
+  it("keeps light and dark classes for the system color system", () => {
+    const compiled = compileComponentTheme("toast", toastTheme, {
+      prefix: "cui",
+      ui: { colorSystem: "system" },
+    });
+    const classes = extractClassesFromThemeConfig(compiled);
+
+    expect(classes).toContain("bg-white");
+    expect(classes).toContain("dark:bg-neutral-900");
+    expect(classes).toContain("border-neutral-200");
+    expect(classes).toContain("dark:border-neutral-800");
+  });
+
+  it("strips dark classes for the light color system", () => {
+    const compiled = compileComponentTheme("toast", toastTheme, {
+      prefix: "cui",
+      ui: { colorSystem: "light" },
+    });
+    const classes = extractClassesFromThemeConfig(compiled);
+
+    expect(classes).toContain("bg-white");
+    expect(classes).toContain("text-neutral-900");
+    expect(classes).not.toContain("dark:bg-neutral-900");
+    expect(classes).not.toContain("dark:text-white");
+    expect(classes.some((className) => className.startsWith("dark:"))).toBe(
+      false,
+    );
+  });
+
+  it("compiles only unconditional dark classes for the dark color system", () => {
+    const compiled = compileComponentTheme("toast", toastTheme, {
+      prefix: "cui",
+      ui: { colorSystem: "dark" },
+    });
+    const classes = extractClassesFromThemeConfig(compiled);
+
+    expect(classes).toContain("bg-neutral-900");
+    expect(classes).toContain("text-white");
+    expect(classes).toContain("border-neutral-800");
+    expect(classes).not.toContain("bg-white");
+    expect(classes).not.toContain("text-neutral-900");
+    expect(classes).not.toContain("border-neutral-200");
+    expect(classes.some((className) => className.startsWith("dark:"))).toBe(
+      false,
+    );
+    expect(classes).toContain("border");
   });
 
   it("replaces default colors when colorsMode is replace", () => {
@@ -228,6 +298,38 @@ describe("codeUI virtual themes", () => {
     expect(loadedPinInput).toContain('"separator"');
   });
 
+  it("disables dark variants for the light color system", () => {
+    const configManager = new PluginConfigManager({
+      ui: { colorSystem: "light" },
+    });
+    const result = transformAppStyle(
+      '@import "tailwindcss";',
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    expect(result?.code).toContain(
+      "@custom-variant dark (&:where(.cui-color-system-light, .cui-color-system-light *));",
+    );
+  });
+
+  it("forces dark variants for the dark color system", () => {
+    const configManager = new PluginConfigManager({
+      ui: { colorSystem: "dark" },
+    });
+    const result = transformAppStyle(
+      '@import "tailwindcss";',
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    expect(result?.code).toContain(
+      "@custom-variant dark (&:not(.cui-color-system-light));",
+    );
+  });
+
   it("injects @plugin @egoist/tailwindcss-icons when enabled", () => {
     const configManager = new PluginConfigManager({
       icons: { autoPlugin: true },
@@ -284,6 +386,54 @@ describe("codeUI virtual themes", () => {
       );
       expect(scan?.components).toEqual(new Set(["button", "card", "checkbox"]));
       expect(scan?.files).toHaveLength(2);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("expands dependencies for seed components like the app wrapper", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-seed-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(path.join(root, "pages/index.wxml"), "<c-card />");
+
+      const known = new Set([
+        "app",
+        "card",
+        "toast",
+        "icon",
+        "button",
+        "progress",
+      ]);
+      const scan = collectUsedComponents(root, known, ["app"]);
+
+      expect(scan?.components.has("app")).toBe(true);
+      expect(scan?.components.has("toast")).toBe(true);
+      expect(scan?.components.has("progress")).toBe(true);
+      expect(scan?.components.has("card")).toBe(true);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("includes toast dark classes from the app wrapper dependency scan", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-seed-style-"));
+    try {
+      fs.mkdirSync(path.join(root, "pages"), { recursive: true });
+      fs.writeFileSync(path.join(root, "pages/index.wxml"), "<c-card />");
+
+      const configManager = new PluginConfigManager({});
+      const result = transformAppStyle(
+        '@import "tailwindcss";',
+        path.join(root, "app.wxss"),
+        root,
+        configManager,
+        () => {},
+      );
+
+      expect(result?.code).toContain("dark:bg-neutral-900");
+      expect(result?.code).toContain("dark:border-neutral-800");
+      expect(result?.code).toContain("min-w-[120px]");
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

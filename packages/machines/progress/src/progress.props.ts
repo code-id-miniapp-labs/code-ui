@@ -17,5 +17,5 @@ export const defaultProgressProps: ProgressProps = {
   circleRadius: 42,
   strokeWidth: 8,
   ui: {},
+  indeterminate: false,
 };
-

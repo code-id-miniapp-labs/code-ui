@@ -3,14 +3,11 @@ Page({
     console.log(
       "[Drawer] onReady - initial drawerOpen:",
       this.data.drawerOpen,
-      "cuiPageStyle:",
-      this.data.cuiPageStyle,
     );
   },
   data: {
     drawerOpen: false,
     placement: "bottom" as "bottom" | "top" | "left" | "right",
-    lockScroll: true,
     shouldScaleBackground: true,
     scaleBackground: "bg-black",
     scaleFactor: 0.95,
@@ -30,7 +27,7 @@ Page({
     pageItems: Array.from({ length: 8 }, (_, i) => ({
       id: i + 1,
       title: `Page Section #${i + 1}`,
-      desc: "Scroll down and open the drawer to test that background page scrolling is locked.",
+      desc: "Scroll down and open the drawer to test the overlay behavior.",
     })),
   },
 
@@ -58,8 +55,6 @@ Page({
         console.log(
           "[Drawer] Opened - drawerOpen:",
           this.data.drawerOpen,
-          "cuiPageStyle:",
-          this.data.cuiPageStyle,
         );
       },
     );
@@ -79,8 +74,6 @@ Page({
         console.log(
           "[Drawer] Opened - drawerOpen:",
           this.data.drawerOpen,
-          "cuiPageStyle:",
-          this.data.cuiPageStyle,
         );
       },
     );
@@ -101,17 +94,9 @@ Page({
         console.log(
           "[Drawer] Opened - drawerOpen:",
           this.data.drawerOpen,
-          "cuiPageStyle:",
-          this.data.cuiPageStyle,
         );
       },
     );
-  },
-
-  onLockScrollChange(e: WechatMiniprogram.CustomEvent) {
-    this.setData({
-      lockScroll: Boolean(e.detail.checked),
-    });
   },
 
   onScaleBackgroundChange(e: WechatMiniprogram.CustomEvent) {
@@ -143,8 +128,6 @@ Page({
         console.log(
           "[Drawer] Closed - drawerOpen:",
           this.data.drawerOpen,
-          "cuiPageStyle:",
-          this.data.cuiPageStyle,
         );
       },
     );
@@ -160,8 +143,6 @@ Page({
         console.log(
           "[Drawer] Closed - drawerOpen:",
           this.data.drawerOpen,
-          "cuiPageStyle:",
-          this.data.cuiPageStyle,
         );
       },
     );

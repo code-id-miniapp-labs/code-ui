@@ -9,10 +9,6 @@ export default function appTheme(_options: ThemeOptions = {}) {
       toaster: "fixed z-[100] pointer-events-none",
     },
     variants: {
-      locked: {
-        true: {},
-        false: {},
-      },
       scaled: {
         true: {
           root: "bg-black",
@@ -24,7 +20,6 @@ export default function appTheme(_options: ThemeOptions = {}) {
       },
     },
     defaultVariants: {
-      locked: false,
       scaled: false,
     },
   });

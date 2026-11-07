@@ -17,7 +17,13 @@ import {
   tabsItemTheme as createTabsItemTheme,
   progressTheme as createProgressTheme,
 } from "@code-ui/core";
-import { cn, dedupeClasses, escapeClass, tv } from "../src/utils/variants";
+import {
+  cn,
+  computeUtilityKey,
+  dedupeClasses,
+  escapeClass,
+  tv,
+} from "../src/utils/variants";
 
 const buttonTheme = tv(createButtonTheme());
 const radioTheme = tv(createRadioTheme());
@@ -313,6 +319,108 @@ describe("dedupeClasses", () => {
         "bg-black active:bg-neutral-800",
       ),
     ).toBe("bg-black active:bg-neutral-800");
+  });
+
+  it("keeps colliding sub-token names in their own categories", () => {
+    expect(computeUtilityKey("text-wrap")).toBe("text-wrap");
+    expect(computeUtilityKey("text-nowrap")).toBe("text-wrap");
+    expect(computeUtilityKey("bg-auto")).toBe("bg-size");
+    expect(computeUtilityKey("bg-cover")).toBe("bg-size");
+    expect(computeUtilityKey("bg-contain")).toBe("bg-size");
+    expect(computeUtilityKey("border-none")).toBe("border-style");
+    expect(computeUtilityKey("flex-none")).toBe("flex");
+    expect(computeUtilityKey("flex-auto")).toBe("flex");
+    expect(computeUtilityKey("object-none")).toBe("object-fit");
+  });
+
+  it("does not drop unrelated utilities that share a sub-token name", () => {
+    expect(dedupeClasses("bg-cover", "bg-red-500")).toBe("bg-cover bg-red-500");
+    expect(dedupeClasses("border-none", "border-red-500")).toBe(
+      "border-none border-red-500",
+    );
+    expect(dedupeClasses("text-wrap", "text-red-500")).toBe(
+      "text-wrap text-red-500",
+    );
+  });
+});
+
+describe("tv caching", () => {
+  const cachedTheme = tv({
+    base: "base-root",
+    slots: {
+      root: "slot-root",
+      icon: "slot-icon",
+    },
+    variants: {
+      size: {
+        sm: { root: "text-sm", icon: "size-4" },
+        lg: { root: "text-lg", icon: "size-5" },
+      },
+    },
+    defaultVariants: {
+      size: "sm",
+    },
+  });
+
+  it("reuses resolved slots for identical props", () => {
+    const first = cachedTheme({ size: "lg" });
+    const second = cachedTheme({ size: "lg", class: undefined });
+    expect(second).toBe(first);
+  });
+
+  it("separates entries by class overrides", () => {
+    const plain = cachedTheme({ size: "sm" });
+    const withClass = cachedTheme({ size: "sm", class: "rounded-full" });
+    expect(withClass).not.toBe(plain);
+    expect(withClass.root()).toContain("rounded-full");
+    expect(plain.root()).not.toContain("rounded-full");
+  });
+
+  it("remains correct after cache eviction", () => {
+    const expected = cachedTheme({ size: "lg" }).root();
+    for (let i = 0; i < 600; i++) {
+      cachedTheme({
+        size: i % 2 === 0 ? "sm" : "lg",
+        class: `custom-${i}`,
+      });
+    }
+    expect(cachedTheme({ size: "lg" }).root()).toBe(expected);
+  });
+
+  it("exposes merged config used by extend", () => {
+    expect(cachedTheme.__config.slots).toEqual({
+      root: "slot-root",
+      icon: "slot-icon",
+    });
+    expect(cachedTheme.__config.defaultVariants).toEqual({ size: "sm" });
+    expect(cachedTheme.__config.variants.size.lg).toEqual({
+      root: "text-lg",
+      icon: "size-5",
+    });
+
+    const child = tv({ extend: cachedTheme, base: "child-base" });
+    expect(child.__config.base).toEqual(["base-root", "child-base"]);
+  });
+
+  it("inherits and dedupes extended theme slots", () => {
+    const parent = tv({
+      slots: {
+        root: "p-2 text-red-500",
+      },
+    });
+    const child = tv({
+      extend: parent,
+      variants: {
+        tone: {
+          blue: { root: "text-blue-500" },
+        },
+      },
+    });
+
+    const root = child({ tone: "blue" }).root();
+    expect(root).toContain("p-2");
+    expect(root).toContain("text-blue-500");
+    expect(root).not.toContain("text-red-500");
   });
 });
 
@@ -779,10 +887,9 @@ describe("avatarTheme resolution", () => {
     });
 
     it("resolves sizes and custom ui override", () => {
-      const slots = resolveSlots(
-        tabsItemTheme({ size: "lg" }) as any,
-        { trigger: "custom-tab-trigger" },
-      );
+      const slots = resolveSlots(tabsItemTheme({ size: "lg" }) as any, {
+        trigger: "custom-tab-trigger",
+      });
       expect(slots.trigger).toContain("custom-tab-trigger");
       expect(slots.leading).toContain("size-5");
     });
@@ -825,4 +932,3 @@ describe("avatarTheme resolution", () => {
     });
   });
 });
-

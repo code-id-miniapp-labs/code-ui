@@ -46,11 +46,20 @@ export type DefaultThemeColor = (typeof DEFAULT_THEME_COLORS)[number];
 
 export type ThemeColor = DefaultThemeColor | (string & {});
 
+/**
+ * Controls which color-scheme classes are compiled into component themes.
+ * - `"system"` (default): emit both light and `dark:` classes.
+ * - `"light"`: emit only light classes, stripping all `dark:` variants.
+ * - `"dark"`: emit only dark classes, converting `dark:` variants to base classes.
+ */
+export type ColorSystem = "light" | "dark" | "system";
+
 export interface ThemeOptions<
   C extends readonly string[] = typeof DEFAULT_THEME_COLORS,
 > {
   colors?: C | readonly string[] | string[];
   errorColor?: string;
+  colorSystem?: ColorSystem;
   transitions?: boolean;
   [key: string]: any;
 }

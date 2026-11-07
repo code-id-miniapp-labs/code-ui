@@ -6,13 +6,10 @@ import {
   getAppMetrics,
   getAppState,
   getPageAppSignals,
-  isScrollLocked,
-  lockScroll,
   refreshAppMetrics,
   registerAppHost,
   registerInset,
   setAppHostVisible,
-  unlockScroll,
   unregisterAppHost,
   unregisterInset,
 } from "../src/utils/app";
@@ -108,7 +105,6 @@ describe("app registry — insets and signals", () => {
     expect(getAppState(owner).insets).toEqual({ top: 64, bottom: 50 });
     expect(host.onChange).toHaveBeenLastCalledWith({
       insets: { top: 64, bottom: 50 },
-      locked: false,
       scale: { scaled: false, factor: 1 },
     });
 
@@ -158,70 +154,8 @@ describe("app registry — insets and signals", () => {
     expect(getAppState(owner).insets.top).toBe(30);
     expect(host.onChange).toHaveBeenLastCalledWith({
       insets: { top: 30, bottom: 0 },
-      locked: false,
       scale: { scaled: false, factor: 1 },
     });
-  });
-});
-
-describe("app registry — scroll lock and signals", () => {
-  it("is ref-counted across lock ids and updates locked signal", () => {
-    pageStack = [createPage("p1")];
-    const host = createHost("p1");
-    host.register();
-    const owner = createInstance("p1");
-    const signals = getPageAppSignals(host.instance);
-
-    lockScroll(owner, "drawer:1");
-    lockScroll(owner, "drawer:2");
-    expect(signals.locked()).toBe(true);
-    expect(isScrollLocked(owner)).toBe(true);
-
-    unlockScroll(owner, "drawer:1");
-    expect(signals.locked()).toBe(true);
-    expect(isScrollLocked(owner)).toBe(true);
-
-    unlockScroll(owner, "drawer:2");
-    expect(signals.locked()).toBe(false);
-    expect(isScrollLocked(owner)).toBe(false);
-  });
-
-  it("only notifies on lock state transitions", () => {
-    pageStack = [createPage("p1")];
-    const host = createHost("p1");
-    host.register();
-    const owner = createInstance("p1");
-    host.onChange.mockClear();
-
-    lockScroll(owner, "a");
-    lockScroll(owner, "b");
-    unlockScroll(owner, "a");
-    unlockScroll(owner, "b");
-
-    expect(host.onChange.mock.calls.map((c) => c[0].locked)).toEqual([
-      true,
-      false,
-    ]);
-  });
-
-  it("keeps locks isolated per page", () => {
-    pageStack = [createPage("p1"), createPage("p2")];
-    createHost("p1").register();
-    createHost("p2").register();
-
-    lockScroll(createInstance("p1"), "a");
-    expect(isScrollLocked(createInstance("p1"))).toBe(true);
-    expect(isScrollLocked(createInstance("p2"))).toBe(false);
-  });
-
-  it("cancels a queued lock when unlocked before the host attaches", () => {
-    pageStack = [createPage("p1")];
-    const owner = createInstance("p1");
-    lockScroll(owner, "a");
-    unlockScroll(owner, "a");
-
-    createHost("p1").register();
-    expect(isScrollLocked(owner)).toBe(false);
   });
 });
 

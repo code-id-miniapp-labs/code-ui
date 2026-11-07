@@ -4,15 +4,14 @@ import {
   cuiAppChildBehavior,
   cuiAppParentBehavior,
   getPageAppSignals,
-  isScrollLocked,
   isAppScaled,
   linkAppChildToParent,
   registerAppHost,
+  releaseAppScale,
+  requestAppScale,
   setupAppRelations,
   unlinkAppChildFromParent,
-  unregisterAppHost,
   withAppInset,
-  withScrollLock,
   withAppScale,
 } from "../src/behaviors/app";
 
@@ -63,108 +62,23 @@ describe("setupAppRelations", () => {
     expect(typeof rels.cuiAppParent.unlinked).toBe("function");
   });
 
-  it("links child to parent and syncs lock status", () => {
+  it("links child to parent and syncs scale status", () => {
     const host = createHost("p1");
     const parent = host.instance;
     const child: any = {
-      __cuiScrollLocked: true,
-      __cuiScrollLockId: "drawer:1",
+      __cuiScaled: true,
+      __cuiScaleId: "drawer:1",
+      __cuiScaleFactor: 0.9,
+      __cuiScaleBackground: "bg-black",
     };
 
     linkAppChildToParent(parent, child);
     expect(child.__cuiAppParent).toBe(parent);
-    expect(isScrollLocked(child)).toBe(true);
+    expect(isAppScaled(child)).toBe(true);
 
     unlinkAppChildFromParent(parent, child);
     expect(child.__cuiAppParent).toBeUndefined();
-    expect(isScrollLocked(parent)).toBe(false);
-  });
-});
-
-describe("withScrollLock plugin", () => {
-  it("locks and unlocks scroll on machine state transitions", () => {
-    pageStack = [{ getPageId: () => "p1" }];
-    const host = createHost("p1");
-    const plugin = withScrollLock({ idPrefix: "test-lock" });
-
-    const instance: any = {
-      data: { lockScroll: true },
-      getPageId: () => "p1",
-    };
-
-    plugin.onAttached?.(instance, {});
-    expect(instance.__cuiScrollLockId).toBe("test-lock:1");
-    expect(isScrollLocked(instance)).toBe(false);
-
-    let subscriber: ((service: any) => void) | undefined;
-    let currentState: any = { hasTag: (t: string) => t === "closed", value: "closed" };
-
-    const mockMachine: any = {
-      service: {
-        get state() {
-          return currentState;
-        },
-      },
-      subscribe(fn: any) {
-        subscriber = fn;
-        return vi.fn();
-      },
-    };
-
-    plugin.onMachineStarted?.(instance, mockMachine);
-    expect(isScrollLocked(instance)).toBe(false);
-
-    // Transition to open
-    currentState = { hasTag: (t: string) => t === "open", value: "open" };
-    subscriber?.(mockMachine.service);
-    expect(isScrollLocked(instance)).toBe(true);
-
-    // Transition back to closed
-    currentState = { hasTag: () => false, value: "closed" };
-    subscriber?.(mockMachine.service);
-    expect(isScrollLocked(instance)).toBe(false);
-
-    unregisterAppHost(host.instance);
-  });
-
-  it("respects lockScroll: false prop", () => {
-    pageStack = [{ getPageId: () => "p1" }];
-    createHost("p1");
-    const plugin = withScrollLock();
-
-    const instance: any = {
-      data: { lockScroll: false },
-      getPageId: () => "p1",
-    };
-
-    plugin.onAttached?.(instance, {});
-
-    const currentState: any = { hasTag: (t: string) => t === "open", value: "open" };
-    const mockMachine: any = {
-      service: {
-        get state() {
-          return currentState;
-        },
-      },
-      subscribe() {
-        return vi.fn();
-      },
-    };
-
-    instance.__codeUiMachine = mockMachine;
-    plugin.onMachineStarted?.(instance, mockMachine);
-
-    // Should NOT lock because lockScroll is false
-    expect(isScrollLocked(instance)).toBe(false);
-
-    // Now prop changes to true
-    instance.data.lockScroll = true;
-    plugin.onPropChanged?.(instance, "lockScroll", true);
-    expect(isScrollLocked(instance)).toBe(true);
-
-    // Detach cleans up
-    plugin.onDetached?.(instance);
-    expect(isScrollLocked(instance)).toBe(false);
+    expect(isAppScaled(parent)).toBe(false);
   });
 });
 
@@ -289,100 +203,17 @@ describe("Hybrid host resolution (relations + fallback)", () => {
       getPageId: () => "different-or-undefined-page",
     };
 
-    const plugin = withScrollLock();
-    plugin.onAttached?.(childInstance, {});
-
-    const mockMachine: any = {
-      service: { state: { hasTag: () => true } },
-      subscribe: (fn: any) => {
-        fn();
-        return vi.fn();
-      },
-    };
-
-    plugin.onMachineStarted?.(childInstance, mockMachine);
-    expect(isScrollLocked(childInstance)).toBe(true);
-    expect(getPageAppSignals(hostInstance).locked()).toBe(true);
-
-    plugin.onDetached?.(childInstance);
-    expect(isScrollLocked(childInstance)).toBe(false);
-    expect(getPageAppSignals(hostInstance).locked()).toBe(false);
-  });
-
-  it("coordinates scroll lock when drawer machine prop changes", async () => {
-    const pageInstance: any = {
-      route: "pages/drawer/index",
-      data: {},
-      setData: vi.fn((patch: any) => {
-        Object.assign(pageInstance.data, patch);
-      }),
-    };
-    pageStack = [pageInstance];
-
-    const appInstance: any = {
-      data: { locked: false },
-      selectOwnerComponent: () => null,
-      setData: vi.fn((patch: any) => {
-        Object.assign(appInstance.data, patch);
-      }),
-      applyHostState(state: any) {
-        const wantLock = Boolean(state.locked);
-        if (wantLock !== Boolean(this.data.locked)) {
-          this.data.locked = wantLock;
-          pageInstance.setData({
-            cuiPageStyle: wantLock ? "overflow: hidden;" : "",
-          });
-        }
-      },
-    };
-
-    registerAppHost(appInstance, {
-      onChange: (state) => appInstance.applyHostState(state),
+    requestAppScale(childInstance, {
+      id: "drawer:1",
+      factor: 0.9,
+      background: "bg-black",
     });
 
-    const { drawerMachine, defaultDrawerProps } = await import("@code-ui/drawer");
-    const { createMachineBehavior } = await import("../src/behavior");
+    expect(isAppScaled(childInstance)).toBe(true);
+    expect(getPageAppSignals(hostInstance).scale().scaled).toBe(true);
 
-    const drawerBehavior = createMachineBehavior({
-      machine: drawerMachine,
-      key: "drawer",
-      plugins: [
-        withScrollLock({
-          idPrefix: "drawer",
-        }),
-      ],
-    });
-
-    const drawerInstance: any = {
-      data: {
-        ...defaultDrawerProps,
-        open: false,
-        lockScroll: true,
-      },
-      setData: vi.fn((patch: any) => {
-        Object.assign(drawerInstance.data, patch);
-      }),
-    };
-
-    drawerBehavior.lifetimes.attached.call(drawerInstance);
-
-    // Initial state: not locked
-    expect(pageInstance.data.cuiPageStyle).toBeUndefined();
-
-    // Now page updates drawerOpen prop to true: observer for 'open' fires
-    drawerBehavior.observers.open.call(drawerInstance, true);
-
-    // Wait for microtask / drain
-    await new Promise((r) => setTimeout(r, 20));
-
-    console.log("TEST RESULT:", {
-      drawerState: drawerInstance.__codeUiMachine.state.get(),
-      drawerLocked: drawerInstance.__cuiScrollLocked,
-      pageData: pageInstance.data,
-      appLocked: appInstance.data.locked,
-    });
-
-    expect(drawerInstance.__cuiScrollLocked).toBe(true);
-    expect(pageInstance.data.cuiPageStyle).toBe("overflow: hidden;");
+    releaseAppScale(childInstance, "drawer:1");
+    expect(isAppScaled(childInstance)).toBe(false);
+    expect(getPageAppSignals(hostInstance).scale().scaled).toBe(false);
   });
 });

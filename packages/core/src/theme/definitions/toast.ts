@@ -37,11 +37,11 @@ export default function toastTheme(options: ThemeOptions = {}) {
           progress: "h-0.5",
         },
         native: {
-          root: "flex flex-col items-center justify-center p-4 rounded-2xl bg-neutral-900/85 backdrop-blur-md text-white shadow-2xl text-center min-w-[120px] max-w-[200px] min-h-[100px]",
-          wrapper: "flex flex-col items-center text-center",
-          title: "text-sm font-medium text-white text-center leading-snug",
-          description: "text-xs text-neutral-300 text-center mt-1",
-          icon: "w-9 h-9 text-white mb-1.5",
+          root: "flex flex-col items-center justify-center p-4 rounded-2xl bg-neutral-900/70 dark:bg-neutral-700/80 backdrop-blur-[2px] border border-white/5 shadow-md text-center min-w-[120px] max-w-[200px] min-h-[100px] text-white",
+          wrapper: "flex flex-col items-center justify-center text-center",
+          title: "text-sm font-medium text-center text-white leading-snug",
+          description: "text-xs text-white/85 text-center mt-1",
+          icon: "w-9 h-9 mb-1.5 text-white shrink-0",
           actions: "hidden",
           action: "hidden",
           closeTrigger: "hidden",
@@ -50,13 +50,7 @@ export default function toastTheme(options: ThemeOptions = {}) {
       },
       color: createColorVariants(colors),
       variant: {
-        outline: {
-          root: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800",
-          title: "text-neutral-900 dark:text-white",
-          description: "text-neutral-500 dark:text-neutral-400",
-          closeTrigger:
-            "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
-        },
+        outline: {},
         solid: {
           root: "text-white border-transparent",
           title: "text-white",
@@ -96,24 +90,22 @@ export default function toastTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      // Native mode + horizontal orientation = Pill style
       {
         mode: "native",
         orientation: "horizontal",
         class: {
-          root: "flex-col items-center justify-center px-4 py-2.5 rounded-full min-w-0 max-w-xs min-h-0 gap-2.5",
+          root: "flex-row items-center justify-center px-4 py-2.5 rounded-full min-w-0 max-w-xs min-h-0 gap-2",
           wrapper: "flex-row items-center gap-1.5",
           title: "text-xs font-medium text-white",
-          description: "text-xs text-neutral-300",
+          description: "text-xs text-white/85 mt-0",
           icon: "w-5 h-5 mb-0 shrink-0",
         },
       },
-      // Native mode placement overrides
       {
         mode: "native",
         placement: "top",
         class: {
-          root: "fixed top-0 left-1/2 -translate-x-1/2 inset-x-auto w-auto mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))+32rpx)] z-[100]",
+          root: "fixed top-0 left-1/2 -translate-x-1/2 w-auto mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))+32rpx)] z-[100]",
         },
       },
       {
@@ -127,10 +119,11 @@ export default function toastTheme(options: ThemeOptions = {}) {
         mode: "native",
         placement: "bottom",
         class: {
-          root: "fixed bottom-0 left-1/2 -translate-x-1/2 inset-x-auto w-auto mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))+32rpx)] z-[100]",
+          root: "fixed bottom-0 left-1/2 -translate-x-1/2 w-auto mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))+32rpx)] z-[100]",
         },
       },
-      // 1. Outline (Nuxt UI v4 Default Style):
+
+      // 1. Outline (Web Default Style):
       // Clean elevated white card with neutral border and semantic colored icon
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
@@ -140,6 +133,8 @@ export default function toastTheme(options: ThemeOptions = {}) {
           root: "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white shadow-lg",
           title: "text-neutral-900 dark:text-white",
           description: "text-neutral-500 dark:text-neutral-400",
+          closeTrigger:
+            "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
           icon:
             color === "neutral"
               ? "text-neutral-900 dark:text-white"
@@ -154,11 +149,12 @@ export default function toastTheme(options: ThemeOptions = {}) {
           root: "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white shadow-lg",
           title: "text-neutral-900 dark:text-white",
           description: "text-neutral-500 dark:text-neutral-400",
+          closeTrigger:
+            "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
           icon: "text-danger",
         },
       },
 
-      // 2. Solid (Full colored banner)
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
         variant: "solid" as const,
@@ -187,7 +183,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
         },
       },
 
-      // 3. Soft
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
         variant: "soft" as const,
@@ -228,7 +223,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
         },
       },
 
-      // 4. Subtle
       ...(colors as readonly string[]).map((color) => ({
         color: color as (typeof colors)[number],
         variant: "subtle" as const,

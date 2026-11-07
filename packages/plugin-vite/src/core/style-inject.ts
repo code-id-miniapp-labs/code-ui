@@ -156,6 +156,23 @@ function resolveIconsPluginDirective(
   return `\n@plugin "@egoist/tailwindcss-icons" {\n${lines.join("\n")}\n};\n`;
 }
 
+function resolveColorSystemDirective(
+  colorSystem: string | undefined,
+  code: string,
+): string {
+  if (code.includes("@custom-variant dark")) return "";
+
+  if (colorSystem === "light") {
+    return "\n@custom-variant dark (&:where(.cui-color-system-light, .cui-color-system-light *));\n";
+  }
+
+  if (colorSystem === "dark") {
+    return "\n@custom-variant dark (&:not(.cui-color-system-light));\n";
+  }
+
+  return "";
+}
+
 export function transformAppStyle(
   code: string,
   cleanId: string,
@@ -166,14 +183,18 @@ export function transformAppStyle(
   const styleDir = path.dirname(cleanId);
   let injection = "";
 
+  injection += resolveColorSystemDirective(
+    configManager.resolvedConfig.ui?.colorSystem,
+    code,
+  );
+
   const usedScan = collectUsedComponents(
     projectRoot,
     new Set(Object.keys(componentThemes)),
+    ["app"],
   );
   if (usedScan) {
     for (const file of usedScan.files) addWatchFile(file);
-    // The app wrapper is injected at build time and may not exist in source WXML.
-    usedScan.components.add("app");
   }
   const usedComponents = usedScan?.components ?? null;
 

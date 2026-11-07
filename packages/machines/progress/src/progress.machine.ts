@@ -41,18 +41,23 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       }));
 
     return {
-      value: propBindable("value", (prop("defaultValue") as number | null) ?? null),
+      value: propBindable(
+        "value",
+        (prop("defaultValue") as number | null) ?? null,
+      ),
       min: propBindable("min", 0),
       max: propBindable("max", 100),
-      orientation: propBindable("orientation", "horizontal" as ProgressOrientation),
+      orientation: propBindable(
+        "orientation",
+        "horizontal" as ProgressOrientation,
+      ),
       type: propBindable("type", "linear" as ProgressType),
     };
   },
 
   computed: {
-    isIndeterminate: ({ context }) => {
-      const val = context.get("value");
-      return val === null || val === undefined;
+    isIndeterminate: ({ prop }) => {
+      return prop("indeterminate") ?? false;
     },
 
     percent: ({ context, computed }) => {
