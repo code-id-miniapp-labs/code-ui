@@ -107,7 +107,7 @@ Page({
         icon: "check",
         duration: 1500,
         ui: {
-          icon: "",
+          icon: "text-red-500",
         },
       });
     }, 1500);

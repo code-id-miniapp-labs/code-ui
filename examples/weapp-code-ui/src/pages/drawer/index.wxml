@@ -6,7 +6,7 @@
       <c-badge color="primary" variant="subtle" size="xs">FSM</c-badge>
     </view>
     <view class="text-xs text-neutral-500 mt-1">
-      Gesture-driven modal drawer with backdrop dimming, 4 edge placements, inner scrolling, and host scroll-lock integration.
+      Gesture-driven modal drawer with backdrop dimming, 4 edge placements and inner scrolling.
     </view>
   </view>
   <view class="px-5 flex flex-col gap-6">
@@ -19,7 +19,6 @@
         </c-badge>
       </view>
       <view class="flex flex-col gap-3 pt-1">
-        <c-switch size="sm" checked="{{lockScroll}}" label="Lock Background Scroll" description="Coordinates with <c-app> to prevent page scrolling when drawer is open." bind:change="onLockScrollChange" />
         <c-divider />
         <c-switch size="sm" checked="{{shouldScaleBackground}}" label="Scale Background (iOS Sheet)" description="Smoothly scales down page with rounded corners and canvas backdrop." bind:change="onScaleBackgroundChange" />
         <view wx:if="{{shouldScaleBackground}}" class="flex items-center justify-between pt-1">
@@ -72,13 +71,13 @@
         </c-button>
       </view>
     </view>
-    <!-- 4. Scroll Verification Cards -->
+    <!-- 4. Scrollable Page Cards -->
     <view class="flex flex-col gap-3">
       <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
-        Page Scroll Verification
+        Page Content
       </view>
       <view class="text-xs text-neutral-500 px-1 mb-1">
-        Scroll down through these cards and open any drawer to verify that background scrolling is fully locked when lockScroll is enabled.
+        Scroll down through these cards and open any drawer to verify that the drawer sits above the page content.
       </view>
       <block wx:for="{{pageItems}}" wx:key="id">
         <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex items-center justify-between">
@@ -94,7 +93,7 @@
     </view>
   </view>
 </view>
-<c-drawer slot="overlay" open="{{drawerOpen}}" placement="{{placement}}" lockScroll="{{lockScroll}}" shouldScaleBackground="{{shouldScaleBackground}}" scaleBackground="{{scaleBackground}}" scaleFactor="{{scaleFactor}}" closeOnBackdropClick="{{closeOnBackdropClick}}" bind:close="onDrawerClose">
+<c-drawer slot="overlay" open="{{drawerOpen}}" placement="{{placement}}" shouldScaleBackground="{{shouldScaleBackground}}" scaleBackground="{{scaleBackground}}" scaleFactor="{{scaleFactor}}" closeOnBackdropClick="{{closeOnBackdropClick}}" bind:close="onDrawerClose">
   <!-- Header Slot -->
   <view slot="header" class="flex items-center gap-2">
     <view class="text-base font-bold text-neutral-900">{{drawerTitle}}</view>
@@ -113,7 +112,7 @@
   <!-- Body Content: Scrollable Scenario -->
   <view wx:if="{{scenario === 'scrollable'}}" class="flex flex-col gap-2 py-1">
     <view class="text-xs text-neutral-500 mb-2">
-      Scroll through the items below. Notice the drawer body scrolls independently while the background page remains locked.
+      Scroll through the items below. The drawer body scrolls independently.
     </view>
     <block wx:for="{{scrollItems}}" wx:key="id">
       <view class="py-2.5 px-3 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-between">

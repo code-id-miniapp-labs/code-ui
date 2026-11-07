@@ -5,7 +5,6 @@ import {
   notifyScaleGestureProgress,
   notifyScaleGestureStart,
   withAppScale,
-  withScrollLock,
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
 
@@ -25,15 +24,11 @@ const drawerBehavior = createMachineBehavior({
   key: "drawer",
   exportApi: true,
   syncProps: [
-    "lockScroll",
     "shouldScaleBackground",
     "scaleFactor",
     "scaleBackground",
   ],
   plugins: [
-    withScrollLock({
-      idPrefix: "drawer",
-    }),
     withAppScale({
       idPrefix: "drawer",
     }),
@@ -101,10 +96,6 @@ Component(
         type: String,
         value: "",
       },
-      lockScroll: {
-        type: Boolean,
-        value: true,
-      },
     }),
 
     methods: {
@@ -143,7 +134,7 @@ Component(
           const schedule =
             typeof wx !== "undefined" && typeof wx.nextTick === "function"
               ? wx.nextTick
-              : (fn: () => void) => setTimeout(fn, 16);
+              : (fn: () => void) => fn();
 
           schedule(() => {
             this._dragRafPending = false;

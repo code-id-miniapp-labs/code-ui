@@ -30,7 +30,6 @@ export interface AppScaleState {
 
 export interface AppHostState {
   insets: AppInsets;
-  locked: boolean;
   scale: AppScaleState;
 }
 
@@ -53,7 +52,6 @@ export interface AppMetrics {
 
 export interface PageAppSignals {
   insets: AppSignal<AppInsets>;
-  locked: AppSignal<boolean>;
   scale: AppSignal<AppScaleState>;
 }
 
@@ -63,7 +61,6 @@ interface HostRecord {
   adapter?: AppHostAdapter | undefined;
   signals: PageAppSignals;
   insets: Map<string, AppInsetEntry>;
-  locks: Set<string>;
   scales: Map<string, AppScaleRequest>;
   visible: boolean;
   order: number;
@@ -118,12 +115,6 @@ export function linkAppChildToParent(parent: any, child: any): void {
   const host = hostByInstance.get(parent);
   if (host) {
     let changed = false;
-    if (child.__cuiScrollLocked && child.__cuiScrollLockId) {
-      if (!host.locks.has(child.__cuiScrollLockId)) {
-        host.locks.add(child.__cuiScrollLockId);
-        changed = true;
-      }
-    }
     if (child.__cuiScaled && child.__cuiScaleId) {
       if (!host.scales.has(child.__cuiScaleId)) {
         host.scales.set(child.__cuiScaleId, {
@@ -158,11 +149,8 @@ export function unlinkAppChildFromParent(parent: any, child: any): void {
   const host = parent ? hostByInstance.get(parent) : resolveHost(child);
   if (host) {
     let changed = false;
-    if (child.__cuiScrollLockId && host.locks.delete(child.__cuiScrollLockId)) {
-      if (host.locks.size === 0) changed = true;
-    }
     if (child.__cuiScaleId && host.scales.delete(child.__cuiScaleId)) {
-      if (host.scales.size === 0) changed = true;
+      changed = true;
     }
     if (child.__cuiInsetId && host.insets.delete(child.__cuiInsetId)) {
       changed = true;
@@ -234,18 +222,11 @@ export function getPageAppSignals(instance: any): PageAppSignals {
   if (!sigs) {
     sigs = {
       insets: signal<AppInsets>({ top: 0, bottom: 0 }),
-      locked: signal<boolean>(false),
       scale: signal<AppScaleState>({ scaled: false, factor: 1 }),
     };
     pageSignals.set(instance, sigs);
   }
   return sigs;
-}
-
-function isMatchPageId(id1?: string, id2?: string): boolean {
-  if (!id1 || !id2) return false;
-  if (id1 === id2) return true;
-  return id1.endsWith(`:${id2}`) || id2.endsWith(`:${id1}`);
 }
 
 function getPageIdOf(instance: any): string | undefined {
@@ -461,7 +442,6 @@ function computeScale(host: HostRecord): AppScaleState {
 function getState(host: HostRecord): AppHostState {
   return {
     insets: computeInsets(host),
-    locked: host.locks.size > 0,
     scale: computeScale(host),
   };
 }
@@ -469,7 +449,6 @@ function getState(host: HostRecord): AppHostState {
 function notify(host: HostRecord): void {
   const state = getState(host);
   host.signals.insets(state.insets);
-  host.signals.locked(state.locked);
   host.signals.scale(state.scale);
   host.adapter?.onChange?.(state);
 }
@@ -483,7 +462,6 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
     adapter,
     signals,
     insets: new Map(),
-    locks: new Set(),
     scales: new Map(),
     visible: true,
     order: ++appRegistry.orderCounter,
@@ -493,9 +471,6 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
 
   if (instance.__cuiAppChildren) {
     for (const child of instance.__cuiAppChildren) {
-      if (child.__cuiScrollLocked && child.__cuiScrollLockId) {
-        record.locks.add(child.__cuiScrollLockId);
-      }
       if (child.__cuiScaled && child.__cuiScaleId) {
         record.scales.set(child.__cuiScaleId, {
           id: child.__cuiScaleId,
@@ -524,7 +499,6 @@ export function unregisterAppHost(instance: any): void {
   const index = hosts.indexOf(record);
   if (index !== -1) hosts.splice(index, 1);
   record.insets.clear();
-  record.locks.clear();
   record.scales.clear();
   if (instance.__cuiAppChildren) {
     for (const child of instance.__cuiAppChildren) {
@@ -553,7 +527,6 @@ export function getAppState(owner?: any): AppHostState {
     ? getState(host)
     : {
         insets: { top: 0, bottom: 0 },
-        locked: false,
         scale: { scaled: false, factor: 1 },
       };
 }
@@ -623,191 +596,6 @@ export function unregisterInset(owner: any, id: string): void {
     if (!host.insets.delete(id)) return;
     notify(host);
   });
-}
-
-export function lockScroll(owner: any, id: string): void {
-  withHost(owner, (host) => {
-    const wasLocked = host.locks.size > 0;
-    host.locks.add(id);
-    if (!wasLocked) notify(host);
-  });
-}
-
-export function unlockScroll(owner: any, id: string): void {
-  const host = resolveHost(owner);
-  if (!host) {
-    const key = pendingKeyFor(owner);
-    const queue = pending.get(key);
-    if (queue) {
-      queue.push((h) => {
-        if (h.locks.delete(id) && h.locks.size === 0) notify(h);
-      });
-    }
-    return;
-  }
-  if (host.locks.delete(id) && host.locks.size === 0) notify(host);
-}
-
-export function isScrollLocked(owner?: any): boolean {
-  const host = resolveHost(owner);
-  return host ? host.locks.size > 0 : false;
-}
-
-export function hasActiveHost(owner?: any): boolean {
-  return Boolean(resolveHost(owner));
-}
-
-export function setPageScrollLocked(instance: any, locked: boolean): void {
-  try {
-    let targetPage: any = null;
-    if (typeof instance?.selectOwnerComponent === "function") {
-      let cur = instance.selectOwnerComponent();
-      let depth = 0;
-      while (cur && depth < 5) {
-        if (typeof cur.setData === "function" && (cur.route || cur.__route__)) {
-          targetPage = cur;
-          break;
-        }
-        cur =
-          typeof cur.selectOwnerComponent === "function"
-            ? cur.selectOwnerComponent()
-            : null;
-        depth++;
-      }
-    }
-    if (!targetPage && typeof getCurrentPages === "function") {
-      const pages = getCurrentPages();
-      if (pages && pages.length > 0) {
-        const instanceId = getPageIdOf(instance);
-        if (instanceId !== undefined) {
-          for (let i = pages.length - 1; i >= 0; i--) {
-            const p = pages[i];
-            const pId = getPageIdOf(p);
-            if (isMatchPageId(instanceId, pId)) {
-              targetPage = p;
-              break;
-            }
-          }
-        }
-        if (!targetPage) {
-          targetPage = pages[pages.length - 1];
-        }
-      }
-    }
-    if (
-      targetPage &&
-      typeof targetPage.setData === "function" &&
-      typeof targetPage.data?.cuiPageStyle === "string"
-    ) {
-      const pageStyle = locked ? "overflow: hidden;" : "";
-      const apply = () => {
-        if (targetPage.data.cuiPageStyle !== pageStyle) {
-          targetPage.setData({
-            cuiPageStyle: pageStyle,
-          });
-        }
-      };
-      apply();
-      if (typeof wx !== "undefined" && typeof wx.nextTick === "function") {
-        wx.nextTick(apply);
-      }
-    }
-  } catch {}
-}
-
-export interface WithScrollLockOptions {
-  idPrefix?: string;
-  isOpen?: (service: any, props: any) => boolean;
-}
-
-export function withScrollLock(
-  options: WithScrollLockOptions = {},
-): MachinePlugin {
-  let lockCounter = 0;
-  return {
-    name: "scroll-lock",
-    behaviors: [cuiAppChildBehavior],
-    setupRelations(relations) {
-      setupAppRelations(relations, "child");
-    },
-    onAttached(instance) {
-      instance.__cuiScrollLockId = `${options.idPrefix ?? "lock"}:${++lockCounter}`;
-      instance.__cuiScrollLocked = false;
-    },
-    onMachineStarted(instance, machine) {
-      const check = () => {
-        const service = machine.service;
-        const props = instance.data;
-        const shouldLock = options.isOpen
-          ? options.isOpen(service, props)
-          : Boolean(props?.lockScroll ?? true) &&
-            Boolean(
-              service?.state?.hasTag?.("open") ||
-              service?.state?.matches?.("open") ||
-              (typeof service?.state?.get === "function" &&
-                service.state.get() !== "closed"),
-            );
-
-        if (shouldLock !== Boolean(instance.__cuiScrollLocked)) {
-          instance.__cuiScrollLocked = shouldLock;
-          const lockId = instance.__cuiScrollLockId;
-          if (shouldLock) {
-            lockScroll(instance, lockId);
-          } else {
-            unlockScroll(instance, lockId);
-          }
-          if (!hasActiveHost(instance)) {
-            setPageScrollLocked(instance, shouldLock);
-          }
-        }
-      };
-
-      const unsub = machine.subscribe(check);
-      instance.__cuiScrollLockUnsub = unsub;
-      check();
-    },
-    onPropChanged(instance, propKey) {
-      if (propKey === "lockScroll" || propKey === "open") {
-        const machine = instance.__codeUiMachine;
-        if (machine) {
-          const service = machine.service;
-          const props = instance.data;
-          const isExplicitOpen =
-            propKey === "open" && Boolean(instance.data?.open);
-          const shouldLock = options.isOpen
-            ? options.isOpen(service, props)
-            : Boolean(props?.lockScroll ?? true) &&
-              Boolean(
-                isExplicitOpen ||
-                service?.state?.hasTag?.("open") ||
-                service?.state?.matches?.("open") ||
-                (typeof service?.state?.get === "function" &&
-                  service.state.get() !== "closed"),
-              );
-
-          if (shouldLock !== Boolean(instance.__cuiScrollLocked)) {
-            instance.__cuiScrollLocked = shouldLock;
-            const lockId = instance.__cuiScrollLockId;
-            if (shouldLock) lockScroll(instance, lockId);
-            else unlockScroll(instance, lockId);
-            if (!hasActiveHost(instance)) {
-              setPageScrollLocked(instance, shouldLock);
-            }
-          }
-        }
-      }
-    },
-    onDetached(instance) {
-      instance.__cuiScrollLockUnsub?.();
-      if (instance.__cuiScrollLocked) {
-        unlockScroll(instance, instance.__cuiScrollLockId);
-        instance.__cuiScrollLocked = false;
-        if (!hasActiveHost(instance)) {
-          setPageScrollLocked(instance, false);
-        }
-      }
-    },
-  };
 }
 
 export interface WithAppScaleOptions {

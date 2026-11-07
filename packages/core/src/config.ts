@@ -1,5 +1,5 @@
 import { defu } from "@code-ui/utils";
-import type { ExtractSlots } from "./theme";
+import type { ColorSystem, ExtractSlots } from "./theme";
 import type * as componentThemes from "./theme/definitions";
 
 export type SlotClassReplacer = (defaults: string) => string;
@@ -134,6 +134,14 @@ export interface UIConfig {
    *   when using validation or error states.
    */
   colorsMode?: "extend" | "replace";
+  /**
+   * Controls the color scheme compiled into component themes.
+   * - `"system"` (default): compile both light and `dark:` classes.
+   * - `"light"`: compile only light classes and skip dark token overrides.
+   * - `"dark"`: compile only dark classes (applied unconditionally) and use
+   *   dark design tokens as the default.
+   */
+  colorSystem?: ColorSystem;
   /** Border radius tokens (base radius string or object with custom overrides) */
   radius?: UIRadiusConfig;
   /** Transition duration tokens */

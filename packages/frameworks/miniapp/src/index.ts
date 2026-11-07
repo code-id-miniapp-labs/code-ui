@@ -104,7 +104,6 @@ export {
   setupAppRelations,
   linkAppChildToParent,
   unlinkAppChildFromParent,
-  withScrollLock,
   withAppScale,
   withAppInset,
   registerAppHost,
@@ -118,17 +117,12 @@ export {
   getPageAppSignals,
   registerInset,
   unregisterInset,
-  lockScroll,
-  unlockScroll,
-  isScrollLocked,
   requestAppScale,
   releaseAppScale,
   isAppScaled,
   notifyScaleGestureStart,
   notifyScaleGestureProgress,
   notifyScaleGestureEnd,
-  hasActiveHost,
-  setPageScrollLocked,
 } from "./behaviors/app";
 export type {
   AppSignal,
@@ -141,7 +135,6 @@ export type {
   AppHostAdapter,
   AppMetrics,
   PageAppSignals,
-  WithScrollLockOptions,
   WithAppScaleOptions,
   WithAppInsetOptions,
 } from "./behaviors/app";

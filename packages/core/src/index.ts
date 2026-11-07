@@ -107,6 +107,7 @@ export type {
   DefaultVariants,
   DefaultThemeColor,
   ThemeColor,
+  ColorSystem,
   ThemeOptions,
   ColorVariantRule,
 } from "./theme";

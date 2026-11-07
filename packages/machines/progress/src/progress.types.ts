@@ -92,6 +92,7 @@ export interface ProgressProps {
   strokeWidth?: number | undefined;
   /** Localized text / formatting callbacks */
   translations?: ProgressTranslations | undefined;
+  indeterminate?: boolean | undefined;
   /** Callback fired when progress value changes */
   onValueChange?: ((details: ProgressValueChangeDetails) => void) | undefined;
 }

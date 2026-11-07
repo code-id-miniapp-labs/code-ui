@@ -2,14 +2,10 @@ import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   appMetricsSignal,
   cuiAppParentBehavior,
-  getPageAppSignals,
-  lockScroll,
   refreshAppMetrics,
   registerAppHost,
   setAppHostVisible,
-  setPageScrollLocked,
   setupAppRelations,
-  unlockScroll,
   unregisterAppHost,
 } from "@code-ui/miniapp/behaviors/app";
 import type { AppHostState, AppMetrics } from "@code-ui/miniapp/behaviors/app";
@@ -26,8 +22,6 @@ import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";
 
 const appTheme = tv(themeConfig);
-
-const PROP_LOCK_ID = "cui-app:prop";
 
 function px(value: number): string {
   return `${Math.round(value * 100) / 100}px`;
@@ -56,10 +50,6 @@ Component(
         type: String,
         value: "none",
       },
-      lockScroll: {
-        type: Boolean,
-        value: false,
-      },
       scaleBackground: {
         type: String,
         value: "bg-black",
@@ -84,21 +74,18 @@ Component(
 
     data: {
       toasts: [] as ToastEntry[],
-      locked: false,
       scaled: false,
       hostScaleFactor: 0.94,
       hostScaleBackground: "",
       topInset: 0,
       bottomInset: 0,
-      gestureActive: false,
       gestureScaleStyle: "",
     },
 
     computed: {
       classes() {
-        const locked = Boolean(this.data.locked);
         const scaled = Boolean(this.data.scaled);
-        const themeFns = appTheme({ locked, scaled });
+        const themeFns = appTheme({ scaled });
         const resolved = resolveSlots(
           themeFns,
           this.data.ui,
@@ -173,11 +160,6 @@ Component(
     },
 
     observers: {
-      lockScroll(this: any, value: boolean) {
-        if (!this.__cuiAppAttached) return;
-        if (value) lockScroll(this, PROP_LOCK_ID);
-        else unlockScroll(this, PROP_LOCK_ID);
-      },
       maxToasts(this: any, value: number) {
         if (!this.__cuiAppAttached) return;
         if (value !== undefined) {
@@ -189,7 +171,6 @@ Component(
     lifetimes: {
       attached(this: any) {
         this.__cuiAppAttached = true;
-        this.signals = getPageAppSignals(this);
         registerAppHost(this, {
           onChange: (state: AppHostState) => this.applyHostState(state),
         });
@@ -210,18 +191,10 @@ Component(
             }
           } catch {}
         }
-        setPageScrollLocked(
-          this,
-          Boolean(this.data.locked || this.data.lockScroll),
-        );
-        if (this.data.lockScroll) lockScroll(this, PROP_LOCK_ID);
       },
 
       detached(this: any) {
         this.__cuiAppAttached = false;
-        if (this.data.locked) {
-          setPageScrollLocked(this, false);
-        }
         unregisterToastHost(this);
         unregisterAppHost(this);
       },
@@ -239,15 +212,9 @@ Component(
           } catch {}
         }
         setAppHostVisible(this, true);
-        if (this.data.locked) {
-          setPageScrollLocked(this, true);
-        }
       },
       hide(this: any) {
         setAppHostVisible(this, false);
-        if (this.data.locked) {
-          setPageScrollLocked(this, false);
-        }
       },
       resize(this: any) {
         refreshAppMetrics();
@@ -273,9 +240,6 @@ Component(
 
       startScaleGesture(this: any) {
         this._lastScaleProgress = undefined;
-        this.setData({
-          gestureActive: true,
-        });
       },
 
       applyScaleProgress(this: any, progress: number) {
@@ -305,33 +269,15 @@ Component(
 
       endScaleGesture(this: any, passed: boolean) {
         this._lastScaleProgress = undefined;
+        const patch: Record<string, any> = { gestureScaleStyle: "" };
         if (passed) {
-          this.setData({
-            gestureActive: false,
-            scaled: false,
-            gestureScaleStyle:
-              "transform: scale(1) translateY(0); border-radius: 0px; transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1), border-radius 300ms ease;",
-          });
-          setTimeout(() => {
-            if (!this.data.scaled && !this.data.gestureActive) {
-              this.setData({ gestureScaleStyle: "" });
-            }
-          }, 320);
-        } else {
-          this.setData({
-            gestureActive: false,
-            gestureScaleStyle: "",
-          });
+          patch.scaled = false;
         }
+        this.setData(patch);
       },
 
       applyHostState(this: any, state: AppHostState) {
         const patch: Record<string, any> = {};
-        const wantLock = Boolean(state.locked);
-        if (wantLock !== Boolean(this.data.locked)) {
-          patch.locked = wantLock;
-          setPageScrollLocked(this, wantLock);
-        }
         if (state.scale) {
           const wantScaled = Boolean(state.scale.scaled);
           if (wantScaled !== Boolean(this.data.scaled)) {

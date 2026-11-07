@@ -1,6 +1,7 @@
 Page({
   data: {
     value: 60,
+    indeterminate: false,
     colors: [
       "primary",
       "neutral",
@@ -28,7 +29,7 @@ Page({
 
   toggleIndeterminate() {
     this.setData({
-      value: this.data.value === null ? 60 : 0,
+      indeterminate: !this.data.indeterminate,
     });
   },
 });

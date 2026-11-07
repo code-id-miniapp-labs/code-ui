@@ -103,6 +103,7 @@ export interface UsedComponentsScan {
 export function collectUsedComponents(
   root: string,
   knownComponents: ReadonlySet<string>,
+  seedComponents: Iterable<string> = [],
 ): UsedComponentsScan | null {
   const normalizedKnown = new Map<string, string>();
   for (const name of knownComponents) {
@@ -208,6 +209,10 @@ export function collectUsedComponents(
         }
       }
     }
+  }
+
+  for (const name of seedComponents) {
+    addWithDeps(name);
   }
 
   for (const name of rawComponents) {
