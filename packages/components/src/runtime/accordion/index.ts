@@ -1,5 +1,9 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
 import { withAccordion } from "@code-ui/miniapp/behaviors/accordion";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -23,10 +27,6 @@ const accordionBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [accordionBehavior, computedBehavior],
-
-    options: {
-      styleIsolation: "shared",
-    },
 
     properties: createProperties(defaultAccordionProps, {
       className: {
@@ -84,4 +84,3 @@ Component(
     },
   }),
 );
-

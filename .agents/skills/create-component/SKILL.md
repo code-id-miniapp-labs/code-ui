@@ -60,13 +60,39 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
 Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and the `watch` policy.
 
 1. Create directory `packages/machines/<name>/src/`.
-2. Create `src/<name>.anatomy.ts` using `createAnatomy("<name>").parts(...)`.
+2. Create `src/<name>.anatomy.ts` using `createAnatomy("<name>").parts(...)`. Export it from `src/index.ts` for tooling/types, but **do not import `parts` into `*.connect.ts`**.
 3. Create `src/<name>.types.ts` with `Props`, `Context`, `Event`, `State`, `Schema`, `Service`, and `Api`.
 4. Create `src/<name>.props.ts` with `default<Name>Props`.
-5. Create `src/<name>.dom.ts` with deterministic element ID helpers (`scope.ids?.<part> ?? ...`).
+5. Create `src/<name>.dom.ts` using the shared ID generator from `@code-ui/context`:
+   ```ts
+   import { createIds, type Scope } from "@code-ui/context";
+
+   export const dom = {
+     ...createIds("sl", ["root", "track", "thumb"]), // use 2-3 char prefix
+   };
+   ```
+   - Only emit IDs on parts that strictly require them (e.g. root for relations, inputs for labels/focus).
+   - Skip IDs on decorative parts (icons, indicators, separators).
 6. Create `src/<name>.machine.ts` using `createMachine<<Name>Schema>({ ... })`.
-7. Create `src/<name>.connect.ts` exporting `connect<Name>(service): <Name>Api`.
-   - **Important for WXML**: WeChat MiniProgram WXML cannot evaluate JavaScript method calls like `api.getInputProps(index)` inside `wx:for`. Always pre-compute per-item props in array items on the API snapshot (e.g. `items: [{ index, value, itemProps, ... }]`) while retaining method forms for programmatic/test usage.
+   - **Context Signals**: Only declare `propBindable` for props that machine transitions or guards read or mutate. Do NOT create mirror signals for pass-through props (`label`, `icon`, `description`, `ui`).
+7. Create `src/<name>.connect.ts` exporting `connect<Name>(service): <Name>Api`:
+   - **Zero Prop-Echoing (`setData` payload optimization)**:
+     - Component properties registered via `createProperties(defaultProps)` already live in `this.data` and are natively accessible in WXML (`{{label}}`, `{{icon}}`, `{{title}}`).
+     - Do NOT re-export pass-through props on the API object returned by `connect()`.
+     - *Exception*: Context-inherited values that override child defaults (e.g. `effectiveSize`, `effectiveColor`, `disabled` from `<c-form>` or `<c-checkbox-group>`).
+     - Return **only**:
+       1. FSM state and derived/inherited values (`state`, `checked`, `disabled`, `loading`).
+       2. Dynamic interactive arrays with pre-computed item properties (WeChat WXML cannot call JS functions in `wx:for`).
+       3. Accessibility descriptors (`rootProps`, `thumbProps`).
+       4. Imperative action methods (`toggle()`, `handleTap()`).
+   - **Tree-Shaking Rule for Static Anatomy**:
+     - Do NOT spread `...parts.<part>.attrs` in `*.connect.ts`.
+     - Static `data-scope="<name>"` and `data-part="<part>"` must be declared as static literals in the WXML template.
+   - **WeChat ARIA Compliance**:
+     - Use `aria-role="..."` (e.g. `'aria-role': 'button'`), NEVER `role="..."`.
+     - Do NOT emit or depend on `tabindex` (unsupported in WeChat).
+     - Only use WeChat-supported `aria-*` attributes (`aria-disabled`, `aria-checked`, `aria-expanded`, `aria-busy`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, `aria-valuetext`).
+     - Move constant `aria-hidden="true"` into static WXML literals on decorative leaf nodes.
 8. Export everything from `src/index.ts`.
 9. Register path alias in `vitest.config.mts`:
    ```ts
@@ -109,6 +135,10 @@ Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and 
      });
    }
    ```
+   - **Prune Dead Slots**: Only define slots that are actually bound in the component's WXML template. Never add unused slots (e.g. don't define `leadingIcon` or `trailingIcon` if WXML only binds `icon`).
+   - **Compound Container Rule (Rule 7)**:
+     - Parent container themes (`checkbox-group`, `radio-group`, `tabs`, `stepper`, `accordion`) MUST only define container slots (`root`, `fieldset`, `legend`).
+     - Child item styling (`item`, `indicator`, `label`, `description`) MUST strictly belong to the child item component theme (`checkbox`, `radio`, `tabs-item`, `stepper-item`, `accordion-item`).
    - **Theme Size Optimization**: Avoid duplicating redundant text color or focus ring definitions across multiple variant states. Keep atomic utility class strings concise.
 2. Export `{ default as <camelName> } from "./<name>"` in `packages/core/src/theme/definitions/index.ts`.
 3. Export `{ default as <camelName>Theme } from "./theme/definitions/<name>"` in `packages/core/src/index.ts`.
@@ -149,20 +179,26 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
 ## Step 5: Create Runtime Component in `packages/components`
 
 1. Create `packages/components/src/runtime/<name>/index.json`:
-
    ```json
    {
      "component": true,
-     "styleIsolation": "apply-shared",
      "virtualHost": true,
      "usingComponents": {}
    }
    ```
+   *(Note: `"styleIsolation": "apply-shared"` is automatically set in component options by `createComponentOptions` at runtime; omitting it from `index.json` saves dist bytes).*
 
 2. Create `packages/components/src/runtime/<name>/index.wxml`:
-   - Bind slot classes using `{{classes.<slot>}}`.
-   - Provide default `<slot />` or named slots `<slot name="..." />` (`"multipleSlots": true` in component options if using named slots).
-   - If interactive, bind `data-scope`, `data-part`, `data-state`, `data-disabled`, `bindtap="handleTap"`, etc., mirroring Zag.js anatomy.
+   - **Static Literals**: Add static `data-scope="<name>"` and `data-part="<part>"` directly on elements.
+   - **WeChat ARIA**: Use `aria-role="..."` (e.g. `aria-role="button"`), never `role="..."`.
+   - **Slot Classes**: Bind slot classes using `{{classes.<slot>}}`.
+   - **Pass-through Props**: Bind props directly (`{{label}}`, `{{icon}}`, `{{title}}`) instead of fallback expressions (`{{cBtn.label || label}}`).
+   - **WeChat Slot Fallbacks**: WeChat `<slot>` does NOT support default fallback markup (e.g. `<slot name="label">fallback</slot>` will discard `fallback`). Always use conditional rendering:
+     ```wxml
+     <text wx:if="{{label}}">{{label}}</text>
+     <slot wx:else name="label" />
+     ```
+   - **Compound Loops**: Never hardcode generic `<view>` in data loops. Containers must delegate item rendering to their respective child item components in both declarative (`<slot />`) and data-driven (`wx:for="{{items}}"`) modes.
 
 3. Create `packages/components/src/runtime/<name>/index.ts`:
    - **Presentational**:
@@ -176,26 +212,19 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
 
      Component(
        createComponentOptions({
-         options: {
-           styleIsolation: "apply-shared",
-           virtualHost: true,
-         },
          behaviors: [computedBehavior],
          properties: {
            className: { type: String, value: "" },
            ui: { type: Object, value: {} },
-           // ... props
+           // ... other component props
          },
          computed: {
            classes() {
-             return resolveSlots(
-               <camelName>Theme({
-                 color: this.data.color,
-                 size: this.data.size,
-               }),
-               this.data.ui,
-               this.data.className,
-             );
+             const themeFns = <camelName>Theme({
+               color: this.data.color,
+               size: this.data.size,
+             });
+             return resolveSlots(themeFns, this.data.ui, this.data.className);
            },
          },
        }),
@@ -204,43 +233,51 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
    - **Interactive (FSM Machine)**:
      ```ts
      import { computedBehavior, createComponentOptions } from "../_shared/base";
-     import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-     import { <name>Anatomy } from "@code-ui/<name>";
+     import {
+       createMachineBehavior,
+       createProperties,
+       getApi,
+     } from "../_shared/machine";
+     import {
+       <camelName>Machine,
+       connect<Name>,
+       default<Name>Props,
+     } from "@code-ui/<name>";
      import { resolveSlots } from "../../utils/ui";
      import { tv } from "../../utils/variants";
      import themeConfig from "virtual:cui/theme/<name>";
 
      const <camelName>Theme = tv(themeConfig);
 
+     const <camelName>Behavior = createMachineBehavior({
+       machine: <camelName>Machine,
+       connect: connect<Name>,
+       key: "<name>",
+       exportApi: true,
+     });
+
      Component(
        createComponentOptions({
-         options: {
-           styleIsolation: "apply-shared",
-           virtualHost: true,
-         },
-         behaviors: [computedBehavior],
-         properties: {
+         behaviors: [<camelName>Behavior, computedBehavior],
+         properties: createProperties(default<Name>Props, {
            className: { type: String, value: "" },
-           ui: { type: Object, value: {} },
-           ...createProperties(<name>Anatomy),
-         },
-         machine: createMachineBehavior({
-           name: "<name>",
-           machine: <camelName>Machine,
-           connect: connect<Name>,
-           // plugins: [withFormField] // if form-integrated
          }),
          computed: {
            classes() {
+             const api = this.data.<name>;
+             const themeFns = <camelName>Theme({
+               variant: this.data.variant,
+               color: this.data.color,
+               size: this.data.size,
+               disabled: Boolean(api?.disabled ?? this.data.disabled),
+             });
+             return resolveSlots(themeFns, this.data.ui, this.data.className);
+           },
+         },
+         methods: {
+           handleTap(e: WechatMiniprogram.TouchEvent) {
              const api = getApi(this, "<name>");
-             return resolveSlots(
-               <camelName>Theme({
-                 color: this.data.color,
-                 size: this.data.size,
-               }),
-               this.data.ui,
-               this.data.className,
-             );
+             return api.handleTap?.(e);
            },
          },
        }),
@@ -261,16 +298,18 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
 Run the standard validation suite to ensure full monorepo compliance:
 
 ```bash
-# 1. Build miniapp and components
-pnpm --filter @code-ui/miniapp build
-pnpm --filter @code-ui/components build
+# 1. Build all packages
+pnpm build
 
-# 2. Run unit tests
+# 2. Run all unit and integration tests (must pass with 0 failures)
 pnpm test
 
 # 3. Typecheck entire monorepo (exactOptionalPropertyTypes: true)
 pnpm typecheck
 
-# 4. Lint (forbids non-null assertions and inline type imports)
+# 4. Check bundle size budgets (reference <= 68.0 KB gz, full dist <= 138.0 KB gz)
+pnpm size:check
+
+# 5. Lint touched packages (forbids non-null assertions and inline type imports)
 npx oxlint packages/<name>/src packages/components/src
 ```
