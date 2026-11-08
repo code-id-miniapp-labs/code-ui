@@ -4,35 +4,17 @@ type AnyFn = (...args: any[]) => any;
 
 function resolveOwner(component: any): any {
   if (!component) return undefined;
-  if (typeof component.selectOwnerComponent === "function") {
-    try {
-      const owner = component.selectOwnerComponent();
-      if (owner) return owner;
-    } catch {
-      // Fall through to global lookup
-    }
+  try {
+    const owner = component.selectOwnerComponent?.();
+    if (owner) return owner;
+    const pages =
+      (typeof getCurrentPages === "function"
+        ? getCurrentPages()
+        : (globalThis as any)?.getCurrentPages?.()) ?? [];
+    return pages.length > 0 ? pages[pages.length - 1] : undefined;
+  } catch {
+    return undefined;
   }
-
-  let pages: any[] | undefined;
-  if (typeof getCurrentPages === "function") {
-    try {
-      pages = getCurrentPages();
-    } catch {
-      // Ignore
-    }
-  } else if (typeof (globalThis as any)?.getCurrentPages === "function") {
-    try {
-      pages = (globalThis as any).getCurrentPages();
-    } catch {
-      // Ignore
-    }
-  }
-
-  if (Array.isArray(pages) && pages.length > 0) {
-    return pages[pages.length - 1];
-  }
-
-  return undefined;
 }
 
 interface OwnerPatchState {

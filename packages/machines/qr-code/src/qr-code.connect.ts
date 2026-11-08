@@ -3,19 +3,20 @@ import type {
   QrCodeEncodingOptions,
   QrCodeService,
 } from "./qr-code.types";
-import { parts } from "./qr-code.anatomy";
+import { normalizePixelSize } from "./qr-code.machine";
 import * as dom from "./qr-code.dom";
 
 export function connectQrCode(service: QrCodeService): QrCodeApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, context, computed, prop, scope } = service;
 
   const currentState = state.get();
   const value = context.get("value");
-  const size = context.get("size");
-  const color = context.get("color");
-  const pixelSize = context.get("pixelSize");
-  const overlaySrc = context.get("overlaySrc");
-  const showOverlay = Boolean(context.get("showOverlay") || overlaySrc);
+  const size = prop("size") ?? "md";
+  const color = prop("color") ?? "neutral";
+  const pixelSize = normalizePixelSize(prop("pixelSize"));
+  const rawOverlaySrc = prop("overlaySrc");
+  const overlaySrc = rawOverlaySrc !== undefined ? String(rawOverlaySrc) : "";
+  const showOverlay = Boolean(prop("showOverlay") || overlaySrc);
 
   const resolvedEncoding = computed("resolvedEncoding");
   const ecc = resolvedEncoding.ecc ?? "M";
@@ -27,19 +28,17 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
 
   const rootProps: Record<string, any> = {
     id: dom.getRootId(scope),
-    ...parts.root.attrs,
     "data-state": currentState,
     "data-size": size,
     "data-color": color,
     "data-ecc": ecc,
-    role: "img",
+    "aria-role": "img",
     "aria-label": value ? `QR code for ${value}` : "QR code",
     style: `--qrcode-pixel-size: ${pixelSize}px; --qrcode-width: ${viewBoxSize}px; --qrcode-height: ${viewBoxSize}px;`,
   };
 
   const frameProps: Record<string, any> = {
     id: dom.getFrameId(scope),
-    ...parts.frame.attrs,
     src: dataUrl,
     mode: "aspectFit",
     xmlns: "http://www.w3.org/2000/svg",
@@ -50,15 +49,13 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
 
   const patternProps: Record<string, any> = {
     id: dom.getPatternId(scope),
-    ...parts.pattern.attrs,
     d: path,
     fill: "currentColor",
   };
 
   const overlayProps: Record<string, any> = {
     id: dom.getOverlayId(scope),
-    ...parts.overlay.attrs,
-    "aria-hidden": "true",
+    "aria-hidden": true,
   };
 
   return {

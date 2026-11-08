@@ -7,8 +7,8 @@ export interface Scope {
   ids?: Record<string, any> | undefined;
   /** The component/page instance used to scope SelectorQuery */
   component?: MiniAppComponent | undefined;
-  /** Full DOM query helpers from @code-ui/utils — rect, allRects, fields, etc. */
-  dom: DOMQueryHelpers;
+  /** Optional DOM query helpers (use tree-shakeable queryRect/queryFields from @code-ui/utils directly) */
+  dom?: DOMQueryHelpers | undefined;
   toJSON?: () => { id?: string | undefined; ids?: Record<string, any> | undefined } | undefined;
 }
 
@@ -503,4 +503,4 @@ export function createNormalizer<T extends PropTypes = PropTypes>(
   });
 }
 
-export const defaultNormalizer: NormalizeProps = createNormalizer((props) => props);
+export const defaultNormalizer: NormalizeProps = /* @__PURE__ */ createNormalizer((props) => props);

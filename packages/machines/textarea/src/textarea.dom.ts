@@ -1,22 +1,22 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `textarea:${scope.id ?? "default"}:root`;
+  partId(scope, "ta", "root", "r");
 
 export const getTextareaId = (scope: Scope): string =>
-  scope.ids?.textarea ?? `textarea:${scope.id ?? "default"}:textarea`;
+  partId(scope, "ta", "textarea", "t");
 
-export const getLeadingId = (scope: Scope): string =>
-  scope.ids?.leading ?? `textarea:${scope.id ?? "default"}:leading`;
+export const getLeadingId = (scope: Scope): string | undefined =>
+  optPartId(scope, "leading");
 
-export const getTrailingId = (scope: Scope): string =>
-  scope.ids?.trailing ?? `textarea:${scope.id ?? "default"}:trailing`;
+export const getTrailingId = (scope: Scope): string | undefined =>
+  optPartId(scope, "trailing");
 
-export const getClearButtonId = (scope: Scope): string =>
-  scope.ids?.clear ?? `textarea:${scope.id ?? "default"}:clear`;
+export const getClearButtonId = (scope: Scope): string | undefined =>
+  optPartId(scope, "clear");
 
-export const getCountId = (scope: Scope): string =>
-  scope.ids?.count ?? `textarea:${scope.id ?? "default"}:count`;
+export const getCountId = (scope: Scope): string | undefined =>
+  optPartId(scope, "count");
 
-export const getHiddenInputId = (scope: Scope): string =>
-  scope.ids?.hiddenInput ?? `textarea:${scope.id ?? "default"}:hidden-input`;
+export const getHiddenInputId = (scope: Scope): string | undefined =>
+  optPartId(scope, "hiddenInput");

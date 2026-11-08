@@ -5,47 +5,26 @@ function hasDeletedOrUndefinedKeys(
   prev: Record<string, any>,
   next: Record<string, any>,
 ): boolean {
-  for (const k of Object.keys(prev)) {
-    if (prev[k] !== undefined && (!(k in next) || next[k] === undefined)) {
-      return true;
-    }
+  for (const k in prev) {
+    if (prev[k] !== undefined && (!(k in next) || next[k] === undefined)) return true;
   }
-  for (const k of Object.keys(next)) {
-    if (next[k] === undefined) {
-      return true;
-    }
+  for (const k in next) {
+    if (next[k] === undefined) return true;
   }
   return false;
 }
 
 function stripUndefined<T>(val: T): T {
   if (Array.isArray(val)) {
-    let mutated = false;
-    const copy = val.map((item) => {
-      if (item === undefined) {
-        mutated = true;
-        return null;
-      }
-      const cleaned = stripUndefined(item);
-      if (cleaned !== item) mutated = true;
-      return cleaned;
-    });
-    return (mutated ? copy : val) as unknown as T;
+    return val.map((v) => (v === undefined ? null : stripUndefined(v))) as unknown as T;
   }
   if (isPlainObject(val)) {
-    let mutated = false;
     const out: Record<string, any> = {};
-    for (const k of Object.keys(val)) {
+    for (const k in val) {
       const v = (val as Record<string, any>)[k];
-      if (v === undefined) {
-        mutated = true;
-        continue;
-      }
-      const cleaned = stripUndefined(v);
-      if (cleaned !== v) mutated = true;
-      out[k] = cleaned;
+      if (v !== undefined) out[k] = stripUndefined(v);
     }
-    return (mutated ? out : val) as unknown as T;
+    return out as unknown as T;
   }
   return val;
 }
@@ -76,7 +55,7 @@ export function diffSnapshot(
       continue;
     }
 
-    if (isEqual(pVal, nVal)) continue;
+    if (pVal === nVal || Object.is(pVal, nVal)) continue;
 
     if (Array.isArray(pVal) && Array.isArray(nVal)) {
       if (pVal.length !== nVal.length) {
@@ -84,29 +63,35 @@ export function diffSnapshot(
         hasDiff = true;
       } else {
         for (let i = 0; i < nVal.length; i++) {
-          if (isEqual(pVal[i], nVal[i])) continue;
+          const pi = pVal[i];
+          const ni = nVal[i];
+          if (pi === ni || Object.is(pi, ni)) continue;
           const subPath = `${path}[${i}]`;
-          if (isPlainObject(pVal[i]) && isPlainObject(nVal[i])) {
-            if (hasDeletedOrUndefinedKeys(pVal[i], nVal[i])) {
-              delta[subPath] = stripUndefined(nVal[i]);
-              hasDiff = true;
+          if (isPlainObject(pi) && isPlainObject(ni)) {
+            if (hasDeletedOrUndefinedKeys(pi, ni)) {
+              if (!isEqual(pi, ni)) {
+                delta[subPath] = stripUndefined(ni);
+                hasDiff = true;
+              }
             } else {
-              const sub = diffSnapshot(pVal[i], nVal[i], subPath);
+              const sub = diffSnapshot(pi, ni, subPath);
               if (sub) {
                 Object.assign(delta, sub);
                 hasDiff = true;
               }
             }
-          } else {
-            delta[subPath] = nVal[i] === undefined ? null : stripUndefined(nVal[i]);
+          } else if (!isEqual(pi, ni)) {
+            delta[subPath] = ni === undefined ? null : stripUndefined(ni);
             hasDiff = true;
           }
         }
       }
     } else if (isPlainObject(pVal) && isPlainObject(nVal)) {
       if (hasDeletedOrUndefinedKeys(pVal, nVal)) {
-        delta[path] = stripUndefined(nVal);
-        hasDiff = true;
+        if (!isEqual(pVal, nVal)) {
+          delta[path] = stripUndefined(nVal);
+          hasDiff = true;
+        }
       } else {
         const sub = diffSnapshot(pVal, nVal, path);
         if (sub) {
@@ -114,7 +99,7 @@ export function diffSnapshot(
           hasDiff = true;
         }
       }
-    } else {
+    } else if (!isEqual(pVal, nVal)) {
       delta[path] = stripUndefined(nVal);
       hasDiff = true;
     }

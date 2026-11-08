@@ -28,7 +28,6 @@
     bind:touchcancel="{{gesture.onTouchEnd}}"
   >
     <view
-      id="{{swipeCell.leftProps.id}}"
       class="{{classes.left}} cui-swipe-cell__left"
       data-scope="swipe-cell"
       data-part="left"
@@ -40,6 +39,8 @@
           wx:key="index"
           class="{{classes.action}} {{item.className || ''}}"
           style="{{item.style || ''}}"
+          aria-role="button"
+          aria-disabled="{{!!item.disabled}}"
           data-index="{{item.index}}"
           data-side="left"
           data-value="{{item.value !== undefined ? item.value : ''}}"
@@ -54,7 +55,6 @@
 
     <!-- Center content -->
     <view
-      id="{{swipeCell.contentProps.id}}"
       class="{{classes.content}} cui-swipe-cell__content"
       data-scope="swipe-cell"
       data-part="content"
@@ -65,7 +65,6 @@
 
     <!-- Right actions -->
     <view
-      id="{{swipeCell.rightProps.id}}"
       class="{{classes.right}} cui-swipe-cell__right"
       data-scope="swipe-cell"
       data-part="right"
@@ -77,6 +76,8 @@
           wx:key="index"
           class="{{classes.action}} {{item.className || ''}}"
           style="{{item.style || ''}}"
+          aria-role="button"
+          aria-disabled="{{!!item.disabled}}"
           data-index="{{item.index}}"
           data-side="right"
           data-value="{{item.value !== undefined ? item.value : ''}}"

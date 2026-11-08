@@ -15,10 +15,6 @@ setupAvatarGroupRelations(relations, "child");
 
 Component(
   createComponentOptions({
-    options: {
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
     behaviors: [cuiAvatarItemBehavior, computedBehavior],
     relations,
     properties: {

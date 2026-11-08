@@ -1,16 +1,12 @@
 import { createMachine } from "@code-ui/core";
 import {
-  setupFormFieldSync,
   cleanupFormFieldSync,
+  createFormFieldComputed,
+  hasFormFieldErrors,
+  setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
-import type {
-  InputContext,
-  InputMachine,
-  InputProps,
-  InputSchema,
-  InputSize,
-} from "./input.types";
+import type { InputMachine, InputSchema, InputSize } from "./input.types";
 import { defaultInputProps } from "./input.props";
 
 const toStringValue = (val: unknown): string | undefined =>
@@ -24,127 +20,66 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
 
   initialState: ({ prop }) => (prop("autoFocus") ? "focused" : "idle"),
 
-  refs: ({ prop }) => {
-    const initial =
-      toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "";
+  refs: ({ prop }) => ({
+    initialValue:
+      toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "",
+    formField: undefined,
+  }),
 
-    return {
-      initialValue: initial,
-      formField: undefined,
-    };
-  },
+  context: ({ prop, bindable, getRefs }) => ({
+    value: bindable<string>(() => {
+      const controlledVal = toStringValue(prop("value"));
+      const defaultVal = toStringValue(prop("defaultValue"));
 
-  context: ({ prop, bindable, getRefs }) => {
-    const propBindable = <K extends keyof InputContext & keyof InputProps>(
-      key: K,
-      defaultValue: InputContext[K],
-    ) =>
-      bindable<InputContext[K]>(() => ({
-        value: prop(key) as InputContext[K] | undefined,
-        defaultValue,
-      }));
+      return {
+        value: controlledVal,
+        defaultValue: controlledVal ?? defaultVal ?? "",
+        onChange: (nextVal) => {
+          prop("onChange")?.({ value: nextVal });
 
-    return {
-      value: bindable<string>(() => {
-        const controlledVal = toStringValue(prop("value"));
-        const defaultVal = toStringValue(prop("defaultValue"));
+          const formField = getRefs().get("formField");
+          if (formField) {
+            formField.emitInput(nextVal);
+            formField.emitChange(nextVal);
+          }
+        },
+      };
+    }),
 
-        return {
-          value: controlledVal,
-          defaultValue: controlledVal ?? defaultVal ?? "",
-          onChange: (nextVal) => {
-            prop("onChange")?.({ value: nextVal });
-
-            const formField = getRefs().get("formField");
-            if (formField) {
-              formField.emitInput(nextVal);
-              formField.emitChange(nextVal);
-            }
-          },
-        };
-      }),
-
-      invalid: bindable<boolean>(() => {
-        const rawInvalid = prop("invalid");
-        return {
-          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-          defaultValue: false,
-        };
-      }),
-      variant: propBindable("variant", "outline"),
-      color: propBindable("color", "primary"),
-      size: propBindable("size", "md"),
-      highlight: propBindable("highlight", false),
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
-      placeholder: propBindable("placeholder", ""),
-      type: propBindable("type", "text"),
-      password: propBindable("password", false),
-      maxlength: propBindable("maxlength", 140),
-      clearable: propBindable("clearable", false),
-      clearIcon: propBindable("clearIcon", ""),
-      loading: propBindable("loading", false),
-      leading: propBindable("leading", false),
-      trailing: propBindable("trailing", false),
-      leadingIcon: propBindable("leadingIcon", ""),
-      trailingIcon: propBindable("trailingIcon", ""),
-      form: propBindable("form", ""),
-      name: propBindable("name", ""),
-      ui: propBindable("ui", {}),
-    };
-  },
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
+  }),
 
   computed: {
-    formDisabled: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.disabled() ?? false;
-    },
-    formReadOnly: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.readOnly() ?? false;
-    },
-    fieldDisabled: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
-        prop("fieldDisabled") ||
-        host?.fieldState(prop("name") || scope.id || "input")?.disabled,
-      );
-    },
-    fieldSize: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return (
-        prop("fieldSize") ||
-        host?.fieldState(prop("name") || scope.id || "input")?.size ||
-        ""
-      );
-    },
-    isInvalid: ({ prop, refs, context, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
+    ...createFormFieldComputed("input"),
+    isInvalid: ({ prop, refs, context, scope }) =>
+      Boolean(
         context.get("invalid") ||
-        host?.errors(prop("name") || scope.id || "input").length,
-      );
-    },
+          hasFormFieldErrors(prop, refs, scope, "input"),
+      ),
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
-    isDisabled: ({ context, computed }) =>
+    isDisabled: ({ prop, computed }) =>
       Boolean(
         computed("formDisabled") ||
-        computed("fieldDisabled") ||
-        context.get("disabled"),
+          computed("fieldDisabled") ||
+          prop("disabled"),
       ),
-    isReadOnly: ({ context, computed }) =>
-      Boolean(context.get("readOnly") || computed("formReadOnly")),
+    isReadOnly: ({ prop, computed }) =>
+      Boolean(prop("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
-    isClearable: ({ context, computed }) =>
+    isClearable: ({ prop, computed }) =>
       Boolean(
-        context.get("clearable") &&
-        computed("isInteractive") &&
-        computed("isFilled"),
+        prop("clearable") && computed("isInteractive") && computed("isFilled"),
       ),
-    effectiveSize: ({ context, computed }) =>
-      (computed("fieldSize") || context.get("size") || "md") as InputSize,
+    effectiveSize: ({ prop, computed }) =>
+      (computed("fieldSize") || prop("size") || "md") as InputSize,
   },
 
   entry: ["setupFormField"],
@@ -209,8 +144,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "input",
-            getFormId: () => context.get("form") || prop("form") || "",
-            getName: () => context.get("name") || prop("name") || "",
+            getFormId: () => prop("form") || "",
+            getName: () => prop("name") || "",
             getValue: () => context.get("value"),
             setValue: (rawVal: unknown) => {
               context.set("value", toStringValue(rawVal) ?? "");
@@ -253,13 +188,11 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       },
 
       handleConfirm: ({ context, prop }) => {
-        const val = context.get("value");
-        prop("onConfirm")?.({ value: val });
+        prop("onConfirm")?.({ value: context.get("value") });
       },
 
       setValue: ({ context, event }) => {
-        const val = toStringValue((event as any).value) ?? "";
-        context.set("value", val);
+        context.set("value", toStringValue((event as any).value) ?? "");
       },
 
       clearValue: ({ context, prop }) => {

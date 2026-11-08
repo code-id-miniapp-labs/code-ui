@@ -154,6 +154,7 @@ export class MiniappMachine<T extends MachineSchema> {
   /** Collector for `track` disposers created while a state effect is running. */
   private trackSink: VoidFunction[] | null = null;
   private disposeScope: VoidFunction | null = null;
+  private disposeNotifyEffect: VoidFunction | null = null;
   private readonly subscriptions = new Set<Subscriber<T>>();
 
   private readonly stateView: StateView<T>;
@@ -268,10 +269,37 @@ export class MiniappMachine<T extends MachineSchema> {
 
   subscribe = (fn: Subscriber<T>) => {
     this.subscriptions.add(fn);
+    this.ensureNotifyEffect();
     return () => {
       this.subscriptions.delete(fn);
+      if (this.subscriptions.size === 0 && this.disposeNotifyEffect) {
+        this.disposeNotifyEffect();
+        this.disposeNotifyEffect = null;
+      }
     };
   };
+
+  private ensureNotifyEffect() {
+    if (
+      this.disposeNotifyEffect ||
+      this.status !== MachineStatus.Started ||
+      this.subscriptions.size === 0
+    ) {
+      return;
+    }
+    let initialRun = true;
+    const refs = this.contextRefs;
+    const refsLen = refs.length;
+    this.disposeNotifyEffect = untracked(() =>
+      effect(() => {
+        this.userPropsSignal();
+        this.state.ref.get();
+        for (let i = 0; i < refsLen; i++) refs[i]?.get();
+        if (!initialRun) this.notify();
+      }),
+    );
+    initialRun = false;
+  }
 
   updateProps(newProps: UserProps<T>) {
     const patch = normalizeUserProps<T>(newProps);
@@ -280,6 +308,10 @@ export class MiniappMachine<T extends MachineSchema> {
     this.rawProps = { ...this.rawProps, ...patch };
     this.batch(() => {
       this.userPropsSignal(this.rawProps);
+      untracked(() => {
+        const refs = this.contextRefs;
+        for (let i = 0; i < refs.length; i++) refs[i]?.get();
+      });
       if (this.status !== MachineStatus.Started) {
         this.notify();
       }
@@ -289,21 +321,17 @@ export class MiniappMachine<T extends MachineSchema> {
   /**
    * Starts the machine and enters the initial state. Idempotent.
    *
-   * State and every context signal share a single notify effect, so a
+   * State and every context signal share a single lazy notify effect, so a
    * transition touching several signals produces one notification per batch.
    */
   start() {
     if (this.status === MachineStatus.Started) return;
     this.status = MachineStatus.Started;
-    this.debug("starting...");
+    if (process.env.NODE_ENV !== "production") this.debug("starting...");
 
-    let initialRun = true;
-    const refs = this.contextRefs;
-    const refsLen = refs.length;
-
-    this.disposeScope = effectScope(() => {
-      const watch = this.machine.watch;
-      if (watch) {
+    const watch = this.machine.watch;
+    if (watch) {
+      this.disposeScope = effectScope(() => {
         const baseParams = this.getParams();
         const untrackedState: StateView<T> = {
           ...baseParams.state,
@@ -318,16 +346,10 @@ export class MiniappMachine<T extends MachineSchema> {
           state: untrackedState,
         };
         effect(() => watch(watchParams));
-      }
-
-      effect(() => {
-        this.userPropsSignal();
-        this.state.ref.get();
-        for (let i = 0; i < refsLen; i++) refs[i]?.get();
-        if (!initialRun) this.notify();
       });
-    });
-    initialRun = false;
+    }
+
+    this.ensureNotifyEffect();
     this.notify();
 
     this.batch(() =>
@@ -353,6 +375,8 @@ export class MiniappMachine<T extends MachineSchema> {
       this.transition = null;
       this.action(this.machine.exit);
 
+      this.disposeNotifyEffect?.();
+      this.disposeNotifyEffect = null;
       this.disposeScope?.();
       this.disposeScope = null;
 
@@ -366,7 +390,7 @@ export class MiniappMachine<T extends MachineSchema> {
 
     this.subscriptions.clear();
     this.status = MachineStatus.Stopped;
-    this.debug("stopped");
+    if (process.env.NODE_ENV !== "production") this.debug("stopped");
   }
 
   /**
@@ -403,7 +427,7 @@ export class MiniappMachine<T extends MachineSchema> {
 
   private processEvent(event: T["event"]) {
     this.setEvent(event);
-    this.debug("send", event);
+    if (process.env.NODE_ENV !== "production") this.debug("send", event);
 
     const current = this.state.get();
     const { transitions, source } = findTransition(
@@ -419,7 +443,7 @@ export class MiniappMachine<T extends MachineSchema> {
       transition.target ?? current,
       source,
     );
-    this.debug("transition", transition);
+    if (process.env.NODE_ENV !== "production") this.debug("transition", transition);
 
     if (target !== current) {
       this.transition = transition;
@@ -513,7 +537,7 @@ export class MiniappMachine<T extends MachineSchema> {
         if (key === undefined) continue;
         const fn = impls?.[key as string];
         if (fn) fn(params);
-        else
+        else if (process.env.NODE_ENV !== "production")
           warn(
             `[code-ui] No implementation found for action "${JSON.stringify(key)}"`,
           );
@@ -529,9 +553,11 @@ export class MiniappMachine<T extends MachineSchema> {
       this.machine.implementations?.guards as Record<string, AnyFn> | undefined
     )?.[key as string];
     if (!fn) {
-      warn(
-        `[code-ui] No implementation found for guard "${JSON.stringify(key)}"`,
-      );
+      if (process.env.NODE_ENV !== "production") {
+        warn(
+          `[code-ui] No implementation found for guard "${JSON.stringify(key)}"`,
+        );
+      }
       return undefined;
     }
     return untracked(() => fn(params)) as boolean;
@@ -565,9 +591,11 @@ export class MiniappMachine<T extends MachineSchema> {
         if (key === undefined) continue;
         const fn = impls?.[key as string];
         if (!fn) {
-          warn(
-            `[code-ui] No implementation found for effect "${JSON.stringify(key)}"`,
-          );
+          if (process.env.NODE_ENV !== "production") {
+            warn(
+              `[code-ui] No implementation found for effect "${JSON.stringify(key)}"`,
+            );
+          }
           continue;
         }
         const cleanup = untracked(() => fn(params));
@@ -682,12 +710,12 @@ export class MiniappMachine<T extends MachineSchema> {
     const at = (key: PropertyKey) => bindables[key] as Bindable<any>;
 
     return {
-      get: (key) => at(key).get(),
-      set: (key, value) => at(key).set(value),
-      initial: (key) => at(key).initial,
+      get: (key) => at(key)?.get(),
+      set: (key, value) => at(key)?.set(value),
+      initial: (key) => at(key)?.initial,
       hash: (key) => {
         const item = at(key);
-        return item.hash(item.get());
+        return item ? item.hash(item.get()) : undefined;
       },
     } as BindableContext<T>;
   }
@@ -802,6 +830,8 @@ export class MiniappMachine<T extends MachineSchema> {
   }
 
   private debug(...args: unknown[]) {
-    if (this.machine.debug) console.log("[code-ui]", ...args);
+    if (process.env.NODE_ENV !== "production" && this.machine.debug) {
+      console.log("[code-ui]", ...args);
+    }
   }
 }

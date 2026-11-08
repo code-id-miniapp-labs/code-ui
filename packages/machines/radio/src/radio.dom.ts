@@ -1,16 +1,16 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `radio:${scope.id ?? "default"}:root`;
+  partId(scope, "rd", "root", "r");
 
 export const getBaseId = (scope: Scope): string =>
-  scope.ids?.base ?? `radio:${scope.id ?? "default"}:base`;
+  partId(scope, "rd", "base", "b");
 
-export const getIndicatorId = (scope: Scope): string =>
-  scope.ids?.indicator ?? `radio:${scope.id ?? "default"}:indicator`;
+export const getIndicatorId = (scope: Scope): string | undefined =>
+  optPartId(scope, "indicator");
 
 export const getLabelId = (scope: Scope): string =>
-  scope.ids?.label ?? `radio:${scope.id ?? "default"}:label`;
+  partId(scope, "rd", "label", "l");
 
-export const getDescriptionId = (scope: Scope): string =>
-  scope.ids?.description ?? `radio:${scope.id ?? "default"}:description`;
+export const getDescriptionId = (scope: Scope): string | undefined =>
+  optPartId(scope, "description");

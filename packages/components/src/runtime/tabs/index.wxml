@@ -13,7 +13,7 @@
     <view
       id="{{tabs.listProps.id}}"
       class="cui-tabs-list {{classes.list}}"
-      role="tablist"
+      aria-role="tablist"
       aria-orientation="horizontal"
       data-scope="tabs"
       data-part="list"
@@ -51,7 +51,7 @@
     wx:else
     id="{{tabs.listProps.id}}"
     class="cui-tabs-list {{classes.list}}"
-    role="tablist"
+    aria-role="tablist"
     aria-orientation="vertical"
     data-scope="tabs"
     data-part="list"

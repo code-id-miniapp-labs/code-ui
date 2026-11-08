@@ -103,12 +103,12 @@ describe("Accordion Machine", () => {
       });
       machine.start();
 
-      expect(machine.context.get("collapsible")).toBe(true);
+      expect(connectAccordion(machine.service).collapsible).toBe(true);
 
       machine.updateProps({ collapsible: false });
       await flush();
 
-      expect(machine.context.get("collapsible")).toBe(false);
+      expect(connectAccordion(machine.service).collapsible).toBe(false);
 
       const api = connectAccordion(machine.service);
       api.toggle("1");

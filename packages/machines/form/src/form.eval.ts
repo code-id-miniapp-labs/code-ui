@@ -51,36 +51,26 @@ export function getEffectiveLength(value: any): number {
   return typeof value === "string" ? value.length : String(value).length;
 }
 
-export function parseRegex(pattern: unknown, flags?: string): RegExp | null {
+export function parseRegex(pattern: unknown, flags = ""): RegExp | null {
   if (pattern instanceof RegExp) {
     pattern.lastIndex = 0;
     return pattern;
   }
-  if (typeof pattern === "string") {
-    const trimmed = pattern.trim();
-    if (trimmed.length === 0) return null;
-    const slashMatch = /^\/(.*)\/([a-z]*)$/i.exec(trimmed);
-    return slashMatch && slashMatch[1] !== undefined
-      ? new RegExp(slashMatch[1], slashMatch[2] || flags || "")
-      : new RegExp(trimmed, flags ?? "");
+  if (typeof pattern === "string" && pattern.trim()) {
+    const slash = /^\/(.*)\/([a-z]*)$/i.exec(pattern.trim());
+    return slash
+      ? new RegExp(slash[1] ?? "", slash[2] || flags)
+      : new RegExp(pattern.trim(), flags);
   }
-  if (typeof pattern === "object" && pattern !== null) {
-    const obj = pattern as Record<string, any>;
-    const src =
-      typeof obj.source === "string" && obj.source.length > 0
-        ? obj.source
-        : typeof obj.pattern === "string" && obj.pattern.length > 0
-          ? obj.pattern
-          : null;
-    if (src) {
-      const f =
-        typeof obj.flags === "string"
-          ? obj.flags
-          : typeof obj.patternFlags === "string"
-            ? obj.patternFlags
-            : (flags ?? "");
-      return new RegExp(src, f);
-    }
+  if (pattern && typeof pattern === "object") {
+    const p = pattern as {
+      source?: string;
+      pattern?: string;
+      flags?: string;
+      patternFlags?: string;
+    };
+    const src = p.source || p.pattern;
+    if (src) return new RegExp(src, p.flags ?? p.patternFlags ?? flags);
   }
   return null;
 }

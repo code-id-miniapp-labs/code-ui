@@ -1,36 +1,42 @@
 import type { SwitchApi, SwitchService } from "./switch.types";
-import { parts } from "./switch.anatomy";
 import * as dom from "./switch.dom";
 
 export function connectSwitch(service: SwitchService): SwitchApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, computed, prop, scope } = service;
 
   const currentState = state.get();
   const checked = computed("isChecked");
   const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
-  const loading = Boolean(context.get("loading"));
+  const loading = Boolean(prop("loading"));
   const invalid = computed("isInvalid");
-  const required = Boolean(context.get("required"));
+  const required = Boolean(prop("required"));
   const size = computed("effectiveSize");
-  const color = context.get("color");
-  const name = context.get("name") ?? "";
-  const value = context.get("value") ?? "on";
+  const color = prop("color") ?? "primary";
+  const name = prop("name") ?? "";
+  const value = prop("value") ?? "on";
 
-  const baseProps = {
-    id: dom.getBaseId(scope),
-    ...parts.base.attrs,
+  const sharedData = {
     "data-state": currentState,
-    "data-checked": String(checked),
     "data-disabled": String(disabled),
+    "data-checked": String(checked),
     "data-readonly": String(readOnly),
     "data-loading": String(loading),
     "data-invalid": String(invalid),
-    role: "switch",
+  };
+  const containerId = dom.getContainerId(scope);
+  const thumbId = dom.getThumbId(scope);
+  const descId = dom.getDescriptionId(scope);
+  const hiddenId = dom.getHiddenInputId(scope);
+
+  const baseProps = {
+    id: dom.getBaseId(scope),
+    ...sharedData,
+    "aria-role": "switch",
+    "aria-disabled": disabled,
+    "aria-invalid": invalid,
     "aria-checked": checked,
-    "aria-disabled": String(disabled),
-    "aria-invalid": String(invalid),
   };
 
   return {
@@ -64,21 +70,14 @@ export function connectSwitch(service: SwitchService): SwitchApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
-      "data-state": currentState,
-      "data-checked": String(checked),
-      "data-disabled": String(disabled),
-      "data-readonly": String(readOnly),
-      "data-loading": String(loading),
-      "data-invalid": String(invalid),
-      role: "group",
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(invalid),
+      ...sharedData,
+      "aria-role": "group",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
     },
 
     containerProps: {
-      id: dom.getContainerId(scope),
-      ...parts.container.attrs,
+      ...(containerId ? { id: containerId } : {}),
       "data-state": currentState,
       "data-disabled": String(disabled),
     },
@@ -87,31 +86,27 @@ export function connectSwitch(service: SwitchService): SwitchApi {
     controlProps: baseProps,
 
     thumbProps: {
-      id: dom.getThumbId(scope),
-      ...parts.thumb.attrs,
+      ...(thumbId ? { id: thumbId } : {}),
       "data-state": currentState,
-      "data-checked": String(checked),
       "data-disabled": String(disabled),
+      "data-checked": String(checked),
       "data-loading": String(loading),
       "aria-hidden": "true",
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
-      ...parts.label.attrs,
       "data-disabled": String(disabled),
     },
 
     descriptionProps: {
-      id: dom.getDescriptionId(scope),
-      ...parts.description.attrs,
+      ...(descId ? { id: descId } : {}),
       "data-disabled": String(disabled),
     },
 
     hiddenInputProps: {
-      id: dom.getHiddenInputId(scope),
+      ...(hiddenId ? { id: hiddenId } : {}),
       type: "checkbox",
-      tabIndex: -1,
       name: name || undefined,
       value,
       checked,

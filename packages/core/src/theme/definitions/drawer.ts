@@ -13,8 +13,6 @@ export default function drawerTheme(_options: ThemeOptions = {}) {
       grabberBar: "w-10 h-1.5 rounded-full bg-neutral-300",
       header:
         "flex items-center justify-between px-4 py-3 border-b border-neutral-100 shrink-0 box-border w-full",
-      title: "text-base font-semibold text-neutral-900",
-      description: "text-sm text-neutral-500",
       closeTrigger:
         "inline-flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors shrink-0",
       body: "flex-1 min-h-0 w-full box-border overflow-y-auto px-4 pt-3 pb-6 text-sm text-neutral-600 overscroll-contain",

@@ -1,50 +1,21 @@
 import type { RadioApi, RadioService } from "./radio.types";
-import { radioParts } from "./radio.anatomy";
 import * as dom from "./radio.dom";
 
 export function connectRadio(service: RadioService): RadioApi {
-  const { send, context, computed, scope } = service;
+  const { send, computed, prop, scope } = service;
 
   const checked = computed("isChecked");
   const disabled = computed("isDisabled");
-  const readOnly = Boolean(context.get("readOnly"));
+  const readOnly = Boolean(prop("readOnly"));
   const invalid = computed("isInvalid");
   const size = computed("effectiveSize");
   const color = computed("effectiveColor");
   const variant = computed("effectiveVariant");
-  const value = context.get("value") ?? "";
-  const label = context.get("label") ?? "";
-  const description = context.get("description") ?? "";
-
-  const rootProps = {
-    id: dom.getRootId(scope),
-    ...radioParts.root.attrs,
-    "data-state": checked ? "checked" : "unchecked",
-    "data-disabled": String(disabled),
-    "data-readonly": String(readOnly),
-    "data-invalid": String(invalid),
-  };
-
-  const baseProps = {
-    id: dom.getBaseId(scope),
-    ...radioParts.base.attrs,
-    "data-state": checked ? "checked" : "unchecked",
-    "data-checked": String(checked),
-    "data-disabled": String(disabled),
-    "data-readonly": String(readOnly),
-    "data-invalid": String(invalid),
-    role: "radio",
-    "aria-checked": checked,
-    "aria-disabled": String(disabled),
-    "aria-invalid": String(invalid),
-  };
-
-  const indicatorProps = {
-    id: dom.getIndicatorId(scope),
-    ...radioParts.indicator.attrs,
-    "data-state": checked ? "checked" : "unchecked",
-    "data-disabled": String(disabled),
-  };
+  const value = prop("value") ?? "";
+  const label = prop("label") ?? "";
+  const description = prop("description") ?? "";
+  const dataState = checked ? "checked" : "unchecked";
+  const indicatorId = dom.getIndicatorId(scope);
 
   return {
     checked,
@@ -60,8 +31,29 @@ export function connectRadio(service: RadioService): RadioApi {
     handleTap: () => {
       send({ type: "SELECT" });
     },
-    rootProps,
-    baseProps,
-    indicatorProps,
+    rootProps: {
+      id: dom.getRootId(scope),
+      "data-state": dataState,
+      "data-disabled": String(disabled),
+      "data-readonly": String(readOnly),
+      "data-invalid": String(invalid),
+    },
+    baseProps: {
+      id: dom.getBaseId(scope),
+      "data-state": dataState,
+      "data-disabled": String(disabled),
+      "data-checked": String(checked),
+      "data-readonly": String(readOnly),
+      "data-invalid": String(invalid),
+      "aria-role": "radio",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
+      "aria-checked": checked,
+    },
+    indicatorProps: {
+      ...(indicatorId ? { id: indicatorId } : {}),
+      "data-state": dataState,
+      "data-disabled": String(disabled),
+    },
   };
 }

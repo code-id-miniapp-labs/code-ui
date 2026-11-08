@@ -3,6 +3,4 @@ export { connectProgress } from "./progress.connect";
 export * as progressDom from "./progress.dom";
 export { progressMachine } from "./progress.machine";
 export { defaultProgressProps } from "./progress.props";
-export { createCircleDataUrl } from "./progress.utils";
 export * from "./progress.types";
-

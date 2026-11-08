@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [stepperItemBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultStepperItemProps, {
       className: {
         type: String,

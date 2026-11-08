@@ -4,68 +4,43 @@ export interface StepperItemDomScope {
   stepperId?: string | undefined;
 }
 
+const sidOf = (scope: StepperItemDomScope, stepperId?: string): string =>
+  stepperId || scope.stepperId || scope.id || "d";
+
 export const getRootId = (
   scope: StepperItemDomScope,
   index: number,
   stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return scope.ids?.item?.(index) ?? `cui-step-${sid}-${index}`;
-};
+): string =>
+  scope.ids?.item?.(index) ?? `st-${sidOf(scope, stepperId)}-i-${index}`;
 
 export const getTriggerId = (
   scope: StepperItemDomScope,
   index: number,
   stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return (
-    scope.ids?.trigger?.(index) ??
-    `cui-step-${sid}-trigger-${index}`
-  );
-};
+): string =>
+  scope.ids?.trigger?.(index) ?? `st-${sidOf(scope, stepperId)}-tr-${index}`;
 
 export const getIndicatorId = (
   scope: StepperItemDomScope,
   index: number,
-  stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return (
-    scope.ids?.indicator?.(index) ??
-    `cui-step-${sid}-indicator-${index}`
-  );
-};
+  _stepperId?: string,
+): string | undefined => scope.ids?.indicator?.(index);
 
 export const getSeparatorId = (
   scope: StepperItemDomScope,
   index: number,
-  stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return (
-    scope.ids?.separator?.(index) ??
-    `cui-step-${sid}-separator-${index}`
-  );
-};
+  _stepperId?: string,
+): string | undefined => scope.ids?.separator?.(index);
 
 export const getTitleId = (
   scope: StepperItemDomScope,
   index: number,
-  stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return scope.ids?.title?.(index) ?? `cui-step-${sid}-title-${index}`;
-};
+  _stepperId?: string,
+): string | undefined => scope.ids?.title?.(index);
 
 export const getDescriptionId = (
   scope: StepperItemDomScope,
   index: number,
-  stepperId?: string,
-): string => {
-  const sid = stepperId || scope.stepperId || scope.id || "root";
-  return (
-    scope.ids?.description?.(index) ??
-    `cui-step-${sid}-description-${index}`
-  );
-};
+  _stepperId?: string,
+): string | undefined => scope.ids?.description?.(index);

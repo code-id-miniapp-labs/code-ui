@@ -1,6 +1,6 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
-import { getIcon } from "@code-ui/core";
+import { getIcon } from "@code-ui/core/icons";
 import themeConfig from "virtual:cui/theme/icon";
 import { tv } from "../../utils/variants";
 
@@ -12,11 +12,6 @@ const PATH_RE =
 Component(
   createComponentOptions({
     behaviors: [computedBehavior],
-
-    options: {
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
 
     properties: {
       name: {

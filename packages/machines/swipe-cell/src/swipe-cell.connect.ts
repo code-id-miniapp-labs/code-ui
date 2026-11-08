@@ -5,8 +5,25 @@ import type {
   SwipeCellService,
   SwipeSide,
 } from "./swipe-cell.types";
-import { parts } from "./swipe-cell.anatomy";
 import * as dom from "./swipe-cell.dom";
+
+function mapActions(
+  list: SwipeActionItem[],
+  side: SwipeSide,
+): SwipeCellActionSnapshot[] {
+  return list.map((action, index) => ({
+    index,
+    side,
+    value: action.value,
+    text: action.text,
+    icon: action.icon,
+    className: action.className,
+    style: action.style,
+    color: action.color,
+    disabled: action.disabled,
+    raw: action,
+  }));
+}
 
 export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
   const { state, send, computed, context, prop, scope } = service;
@@ -28,35 +45,8 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
   const rawLeft: SwipeActionItem[] = prop("left") ?? [];
   const rawRight: SwipeActionItem[] = prop("right") ?? [];
 
-  const leftActions: SwipeCellActionSnapshot[] = rawLeft.map(
-    (action, index) => ({
-      index,
-      side: "left",
-      value: action.value,
-      text: action.text,
-      icon: action.icon,
-      className: action.className,
-      style: action.style,
-      color: action.color,
-      disabled: action.disabled,
-      raw: action,
-    }),
-  );
-
-  const rightActions: SwipeCellActionSnapshot[] = rawRight.map(
-    (action, index) => ({
-      index,
-      side: "right",
-      value: action.value,
-      text: action.text,
-      icon: action.icon,
-      className: action.className,
-      style: action.style,
-      color: action.color,
-      disabled: action.disabled,
-      raw: action,
-    }),
-  );
+  const leftActions = mapActions(rawLeft, "left");
+  const rightActions = mapActions(rawRight, "right");
 
   const contentStyle =
     offset !== 0 ? `transform: translate3d(${offset}px, 0, 0);` : "";
@@ -154,36 +144,31 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-disabled": disabled,
-      "data-open": open,
-      "data-side": openedSide ?? "",
+      ...(disabled ? { "data-disabled": "true" } : {}),
+      ...(open ? { "data-open": "true" } : {}),
+      ...(openedSide ? { "data-side": openedSide } : {}),
     },
 
     wrapperProps: {
       id: dom.getWrapperId(scope),
-      ...parts.wrapper.attrs,
       "data-state": currentState,
-      "data-disabled": disabled,
+      ...(disabled ? { "data-disabled": "true" } : {}),
     },
 
     leftProps: {
       id: dom.getLeftId(scope),
-      ...parts.left.attrs,
       "data-state": currentState,
       hidden: !hasLeftActions,
     },
 
     contentProps: {
       id: dom.getContentId(scope),
-      ...parts.content.attrs,
       "data-state": currentState,
     },
 
     rightProps: {
       id: dom.getRightId(scope),
-      ...parts.right.attrs,
       "data-state": currentState,
       hidden: !hasRightActions,
     },

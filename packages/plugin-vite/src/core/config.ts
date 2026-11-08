@@ -24,7 +24,10 @@ import {
   mergeComponentConfig,
   TAILWIND_500_FALLBACKS,
 } from "./theme";
-import { serializeConfig } from "./serialize";
+import {
+  serializeCompactThemeModule,
+  serializeConfig,
+} from "./serialize";
 
 export function mergeConfig(
   base: CodeUIConfig,
@@ -70,9 +73,10 @@ export function mergeConfig(
       for (const [compName, compOverride] of Object.entries(
         overrides.components,
       )) {
-        if (!compOverride) continue;
+        if (!compOverride || !isPlainObject(compOverride)) continue;
+        const existing = mergedComponents[compName];
         mergedComponents[compName] = mergeComponentConfig(
-          mergedComponents[compName],
+          isPlainObject(existing) ? existing : undefined,
           compOverride,
         );
       }
@@ -317,7 +321,7 @@ if (import.meta.hot) {
     }
 
     const themeConfig = this.getCompiledComponentTheme(componentName);
-    const code = `export default ${serializeConfig(themeConfig)};`;
+    const code = serializeCompactThemeModule(themeConfig);
     this.cachedVirtualComponentCodes.set(componentName, code);
     return code;
   }

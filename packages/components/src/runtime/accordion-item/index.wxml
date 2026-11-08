@@ -11,7 +11,7 @@
     <view
       id="{{cAccordionItem.triggerProps.id}}"
       class="{{classes.trigger}}"
-      role="button"
+      aria-role="button"
       aria-expanded="{{cAccordionItem.isOpen}}"
       aria-disabled="{{cAccordionItem.isDisabled}}"
       data-scope="accordion"
@@ -54,7 +54,7 @@
     id="{{cAccordionItem.contentProps.id}}"
     class="{{classes.content}}"
     style="{{cAccordionItem.contentStyle}}"
-    role="region"
+    aria-role="region"
     aria-labelledby="{{cAccordionItem.triggerProps.id}}"
     data-scope="accordion"
     data-part="content"

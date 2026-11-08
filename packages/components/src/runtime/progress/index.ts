@@ -27,51 +27,31 @@ Component(
   createComponentOptions({
     behaviors: [progressBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultProgressProps, {
-      className: {
-        type: String,
-        value: "",
-      },
-      label: {
-        type: String,
-        value: "",
-      },
-      showValue: {
-        type: Boolean,
-        value: false,
-      },
+      className: { type: String, value: "" },
+      label: { type: String, value: "" },
+      showValue: { type: Boolean, value: false },
     }),
 
     computed: {
       classes() {
         const api = this.data.progress;
-        const color = api?.color ?? this.data.color;
-        const size = api?.size ?? this.data.size;
-        const type = api?.type ?? this.data.type;
-        const orientation = api?.orientation ?? this.data.orientation;
-        const striped = Boolean(api?.striped ?? this.data.striped);
-        const animated = Boolean(api?.animated ?? this.data.animated);
-        const inverted = Boolean(api?.inverted ?? this.data.inverted);
         const indeterminate = Boolean(
           api
             ? api.isIndeterminate
-            : this.data.value === null || this.data.value === undefined,
+            : this.data.indeterminate ||
+                this.data.value === null ||
+                this.data.value === undefined,
         );
 
         const themeFns = progressTheme({
-          color,
-          size,
-          type,
-          orientation,
-          striped,
-          animated,
-          inverted,
+          color: this.data.color,
+          size: this.data.size,
+          type: api?.type ?? this.data.type,
+          orientation: api?.orientation ?? this.data.orientation,
+          striped: Boolean(this.data.striped),
+          animated: Boolean(this.data.animated),
+          inverted: Boolean(this.data.inverted),
           indeterminate,
         });
 
@@ -81,25 +61,17 @@ Component(
 
     methods: {
       setValue(value: number | null) {
-        const api = getApi<ProgressApi>(this, "progress");
-        api?.setValue(value);
+        getApi<ProgressApi>(this, "progress")?.setValue(value);
       },
-
       setToMin() {
-        const api = getApi<ProgressApi>(this, "progress");
-        api?.setToMin();
+        getApi<ProgressApi>(this, "progress")?.setToMin();
       },
-
       setToMax() {
-        const api = getApi<ProgressApi>(this, "progress");
-        api?.setToMax();
+        getApi<ProgressApi>(this, "progress")?.setToMax();
       },
-
       reset() {
-        const api = getApi<ProgressApi>(this, "progress");
-        api?.reset();
+        getApi<ProgressApi>(this, "progress")?.reset();
       },
     },
   }),
 );
-

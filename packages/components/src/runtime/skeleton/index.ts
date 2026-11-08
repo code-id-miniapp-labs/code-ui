@@ -7,10 +7,6 @@ const skeletonTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
-    options: {
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
     properties: {
       ui: { type: Object, value: {} },
       className: { type: String, value: "" },

@@ -1,14 +1,18 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableContext, PropFn } from "@code-ui/core";
 import {
-  setupFormFieldSync,
   cleanupFormFieldSync,
+  createFormFieldComputed,
+  hasFormFieldErrors,
+  setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
+import type { MiniAppRect } from "@code-ui/utils";
 import type {
-  SliderContext,
   SliderMachine,
+  SliderOrientation,
   SliderParams,
-  SliderProps,
+  SliderPoint,
   SliderSchema,
   SliderSize,
 } from "./slider.types";
@@ -21,6 +25,66 @@ import {
   normalizeValues,
 } from "./slider.utils";
 
+function getSliderConfig(prop: PropFn<SliderSchema>) {
+  return {
+    min: Number(prop("min") ?? 0),
+    max: Number(prop("max") ?? 100),
+    step: Number(prop("step") ?? 1),
+    orientation: (prop("orientation") ?? "horizontal") as SliderOrientation,
+    inverted: Boolean(prop("inverted")),
+    minSteps: Number(prop("minStepsBetweenThumbs") ?? 0),
+  };
+}
+
+function updateThumbFromPoint(
+  context: BindableContext<SliderSchema>,
+  prop: PropFn<SliderSchema>,
+  rect: MiniAppRect,
+  point: SliderPoint,
+  index: number,
+): void {
+  const { min, max, step, orientation, inverted, minSteps } =
+    getSliderConfig(prop);
+  const currentVals = [...context.get("value")];
+  const percent = getPercentFromPoint(point, rect, orientation, inverted);
+  const rawVal = min + (percent / 100) * (max - min);
+  const clampedVal = clampThumbValue(
+    currentVals,
+    index,
+    rawVal,
+    min,
+    max,
+    step,
+    minSteps,
+  );
+  if (currentVals[index] !== clampedVal) {
+    currentVals[index] = clampedVal;
+    context.set("value", currentVals);
+  }
+}
+
+function stepThumb(
+  context: BindableContext<SliderSchema>,
+  prop: PropFn<SliderSchema>,
+  index: number,
+  direction: 1 | -1,
+  stepOverride?: number,
+): void {
+  const { min, max, step, minSteps } = getSliderConfig(prop);
+  const currentVals = [...context.get("value")];
+  const cur = currentVals[index] ?? min;
+  currentVals[index] = clampThumbValue(
+    currentVals,
+    index,
+    cur + direction * (stepOverride ?? step),
+    min,
+    max,
+    step,
+    minSteps,
+  );
+  context.set("value", currentVals);
+}
+
 function notifyChange(
   {
     prop,
@@ -31,8 +95,7 @@ function notifyChange(
   isEnd = false,
 ): void {
   const currentVal = computed("value");
-  const currentValues = context.get("value");
-  const details = { value: currentVal, values: currentValues };
+  const details = { value: currentVal, values: context.get("value") };
 
   if (isEnd) {
     prop("onChangeEnd")?.(details);
@@ -52,9 +115,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
   initialState: () => "idle",
 
   refs: ({ prop }) => {
-    const min = Number(prop("min") ?? 0);
-    const max = Number(prop("max") ?? 100);
-    const step = Number(prop("step") ?? 1);
+    const { min, max, step } = getSliderConfig(prop);
     const propVal = prop("value");
     const defaultVal = prop("defaultValue");
     const rawVal =
@@ -63,117 +124,64 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         : isNotNull(defaultVal) && defaultVal !== ""
           ? defaultVal
           : 0;
-    const initialValues = normalizeValues(rawVal, min, max, step);
 
     return {
-      initialValue: initialValues,
+      initialValue: normalizeValues(rawVal, min, max, step),
       rect: null,
       formField: undefined,
     };
   },
 
-  context: ({ prop, bindable }) => {
-    const propBindable = <K extends keyof SliderContext & keyof SliderProps>(
-      key: K,
-      defaultValue: SliderContext[K],
-    ) =>
-      bindable<SliderContext[K]>(() => ({
-        value: prop(key) as SliderContext[K] | undefined,
-        defaultValue,
-      }));
+  context: ({ prop, bindable }) => ({
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
 
-    const stateBindable = <K extends keyof SliderContext>(
-      _key: K,
-      defaultValue: SliderContext[K],
-    ) =>
-      bindable<SliderContext[K]>(() => ({
-        defaultValue,
-      }));
+    activeThumbIndex: bindable<number>(() => ({
+      defaultValue: -1,
+    })),
 
-    return {
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
+    value: bindable<number[]>(() => {
+      const propVal = prop("value");
+      const defaultVal = prop("defaultValue");
+      const { min, max, step } = getSliderConfig(prop);
+      const hasPropVal = isNotNull(propVal) && propVal !== "";
+      const hasDefaultVal = isNotNull(defaultVal) && defaultVal !== "";
 
-      invalid: bindable<boolean>(() => {
-        const rawInvalid = prop("invalid");
-        return {
-          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-          defaultValue: false,
-        };
-      }),
-
-      min: propBindable("min", 0),
-      max: propBindable("max", 100),
-      step: propBindable("step", 1),
-      orientation: propBindable("orientation", "horizontal"),
-      inverted: propBindable("inverted", false),
-      minStepsBetweenThumbs: propBindable("minStepsBetweenThumbs", 0),
-      activeThumbIndex: stateBindable("activeThumbIndex", -1),
-
-      value: bindable<number[]>(() => {
-        const propVal = prop("value");
-        const defaultVal = prop("defaultValue");
-        const min = Number(prop("min") ?? 0);
-        const max = Number(prop("max") ?? 100);
-        const step = Number(prop("step") ?? 1);
-        const hasPropVal = isNotNull(propVal) && propVal !== "";
-        const hasDefaultVal = isNotNull(defaultVal) && defaultVal !== "";
-
-        return {
-          value: hasPropVal
-            ? normalizeValues(propVal, min, max, step)
-            : undefined,
-          defaultValue: normalizeValues(
-            hasDefaultVal ? defaultVal : 0,
-            min,
-            max,
-            step,
-          ),
-          isEqual,
-        };
-      }),
-    };
-  },
+      return {
+        value: hasPropVal
+          ? normalizeValues(propVal, min, max, step)
+          : undefined,
+        defaultValue: normalizeValues(
+          hasDefaultVal ? defaultVal : 0,
+          min,
+          max,
+          step,
+        ),
+        isEqual,
+      };
+    }),
+  }),
 
   computed: {
-    formDisabled: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.disabled() ?? false;
-    },
-    formReadOnly: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.readOnly() ?? false;
-    },
-    fieldDisabled: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
-        prop("fieldDisabled") ||
-        host?.fieldState(prop("name") || scope.id || "slider")?.disabled,
-      );
-    },
-    fieldSize: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return (
-        prop("fieldSize") ||
-        host?.fieldState(prop("name") || scope.id || "slider")?.size ||
-        ""
-      );
-    },
-    isInvalid: ({ prop, refs, context, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
-        context.get("invalid") ||
-        host?.errors(prop("name") || scope.id || "slider").length,
-      );
-    },
-    isDisabled: ({ context, computed }) =>
+    ...createFormFieldComputed("slider"),
+    isInvalid: ({ prop, refs, context, scope }) =>
       Boolean(
-        context.get("disabled") ||
-        computed("formDisabled") ||
-        computed("fieldDisabled"),
+        context.get("invalid") ||
+          hasFormFieldErrors(prop, refs, scope, "slider"),
       ),
-    isReadOnly: ({ context, computed }) =>
-      Boolean(context.get("readOnly") || computed("formReadOnly")),
+    isDisabled: ({ prop, computed }) =>
+      Boolean(
+        prop("disabled") ||
+          computed("formDisabled") ||
+          computed("fieldDisabled"),
+      ),
+    isReadOnly: ({ prop, computed }) =>
+      Boolean(prop("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
     isDragging: ({ state }) => state.matches("dragging"),
@@ -186,15 +194,13 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         : ((fieldSize || rawSize || "md") as SliderSize);
     },
     values: ({ context }) => context.get("value"),
-    value: ({ context, computed }) => {
+    value: ({ context, prop, computed }) => {
       const vals = context.get("value");
-      return computed("isRange") ? vals : (vals[0] ?? context.get("min"));
+      return computed("isRange") ? vals : (vals[0] ?? Number(prop("min") ?? 0));
     },
-    valueAsPercent: ({ context }) => {
-      const vals = context.get("value");
-      const min = context.get("min");
-      const max = context.get("max");
-      return vals.map((v) => getValueAsPercent(v, min, max));
+    valueAsPercent: ({ context, prop }) => {
+      const { min, max } = getSliderConfig(prop);
+      return context.get("value").map((v) => getValueAsPercent(v, min, max));
     },
   },
 
@@ -251,93 +257,46 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
     },
 
     actions: {
-      setPointerDown: ({ context, event, refs }) => {
-        if (event.type !== "POINTER_DOWN") return;
-        if (event.rect) {
-          refs.set("rect", event.rect);
-        }
+      setPointerDown: ({ context, prop, event, refs }) => {
+        const e = event as any;
+        if (e.rect) refs.set("rect", e.rect);
         const rect = refs.get("rect");
-        const currentVals = [...context.get("value")];
-        const min = context.get("min");
-        const max = context.get("max");
-        const step = context.get("step");
-        const orientation = context.get("orientation");
-        const inverted = context.get("inverted");
-        const minSteps = context.get("minStepsBetweenThumbs");
+        const currentVals = context.get("value");
+        const { min, max, orientation, inverted } = getSliderConfig(prop);
 
-        let targetIndex = event.index ?? -1;
+        let targetIndex = e.index ?? -1;
         if (targetIndex < 0 && rect) {
           const percent = getPercentFromPoint(
-            event.point,
+            e.point,
             rect,
             orientation,
             inverted,
           );
-          const rawTargetValue = min + (percent / 100) * (max - min);
-          targetIndex = getClosestThumbIndex(currentVals, rawTargetValue);
+          targetIndex = getClosestThumbIndex(
+            currentVals,
+            min + (percent / 100) * (max - min),
+          );
         } else if (targetIndex < 0) {
           targetIndex = 0;
         }
 
         context.set("activeThumbIndex", targetIndex);
-
         if (rect) {
-          const percent = getPercentFromPoint(
-            event.point,
-            rect,
-            orientation,
-            inverted,
-          );
-          const rawVal = min + (percent / 100) * (max - min);
-          const clampedVal = clampThumbValue(
-            currentVals,
-            targetIndex,
-            rawVal,
-            min,
-            max,
-            step,
-            minSteps,
-          );
-          currentVals[targetIndex] = clampedVal;
-          context.set("value", currentVals);
+          updateThumbFromPoint(context, prop, rect, e.point, targetIndex);
         }
       },
 
-      updateValueFromPoint: ({ context, event, refs }) => {
-        if (event.type !== "POINTER_MOVE") return;
+      updateValueFromPoint: ({ context, prop, event, refs }) => {
         const rect = refs.get("rect");
-        if (!rect) return;
         const activeIndex = context.get("activeThumbIndex");
-        if (activeIndex < 0) return;
-
-        const currentVals = [...context.get("value")];
-        const min = context.get("min");
-        const max = context.get("max");
-        const step = context.get("step");
-        const orientation = context.get("orientation");
-        const inverted = context.get("inverted");
-        const minSteps = context.get("minStepsBetweenThumbs");
-
-        const percent = getPercentFromPoint(
-          event.point,
-          rect,
-          orientation,
-          inverted,
-        );
-        const rawVal = min + (percent / 100) * (max - min);
-        const clampedVal = clampThumbValue(
-          currentVals,
-          activeIndex,
-          rawVal,
-          min,
-          max,
-          step,
-          minSteps,
-        );
-
-        if (currentVals[activeIndex] !== clampedVal) {
-          currentVals[activeIndex] = clampedVal;
-          context.set("value", currentVals);
+        if (rect && activeIndex >= 0) {
+          updateThumbFromPoint(
+            context,
+            prop,
+            rect,
+            (event as any).point,
+            activeIndex,
+          );
         }
       },
 
@@ -345,85 +304,40 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         context.set("activeThumbIndex", -1);
       },
 
-      setValue: ({ context, event }) => {
-        if (event.type !== "SET_VALUE") return;
-        const min = context.get("min");
-        const max = context.get("max");
-        const step = context.get("step");
-        const minSteps = context.get("minStepsBetweenThumbs");
+      setValue: ({ context, prop, event }) => {
+        const e = event as any;
+        const { min, max, step, minSteps } = getSliderConfig(prop);
 
-        if (event.index !== undefined) {
+        if (e.index !== undefined) {
           const currentVals = [...context.get("value")];
-          const rawNum = Number(event.value);
-          const clamped = clampThumbValue(
+          currentVals[e.index] = clampThumbValue(
             currentVals,
-            event.index,
-            rawNum,
+            e.index,
+            Number(e.value),
             min,
             max,
             step,
             minSteps,
           );
-          currentVals[event.index] = clamped;
           context.set("value", currentVals);
         } else {
-          const normalized = normalizeValues(event.value, min, max, step);
-          context.set("value", normalized);
+          context.set("value", normalizeValues(e.value, min, max, step));
         }
       },
 
-      stepUp: ({ context, event }) => {
-        if (event.type !== "STEP_UP") return;
-        const index = event.index ?? 0;
-        const stepSize = event.step ?? context.get("step");
-        const min = context.get("min");
-        const max = context.get("max");
-        const step = context.get("step");
-        const minSteps = context.get("minStepsBetweenThumbs");
-
-        const currentVals = [...context.get("value")];
-        const cur = currentVals[index] ?? min;
-        const next = cur + stepSize;
-        currentVals[index] = clampThumbValue(
-          currentVals,
-          index,
-          next,
-          min,
-          max,
-          step,
-          minSteps,
-        );
-        context.set("value", currentVals);
+      stepUp: ({ context, prop, event }) => {
+        const e = event as any;
+        stepThumb(context, prop, e.index ?? 0, 1, e.step);
       },
 
-      stepDown: ({ context, event }) => {
-        if (event.type !== "STEP_DOWN") return;
-        const index = event.index ?? 0;
-        const stepSize = event.step ?? context.get("step");
-        const min = context.get("min");
-        const max = context.get("max");
-        const step = context.get("step");
-        const minSteps = context.get("minStepsBetweenThumbs");
-
-        const currentVals = [...context.get("value")];
-        const cur = currentVals[index] ?? min;
-        const next = cur - stepSize;
-        currentVals[index] = clampThumbValue(
-          currentVals,
-          index,
-          next,
-          min,
-          max,
-          step,
-          minSteps,
-        );
-        context.set("value", currentVals);
+      stepDown: ({ context, prop, event }) => {
+        const e = event as any;
+        stepThumb(context, prop, e.index ?? 0, -1, e.step);
       },
 
       resetValue: ({ context, refs }) => {
-        const initial = refs.get("initialValue");
         context.set("invalid", false);
-        context.set("value", [...initial]);
+        context.set("value", [...refs.get("initialValue")]);
       },
 
       emitChange: ({ prop, refs, computed, context }) => {
@@ -444,16 +358,12 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
             getName: () => prop("name") ?? "",
             getValue: () => computed("value"),
             setValue: (rawVal: unknown) => {
-              const min = context.get("min");
-              const max = context.get("max");
-              const step = context.get("step");
-              const nextVals = normalizeValues(rawVal, min, max, step);
-              context.set("value", nextVals);
+              const { min, max, step } = getSliderConfig(prop);
+              context.set("value", normalizeValues(rawVal, min, max, step));
             },
             resetValue: () => {
-              const initial = refs.get("initialValue");
               context.set("invalid", false);
-              context.set("value", [...initial]);
+              context.set("value", [...refs.get("initialValue")]);
             },
             focus: () => {},
             getRules: () => prop("rules") ?? [],

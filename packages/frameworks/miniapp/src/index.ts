@@ -16,25 +16,11 @@ export type { ConnectFn, MiniAppInstance } from "./connect";
 export {
   createMachineBehavior,
   createProperties,
+  getComponentId,
+  cleanupComponentId,
 } from "./behavior";
 export type { CreateMachineBehaviorOptions } from "./behavior";
 export type { MachinePlugin } from "./plugin";
-const instanceIds = new WeakMap<object, string>();
-let instanceCounter = 0;
-
-export function getComponentId(instance: any, explicitId?: string): string {
-  if (explicitId) return explicitId;
-  let id = instanceIds.get(instance);
-  if (!id) {
-    id = `cui-${++instanceCounter}`;
-    instanceIds.set(instance, id);
-  }
-  return id;
-}
-
-export function cleanupComponentId(instance: any): void {
-  instanceIds.delete(instance);
-}
 
 export {
   wxButtonBehavior,

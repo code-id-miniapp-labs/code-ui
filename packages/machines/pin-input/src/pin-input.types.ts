@@ -138,24 +138,7 @@ export interface PinInputContext {
   length: number;
   value: string[];
   focusedIndex: number;
-  variant: PinInputVariant;
-  color: PinInputColor;
-  size: PinInputSize;
-  highlight: boolean;
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  mask: boolean;
-  otp: boolean;
-  type: PinInputType;
-  placeholder: string;
-  separator: PinInputSeparator;
-  separatorChar: string;
-  blurOnComplete: boolean;
-  selectOnFocus: boolean;
-  form: string;
-  name: string;
-  ui: PinInputUI;
 }
 
 export interface PinInputComputed {

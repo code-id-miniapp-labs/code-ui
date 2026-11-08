@@ -6,14 +6,12 @@ export interface TabsItemDomScope {
 export const getRootId = (
   scope: TabsItemDomScope,
   value?: string | number,
-): string =>
-  scope.ids?.root ?? `cui-tabs-item-${scope.id ?? value ?? "item"}`;
+): string => scope.ids?.root ?? `tbi-${scope.id ?? value ?? "d"}-r`;
 
 export const getContentId = (
   scope: TabsItemDomScope,
   value?: string | number,
-): string =>
-  scope.ids?.content ?? `cui-tabs-item-${scope.id ?? value ?? "item"}-content`;
+): string => scope.ids?.content ?? `tbi-${scope.id ?? value ?? "d"}-c`;
 
 export const getTriggerId = (
   scope: TabsItemDomScope,
@@ -21,5 +19,4 @@ export const getTriggerId = (
   value?: string | number,
 ): string =>
   scope.ids?.trigger ??
-  `cui-tabs-${tabsId ?? "root"}-trigger-${value ?? scope.id ?? "item"}`;
-
+  `tb-${tabsId || "d"}-tr-${value ?? scope.id ?? "i"}`;

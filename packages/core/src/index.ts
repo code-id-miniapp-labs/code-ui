@@ -41,7 +41,16 @@ export type { PropTypes, NormalizeProps } from "./types";
 export { createMachine, createGuards, setup } from "./create-machine";
 export { extendMachine } from "./extend-machine";
 
-export { createScope } from "./scope";
+export {
+  createScope,
+  partId,
+  itemPartId,
+  optPartId,
+  isMinimalDataAttrs,
+  dataAttrs,
+  dataControlState,
+  ariaControlState,
+} from "./scope";
 export { createRefs } from "./refs";
 
 export {
@@ -68,6 +77,7 @@ export {
 } from "./config";
 export type {
   CodeUIConfig,
+  DataAttributesMode,
   UIConfig,
   UIColorsConfig,
   TailwindColorPalette,

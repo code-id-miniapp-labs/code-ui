@@ -1,17 +1,8 @@
 import type { MachinePlugin } from "../plugin";
 
-const instanceIds = new WeakMap<object, string>();
-let instanceCounter = 0;
-
-function getComponentId(instance: any, explicitId?: string): string {
-  if (explicitId) return explicitId;
-  let id = instanceIds.get(instance);
-  if (!id) {
-    id = `cui-accordion-${++instanceCounter}`;
-    instanceIds.set(instance, id);
-  }
-  return id;
-}
+let accCounter = 0;
+const getComponentId = (inst: any, explicitId?: string): string =>
+  explicitId || (inst.__cuiAccId ||= `cui-accordion-${++accCounter}`);
 
 /**
  * Shared Behavior reference for `<c-accordion>` / `<cui-accordion>` parent components.

@@ -140,49 +140,22 @@ function requestSlotContext<T>(
 
 function resolvePageScope(component: any): object | null {
   try {
-    if (typeof component?.getPageId === "function") {
-      const pageId = component.getPageId();
-      if (typeof pageId === "string" && pageId.length > 0) {
-        let holder = pageFallbacks.get(pageId);
-        if (!holder) {
-          holder = Object.create(null) as object;
-          pageFallbacks.set(pageId, holder);
-        }
-        return holder;
+    const pid = component?.getPageId?.() ?? component?.__wxWebviewId__;
+    if (pid != null && pid !== "") {
+      const k = String(pid);
+      let h = pageFallbacks.get(k);
+      if (!h) {
+        h = Object.create(null) as object;
+        pageFallbacks.set(k, h);
       }
+      return h;
     }
+    const pages =
+      typeof getCurrentPages === "function" ? getCurrentPages() : null;
+    return pages && pages.length > 0 ? (pages[pages.length - 1] as object) : null;
   } catch {
-    // ignore
+    return null;
   }
-
-  if (
-    component &&
-    (typeof component.__wxWebviewId__ === "number" ||
-      typeof component.__wxWebviewId__ === "string")
-  ) {
-    const key = `wv:${String(component.__wxWebviewId__)}`;
-    let holder = pageFallbacks.get(key);
-    if (!holder) {
-      holder = Object.create(null) as object;
-      pageFallbacks.set(key, holder);
-    }
-    return holder;
-  }
-
-  try {
-    if (typeof getCurrentPages === "function") {
-      const pages = getCurrentPages();
-      const topPage =
-        pages && pages.length > 0 ? pages[pages.length - 1] : null;
-      if (topPage && typeof topPage === "object") {
-        return topPage as object;
-      }
-    }
-  } catch {
-    // ignore
-  }
-
-  return null;
 }
 
 function resolveNextOwner(current: any): object | null {

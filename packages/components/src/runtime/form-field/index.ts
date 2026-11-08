@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [formFieldBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultFormFieldProps, {
       className: {
         type: String,

@@ -4,7 +4,6 @@ import type {
   PinInputSeparator,
   PinInputService,
 } from "./pin-input.types";
-import { parts } from "./pin-input.anatomy";
 import * as dom from "./pin-input.dom";
 import { isValidCharacter } from "./pin-input.machine";
 
@@ -13,23 +12,24 @@ function shouldShowSeparator(
   separator: PinInputSeparator,
   length: number,
 ): boolean {
-  if (index >= length - 1) return false;
-  if (!separator) return false;
-
+  if (index >= length - 1 || !separator) return false;
   if (typeof separator === "number" && separator > 0) {
     return (index + 1) % separator === 0;
   }
-  if (Array.isArray(separator)) {
-    return separator.includes(index + 1);
-  }
-  if (separator === true) {
-    return index + 1 === Math.floor(length / 2);
-  }
-  return false;
+  if (Array.isArray(separator)) return separator.includes(index + 1);
+  return separator === true && index + 1 === Math.floor(length / 2);
+}
+
+function getEventIndex(event: any, fallback: number): number {
+  return Number(
+    event?.currentTarget?.dataset?.index ??
+      event?.target?.dataset?.index ??
+      fallback,
+  );
 }
 
 export function connectPinInput(service: PinInputService): PinInputApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, context, computed, prop, scope } = service;
 
   const currentState = state.get();
   const isMachineFocused = currentState === "focused";
@@ -40,15 +40,15 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const variant = context.get("variant");
-  const color = context.get("color");
-  const highlight = Boolean(context.get("highlight"));
-  const mask = context.get("mask");
-  const type = context.get("type");
-  const placeholder = context.get("placeholder");
-  const separator = context.get("separator");
-  const separatorChar = context.get("separatorChar");
-  const name = context.get("name") ?? "";
+  const variant = prop("variant") ?? "outline";
+  const color = prop("color") ?? "primary";
+  const highlight = Boolean(prop("highlight"));
+  const mask = Boolean(prop("mask"));
+  const type = prop("type") ?? "numeric";
+  const placeholder = prop("placeholder") ?? "";
+  const separator = prop("separator") ?? false;
+  const separatorChar = prop("separatorChar") ?? "-";
+  const name = prop("name") ?? "";
 
   const isValueComplete = computed("isValueComplete");
   const isEmptyVal = computed("isEmpty");
@@ -58,35 +58,33 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   function getInputProps(index: number): Record<string, any> {
     const isFocused = isMachineFocused && focusedIndex === index;
     const rawVal = value[index] ?? "";
-    const displayVal = rawVal || (isFocused ? "\u200B" : "");
 
     return {
       id: dom.getInputId(scope, index),
-      ...parts.input.attrs,
       "data-index": index,
-      "data-focused": String(isFocused),
+      "data-state": isFocused ? "focused" : "idle",
       "data-disabled": String(disabled),
+      "data-focused": String(isFocused),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
       "data-complete": String(isValueComplete),
-      "data-state": isFocused ? "focused" : "idle",
-      value: displayVal,
+      value: rawVal || (isFocused ? "\u200B" : ""),
       focus: isFocused,
       disabled: disabled || readOnly,
       type: type === "numeric" ? "number" : "text",
       password: Boolean(mask && rawVal),
       placeholder: rawVal ? "" : placeholder,
       maxlength: index === 0 ? Math.max(length, 2) : 2,
-      role: "textbox",
+      "aria-role": "textbox",
       "aria-label": `Digit ${index + 1}`,
-      "aria-invalid": String(invalid),
+      "aria-invalid": invalid,
     };
   }
 
   function getSeparatorProps(index: number): Record<string, any> {
+    const sepId = dom.getSeparatorId(scope, index);
     return {
-      id: dom.getSeparatorId(scope, index),
-      ...parts.separator.attrs,
+      ...(sepId ? { id: sepId } : {}),
       "aria-hidden": "true",
     };
   }
@@ -100,6 +98,9 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     inputProps: getInputProps(index),
     separatorProps: getSeparatorProps(index),
   }));
+
+  const controlId = dom.getControlId(scope);
+  const hiddenId = dom.getHiddenInputId(scope);
 
   return {
     state: currentState,
@@ -135,11 +136,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     },
 
     handleInput(event: any): string | void {
-      const idx = Number(
-        event?.currentTarget?.dataset?.index ??
-          event?.target?.dataset?.index ??
-          0,
-      );
+      const idx = getEventIndex(event, 0);
       const val = event?.detail?.value ?? event?.target?.value ?? "";
       send({ type: "INPUT.CHANGE", index: idx, value: val });
 
@@ -147,10 +144,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
         /\u200B/g,
         "",
       );
-
-      if (cleanVal === "") {
-        return "";
-      }
+      if (cleanVal === "") return "";
 
       const currentVal = value[idx] ?? "";
       if (cleanVal.length === 1) {
@@ -167,72 +161,60 @@ export function connectPinInput(service: PinInputService): PinInputApi {
         return isValidCharacter(newChar, type) ? newChar : currentVal;
       }
 
-      const validChar = cleanVal
-        .split("")
-        .find((c: string) => isValidCharacter(c, type));
-
-      return validChar ?? currentVal;
+      return (
+        cleanVal.split("").find((c: string) => isValidCharacter(c, type)) ??
+        currentVal
+      );
     },
 
     handleFocus(event: any) {
-      const idx = Number(
-        event?.currentTarget?.dataset?.index ??
-          event?.target?.dataset?.index ??
-          0,
-      );
-      send({ type: "INPUT.FOCUS", index: idx, force: true });
+      send({
+        type: "INPUT.FOCUS",
+        index: getEventIndex(event, 0),
+        force: true,
+      });
     },
 
     handleTap(event: any) {
-      const idx = Number(
-        event?.currentTarget?.dataset?.index ??
-          event?.target?.dataset?.index ??
-          0,
-      );
-      send({ type: "INPUT.FOCUS", index: idx, force: true });
+      send({
+        type: "INPUT.FOCUS",
+        index: getEventIndex(event, 0),
+        force: true,
+      });
     },
 
     handleBlur(event?: any) {
-      const idx = Number(
-        event?.currentTarget?.dataset?.index ??
-          event?.target?.dataset?.index ??
-          -1,
-      );
-      send({ type: "INPUT.BLUR", index: idx });
+      send({ type: "INPUT.BLUR", index: getEventIndex(event, -1) });
     },
 
     getInputProps,
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-empty": String(isEmptyVal),
       "data-disabled": String(disabled),
+      "data-empty": String(isEmptyVal),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
       "data-complete": String(isValueComplete),
-      role: "group",
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(invalid),
+      "aria-role": "group",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
     },
 
     controlProps: {
-      id: dom.getControlId(scope),
-      ...parts.control.attrs,
+      ...(controlId ? { id: controlId } : {}),
       "data-disabled": String(disabled),
       "data-invalid": String(invalid),
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
-      ...parts.label.attrs,
     },
 
     hiddenInputProps: {
-      id: dom.getHiddenInputId(scope),
+      ...(hiddenId ? { id: hiddenId } : {}),
       type: "text",
-      tabIndex: -1,
       name: name || undefined,
       value: valueAsString,
       disabled: disabled || readOnly,

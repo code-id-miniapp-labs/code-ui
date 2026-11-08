@@ -28,12 +28,6 @@ Component(
   createComponentOptions({
     behaviors: [accordionItemBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultAccordionItemProps, {
       className: {
         type: String,
@@ -52,7 +46,7 @@ Component(
     computed: {
       classes() {
         const api = this.data.cAccordionItem;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const disabled = Boolean(api?.isDisabled ?? this.data.disabled);
         const size = api?.size ?? (this.data.size || "md");
         const variant = api?.variant ?? (this.data.variant || "outline");
         const ui = this.data.ui;

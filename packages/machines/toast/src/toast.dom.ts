@@ -1,29 +1,25 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
-export const getRootId = (scope: Scope) =>
-  scope.ids?.root ?? `toast:${scope.id ?? "default"}:root`;
+export const getRootId = (scope: Scope) => partId(scope, "tst", "root", "r");
 
-export const getWrapperId = (scope: Scope) =>
-  scope.ids?.wrapper ?? `toast:${scope.id ?? "default"}:wrapper`;
+export const getWrapperId = (scope: Scope) => optPartId(scope, "wrapper");
 
-export const getTitleId = (scope: Scope) =>
-  scope.ids?.title ?? `toast:${scope.id ?? "default"}:title`;
+export const getTitleId = (scope: Scope) => optPartId(scope, "title");
 
 export const getDescriptionId = (scope: Scope) =>
-  scope.ids?.description ?? `toast:${scope.id ?? "default"}:description`;
+  optPartId(scope, "description");
 
-export const getIconId = (scope: Scope) =>
-  scope.ids?.icon ?? `toast:${scope.id ?? "default"}:icon`;
+export const getIconId = (scope: Scope) => optPartId(scope, "icon");
 
 export const getCloseTriggerId = (scope: Scope) =>
-  scope.ids?.closeTrigger ?? `toast:${scope.id ?? "default"}:close-trigger`;
+  optPartId(scope, "closeTrigger");
 
-export const getActionsId = (scope: Scope) =>
-  scope.ids?.actions ?? `toast:${scope.id ?? "default"}:actions`;
+export const getActionsId = (scope: Scope) => optPartId(scope, "actions");
 
 export const getActionId = (scope: Scope, index: number) =>
-  scope.ids?.action ? `${scope.ids.action}:${index}` : `toast:${scope.id ?? "default"}:action:${index}`;
+  typeof scope.ids?.action === "string"
+    ? `${scope.ids.action}-${index}`
+    : undefined;
 
-export const getProgressId = (scope: Scope) =>
-  scope.ids?.progress ?? `toast:${scope.id ?? "default"}:progress`;
+export const getProgressId = (scope: Scope) => optPartId(scope, "progress");
 

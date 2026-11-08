@@ -1,29 +1,22 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `progress:${scope.id}`;
+  partId(scope, "pg", "root", "r");
 
 export const getLabelId = (scope: Scope): string =>
-  scope.ids?.label ?? `progress:${scope.id}:label`;
+  partId(scope, "pg", "label", "l");
 
-export const getTrackId = (scope: Scope): string =>
-  scope.ids?.track ?? `progress:${scope.id}:track`;
+export const getTrackId = (scope: Scope): string | undefined =>
+  optPartId(scope, "track");
 
-export const getRangeId = (scope: Scope): string =>
-  scope.ids?.range ?? `progress:${scope.id}:range`;
+export const getRangeId = (scope: Scope): string | undefined =>
+  optPartId(scope, "range");
 
-export const getValueTextId = (scope: Scope): string =>
-  scope.ids?.valueText ?? `progress:${scope.id}:value-text`;
+export const getValueTextId = (scope: Scope): string | undefined =>
+  optPartId(scope, "valueText");
 
-export const getViewId = (scope: Scope): string =>
-  scope.ids?.view ?? `progress:${scope.id}:view`;
+export const getViewId = (scope: Scope): string | undefined =>
+  optPartId(scope, "view");
 
-export const getCircleId = (scope: Scope): string =>
-  scope.ids?.circle ?? `progress:${scope.id}:circle`;
-
-export const getCircleTrackId = (scope: Scope): string =>
-  scope.ids?.circleTrack ?? `progress:${scope.id}:circle-track`;
-
-export const getCircleRangeId = (scope: Scope): string =>
-  scope.ids?.circleRange ?? `progress:${scope.id}:circle-range`;
-
+export const getCircleId = (scope: Scope): string | undefined =>
+  optPartId(scope, "circle");

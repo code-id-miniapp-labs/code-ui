@@ -480,9 +480,7 @@ describe("Input Machine", () => {
       const api = connectInput(machine.service);
       expect(api.inputProps.name).toBe("username");
       expect(api.hiddenInputProps).toEqual({
-        id: "input:inp-1:hidden-input",
         type: "text",
-        tabIndex: -1,
         name: "username",
         value: "alice",
         disabled: false,

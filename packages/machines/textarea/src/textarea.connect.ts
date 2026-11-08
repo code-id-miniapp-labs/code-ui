@@ -3,11 +3,10 @@ import type {
   TextareaLineChangeDetails,
   TextareaService,
 } from "./textarea.types";
-import { parts } from "./textarea.anatomy";
 import * as dom from "./textarea.dom";
 
 export function connectTextarea(service: TextareaService): TextareaApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, context, computed, prop, scope } = service;
 
   const currentState = state.get();
   const isFocused = currentState === "focused";
@@ -16,38 +15,41 @@ export function connectTextarea(service: TextareaService): TextareaApi {
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const variant = context.get("variant");
-  const color = context.get("color");
-  const highlight = Boolean(context.get("highlight"));
-  const placeholder = context.get("placeholder");
-  const maxlength = context.get("maxlength");
-  const autoHeight = Boolean(context.get("autoHeight"));
-  const name = context.get("name") ?? "";
+  const variant = prop("variant") ?? "outline";
+  const color = prop("color") ?? "primary";
+  const highlight = Boolean(prop("highlight"));
+  const placeholder = prop("placeholder") ?? "";
+  const maxlength = prop("maxlength") ?? -1;
+  const autoHeight = Boolean(prop("autoHeight"));
+  const name = prop("name") ?? "";
 
   const isFilled = computed("isFilled");
   const isEmptyVal = computed("isEmpty");
   const isClearable = computed("isClearable");
   const characterCount = computed("characterCount");
 
+  const leadingId = dom.getLeadingId(scope);
+  const trailingId = dom.getTrailingId(scope);
+  const clearId = dom.getClearButtonId(scope);
+  const countId = dom.getCountId(scope);
+  const hiddenId = dom.getHiddenInputId(scope);
+
   const textareaProps = {
     id: dom.getTextareaId(scope),
-    ...parts.base.attrs,
-    name: name || undefined,
+    ...(name ? { name } : {}),
     "data-state": currentState,
-    "data-empty": String(isEmptyVal),
-    "data-focused": String(isFocused),
     "data-disabled": String(disabled),
     "data-readonly": String(readOnly),
     "data-invalid": String(invalid),
+    "data-focused": String(isFocused),
     value,
     focus: isFocused,
     disabled: disabled || readOnly,
     placeholder,
     maxlength,
     autoHeight,
-    role: "textbox",
-    "aria-invalid": String(invalid),
-    "aria-multiline": "true",
+    "aria-role": "textbox",
+    "aria-multiline": true,
   };
 
   return {
@@ -105,8 +107,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     },
 
     handleConfirm(event?: any) {
-      const val = event?.detail?.value ?? value;
-      send({ type: "TEXTAREA.CONFIRM", value: val });
+      send({ type: "TEXTAREA.CONFIRM", value: event?.detail?.value ?? value });
     },
 
     handleLineChange(event?: any) {
@@ -114,10 +115,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
       const height = typeof raw.height === "number" ? raw.height : 0;
       const lineHeight =
         typeof raw.lineHeight === "number" ? raw.lineHeight : 0;
-      const rawLineCount =
-        typeof raw.lineCount === "number" ? raw.lineCount : 1;
-
-      let lineCount = rawLineCount;
+      let lineCount = typeof raw.lineCount === "number" ? raw.lineCount : 1;
       if (!value || value.length === 0) {
         lineCount = 1;
       } else if (lineHeight > 0 && height > 0) {
@@ -139,49 +137,42 @@ export function connectTextarea(service: TextareaService): TextareaApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-empty": String(isEmptyVal),
       "data-disabled": String(disabled),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
-      role: "group",
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(invalid),
+      "aria-role": "group",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
     },
 
     textareaProps,
     inputProps: textareaProps,
 
     leadingProps: {
-      id: dom.getLeadingId(scope),
-      ...parts.leading.attrs,
+      ...(leadingId ? { id: leadingId } : {}),
       "aria-hidden": "true",
     },
 
     trailingProps: {
-      id: dom.getTrailingId(scope),
-      ...parts.trailing.attrs,
+      ...(trailingId ? { id: trailingId } : {}),
       "aria-hidden": "true",
     },
 
     clearButtonProps: {
-      id: dom.getClearButtonId(scope),
-      ...parts.clear.attrs,
-      role: "button",
+      ...(clearId ? { id: clearId } : {}),
+      "aria-role": "button",
       "aria-label": "Clear textarea",
     },
 
     countProps: {
-      id: dom.getCountId(scope),
-      ...parts.count.attrs,
+      ...(countId ? { id: countId } : {}),
       "aria-live": "polite",
     },
 
     hiddenInputProps: {
-      id: dom.getHiddenInputId(scope),
+      ...(hiddenId ? { id: hiddenId } : {}),
       type: "text",
-      tabIndex: -1,
       name: name || undefined,
       value,
       disabled: disabled || readOnly,

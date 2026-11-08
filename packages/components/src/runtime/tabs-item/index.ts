@@ -28,12 +28,6 @@ Component(
   createComponentOptions({
     behaviors: [tabsItemBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultTabsItemProps, {
       className: {
         type: String,

@@ -63,11 +63,6 @@ export type ButtonEvent =
 export interface ButtonContext {
   loading: boolean;
   disabled: boolean;
-  variant: ButtonVariant;
-  color: ButtonColor;
-  size: ButtonSize;
-  block: boolean;
-  ui: ButtonUI;
   internalLoading: boolean;
 }
 

@@ -290,6 +290,12 @@ function ensureComputedBehavior(behaviors: readonly any[] | undefined): any[] {
  * }))
  * ```
  */
+const DEFAULT_COMPONENT_OPTIONS: WechatMiniprogram.Component.ComponentOptions = {
+  multipleSlots: true,
+  styleIsolation: "apply-shared",
+  virtualHost: true,
+};
+
 export function createComponentOptions<
   TData extends WechatMiniprogram.Component.DataOption = {},
   TProperty extends WechatMiniprogram.Component.PropertyOption = {},
@@ -309,10 +315,20 @@ export function createComponentOptions<
     TIsPage
   >,
 ): any {
-  if (!options.computed) return options;
+  const mergedOptions = options.options
+    ? { ...DEFAULT_COMPONENT_OPTIONS, ...options.options }
+    : DEFAULT_COMPONENT_OPTIONS;
+
+  if (!options.computed) {
+    return {
+      ...options,
+      options: mergedOptions,
+    };
+  }
 
   return {
     ...options,
+    options: mergedOptions,
     behaviors: ensureComputedBehavior(options.behaviors),
   };
 }
@@ -609,9 +625,11 @@ function applyPathUpdate(
 }
 
 const warnReadonly = (key: string) => {
-  console.warn(
-    `[code-ui/computed] Cannot set read-only computed property "${key}". Provide a "set(val)" handler in computed definition to allow writes.`,
-  );
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      `[code-ui/computed] Cannot set read-only computed property "${key}". Provide a "set(val)" handler in computed definition to allow writes.`,
+    );
+  }
 };
 
 export interface SetupComputedOptions {
@@ -679,9 +697,11 @@ export function setupComputed(
       return;
     }
     if (activeSetters.has(key)) {
-      console.warn(
-        `[code-ui/computed] Circular setter invocation detected for "${key}".`,
-      );
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          `[code-ui/computed] Circular setter invocation detected for "${key}".`,
+        );
+      }
       return;
     }
     activeSetters.add(key);
@@ -758,19 +778,23 @@ export function setupComputed(
     const { get, set } = parseComputedDef(computedDefs[key]);
     computedSignals[key] = alienComputed<unknown>((prev) => {
       if (activeGetters.has(key)) {
-        console.warn(
-          `[code-ui/computed] Circular computed dependency detected in "${key}".`,
-        );
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[code-ui/computed] Circular computed dependency detected in "${key}".`,
+          );
+        }
         return prev !== undefined ? prev : readData(key);
       }
       activeGetters.add(key);
       try {
         return get.call(computedCtx);
       } catch (err) {
-        console.error(
-          `[code-ui/computed] Error while evaluating computed "${key}":`,
-          err,
-        );
+        if (process.env.NODE_ENV !== "production") {
+          console.error(
+            `[code-ui/computed] Error while evaluating computed "${key}":`,
+            err,
+          );
+        }
         return prev !== undefined ? prev : readData(key);
       } finally {
         activeGetters.delete(key);
@@ -843,7 +867,7 @@ export function setupComputed(
 
   const emitPending = () => {
     emitScheduled = false;
-    if (disposed) return;
+    if (disposed || self.__cuiPendingFlush) return;
     const updates = collectComputedUpdates();
     if (updates) callOriginal(updates);
   };
@@ -926,9 +950,11 @@ export function setupComputed(
     }
 
     if (activeGetters.size > 0) {
-      console.error(
-        `[code-ui/computed] Do not call this.setData() inside a computed getter (${[...activeGetters].join(", ")}).`,
-      );
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          `[code-ui/computed] Do not call this.setData() inside a computed getter (${[...activeGetters].join(", ")}).`,
+        );
+      }
       return;
     }
 

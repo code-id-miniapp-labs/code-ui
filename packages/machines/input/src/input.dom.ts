@@ -1,19 +1,19 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `input:${scope.id ?? "default"}:root`;
+  partId(scope, "in", "root", "r");
 
 export const getInputId = (scope: Scope): string =>
-  scope.ids?.input ?? `input:${scope.id ?? "default"}:input`;
+  partId(scope, "in", "input", "i");
 
-export const getLeadingId = (scope: Scope): string =>
-  scope.ids?.leading ?? `input:${scope.id ?? "default"}:leading`;
+export const getLeadingId = (scope: Scope): string | undefined =>
+  optPartId(scope, "leading");
 
-export const getTrailingId = (scope: Scope): string =>
-  scope.ids?.trailing ?? `input:${scope.id ?? "default"}:trailing`;
+export const getTrailingId = (scope: Scope): string | undefined =>
+  optPartId(scope, "trailing");
 
-export const getClearButtonId = (scope: Scope): string =>
-  scope.ids?.clear ?? `input:${scope.id ?? "default"}:clear`;
+export const getClearButtonId = (scope: Scope): string | undefined =>
+  optPartId(scope, "clear");
 
-export const getHiddenInputId = (scope: Scope): string =>
-  scope.ids?.hiddenInput ?? `input:${scope.id ?? "default"}:hidden-input`;
+export const getHiddenInputId = (scope: Scope): string | undefined =>
+  optPartId(scope, "hiddenInput");

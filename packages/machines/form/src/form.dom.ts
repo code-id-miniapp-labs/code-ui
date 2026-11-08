@@ -1,10 +1,10 @@
-import type { Scope } from "@code-ui/core";
+import { itemPartId, optPartId, partId, type Scope } from "@code-ui/core";
 
-export const getRootId = (scope: Scope) =>
-  scope.ids?.root ?? `form:${scope.id}:root`;
+export const getRootId = (scope: Scope): string =>
+  partId(scope, "fm", "root", "r");
 
-export const getErrorsId = (scope: Scope) =>
-  scope.ids?.errors ?? `form:${scope.id}:errors`;
+export const getErrorsId = (scope: Scope): string | undefined =>
+  optPartId(scope, "errors");
 
-export const getErrorId = (scope: Scope, name: string) =>
-  scope.ids?.error?.(name) ?? `form:${scope.id}:error:${name}`;
+export const getErrorId = (scope: Scope, name: string): string =>
+  itemPartId(scope, "fm", "error", name, "e");

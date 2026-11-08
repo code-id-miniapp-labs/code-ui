@@ -1,17 +1,8 @@
 import type { MachinePlugin } from "../plugin";
 
-const instanceIds = new WeakMap<object, string>();
-let instanceCounter = 0;
-
-function getComponentId(instance: any, explicitId?: string): string {
-  if (explicitId) return explicitId;
-  let id = instanceIds.get(instance);
-  if (!id) {
-    id = `cui-tabs-${++instanceCounter}`;
-    instanceIds.set(instance, id);
-  }
-  return id;
-}
+let tabCounter = 0;
+const getComponentId = (inst: any, explicitId?: string): string =>
+  explicitId || (inst.__cuiTabId ||= `cui-tabs-${++tabCounter}`);
 
 /**
  * Shared Behavior reference for `<c-tabs>` / `<cui-tabs>` parent components.

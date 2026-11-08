@@ -104,20 +104,7 @@ export type CheckboxEvent =
   | { type: "RESET_VALUE" };
 
 export interface CheckboxContext {
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  required: boolean;
-  color: CheckboxColor;
-  size: CheckboxSize;
-  value: string;
-  name: string;
-  form: string;
-  label: string;
-  description: string;
-  icon: string;
-  indeterminateIcon: string;
-  ui: CheckboxUI;
 }
 
 export interface CheckboxComputed {

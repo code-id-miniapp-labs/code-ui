@@ -14,15 +14,17 @@ export type ConnectFn<
 /**
  * Remove function values before diffing/setData. Connect snapshots expose
  * methods for `__codeUiApi`, but WeChat cannot serialize functions into data.
+ * Avoids `delete` to preserve object hidden classes on the hot path.
  */
-function toSerializableSnapshot<T>(value: T, seen = new WeakSet<object>()): T {
+function toSerializableSnapshot<T>(value: T, seen?: WeakSet<object>): T {
   if (Array.isArray(value)) {
-    if (seen.has(value)) return value;
-    seen.add(value);
+    const visited = seen ?? new WeakSet<object>();
+    if (visited.has(value)) return value;
+    visited.add(value);
 
     let changed = false;
     const next = value.map((item) => {
-      const cleaned = toSerializableSnapshot(item, seen);
+      const cleaned = toSerializableSnapshot(item, visited);
       if (cleaned !== item) changed = true;
       return cleaned;
     });
@@ -33,28 +35,47 @@ function toSerializableSnapshot<T>(value: T, seen = new WeakSet<object>()): T {
     return value;
   }
 
-  if (seen.has(value)) {
+  const visited = seen ?? new WeakSet<object>();
+  if (visited.has(value)) {
     return value;
   }
-  seen.add(value);
+  visited.add(value);
 
-  let next: Record<string, any> | null = null;
-  for (const key of Object.keys(value)) {
-    const item = (value as Record<string, any>)[key];
-    if (typeof item === "function") {
-      if (!next) next = { ...value };
-      delete next[key];
+  let copy: Record<string, any> | null = null;
+  const keys = Object.keys(value);
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    if (k === undefined) continue;
+    const item = (value as Record<string, any>)[k];
+    if (
+      typeof item === "function" ||
+      item === undefined ||
+      k === "role" ||
+      k === "tabindex" ||
+      k === "tabIndex"
+    ) {
+      if (!copy) {
+        copy = {};
+        for (let j = 0; j < i; j++) {
+          const prevKey = keys[j];
+          if (prevKey !== undefined) copy[prevKey] = (value as Record<string, any>)[prevKey];
+        }
+      }
       continue;
     }
 
-    const cleaned = toSerializableSnapshot(item, seen);
-    if (cleaned !== item) {
-      if (!next) next = { ...value };
-      next[key] = cleaned;
+    const cleaned = toSerializableSnapshot(item, visited);
+    if (cleaned !== item && !copy) {
+      copy = {};
+      for (let j = 0; j < i; j++) {
+        const prevKey = keys[j];
+        if (prevKey !== undefined) copy[prevKey] = (value as Record<string, any>)[prevKey];
+      }
     }
+    if (copy) copy[k] = cleaned;
   }
 
-  return (next ?? value) as T;
+  return (copy ?? value) as T;
 }
 
 export function connectToPage<
@@ -73,6 +94,7 @@ export function connectToPage<
 
   function flushSetData() {
     isBatchScheduled = false;
+    (instance as any).__cuiPendingFlush = false;
     if (Object.keys(pendingDelta).length > 0 && instance && instance.setData) {
       const payload = pendingDelta;
       pendingDelta = {};
@@ -100,6 +122,7 @@ export function connectToPage<
       Object.assign(pendingDelta, delta);
       if (!isBatchScheduled) {
         isBatchScheduled = true;
+        (instance as any).__cuiPendingFlush = true;
         nextTick(flushSetData);
       }
     }
@@ -111,6 +134,7 @@ export function connectToPage<
     dispose();
     pendingDelta = {};
     isBatchScheduled = false;
+    (instance as any).__cuiPendingFlush = false;
   };
 }
 

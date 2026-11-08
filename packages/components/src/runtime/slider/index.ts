@@ -28,12 +28,6 @@ Component(
   createComponentOptions({
     behaviors: [sliderBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultSliderProps, {
       showValue: {
         type: Boolean,

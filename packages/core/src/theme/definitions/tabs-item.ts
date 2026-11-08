@@ -7,6 +7,9 @@ import {
 
 export default function tabsItemTheme(options: ThemeOptions = {}) {
   const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const semanticColors = (colors as readonly string[]).filter(
+    (c) => c !== "neutral",
+  );
 
   return defineTheme({
     slots: {
@@ -159,18 +162,32 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
           indicator: "opacity-100 scale-y-100",
         },
       },
-      ...(colors as readonly string[]).map((color) => ({
+      {
+        selected: true as const,
+        color: "neutral" as (typeof colors)[number],
+        class: {
+          trigger: "text-neutral-900",
+        },
+      },
+      ...semanticColors.map((color) => ({
         selected: true as const,
         color: color as (typeof colors)[number],
         class: {
-          trigger: color === "neutral" ? "text-neutral-900" : `text-${color}`,
+          trigger: `text-${color}`,
         },
       })),
-      ...(colors as readonly string[]).map((color) => ({
+      {
+        variant: "link" as const,
+        color: "neutral" as (typeof colors)[number],
+        class: {
+          indicator: "bg-neutral-900",
+        },
+      },
+      ...semanticColors.map((color) => ({
         variant: "link" as const,
         color: color as (typeof colors)[number],
         class: {
-          indicator: `bg-${color === "neutral" ? "neutral-900" : color}`,
+          indicator: `bg-${color}`,
         },
       })),
     ],

@@ -515,9 +515,7 @@ describe("Pin Input Machine", () => {
         const cell = api.inputs[i];
         expect(cell?.index).toBe(i);
         expect(cell?.inputProps).toMatchObject({
-          id: `pin-input:otp-1:input:${i}`,
-          "data-scope": "pin-input",
-          "data-part": "input",
+          id: `pi-otp-1-i-${i}`,
           "data-index": i,
           "data-focused": "false",
           "data-disabled": "false",
@@ -530,21 +528,17 @@ describe("Pin Input Machine", () => {
           type: "number",
           password: false,
           maxlength: i === 0 ? 5 : 2,
-          role: "textbox",
+          "aria-role": "textbox",
           "aria-label": `Digit ${i + 1}`,
+          "aria-invalid": false,
         });
-        expect(cell?.separatorProps).toMatchObject({
-          id: `pin-input:otp-1:separator:${i}`,
-          "data-scope": "pin-input",
-          "data-part": "separator",
+        expect(cell?.separatorProps).toEqual({
           "aria-hidden": "true",
         });
       }
 
-      expect(api.hiddenInputProps).toMatchObject({
-        id: "pin-input:otp-1:hidden-input",
+      expect(api.hiddenInputProps).toEqual({
         type: "text",
-        tabIndex: -1,
         name: "verificationCode",
         value: "",
         disabled: false,

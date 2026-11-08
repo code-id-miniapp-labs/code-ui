@@ -520,28 +520,26 @@ describe("Drawer Machine", () => {
       expect(api.threshold).toBe(100);
       expect(api.duration).toBe(400);
 
-      expect(api.rootProps.id).toBe("drawer:payment-sheet:root");
+      expect(api.rootProps.id).toBe("dr-payment-sheet-r");
       expect(api.rootProps["data-state"]).toBe("closed");
       expect(api.rootProps["data-placement"]).toBe("bottom");
       expect(api.rootProps.hidden).toBe(true);
 
-      expect(api.backdropProps.id).toBe("drawer:payment-sheet:backdrop");
+      expect(api.backdropProps.id).toBe("dr-payment-sheet-bd");
       expect(api.backdropProps["data-state"]).toBe("closed");
       expect(api.backdropProps["data-transition-state"]).toBe("closed");
       expect(api.backdropProps["aria-hidden"]).toBe(true);
       expect(api.backdropProps.hidden).toBe(true);
 
-      expect(api.contentProps.id).toBe("drawer:payment-sheet:content");
-      expect(api.contentProps.role).toBe("dialog");
-      expect(api.contentProps["aria-modal"]).toBe("true");
+      expect(api.contentProps.id).toBe("dr-payment-sheet-c");
+      expect(api.contentProps["aria-role"]).toBe("dialog");
+      expect(api.contentProps["aria-modal"]).toBe(true);
       expect(api.contentProps["aria-hidden"]).toBe(true);
       expect(api.contentProps.hidden).toBe(true);
       expect(api.contentProps["data-keyboard-height"]).toBe(0);
 
-      expect(api.grabberProps.id).toBe("drawer:payment-sheet:grabber");
-      expect(api.closeTriggerProps.id).toBe(
-        "drawer:payment-sheet:close-trigger",
-      );
+      expect(api.grabberProps.id).toBeUndefined();
+      expect(api.closeTriggerProps.id).toBeUndefined();
       expect(api.closeTriggerProps["aria-label"]).toBe("Close");
 
       machine.stop();

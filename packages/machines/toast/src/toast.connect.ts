@@ -1,15 +1,13 @@
-import {
-  defaultNormalizer,
-  type NormalizeProps,
-  type PropTypes,
+import type {
+  NormalizeProps,
+  PropTypes,
 } from "@code-ui/core";
 import type { ToastAction, ToastApi, ToastService } from "./toast.types";
-import { parts } from "./toast.anatomy";
 import * as dom from "./toast.dom";
 
 export function connectToast<T extends PropTypes = PropTypes>(
   service: ToastService,
-  normalize: NormalizeProps<T> = defaultNormalizer as NormalizeProps<T>,
+  normalize?: NormalizeProps<T>,
 ): ToastApi {
   const { state, send, computed, scope, prop } = service;
 
@@ -27,11 +25,17 @@ export function connectToast<T extends PropTypes = PropTypes>(
     variant: action.variant,
     actionProps: {
       id: dom.getActionId(scope, index),
-      ...parts.action.attrs,
       "data-index": index,
-      role: "button",
+      "aria-role": "button",
     },
   }));
+
+  const rootAttrs = {
+    id: dom.getRootId(scope),
+    "data-state": currentState,
+    "aria-role": "status",
+    "aria-live": "polite",
+  };
 
   return {
     state: currentState,
@@ -60,46 +64,34 @@ export function connectToast<T extends PropTypes = PropTypes>(
       }
     },
 
-    rootProps: normalize.element({
-      id: dom.getRootId(scope),
-      ...parts.root.attrs,
-      "data-state": currentState,
-      role: "status",
-      "aria-live": "polite",
-    }),
+    rootProps: normalize ? normalize.element(rootAttrs) : rootAttrs,
 
     wrapperProps: {
       id: dom.getWrapperId(scope),
-      ...parts.wrapper.attrs,
     },
 
     titleProps: {
       id: dom.getTitleId(scope),
-      ...parts.title.attrs,
     },
 
     descriptionProps: {
       id: dom.getDescriptionId(scope),
-      ...parts.description.attrs,
     },
 
     iconProps: {
       id: dom.getIconId(scope),
-      ...parts.icon.attrs,
-      "aria-hidden": "true",
+      "aria-hidden": true,
     },
 
     closeTriggerProps: {
       id: dom.getCloseTriggerId(scope),
-      ...parts.closeTrigger.attrs,
-      role: "button",
+      "aria-role": "button",
       "aria-label": "Close",
     },
 
     progressProps: {
       id: dom.getProgressId(scope),
-      ...parts.progress.attrs,
-      "aria-hidden": "true",
+      "aria-hidden": true,
     },
   };
 }

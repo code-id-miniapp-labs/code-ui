@@ -126,19 +126,7 @@ export interface RadioGroupContext {
 
 export type RadioGroupMachineContext = {
   value: string | null;
-  name: string;
-  form: string;
-  disabled: boolean;
-  readOnly: boolean;
-  required: boolean;
   invalid: boolean;
-  color: RadioGroupColor;
-  size: RadioGroupSize;
-  orientation: RadioGroupOrientation;
-  variant: RadioGroupVariant;
-  legend: string;
-  items: (string | RadioGroupItemRaw)[];
-  ui: RadioGroupUI;
 };
 
 export type RadioGroupEvent =

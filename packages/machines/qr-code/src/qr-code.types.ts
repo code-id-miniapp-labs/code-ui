@@ -110,12 +110,6 @@ export interface QrCodeContext {
   ecc: QrCodeEcc;
   border: number;
   encoding: QrCodeEncodingOptions;
-  pixelSize: number;
-  size: QrCodeSize;
-  color: QrCodeColor;
-  overlaySrc: string;
-  showOverlay: boolean;
-  ui: QrCodeUI;
 }
 
 export interface QrCodeComputed {

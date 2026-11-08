@@ -1,5 +1,4 @@
 import type { DrawerApi, DrawerService } from "./drawer.types";
-import { parts } from "./drawer.anatomy";
 import * as dom from "./drawer.dom";
 
 export function connectDrawer(service: DrawerService): DrawerApi {
@@ -42,7 +41,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
       "data-placement": placement,
       hidden: !visible,
@@ -50,7 +48,6 @@ export function connectDrawer(service: DrawerService): DrawerApi {
 
     backdropProps: {
       id: dom.getBackdropId(scope),
-      ...parts.backdrop.attrs,
       "data-state": open ? "open" : "closed",
       "data-transition-state": currentState,
       "aria-hidden": true,
@@ -59,24 +56,18 @@ export function connectDrawer(service: DrawerService): DrawerApi {
 
     contentProps: {
       id: dom.getContentId(scope),
-      ...parts.content.attrs,
       "data-state": currentState,
       "data-placement": placement,
       "data-keyboard-height": keyboardHeight,
-      role: "dialog",
-      "aria-modal": "true",
+      "aria-role": "dialog",
+      "aria-modal": true,
       "aria-hidden": !open,
       hidden: !visible,
-      style: [
-        keyboardHeight > 0 ? `--keyboard-height: ${keyboardHeight}px;` : "",
-      ]
-        .filter(Boolean)
-        .join(" "),
+      style: keyboardHeight > 0 ? `--keyboard-height: ${keyboardHeight}px;` : "",
     },
 
     grabberProps: {
       id: dom.getGrabberId(scope),
-      ...parts.grabber.attrs,
       "data-state": currentState,
       "data-placement": placement,
       "data-should-scale": shouldScaleBackground,
@@ -85,20 +76,11 @@ export function connectDrawer(service: DrawerService): DrawerApi {
 
     closeTriggerProps: {
       id: dom.getCloseTriggerId(scope),
-      ...parts.closeTrigger.attrs,
       "aria-label": "Close",
     },
 
-    headerProps: {
-      ...parts.header.attrs,
-    },
-
-    bodyProps: {
-      ...parts.body.attrs,
-    },
-
-    footerProps: {
-      ...parts.footer.attrs,
-    },
+    headerProps: {},
+    bodyProps: {},
+    footerProps: {},
   };
 }

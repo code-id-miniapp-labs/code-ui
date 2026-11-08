@@ -52,7 +52,7 @@ describe("Button Machine", () => {
       expect(api.loading).toBe(true);
       expect(api.rootProps["data-state"]).toBe("loading");
       expect(api.rootProps["data-loading"]).toBe("true");
-      expect(api.rootProps["aria-busy"]).toBe("true");
+      expect(api.rootProps["aria-busy"]).toBe(true);
 
       machine.stop();
     });
@@ -603,8 +603,8 @@ describe("Button Machine", () => {
 
       const api = connectButton(machine.service);
 
-      expect(api.rootProps.id).toBe("button:submit-btn:root");
-      expect(api.rootProps.role).toBe("button");
+      expect(api.rootProps.id).toBe("btn-submit-btn-r");
+      expect(api.rootProps["aria-role"]).toBe("button");
       expect(api.rootProps["data-state"]).toBe("idle");
       expect(api.rootProps["data-variant"]).toBe("secondary");
       expect(api.rootProps["data-color"]).toBe("neutral");
@@ -613,11 +613,11 @@ describe("Button Machine", () => {
       expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.rootProps.disabled).toBe(false);
 
-      expect(api.spinnerProps.id).toBe("button:submit-btn:spinner");
+      expect(api.spinnerProps.id).toBeUndefined();
       expect(api.spinnerProps["aria-hidden"]).toBe("true");
 
-      expect(api.labelProps.id).toBe("button:submit-btn:label");
-      expect(api.iconProps.id).toBe("button:submit-btn:icon");
+      expect(api.labelProps.id).toBeUndefined();
+      expect(api.iconProps.id).toBeUndefined();
       expect(api.iconProps["aria-hidden"]).toBe("true");
 
       machine.stop();

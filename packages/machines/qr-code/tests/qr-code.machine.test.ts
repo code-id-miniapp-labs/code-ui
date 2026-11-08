@@ -199,9 +199,8 @@ describe("QR Code Machine", () => {
       expect(api.getFrameProps()).toEqual(api.frameProps);
       expect(api.getPatternProps()).toEqual(api.patternProps);
       expect(api.getOverlayProps()).toEqual(api.overlayProps);
-      expect(api.rootProps.id).toBe("qr-code:test-qr:root");
-      expect(api.rootProps["data-scope"]).toBe("qr-code");
-      expect(api.rootProps["data-part"]).toBe("root");
+      expect(api.rootProps.id).toBe("qr-test-qr-r");
+      expect(api.rootProps["data-state"]).toBe("idle");
       expect(api.rootProps["aria-label"]).toBe(
         "QR code for https://example.com",
       );

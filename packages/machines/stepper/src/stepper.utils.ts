@@ -1,7 +1,11 @@
-import { createDOM, isNotNull } from "@code-ui/utils";
+import { isNotNull, queryFields, queryRect } from "@code-ui/utils";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { BindableContext, ComputedFn, PropFn, Scope } from "@code-ui/core";
 import type { StepperSchema, StepperSize } from "./stepper.types";
+
+export function clampValue(val: number, min: number, max: number): number {
+  return Math.min(Math.max(val, min), max);
+}
 
 export interface StepperComponentInstance extends MiniAppComponent {
   createSelectorQuery?: () => any;
@@ -16,10 +20,6 @@ const STEP_WIDTH_BY_SIZE: Record<StepperSize, number> = {
   lg: 135,
   xl: 155,
 };
-
-export function clampValue(val: number, min: number, max: number): number {
-  return Math.min(Math.max(val, min), max);
-}
 
 export function resolveControlledStep(
   prop: PropFn<StepperSchema>,
@@ -106,7 +106,7 @@ export function performScrollUpdate(
 
   context.set("scrollTargetIndex", targetIndex);
 
-  const size = (context.get("size") || "md") as StepperSize;
+  const size = (prop("size") || "md") as StepperSize;
   const stepWidth = STEP_WIDTH_BY_SIZE[size] ?? 115;
   const refIndex = targetIdx !== undefined ? targetIdx : step;
   const fallbackScrollLeft =
@@ -144,19 +144,21 @@ export function performScrollUpdate(
     return;
   }
 
-  const dom = scope?.dom ?? createDOM(comp);
-
-  const listPromise = dom.fields(".cui-stepper-list", {
-    rect: true,
-    size: true,
-    scrollOffset: true,
-  });
-  const targetPromise = createDOM(targetChild).rect(".cui-stepper-item");
+  const listPromise = queryFields(
+    ".cui-stepper-list",
+    {
+      rect: true,
+      size: true,
+      scrollOffset: true,
+    },
+    comp,
+  );
+  const targetPromise = queryRect(".cui-stepper-item", targetChild);
   const curPromise =
     curChild &&
     curChild !== targetChild &&
     typeof curChild.createSelectorQuery === "function"
-      ? createDOM(curChild).rect(".cui-stepper-item")
+      ? queryRect(".cui-stepper-item", curChild)
       : Promise.resolve(null);
 
   Promise.all([listPromise, targetPromise, curPromise])

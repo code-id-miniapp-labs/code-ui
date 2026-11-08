@@ -1,9 +1,8 @@
 import type { CheckboxApi, CheckboxService } from "./checkbox.types";
-import { parts } from "./checkbox.anatomy";
 import * as dom from "./checkbox.dom";
 
 export function connectCheckbox(service: CheckboxService): CheckboxApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, computed, prop, scope } = service;
 
   const currentState = state.get();
   const checked = computed("isChecked");
@@ -12,16 +11,16 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const required = Boolean(context.get("required"));
+  const required = Boolean(prop("required"));
 
   const size = computed("effectiveSize");
   const color = computed("effectiveColor");
-  const name = context.get("name") ?? "";
-  const value = context.get("value") ?? "";
-  const label = context.get("label") ?? "";
-  const description = context.get("description") ?? "";
-  const icon = context.get("icon") ?? "check";
-  const indeterminateIcon = context.get("indeterminateIcon") ?? "minus";
+  const name = prop("name") ?? "";
+  const value = prop("value") ?? "";
+  const label = prop("label") ?? "";
+  const description = prop("description") ?? "";
+  const icon = prop("icon") ?? "check";
+  const indeterminateIcon = prop("indeterminateIcon") ?? "minus";
 
   const dataState = indeterminate
     ? "indeterminate"
@@ -29,20 +28,17 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
       ? "checked"
       : "unchecked";
 
-  const baseProps = {
-    id: dom.getBaseId(scope),
-    ...parts.base.attrs,
+  const sharedData = {
     "data-state": dataState,
+    "data-disabled": String(disabled),
     "data-checked": String(checked),
     "data-indeterminate": String(indeterminate),
-    "data-disabled": String(disabled),
     "data-readonly": String(readOnly),
     "data-invalid": String(invalid),
-    role: "checkbox",
-    "aria-checked": indeterminate ? "mixed" : checked,
-    "aria-disabled": String(disabled),
-    "aria-invalid": String(invalid),
   };
+  const indicatorId = dom.getIndicatorId(scope);
+  const descId = dom.getDescriptionId(scope);
+  const hiddenId = dom.getHiddenInputId(scope);
 
   return {
     state: currentState,
@@ -85,45 +81,42 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
-      "data-state": dataState,
-      "data-checked": String(checked),
-      "data-indeterminate": String(indeterminate),
-      "data-disabled": String(disabled),
-      "data-readonly": String(readOnly),
-      "data-invalid": String(invalid),
-      role: "group",
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(invalid),
+      ...sharedData,
+      "aria-role": "group",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
     },
 
-    baseProps,
+    baseProps: {
+      id: dom.getBaseId(scope),
+      ...sharedData,
+      "aria-role": "checkbox",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
+      "aria-checked": indeterminate ? "mixed" : checked,
+    },
 
     indicatorProps: {
-      id: dom.getIndicatorId(scope),
-      ...parts.indicator.attrs,
+      ...(indicatorId ? { id: indicatorId } : {}),
       "data-state": dataState,
+      "data-disabled": String(disabled),
       "data-checked": String(checked),
       "data-indeterminate": String(indeterminate),
-      "data-disabled": String(disabled),
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
-      ...parts.label.attrs,
       "data-disabled": String(disabled),
     },
 
     descriptionProps: {
-      id: dom.getDescriptionId(scope),
-      ...parts.description.attrs,
+      ...(descId ? { id: descId } : {}),
       "data-disabled": String(disabled),
     },
 
     hiddenInputProps: {
-      id: dom.getHiddenInputId(scope),
+      ...(hiddenId ? { id: hiddenId } : {}),
       type: "checkbox",
-      tabIndex: -1,
       name: name || undefined,
       value,
       checked,

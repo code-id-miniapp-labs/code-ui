@@ -1,11 +1,6 @@
 import { createMachine } from "@code-ui/core";
 import { isPromise } from "@code-ui/utils";
-import type {
-  ButtonContext,
-  ButtonMachine,
-  ButtonProps,
-  ButtonSchema,
-} from "./button.types";
+import type { ButtonMachine, ButtonSchema } from "./button.types";
 import { defaultButtonProps } from "./button.props";
 
 const settledStateTransitions = {
@@ -44,29 +39,19 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     return prop("loading") ? "loading" : "idle";
   },
 
-  context: ({ prop, bindable }) => {
-    const propBindable = <K extends keyof ButtonContext & keyof ButtonProps>(
-      key: K,
-      defaultValue: ButtonContext[K],
-    ) =>
-      bindable<ButtonContext[K]>(() => ({
-        value: prop(key) as ButtonContext[K] | undefined,
-        defaultValue,
-      }));
-
-    return {
-      internalLoading: bindable<boolean>(() => ({
-        defaultValue: false,
-      })),
-      loading: propBindable("loading", Boolean(defaultButtonProps.loading)),
-      disabled: propBindable("disabled", Boolean(defaultButtonProps.disabled)),
-      variant: propBindable("variant", defaultButtonProps.variant ?? "solid"),
-      color: propBindable("color", defaultButtonProps.color ?? "primary"),
-      size: propBindable("size", defaultButtonProps.size ?? "md"),
-      block: propBindable("block", false),
-      ui: propBindable("ui", {}),
-    };
-  },
+  context: ({ prop, bindable }) => ({
+    internalLoading: bindable<boolean>(() => ({
+      defaultValue: false,
+    })),
+    loading: bindable<boolean>(() => ({
+      value: prop("loading"),
+      defaultValue: Boolean(defaultButtonProps.loading),
+    })),
+    disabled: bindable<boolean>(() => ({
+      value: prop("disabled"),
+      defaultValue: Boolean(defaultButtonProps.disabled),
+    })),
+  }),
 
   computed: {
     isLoading: ({ context }) =>

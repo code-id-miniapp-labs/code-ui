@@ -1,29 +1,29 @@
-import type { Scope } from "@code-ui/core";
+import { itemPartId, optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `slider:${scope.id ?? "default"}:root`;
+  partId(scope, "sl", "root", "r");
 
 export const getControlId = (scope: Scope): string =>
-  scope.ids?.control ?? `slider:${scope.id ?? "default"}:control`;
+  partId(scope, "sl", "control", "c");
 
-export const getTrackId = (scope: Scope): string =>
-  scope.ids?.track ?? `slider:${scope.id ?? "default"}:track`;
+export const getTrackId = (scope: Scope): string | undefined =>
+  optPartId(scope, "track");
 
 export const getRangeId = (scope: Scope): string =>
-  scope.ids?.range ?? `slider:${scope.id ?? "default"}:range`;
+  partId(scope, "sl", "range", "rg");
 
 export const getThumbId = (scope: Scope, index = 0): string =>
-  scope.ids?.thumb?.(index) ?? `slider:${scope.id ?? "default"}:thumb-${index}`;
+  itemPartId(scope, "sl", "thumb", index, "t");
 
 export const getLabelId = (scope: Scope): string =>
-  scope.ids?.label ?? `slider:${scope.id ?? "default"}:label`;
+  partId(scope, "sl", "label", "l");
 
-export const getValueTextId = (scope: Scope): string =>
-  scope.ids?.valueText ?? `slider:${scope.id ?? "default"}:value-text`;
+export const getValueTextId = (scope: Scope): string | undefined =>
+  optPartId(scope, "valueText");
 
-export const getMarkerGroupId = (scope: Scope): string =>
-  scope.ids?.markerGroup ?? `slider:${scope.id ?? "default"}:marker-group`;
+export const getMarkerGroupId = (scope: Scope): string | undefined =>
+  optPartId(scope, "markerGroup");
 
 export const getMarkerId = (scope: Scope, value: number): string =>
-  scope.ids?.marker?.(value) ?? `slider:${scope.id ?? "default"}:marker-${value}`;
+  itemPartId(scope, "sl", "marker", value, "m");
 

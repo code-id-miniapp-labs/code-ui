@@ -76,4 +76,53 @@ describe("serializeConfig", () => {
     expect(typeof evaluated.components.button.slots.icon).toBe("function");
     expect(evaluated.components.button.slots.icon("i")).toBe("i icon-custom");
   });
+
+  it("compacts and faithfully evaluates all core component themes", async () => {
+    const { serializeCompactThemeModule } = await import(
+      "../src/core/serialize"
+    );
+    const core = await import("@code-ui/core");
+
+    function evalModule(code: string): any {
+      const cjs = code.replace(/export default\s+/, "module.exports = ");
+      const fn = new Function("module", "exports", cjs);
+      const mod = { exports: {} as any };
+      fn(mod, mod.exports);
+      return mod.exports;
+    }
+
+    const testThemes = [
+      ["button", core.buttonTheme],
+      ["checkbox", core.checkboxTheme],
+      ["tabsItem", core.tabsItemTheme],
+      ["toast", core.toastTheme],
+      ["badge", core.badgeTheme],
+      ["chip", core.chipTheme],
+      ["avatar", core.avatarTheme],
+      ["card", core.cardTheme],
+      ["stepperItem", core.stepperItemTheme],
+      ["slider", core.sliderTheme],
+    ] as const;
+
+    for (const [name, themeFactory] of testThemes) {
+      const rawTheme = themeFactory();
+      const code = serializeCompactThemeModule(rawTheme);
+      const evaluated = evalModule(code);
+
+      expect(evaluated.slots, `${name} slots`).toEqual(rawTheme.slots);
+      expect(evaluated.defaultVariants, `${name} defaultVariants`).toEqual(
+        rawTheme.defaultVariants,
+      );
+      if (rawTheme.compoundVariants) {
+        expect(
+          evaluated.compoundVariants?.length,
+          `${name} compoundVariants length`,
+        ).toBe(rawTheme.compoundVariants.length);
+        expect(
+          evaluated.compoundVariants,
+          `${name} compoundVariants content`,
+        ).toEqual(rawTheme.compoundVariants);
+      }
+    }
+  });
 });

@@ -1,21 +1,25 @@
-import type { Scope } from "@code-ui/core";
+import { itemPartId, optPartId, partId, type Scope } from "@code-ui/core";
 
-export const getRootId = (scope: Scope) =>
-  scope.ids?.root ?? `pin-input:${scope.id ?? "default"}:root`;
+export const getRootId = (scope: Scope): string =>
+  partId(scope, "pi", "root", "r");
 
-export const getControlId = (scope: Scope) =>
-  scope.ids?.control ?? `pin-input:${scope.id ?? "default"}:control`;
+export const getControlId = (scope: Scope): string | undefined =>
+  optPartId(scope, "control");
 
-export const getInputId = (scope: Scope, index: number) =>
-  scope.ids?.input?.(index) ?? `pin-input:${scope.id ?? "default"}:input:${index}`;
+export const getInputId = (scope: Scope, index: number): string =>
+  itemPartId(scope, "pi", "input", index, "i");
 
-export const getLabelId = (scope: Scope) =>
-  scope.ids?.label ?? `pin-input:${scope.id ?? "default"}:label`;
+export const getLabelId = (scope: Scope): string =>
+  partId(scope, "pi", "label", "l");
 
-export const getSeparatorId = (scope: Scope, index: number) =>
-  scope.ids?.separator?.(index) ??
-  `pin-input:${scope.id ?? "default"}:separator:${index}`;
+export const getSeparatorId = (
+  scope: Scope,
+  index: number,
+): string | undefined => {
+  const custom = scope.ids?.separator;
+  return typeof custom === "function" ? custom(index) : undefined;
+};
 
-export const getHiddenInputId = (scope: Scope) =>
-  scope.ids?.hiddenInput ?? `pin-input:${scope.id ?? "default"}:hidden-input`;
+export const getHiddenInputId = (scope: Scope): string | undefined =>
+  optPartId(scope, "hiddenInput");
 

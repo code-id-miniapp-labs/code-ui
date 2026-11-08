@@ -354,11 +354,11 @@ describe("Stepper Machine", () => {
       // Initially at step 0
       expect(api.step).toBe(0);
       expect(api.scrollTargetIndex).toBe(0);
-      expect(api.scrollIntoViewId).toBe("cui-step-demo-0");
+      expect(api.scrollIntoViewId).toBe("st-demo-i-0");
       expect(api.scrollLeft).toBe(0);
       expect(api.listProps["enable-flex"]).toBe(true);
       expect(api.listProps["scroll-x"]).toBe(true);
-      expect(api.listProps["scroll-into-view"]).toBe("cui-step-demo-0");
+      expect(api.listProps["scroll-into-view"]).toBe("st-demo-i-0");
       expect(api.listProps["scroll-left"]).toBe(0);
 
       // Advance to step 1 -> scrollTargetIndex becomes 2 to reveal next upcoming step
@@ -368,9 +368,9 @@ describe("Stepper Machine", () => {
 
       expect(api.step).toBe(1);
       expect(api.scrollTargetIndex).toBe(2);
-      expect(api.scrollIntoViewId).toBe("cui-step-demo-2");
+      expect(api.scrollIntoViewId).toBe("st-demo-i-2");
       expect(api.scrollLeft).toBeGreaterThan(0);
-      expect(api.listProps["scroll-into-view"]).toBe("cui-step-demo-2");
+      expect(api.listProps["scroll-into-view"]).toBe("st-demo-i-2");
 
       // Advance to step 2 -> scrollTargetIndex becomes 3
       api.nextStep();
@@ -379,7 +379,7 @@ describe("Stepper Machine", () => {
 
       expect(api.step).toBe(2);
       expect(api.scrollTargetIndex).toBe(3);
-      expect(api.scrollIntoViewId).toBe("cui-step-demo-3");
+      expect(api.scrollIntoViewId).toBe("st-demo-i-3");
 
       // Programmatic scrollTo
       api.scrollTo(1);

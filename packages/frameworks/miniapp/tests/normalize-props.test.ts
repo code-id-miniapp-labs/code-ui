@@ -147,11 +147,11 @@ describe("normalizeProps", () => {
   it("supports Zag.js-style element / button helper methods via proxy", () => {
     const handler = vi.fn();
     const buttonProps = normalizeProps.button({
-      role: "button",
+      "aria-role": "button",
       onTap: handler,
     });
 
-    expect(buttonProps.role).toBe("button");
+    expect(buttonProps["aria-role"]).toBe("button");
     buttonProps.onTap({ foo: "bar" });
     expect(handler).toHaveBeenCalledTimes(1);
   });

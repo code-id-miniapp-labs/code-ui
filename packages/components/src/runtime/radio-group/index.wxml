@@ -1,9 +1,9 @@
-<view class="{{classes.root}}" data-scope="radio-group" data-part="root" role="radiogroup" aria-disabled="{{cRadioGroup.disabled}}" aria-invalid="{{cRadioGroup.invalid}}" aria-required="{{cRadioGroup.required}}">
-  <view wx:if="{{cRadioGroup.legend}}" class="{{classes.legend}}">{{cRadioGroup.legend}}</view>
+<view class="{{classes.root}}" data-scope="radio-group" data-part="root" aria-role="radiogroup" aria-disabled="{{cRadioGroup.disabled}}" aria-invalid="{{cRadioGroup.invalid}}" aria-required="{{required}}">
+  <view wx:if="{{legend}}" class="{{classes.legend}}">{{legend}}</view>
   <slot wx:else name="legend" />
-  <view class="{{classes.fieldset}}" role="presentation">
+  <view class="{{classes.fieldset}}">
     <block wx:if="{{cRadioGroup.items && cRadioGroup.items.length > 0}}">
-      <c-radio wx:for="{{cRadioGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant || cRadioGroup.variant}}" color="{{item.color || cRadioGroup.color}}" size="{{item.size || cRadioGroup.size}}" ui="{{item.ui || cRadioGroup.ui}}" bind:change="handleItemTap" data-value="{{item.value}}" />
+      <c-radio wx:for="{{cRadioGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant || variant}}" color="{{item.color || color}}" size="{{item.size || cRadioGroup.size}}" ui="{{item.ui || ui}}" bind:change="handleItemTap" data-value="{{item.value}}" />
     </block>
     <slot />
   </view>

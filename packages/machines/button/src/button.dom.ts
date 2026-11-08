@@ -1,13 +1,13 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
-export const getRootId = (scope: Scope) =>
-  scope.ids?.root ?? `button:${scope.id ?? "default"}:root`;
+export const getRootId = (scope: Scope): string =>
+  partId(scope, "btn", "root", "r");
 
-export const getLabelId = (scope: Scope) =>
-  scope.ids?.label ?? `button:${scope.id ?? "default"}:label`;
+export const getLabelId = (scope: Scope): string | undefined =>
+  optPartId(scope, "label");
 
-export const getIconId = (scope: Scope) =>
-  scope.ids?.icon ?? `button:${scope.id ?? "default"}:icon`;
+export const getIconId = (scope: Scope): string | undefined =>
+  optPartId(scope, "icon");
 
-export const getSpinnerId = (scope: Scope) =>
-  scope.ids?.spinner ?? `button:${scope.id ?? "default"}:spinner`;
+export const getSpinnerId = (scope: Scope): string | undefined =>
+  optPartId(scope, "spinner");

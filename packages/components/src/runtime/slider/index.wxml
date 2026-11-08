@@ -12,8 +12,8 @@
   aria-disabled="{{slider.disabled}}"
   aria-invalid="{{slider.invalid}}"
 >
-  <view wx:if="{{slider.label || hasLabelSlot}}" class="{{classes.wrapper}}" data-part="wrapper">
-    <text wx:if="{{slider.label}}" class="{{classes.label}}" data-part="label">{{slider.label}}</text>
+  <view wx:if="{{label || hasLabelSlot}}" class="{{classes.wrapper}}" data-part="wrapper">
+    <text wx:if="{{label}}" class="{{classes.label}}" data-part="label">{{label}}</text>
     <slot wx:else name="label" />
 
     <text wx:if="{{showValue}}" class="{{classes.valueText}}" data-part="value-text">{{slider.valueText}}</text>
@@ -44,7 +44,7 @@
     bindtouchcancel="{{gesture.onTouchEnd}}"
     bindtap="{{gesture.onTap}}"
   >
-    <view id="{{slider.trackProps.id}}" class="{{classes.track}}" data-part="track">
+    <view class="{{classes.track}}" data-part="track">
       <view id="{{slider.rangeProps.id}}" class="{{classes.range}}" data-part="range" style="{{slider.rangeStyle}}" />
     </view>
 
@@ -57,6 +57,7 @@
       data-index="{{item.index}}"
       data-dragging="{{slider.activeThumbIndex === item.index}}"
       style="{{item.style}}"
+      aria-role="slider"
       aria-valuemin="{{slider.min}}"
       aria-valuemax="{{slider.max}}"
       aria-valuenow="{{item.value}}"

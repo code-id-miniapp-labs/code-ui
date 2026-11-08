@@ -1,5 +1,10 @@
 import { createMachine } from "@code-ui/core";
-import { isNotNull, type MiniAppRect } from "@code-ui/utils";
+import {
+  isMiniApp,
+  isNotNull,
+  queryRect,
+  type MiniAppRect,
+} from "@code-ui/utils";
 import type {
   SwipeCellAction,
   SwipeCellMachine,
@@ -49,7 +54,13 @@ function measureActionWidths(
     return;
   }
 
-  if (!scope?.dom?.rect) {
+  const comp = scope?.component;
+  const canQuery =
+    Boolean(
+      comp && typeof (comp as { createSelectorQuery?: unknown }).createSelectorQuery === "function",
+    ) || isMiniApp();
+
+  if (!canQuery) {
     if (hasExplicitLeft && context.get("leftWidth") !== explicitLeft) {
       context.set("leftWidth", explicitLeft);
     }
@@ -82,8 +93,8 @@ function measureActionWidths(
     Promise<MiniAppRect | null> | null,
     Promise<MiniAppRect | null> | null,
   ] = [
-    shouldQueryLeft ? scope.dom.rect(".cui-swipe-cell__left") : null,
-    shouldQueryRight ? scope.dom.rect(".cui-swipe-cell__right") : null,
+    shouldQueryLeft ? queryRect(".cui-swipe-cell__left", comp) : null,
+    shouldQueryRight ? queryRect(".cui-swipe-cell__right", comp) : null,
   ];
 
   Promise.all(queries)
@@ -389,28 +400,19 @@ export const swipeCellMachine: SwipeCellMachine =
             event.type === "CONTROLLED.OPEN"
           ) {
             context.set("openedSide", event.side ?? "right");
-            if (event.type === "DRAG_END") {
-              context.set("currentOffset", event.offset);
-            } else {
-              context.set("currentOffset", 0);
-            }
-          }
-        },
-
-        setOpenedSideFromEvent: ({ context, event }) => {
-          if (event.type === "DRAG_END") {
-            context.set("openedSide", event.side ?? "right");
-            context.set("currentOffset", event.offset);
+            context.set(
+              "currentOffset",
+              event.type === "DRAG_END" ? event.offset : 0,
+            );
           }
         },
 
         clearOpenedSide: ({ context, event }) => {
           context.set("openedSide", null);
-          if (event.type === "DRAG_END") {
-            context.set("currentOffset", event.offset);
-          } else {
-            context.set("currentOffset", 0);
-          }
+          context.set(
+            "currentOffset",
+            event.type === "DRAG_END" ? event.offset : 0,
+          );
         },
 
         setOffsetFromEvent: ({ context, event }) => {

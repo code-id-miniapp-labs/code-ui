@@ -5,12 +5,10 @@ import {
   type QrCodeGenerateResult,
 } from "uqr";
 import type {
-  QrCodeColor,
   QrCodeEcc,
   QrCodeEncodingOptions,
   QrCodeMachine,
   QrCodeSchema,
-  QrCodeSize,
 } from "./qr-code.types";
 import { defaultQrCodeProps } from "./qr-code.props";
 
@@ -96,7 +94,7 @@ function normalizeBorder(border: unknown): number {
   return Number.isFinite(num) && num >= 0 ? Math.floor(num) : 0;
 }
 
-function normalizePixelSize(pixelSize: unknown): number {
+export function normalizePixelSize(pixelSize: unknown): number {
   const num = Number(pixelSize);
   return Number.isFinite(num) && num > 0 ? num : 10;
 }
@@ -157,45 +155,6 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
         value: prop("encoding"),
         defaultValue: defaultQrCodeProps.encoding ?? {},
       })),
-
-      pixelSize: bindable<number>(() => ({
-        value:
-          prop("pixelSize") !== undefined
-            ? normalizePixelSize(prop("pixelSize"))
-            : undefined,
-        defaultValue: 10,
-      })),
-
-      size: bindable<QrCodeSize>(() => ({
-        value: prop("size"),
-        defaultValue: "md",
-      })),
-
-      color: bindable<QrCodeColor>(() => ({
-        value: prop("color"),
-        defaultValue: "neutral",
-      })),
-
-      overlaySrc: bindable<string>(() => ({
-        value:
-          prop("overlaySrc") !== undefined
-            ? String(prop("overlaySrc"))
-            : undefined,
-        defaultValue: "",
-      })),
-
-      showOverlay: bindable<boolean>(() => ({
-        value:
-          prop("showOverlay") !== undefined
-            ? Boolean(prop("showOverlay"))
-            : undefined,
-        defaultValue: false,
-      })),
-
-      ui: bindable<any>(() => ({
-        value: prop("ui"),
-        defaultValue: {},
-      })),
     };
   },
 
@@ -243,15 +202,15 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       }
     },
 
-    viewBoxSize: ({ context, computed }) => {
+    viewBoxSize: ({ prop, computed }) => {
       const encoded = computed("encoded");
-      const pixelSize = normalizePixelSize(context.get("pixelSize"));
+      const pixelSize = normalizePixelSize(prop("pixelSize"));
       return encoded.size * pixelSize;
     },
 
-    path: ({ context, computed }) => {
+    path: ({ prop, computed }) => {
       const encoded = computed("encoded");
-      const pixelSize = normalizePixelSize(context.get("pixelSize"));
+      const pixelSize = normalizePixelSize(prop("pixelSize"));
       const { size, data } = encoded;
       const paths: string[] = [];
 
@@ -270,11 +229,11 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       return paths.join("");
     },
 
-    dataUrl: ({ context, computed }) => {
+    dataUrl: ({ prop, computed }) => {
       const viewBoxSize = computed("viewBoxSize");
       const path = computed("path");
       if (viewBoxSize <= 0) return "";
-      const color = resolveColor(context.get("color"));
+      const color = resolveColor(prop("color") ?? "neutral");
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" width="${viewBoxSize}" height="${viewBoxSize}"><path fill="${color}" d="${path}"/></svg>`;
       return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     },

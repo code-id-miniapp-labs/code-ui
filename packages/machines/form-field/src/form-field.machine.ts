@@ -6,10 +6,8 @@ import type { FormHostContext, FormRule } from "@code-ui/form";
 import { isEmpty } from "@code-ui/utils";
 import { defaultFormFieldProps } from "./form-field.props";
 import type {
-  FormFieldContext,
   FormFieldParams,
   FormFieldMachine,
-  FormFieldProps,
   FormFieldSchema,
 } from "./form-field.types";
 
@@ -34,17 +32,13 @@ function getEffectiveFieldRules(
 ): FormRule[] {
   if (disabled) return [];
   const list: FormRule[] = Array.isArray(rules) ? [...rules] : [];
-  if (required) {
-    const hasRequired = list.some((r: any) =>
-      typeof r === "object" && r !== null ? Boolean(r.required) : false,
+  if (
+    required &&
+    !list.some((r: any) => typeof r === "object" && r !== null && r.required)
+  ) {
+    list.unshift(
+      createRequiredRule(`${labelOrName || "This field"} is required`),
     );
-    if (!hasRequired) {
-      const fallbackLabel = labelOrName || "This field";
-      const ruleFn = createRequiredRule(`${fallbackLabel} is required`);
-      (ruleFn as any).required = true;
-      (ruleFn as any).message = `${fallbackLabel} is required`;
-      list.unshift(ruleFn);
-    }
   }
   return list;
 }
@@ -63,12 +57,13 @@ function clearPublishedField(params: FormFieldParams) {
 function setupHostInjection({ prop, refs }: FormFieldParams) {
   refs.get("stopInjection")?.();
   refs.set("stopInjection", undefined);
-  refs.set("injectionForm", prop("form"));
+  const form = prop("form");
+  refs.set("injectionForm", form);
   const component = prop("component");
   const update = refs.get("injectedHost");
-  update(injectFormHost(component, prop("form")));
+  update(injectFormHost(component, form));
   if (component) {
-    refs.set("stopInjection", onProvide(component, getFormHostKey(prop("form")), update));
+    refs.set("stopInjection", onProvide(component, getFormHostKey(form), update));
   }
 }
 
@@ -79,12 +74,8 @@ export const formFieldMachine: FormFieldMachine =
       ...props,
     }),
 
-    initialState: ({ prop }) => {
-      const initialError = prop("error");
-      return initialError && initialError.trim().length > 0
-        ? "invalid"
-        : "valid";
-    },
+    initialState: ({ prop }) =>
+      prop("error")?.trim() ? "invalid" : "valid",
 
     refs: () => ({
       injectedHost: signal<FormHostContext | undefined>(undefined),
@@ -94,66 +85,32 @@ export const formFieldMachine: FormFieldMachine =
       publishedName: "",
     }),
 
-    context: ({ prop, bindable }) => {
-      const propBindable = <
-        K extends keyof FormFieldContext & keyof FormFieldProps,
-      >(
-        key: K,
-        defaultValue: FormFieldContext[K],
-      ) =>
-        bindable<FormFieldContext[K]>(() => ({
-          value: prop(key) as FormFieldContext[K] | undefined,
-          defaultValue,
-        }));
-
-      const stateBindable = <K extends keyof FormFieldContext>(
-        _key: K,
-        defaultValue: FormFieldContext[K],
-      ) =>
-        bindable<FormFieldContext[K]>(() => ({
-          defaultValue,
-        }));
-
-      return {
-        name: propBindable("name", ""),
-        label: propBindable("label", ""),
-        description: propBindable("description", ""),
-        help: propBindable("help", ""),
-        helperText: propBindable("helperText", ""),
-        hint: propBindable("hint", ""),
-        error: propBindable("error", ""),
-        innerError: stateBindable("innerError", ""),
-        required: propBindable("required", false),
-        disabled: propBindable("disabled", false),
-        rules: propBindable("rules", []),
-        size: propBindable("size", "md"),
-        ui: propBindable("ui", {}),
-      };
-    },
+    context: ({ bindable }) => ({
+      innerError: bindable<string>(() => ({ defaultValue: "" })),
+    }),
 
     computed: {
       host: ({ prop, refs }) => {
         const host = prop("formContext");
         return host === undefined ? refs.get("injectedHost")() : host;
       },
-      isDisabled: ({ context, computed }) =>
-        Boolean(context.get("disabled") || computed("host")?.disabled()),
+      isDisabled: ({ prop, computed }) =>
+        Boolean(prop("disabled") || computed("host")?.disabled()),
       isReadOnly: ({ computed }) => computed("host")?.readOnly() ?? false,
-      displayError: ({ context, computed }) =>
-        context.get("error") ||
-        computed("host")?.errors(context.get("name"))[0] ||
+      displayError: ({ prop, context, computed }) =>
+        prop("error") ||
+        computed("host")?.errors(prop("name") ?? "")[0] ||
         context.get("innerError") ||
         "",
-      displayHelp: ({ context }) =>
-        context.get("help") || context.get("helperText") || "",
+      displayHelp: ({ prop }) => prop("help") || prop("helperText") || "",
       invalid: ({ state, computed }) =>
         state.matches("invalid") || Boolean(computed("displayError")),
-      effectiveRules: ({ context, computed }) =>
+      effectiveRules: ({ prop, computed }) =>
         getEffectiveFieldRules(
-          context.get("rules"),
-          Boolean(context.get("required")),
+          prop("rules"),
+          Boolean(prop("required")),
           computed("isDisabled"),
-          context.get("label") || context.get("name") || "",
+          prop("label") || prop("name") || "",
         ),
     },
 
@@ -187,13 +144,8 @@ export const formFieldMachine: FormFieldMachine =
     },
 
     states: {
-      valid: {
-        tags: ["valid"],
-      },
-
-      invalid: {
-        tags: ["invalid"],
-      },
+      valid: { tags: ["valid"] },
+      invalid: { tags: ["invalid"] },
     },
 
     implementations: {
@@ -218,13 +170,13 @@ export const formFieldMachine: FormFieldMachine =
       },
 
       effects: {
-        trackFieldProps: (params) => {
-          return effect(() => {
+        trackFieldProps: (params) =>
+          effect(() => {
             params.prop("rules");
             params.prop("required");
             params.prop("label");
             const host = params.computed("host");
-            const name = params.context.get("name");
+            const name = params.prop("name") ?? "";
             if (
               host !== params.refs.get("publishedHost") ||
               name !== params.refs.get("publishedName")
@@ -236,11 +188,10 @@ export const formFieldMachine: FormFieldMachine =
             params.refs.set("publishedName", name);
             host.setFieldRules(name, () => params.computed("effectiveRules"));
             host.setFieldState(name, {
-              disabled: params.context.get("disabled"),
-              size: params.context.get("size"),
-              });
-          });
-        },
+              disabled: Boolean(params.prop("disabled")),
+              size: params.prop("size") ?? "md",
+            });
+          }),
       },
     },
   });

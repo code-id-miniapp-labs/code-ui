@@ -414,22 +414,20 @@ describe("Tabs Machine", () => {
 
       const api = connectTabs(machine.service);
 
-      expect(api.rootProps.id).toBe("cui-tabs-demo");
-      expect(api.rootProps["data-scope"]).toBe("tabs");
-      expect(api.rootProps["data-part"]).toBe("root");
+      expect(api.rootProps.id).toBe("tb-demo-r");
       expect(api.rootProps["data-orientation"]).toBe("horizontal");
 
-      expect(api.listProps.role).toBe("tablist");
+      expect(api.listProps["aria-role"]).toBe("tablist");
       expect(api.listProps["aria-orientation"]).toBe("horizontal");
 
       const item0 = api.items[0];
       expect(item0).toBeDefined();
       expect(item0?.isSelected).toBe(true);
-      expect(item0?.triggerProps["role"]).toBe("tab");
+      expect(item0?.triggerProps["aria-role"]).toBe("tab");
       expect(item0?.triggerProps["aria-selected"]).toBe(true);
       expect(item0?.triggerProps["data-state"]).toBe("active");
-      expect(item0?.triggerProps["aria-controls"]).toBe("cui-tabs-demo-content-account");
-      expect(item0?.contentProps["role"]).toBe("tabpanel");
+      expect(item0?.triggerProps["aria-controls"]).toBe("tb-demo-c-account");
+      expect(item0?.contentProps["aria-role"]).toBe("tabpanel");
       expect(item0?.contentProps["hidden"]).toBe(false);
 
       const item1 = api.items[1];

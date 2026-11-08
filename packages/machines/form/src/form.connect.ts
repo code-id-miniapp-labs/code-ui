@@ -1,4 +1,3 @@
-import { parts } from "./form.anatomy";
 import * as dom from "./form.dom";
 import {
   collectFormValues,
@@ -20,7 +19,7 @@ import type {
 } from "./form.types";
 
 export function connectForm(service: FormService): FormApi {
-  const { state, context, computed, refs, scope } = service;
+  const { state, context, computed, prop, refs, scope } = service;
 
   const currentState = state.get();
   const values = context.get("values") ?? {};
@@ -28,8 +27,8 @@ export function connectForm(service: FormService): FormApi {
   const errors = context.get("errors") ?? [];
   const fieldStates = context.get("fieldStates") ?? {};
   const submitCount = context.get("submitCount") ?? 0;
-  const disabled = Boolean(context.get("disabled"));
-  const readOnly = Boolean(context.get("readOnly"));
+  const disabled = Boolean(prop("disabled"));
+  const readOnly = Boolean(prop("readOnly"));
 
   const isValid = computed("isValid");
   const hasErrors = computed("hasErrors");
@@ -44,10 +43,6 @@ export function connectForm(service: FormService): FormApi {
   function getErrorProps(name: string): Record<string, any> {
     return {
       id: dom.getErrorId(scope, name),
-      ...parts.error.attrs,
-      "data-field": name,
-      role: "alert",
-      "aria-live": "polite",
     };
   }
 
@@ -57,6 +52,8 @@ export function connectForm(service: FormService): FormApi {
     messages: err.messages,
     errorProps: getErrorProps(err.name),
   }));
+
+  const errorsId = dom.getErrorsId(scope);
 
   return {
     state: currentState,
@@ -117,8 +114,7 @@ export function connectForm(service: FormService): FormApi {
     },
 
     getFieldValue(name: string): any {
-      const all = collectFormValues(service);
-      return all[name];
+      return collectFormValues(service)[name];
     },
 
     setValues(
@@ -149,16 +145,13 @@ export function connectForm(service: FormService): FormApi {
     },
 
     handleSubmit(e?: any) {
-      // Merge native WeChat <form bindsubmit> detail.value if present for unregistered inputs
       const nativeValues = e?.detail?.value;
       if (nativeValues && typeof nativeValues === "object") {
         const current = context.get("values") ?? {};
         const fields = refs.get("fields");
         const merged = { ...current };
         for (const [k, v] of Object.entries(nativeValues)) {
-          if (!fields.has(k)) {
-            merged[k] = v;
-          }
+          if (!fields.has(k)) merged[k] = v;
         }
         context.set("values", merged);
       }
@@ -171,27 +164,9 @@ export function connectForm(service: FormService): FormApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
-      "data-state": currentState,
-      "data-valid": String(isValid),
-      "data-invalid": String(hasErrors),
-      "data-dirty": String(isDirty),
-      "data-touched": String(isTouched),
-      "data-validating": String(isValidating),
-      "data-submitting": String(isSubmitting),
-      "data-disabled": String(disabled),
-      "data-readonly": String(readOnly),
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(hasErrors),
     },
 
-    errorsProps: {
-      id: dom.getErrorsId(scope),
-      ...parts.errors.attrs,
-      "data-invalid": String(hasErrors),
-      role: "alert",
-      "aria-live": "polite",
-    },
+    errorsProps: errorsId ? { id: errorsId } : {},
 
     getErrorProps,
   };

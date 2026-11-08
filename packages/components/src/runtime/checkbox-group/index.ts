@@ -25,12 +25,6 @@ Component(
   createComponentOptions({
     behaviors: [checkboxGroupBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultCheckboxGroupProps, {
       className: {
         type: String,

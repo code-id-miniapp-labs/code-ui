@@ -102,49 +102,24 @@ export function cx(...args: ClassValue[]): string {
 const SAFE_CLASS = /^[A-Za-z_][\w-]*$/;
 const WHITESPACE = /\s+/;
 
-const ESCAPE_MAP: Record<string, string> = {
-  "[": "_b",
-  "]": "_B",
-  "(": "_p",
-  ")": "_P",
-  "#": "_h",
-  "!": "_e",
-  "/": "_f",
-  "\\": "_r",
-  ".": "_d",
-  ":": "_c",
-  "%": "_v",
-  ",": "_m",
-  "'": "_a",
-  '"': "_q",
-  "*": "_x",
-  "&": "_n",
-  "@": "_t",
-  "{": "_k",
-  "}": "_K",
-  "+": "_u",
-  ";": "_j",
-  "<": "_l",
-  "~": "_w",
-  "=": "_z",
-  ">": "_g",
-  "?": "_Q",
-  "^": "_y",
-  "`": "_i",
-  "|": "_o",
-  $: "_s",
-};
+const ESC_CHARS = "[]()#!/\\.:%,'\"*&@{}+;<~=>?^`|$";
+const ESC_CODES = "bBpPhefrdcvmaqxntkKujlwzgQyios";
+const ESCAPE_MAP: Record<string, string> = Object.create(null);
+for (let i = 0; i < ESC_CHARS.length; i++) {
+  const ch = ESC_CHARS[i];
+  if (ch) ESCAPE_MAP[ch] = `_${ESC_CODES[i]}`;
+}
 
 function createLruCache<K, V>(limit = 512) {
   const entries = new Map<K, V>();
   return {
     get(key: K): V | undefined {
-      const value = entries.get(key);
-      if (value !== undefined) {
+      const v = entries.get(key);
+      if (v !== undefined) {
         entries.delete(key);
-        entries.set(key, value);
+        entries.set(key, v);
       }
-      return value;
+      return v;
     },
     set(key: K, value: V): void {
       if (entries.has(key)) entries.delete(key);
@@ -201,24 +176,15 @@ export function escapeClass(value: string | null | undefined): string {
   return out;
 }
 
-/** Builds a flat lookup table from compact `{ groupKey: "token1,token2" }` definitions. */
 function makeLookup(defs: Record<string, string>): Record<string, string> {
   const map: Record<string, string> = Object.create(null);
   for (const key in defs) {
     const tokens = defs[key];
-    if (!tokens) continue;
-    for (const token of tokens.split(",")) map[token] = key;
+    if (tokens) for (const token of tokens.split(",")) map[token] = key;
   }
   return map;
 }
 
-function makeTokenSet(tokens: string): Record<string, true> {
-  const set: Record<string, true> = Object.create(null);
-  for (const token of tokens.split(",")) set[token] = true;
-  return set;
-}
-
-// Single O(1) lookup for standalone utilities
 const EXACT_UTILS = makeLookup({
   display:
     "block,inline-block,inline,flex,inline-flex,grid,inline-grid,contents,list-item,hidden",
@@ -235,58 +201,60 @@ const EXACT_UTILS = makeLookup({
   shadow: "shadow",
 });
 
-const FONT_WEIGHT = makeTokenSet(
-  "thin,extralight,light,normal,medium,semibold,bold,extrabold,black",
-);
-const TEXT_ALIGN = makeTokenSet("left,center,right,justify,start,end");
-const TEXT_WRAP = makeTokenSet("wrap,nowrap,balance,pretty,ellipsis,clip");
-const BG_SIZE = makeTokenSet("auto,cover,contain");
-const BG_ATTACHMENT = makeTokenSet("fixed,local,scroll");
-const BG_POSITION = makeTokenSet(
-  "bottom,center,left,left-bottom,left-top,right,right-bottom,right-top,top",
-);
-const BORDER_STYLE = makeTokenSet("solid,dashed,dotted,double,hidden,none");
-const FLEX_DIRECTION = makeTokenSet("row,col,row-reverse,col-reverse");
-const FLEX_WRAP = makeTokenSet("wrap,nowrap,wrap-reverse");
-const FLEX = makeTokenSet("1,auto,initial,none");
-const OBJECT_FIT = makeTokenSet("contain,cover,fill,none,scale-down");
+const FONT_WEIGHT =
+  /^(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/;
+const TEXT_ALIGN = /^(left|center|right|justify|start|end)$/;
+const TEXT_WRAP = /^(wrap|nowrap|balance|pretty|ellipsis|clip)$/;
+const BG_SIZE = /^(auto|cover|contain)$/;
+const BG_ATTACHMENT = /^(fixed|local|scroll)$/;
+const BG_POSITION =
+  /^(bottom|center|left|left-bottom|left-top|right|right-bottom|right-top|top)$/;
+const BORDER_STYLE = /^(solid|dashed|dotted|double|hidden|none)$/;
+const FLEX_DIRECTION = /^(row|col|row-reverse|col-reverse)$/;
+const FLEX_WRAP = /^(wrap|nowrap|wrap-reverse)$/;
+const FLEX = /^(1|auto|initial|none)$/;
+const OBJECT_FIT = /^(contain|cover|fill|none|scale-down)$/;
 
-const SHORTHAND_CONFLICTS: Record<string, string[]> = Object.fromEntries(
-  Object.entries({
-    p: "px,py,pt,pr,pb,pl,ps,pe",
-    px: "pl,pr,ps,pe",
-    py: "pt,pb",
-    m: "mx,my,mt,mr,mb,ml,ms,me",
-    mx: "ml,mr,ms,me",
-    my: "mt,mb",
-    size: "w,h",
-    inset: "inset-x,inset-y,top,right,bottom,left,start,end",
-    "inset-x": "left,right,start,end",
-    "inset-y": "top,bottom",
-    rounded:
-      "rounded-t,rounded-r,rounded-b,rounded-l,rounded-s,rounded-e,rounded-tl,rounded-tr,rounded-br,rounded-bl,rounded-ss,rounded-se,rounded-ee,rounded-es",
-    "rounded-t": "rounded-tl,rounded-tr",
-    "rounded-r": "rounded-tr,rounded-br",
-    "rounded-b": "rounded-br,rounded-bl",
-    "rounded-l": "rounded-tl,rounded-bl",
-    "rounded-s": "rounded-ss,rounded-es",
-    "rounded-e": "rounded-se,rounded-ee",
-    "border-width":
-      "border-x-width,border-y-width,border-t-width,border-r-width,border-b-width,border-l-width,border-s-width,border-e-width",
-    "border-x-width":
-      "border-l-width,border-r-width,border-s-width,border-e-width",
-    "border-y-width": "border-t-width,border-b-width",
-    "border-color":
-      "border-x-color,border-y-color,border-t-color,border-r-color,border-b-color,border-l-color,border-s-color,border-e-color",
-    "border-x-color":
-      "border-l-color,border-r-color,border-s-color,border-e-color",
-    "border-y-color": "border-t-color,border-b-color",
-    gap: "gap-x,gap-y",
-    overflow: "overflow-x,overflow-y",
-    "text-size-leading": "text-size,leading",
-    "text-size": "text-size-leading",
-  }).map(([k, v]) => [k, v.split(",")]),
-);
+const SHORTHAND_CONFLICTS: Record<string, string[]> = Object.create(null);
+const conflictDefs: Record<string, string> = {
+  p: "px,py,pt,pr,pb,pl,ps,pe",
+  px: "pl,pr,ps,pe",
+  py: "pt,pb",
+  m: "mx,my,mt,mr,mb,ml,ms,me",
+  mx: "ml,mr,ms,me",
+  my: "mt,mb",
+  size: "w,h",
+  inset: "inset-x,inset-y,top,right,bottom,left,start,end",
+  "inset-x": "left,right,start,end",
+  "inset-y": "top,bottom",
+  rounded: "t,r,b,l,s,e,tl,tr,br,bl,ss,se,ee,es".replace(/[^,]+/g, "rounded-$&"),
+  "rounded-t": "rounded-tl,rounded-tr",
+  "rounded-r": "rounded-tr,rounded-br",
+  "rounded-b": "rounded-br,rounded-bl",
+  "rounded-l": "rounded-tl,rounded-bl",
+  "rounded-s": "rounded-ss,rounded-es",
+  "rounded-e": "rounded-se,rounded-ee",
+  gap: "gap-x,gap-y",
+  overflow: "overflow-x,overflow-y",
+  "text-size-leading": "text-size,leading",
+  "text-size": "text-size-leading",
+};
+for (const k in conflictDefs) {
+  const v = conflictDefs[k];
+  if (v) SHORTHAND_CONFLICTS[k] = v.split(",");
+}
+for (const kind of ["width", "color"]) {
+  SHORTHAND_CONFLICTS[`border-${kind}`] = "x,y,t,r,b,l,s,e"
+    .split(",")
+    .map((d) => `border-${d}-${kind}`);
+  SHORTHAND_CONFLICTS[`border-x-${kind}`] = "l,r,s,e"
+    .split(",")
+    .map((d) => `border-${d}-${kind}`);
+  SHORTHAND_CONFLICTS[`border-y-${kind}`] = [
+    `border-t-${kind}`,
+    `border-b-${kind}`,
+  ];
+}
 
 const TEXT_SIZE_RE =
   /^([2-9]?xs|sm|md|base|lg|[2-9]?xl)$|^\[(\d+|length:|var\(--font-size)/;
@@ -333,21 +301,21 @@ export function computeUtilityKey(token: string): string | null {
     const base = slash !== -1 ? val.slice(0, slash) : val;
     if (TEXT_SIZE_RE.test(base))
       return `${prefix}${slash !== -1 ? "text-size-leading" : "text-size"}`;
-    if (TEXT_ALIGN[base]) return `${prefix}text-align`;
-    if (TEXT_WRAP[base]) return `${prefix}text-wrap`;
+    if (TEXT_ALIGN.test(base)) return `${prefix}text-align`;
+    if (TEXT_WRAP.test(base)) return `${prefix}text-wrap`;
     return `${prefix}text-color`;
   }
   if (m.startsWith("font-")) {
-    return `${prefix}${FONT_WEIGHT[m.slice(5)] ? "font-weight" : "font-family"}`;
+    return `${prefix}${FONT_WEIGHT.test(m.slice(5)) ? "font-weight" : "font-family"}`;
   }
   if (m.startsWith("align-")) return `${prefix}vertical-align`;
 
   // 4. Backgrounds
   if (m.startsWith("bg-")) {
     const val = m.slice(3);
-    if (BG_SIZE[val]) return `${prefix}bg-size`;
-    if (BG_ATTACHMENT[val]) return `${prefix}bg-attachment`;
-    if (BG_POSITION[val]) return `${prefix}bg-position`;
+    if (BG_SIZE.test(val)) return `${prefix}bg-size`;
+    if (BG_ATTACHMENT.test(val)) return `${prefix}bg-attachment`;
+    if (BG_POSITION.test(val)) return `${prefix}bg-position`;
     if (val.startsWith("size:")) return `${prefix}bg-size`;
     if (val.startsWith("position:")) return `${prefix}bg-position`;
     if (BG_REPEAT_RE.test(val)) return `${prefix}bg-repeat`;
@@ -358,7 +326,7 @@ export function computeUtilityKey(token: string): string | null {
   // 5. Borders & Rounded
   if (m.startsWith("border-")) {
     const val = m.slice(7);
-    if (BORDER_STYLE[val]) return `${prefix}border-style`;
+    if (BORDER_STYLE.test(val)) return `${prefix}border-style`;
     const dir = val.match(BORDER_DIR_RE);
     if (dir) {
       return `${prefix}border-${dir[1]}-${!dir[2] || NUM_OR_LEN_RE.test(dir[2]) ? "width" : "color"}`;
@@ -382,12 +350,12 @@ export function computeUtilityKey(token: string): string | null {
   }
   if (m.startsWith("flex-")) {
     const val = m.slice(5);
-    if (FLEX_DIRECTION[val]) return `${prefix}flex-direction`;
-    if (FLEX_WRAP[val]) return `${prefix}flex-wrap`;
-    if (FLEX[val]) return `${prefix}flex`;
+    if (FLEX_DIRECTION.test(val)) return `${prefix}flex-direction`;
+    if (FLEX_WRAP.test(val)) return `${prefix}flex-wrap`;
+    if (FLEX.test(val)) return `${prefix}flex`;
   }
   if (m.startsWith("object-")) {
-    return `${prefix}${OBJECT_FIT[m.slice(7)] ? "object-fit" : "object-position"}`;
+    return `${prefix}${OBJECT_FIT.test(m.slice(7)) ? "object-fit" : "object-position"}`;
   }
 
   return null;
@@ -445,8 +413,7 @@ export function cn(...classes: ClassValue[]): string {
   return escapeClass(dedupeClasses(cx(...classes)));
 }
 
-const normVal = (v: unknown): string =>
-  v === true ? "true" : v === false ? "false" : String(v);
+const normVal = (v: unknown): string => String(v);
 
 function resolveExtraOpts(opts?: TVClassProp | string): string {
   return !opts
@@ -571,12 +538,14 @@ export function tv(config: any): any {
       : [primarySlot],
   );
 
-  const mergedVariants = mergeVariantConfigs(
-    parent?.variants,
-    variants,
-    slotNames,
-    primarySlot,
-  );
+  const mergedVariants = parent?.variants
+    ? mergeVariantConfigs(
+        parent.variants,
+        variants,
+        slotNames,
+        primarySlot,
+      )
+    : variants;
   const mergedCompounds = parent?.compoundVariants
     ? [...parent.compoundVariants, ...compoundVariants]
     : [...compoundVariants];

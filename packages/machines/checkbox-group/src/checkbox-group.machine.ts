@@ -1,18 +1,23 @@
 import { createMachine } from "@code-ui/core";
 import {
-  setupFormFieldSync,
   cleanupFormFieldSync,
+  createFormFieldComputed,
+  hasFormFieldErrors,
+  setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isEqual, isNotEmpty } from "@code-ui/utils";
 import type {
   CheckboxGroupContext,
   CheckboxGroupMachine,
-  CheckboxGroupMachineContext,
-  CheckboxGroupProps,
   CheckboxGroupSchema,
   CheckboxGroupSize,
 } from "./checkbox-group.types";
 import { defaultCheckboxGroupProps } from "./checkbox-group.props";
+
+const toBound = (raw: unknown): number | null =>
+  raw !== null && raw !== undefined && !Number.isNaN(Number(raw))
+    ? Number(raw)
+    : null;
 
 export const checkboxGroupMachine: CheckboxGroupMachine =
   createMachine<CheckboxGroupSchema>({
@@ -39,9 +44,9 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           disabled: () => computed("isDisabled"),
           readOnly: () => computed("isReadOnly"),
           invalid: () => computed("isInvalid"),
-          color: () => context.get("color") || "primary",
+          color: () => prop("color") || "primary",
           size: () => computed("effectiveSize"),
-          variant: () => context.get("variant") || "outline",
+          variant: () => prop("variant") || "outline",
           setValue: (value) => send({ type: "SET_VALUE", value }),
           toggleValue: (value, checked) =>
             send({ type: "TOGGLE_VALUE", value, checked }),
@@ -49,115 +54,60 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
       };
     },
 
-    context: ({ prop, bindable, getRefs }) => {
-      const propBindable = <
-        K extends keyof CheckboxGroupMachineContext & keyof CheckboxGroupProps,
-      >(
-        key: K,
-        defaultValue: CheckboxGroupMachineContext[K],
-      ) =>
-        bindable<CheckboxGroupMachineContext[K]>(() => ({
-          value: prop(key) as CheckboxGroupMachineContext[K] | undefined,
-          defaultValue,
-        }));
+    context: ({ prop, bindable, getRefs }) => ({
+      value: bindable<string[]>(() => {
+        const rawVal = prop("value");
+        const controlledVal = Array.isArray(rawVal) ? rawVal : undefined;
+        const rawDefault = prop("defaultValue");
+        const initial: string[] =
+          controlledVal ?? (Array.isArray(rawDefault) ? rawDefault : []);
 
-      return {
-        value: bindable<string[]>(() => {
-          const rawVal = prop("value");
-          const controlledVal = Array.isArray(rawVal) ? rawVal : undefined;
-          const rawDefault = prop("defaultValue");
-          const initial: string[] =
-            controlledVal ?? (Array.isArray(rawDefault) ? rawDefault : []);
+        return {
+          value: controlledVal,
+          defaultValue: initial,
+          isEqual,
+          onChange: (nextVal) => {
+            prop("onChange")?.({ value: nextVal });
 
-          return {
-            value: controlledVal,
-            defaultValue: initial,
-            isEqual,
-            onChange: (nextVal) => {
-              prop("onChange")?.({ value: nextVal });
+            const formField = getRefs().get("formField");
+            if (formField) {
+              formField.emitInput(nextVal);
+              formField.emitChange(nextVal);
+            }
+          },
+        };
+      }),
 
-              const formField = getRefs().get("formField");
-              if (formField) {
-                formField.emitInput(nextVal);
-                formField.emitChange(nextVal);
-              }
-            },
-          };
-        }),
-
-        name: propBindable("name", ""),
-        form: propBindable("form", ""),
-        disabled: propBindable("disabled", false),
-        readOnly: propBindable("readOnly", false),
-
-        invalid: bindable<boolean>(() => {
-          const rawInvalid = prop("invalid");
-          return {
-            value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-            defaultValue: false,
-          };
-        }),
-
-        required: propBindable("required", false),
-        color: propBindable("color", "primary"),
-        size: propBindable("size", "md"),
-        orientation: propBindable("orientation", "vertical"),
-        variant: propBindable("variant", "outline"),
-        legend: propBindable("legend", ""),
-        min: propBindable("min", null),
-        max: propBindable("max", null),
-        items: propBindable("items", []),
-        ui: propBindable("ui", {}),
-      };
-    },
+      invalid: bindable<boolean>(() => {
+        const rawInvalid = prop("invalid");
+        return {
+          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+          defaultValue: false,
+        };
+      }),
+    }),
 
     computed: {
-      effectiveSize: ({ context, computed }) => {
-        const size = context.get("size");
+      ...createFormFieldComputed("checkbox-group"),
+      effectiveSize: ({ prop, computed }) => {
+        const size = prop("size");
         return size && size !== "md"
           ? size
           : ((computed("fieldSize") || size || "md") as CheckboxGroupSize);
       },
-      formDisabled: ({ prop, refs }) => {
-        const host = prop("formContext") ?? refs.get("formField")?.host;
-        return host?.disabled() ?? false;
-      },
-      formReadOnly: ({ prop, refs }) => {
-        const host = prop("formContext") ?? refs.get("formField")?.host;
-        return host?.readOnly() ?? false;
-      },
-      fieldDisabled: ({ prop, refs, scope }) => {
-        const host = prop("formContext") ?? refs.get("formField")?.host;
-        return Boolean(
-          prop("fieldDisabled") ||
-          host?.fieldState(prop("name") || scope.id || "checkbox-group")
-            ?.disabled,
-        );
-      },
-      fieldSize: ({ prop, refs, scope }) => {
-        const host = prop("formContext") ?? refs.get("formField")?.host;
-        return (
-          prop("fieldSize") ||
-          host?.fieldState(prop("name") || scope.id || "checkbox-group")
-            ?.size ||
-          ""
-        );
-      },
-      isInvalid: ({ prop, refs, context, scope }) => {
-        const host = prop("formContext") ?? refs.get("formField")?.host;
-        return Boolean(
-          context.get("invalid") ||
-          host?.errors(prop("name") || scope.id || "checkbox-group").length,
-        );
-      },
-      isDisabled: ({ context, computed }) =>
+      isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
-          context.get("disabled") ||
-          computed("formDisabled") ||
-          computed("fieldDisabled"),
+          context.get("invalid") ||
+            hasFormFieldErrors(prop, refs, scope, "checkbox-group"),
         ),
-      isReadOnly: ({ context, computed }) =>
-        Boolean(context.get("readOnly") || computed("formReadOnly")),
+      isDisabled: ({ prop, computed }) =>
+        Boolean(
+          prop("disabled") ||
+            computed("formDisabled") ||
+            computed("fieldDisabled"),
+        ),
+      isReadOnly: ({ prop, computed }) =>
+        Boolean(prop("readOnly") || computed("formReadOnly")),
       isInteractive: ({ computed }) =>
         !computed("isDisabled") && !computed("isReadOnly"),
     },
@@ -208,34 +158,20 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
             context.set("value", event.value);
           }
         },
-        toggleValue: ({ context, event }) => {
+        toggleValue: ({ context, prop, event }) => {
           if (!("value" in event)) return;
           const current = context.get("value") ?? [];
           const target = String(event.value);
           const isSelected = current.includes(target);
-          const rawMin = context.get("min");
-          const min =
-            rawMin !== null &&
-            rawMin !== undefined &&
-            !Number.isNaN(Number(rawMin))
-              ? Number(rawMin)
-              : null;
-          const rawMax = context.get("max");
-          const max =
-            rawMax !== null &&
-            rawMax !== undefined &&
-            !Number.isNaN(Number(rawMax))
-              ? Number(rawMax)
-              : null;
+          const min = toBound(prop("min"));
+          const max = toBound(prop("max"));
 
           const targetChecked =
             "checked" in event && typeof event.checked === "boolean"
               ? event.checked
               : !isSelected;
 
-          if (targetChecked === isSelected) {
-            return;
-          }
+          if (targetChecked === isSelected) return;
 
           if (isSelected) {
             if (min !== null && current.length <= min) return;
@@ -248,38 +184,26 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
             context.set("value", [...current, target]);
           }
         },
-        selectAll: ({ context }) => {
-          const rawItems = context.get("items") ?? [];
-          const allValues = rawItems.map((raw) => {
-            if (typeof raw === "string") return raw;
-            return String(raw.value ?? "");
-          });
-          const rawMax = context.get("max");
-          const max =
-            rawMax !== null &&
-            rawMax !== undefined &&
-            !Number.isNaN(Number(rawMax))
-              ? Number(rawMax)
-              : null;
-          const nextValues = max !== null ? allValues.slice(0, max) : allValues;
-          context.set("value", nextValues);
+        selectAll: ({ context, prop }) => {
+          const rawItems = prop("items") ?? [];
+          const allValues = rawItems.map((raw) =>
+            typeof raw === "string" ? raw : String(raw.value ?? ""),
+          );
+          const max = toBound(prop("max"));
+          context.set(
+            "value",
+            max !== null ? allValues.slice(0, max) : allValues,
+          );
         },
-        clearValue: ({ context }) => {
-          const rawMin = context.get("min");
-          const min =
-            rawMin !== null &&
-            rawMin !== undefined &&
-            !Number.isNaN(Number(rawMin))
-              ? Number(rawMin)
-              : null;
+        clearValue: ({ context, prop }) => {
+          const min = toBound(prop("min"));
           if (min !== null && min > 0) return;
           context.set("value", []);
         },
         resetValue: ({ context, refs, prop }) => {
           const rawDefault = prop("defaultValue");
           const fallback = Array.isArray(rawDefault) ? rawDefault : [];
-          const initial: string[] = refs.get("initialValue") ?? fallback;
-          context.set("value", initial);
+          context.set("value", refs.get("initialValue") ?? fallback);
           context.set("invalid", false);
         },
         setInvalid: ({ context, event }) => {
@@ -293,8 +217,8 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               component: prop("component"),
               getHost: () => prop("formContext"),
               id: scope.id ?? "checkbox-group",
-              getFormId: () => context.get("form") || prop("form") || "",
-              getName: () => context.get("name") || prop("name") || "",
+              getFormId: () => prop("form") || "",
+              getName: () => prop("name") || "",
               getValue: () => context.get("value"),
               setValue: (rawVal: unknown) => {
                 context.set("value", Array.isArray(rawVal) ? rawVal : []);
@@ -302,8 +226,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               resetValue: () => {
                 const rawDefault = prop("defaultValue");
                 const fallback = Array.isArray(rawDefault) ? rawDefault : [];
-                const initial: string[] = refs.get("initialValue") ?? fallback;
-                context.set("value", initial);
+                context.set("value", refs.get("initialValue") ?? fallback);
                 context.set("invalid", false);
               },
               focus: () => {},

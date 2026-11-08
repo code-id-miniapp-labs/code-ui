@@ -4,27 +4,26 @@ import type {
   CheckboxGroupItemRaw,
   CheckboxGroupService,
 } from "./checkbox-group.types";
-import { parts } from "./checkbox-group.anatomy";
 import * as dom from "./checkbox-group.dom";
 
 export function connectCheckboxGroup(
   service: CheckboxGroupService,
 ): CheckboxGroupApi {
-  const { send, context, computed, scope, refs } = service;
+  const { send, context, computed, prop, scope, refs } = service;
 
   const currentValue: string[] = context.get("value") ?? [];
   const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const required = Boolean(context.get("required"));
+  const required = Boolean(prop("required"));
 
   const size = computed("effectiveSize");
 
-  const color = context.get("color");
-  const orientation = context.get("orientation");
-  const variant = context.get("variant");
-  const legend = context.get("legend") ?? "";
+  const color = prop("color") ?? "primary";
+  const orientation = prop("orientation") ?? "vertical";
+  const variant = prop("variant") ?? "outline";
+  const legend = prop("legend") ?? "";
 
   const getItemProps = (item: {
     value: string;
@@ -34,7 +33,6 @@ export function connectCheckboxGroup(
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
       id: dom.getItemId(scope, item.value),
-      ...parts.item.attrs,
       "data-state": itemChecked ? "checked" : "unchecked",
       "data-disabled": String(itemDisabled),
       "data-readonly": String(readOnly),
@@ -50,16 +48,15 @@ export function connectCheckboxGroup(
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
       id: dom.getItemControlId(scope, item.value),
-      ...parts.base.attrs,
       "data-state": itemChecked ? "checked" : "unchecked",
-      "data-checked": String(itemChecked),
       "data-disabled": String(itemDisabled),
+      "data-checked": String(itemChecked),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
-      role: "checkbox",
+      "aria-role": "checkbox",
+      "aria-disabled": itemDisabled,
+      "aria-invalid": invalid,
       "aria-checked": itemChecked,
-      "aria-disabled": String(itemDisabled),
-      "aria-invalid": String(invalid),
     };
   };
 
@@ -71,14 +68,12 @@ export function connectCheckboxGroup(
     const itemDisabled = Boolean(disabled || item.disabled);
     return {
       id: dom.getItemIndicatorId(scope, item.value),
-      ...parts.indicator.attrs,
       "data-state": itemChecked ? "checked" : "unchecked",
       "data-disabled": String(itemDisabled),
     };
   };
 
-  const rawItems: (string | CheckboxGroupItemRaw)[] =
-    context.get("items") ?? [];
+  const rawItems: (string | CheckboxGroupItemRaw)[] = prop("items") ?? [];
   const items: CheckboxGroupItem[] = rawItems.map((raw) => {
     const item = typeof raw === "string" ? { value: raw, label: raw } : raw;
     const itemValue = String(item.value ?? "");

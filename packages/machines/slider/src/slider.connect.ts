@@ -1,23 +1,36 @@
 import { queryRect } from "@code-ui/utils";
+import type { MiniAppRect } from "@code-ui/utils";
 import * as dom from "./slider.dom";
 import type {
   SliderApi,
   SliderMarkerSnapshot,
+  SliderOrientation,
   SliderService,
   SliderThumbSnapshot,
 } from "./slider.types";
 import { getValueAsPercent } from "./slider.utils";
 
+function extractPoint(e: any): { x: number; y: number } | null {
+  const detail = e?.detail as { x?: number; y?: number } | undefined;
+  const touches = e?.touches as
+    | Array<{ clientX: number; clientY: number }>
+    | undefined;
+  const x = e?.clientX ?? e?.x ?? detail?.x ?? touches?.[0]?.clientX;
+  const y = e?.clientY ?? e?.y ?? detail?.y ?? touches?.[0]?.clientY;
+  return x !== undefined && y !== undefined ? { x, y } : null;
+}
+
 export function connectSlider(service: SliderService): SliderApi {
   const { context, computed, prop, refs, scope, state } = service;
 
-  const min = context.get("min");
-  const max = context.get("max");
-  const step = context.get("step");
-  const orientation = context.get("orientation");
-  const inverted = context.get("inverted");
+  const min = Number(prop("min") ?? 0);
+  const max = Number(prop("max") ?? 100);
+  const step = Number(prop("step") ?? 1);
+  const orientation = (prop("orientation") ?? "horizontal") as SliderOrientation;
+  const inverted = Boolean(prop("inverted"));
   const isDisabled = computed("isDisabled");
   const isReadOnly = computed("isReadOnly");
+  const isInteractive = !isDisabled && !isReadOnly;
   const isInvalid = computed("isInvalid");
   const isDragging = computed("isDragging");
   const activeThumbIndex = context.get("activeThumbIndex");
@@ -25,16 +38,10 @@ export function connectSlider(service: SliderService): SliderApi {
   const percents = computed("valueAsPercent");
   const isRange = computed("isRange");
 
-  let rangeStart = 0;
-  let rangeEnd = 0;
-
-  if (isRange) {
-    rangeStart = Math.min(percents[0] ?? 0, percents[1] ?? 0);
-    rangeEnd = Math.max(percents[0] ?? 0, percents[1] ?? 0);
-  } else {
-    rangeStart = 0;
-    rangeEnd = percents[0] ?? 0;
-  }
+  let rangeStart = isRange ? Math.min(percents[0] ?? 0, percents[1] ?? 0) : 0;
+  let rangeEnd = isRange
+    ? Math.max(percents[0] ?? 0, percents[1] ?? 0)
+    : (percents[0] ?? 0);
 
   if (inverted) {
     const prevStart = rangeStart;
@@ -42,20 +49,19 @@ export function connectSlider(service: SliderService): SliderApi {
     rangeEnd = 100 - prevStart;
   }
 
-  const rangeStyle =
-    orientation === "vertical"
-      ? `bottom: ${rangeStart}%; height: ${rangeEnd - rangeStart}%;`
-      : `left: ${rangeStart}%; width: ${rangeEnd - rangeStart}%;`;
+  const isVertical = orientation === "vertical";
+  const rangeStyle = isVertical
+    ? `bottom: ${rangeStart}%; height: ${rangeEnd - rangeStart}%;`
+    : `left: ${rangeStart}%; width: ${rangeEnd - rangeStart}%;`;
 
   const thumbs: SliderThumbSnapshot[] = values.map(
     (val: number, index: number) => {
       let percent = getValueAsPercent(val, min, max);
       if (inverted) percent = 100 - percent;
       const id = dom.getThumbId(scope, index);
-      const style =
-        orientation === "vertical"
-          ? `bottom: ${percent}%; transform: translate(-50%, 50%);`
-          : `left: ${percent}%; transform: translate(-50%, -50%);`;
+      const style = isVertical
+        ? `bottom: ${percent}%; transform: translate(-50%, 50%);`
+        : `left: ${percent}%; transform: translate(-50%, -50%);`;
 
       return {
         index,
@@ -63,20 +69,7 @@ export function connectSlider(service: SliderService): SliderApi {
         percent,
         id,
         style,
-        thumbProps: {
-          id,
-          "data-scope": "slider",
-          "data-part": "thumb",
-          "data-index": index,
-          "data-disabled": String(isDisabled),
-          "data-dragging": String(activeThumbIndex === index),
-          role: "slider",
-          "aria-valuemin": min,
-          "aria-valuemax": max,
-          "aria-valuenow": val,
-          "aria-orientation": orientation,
-          "aria-disabled": String(isDisabled),
-        },
+        thumbProps: { id, "data-index": index },
       };
     },
   );
@@ -105,10 +98,9 @@ export function connectSlider(service: SliderService): SliderApi {
       ? mark.value >= (values[0] ?? min) && mark.value <= (values[1] ?? max)
       : mark.value <= (values[0] ?? min);
 
-    const style =
-      orientation === "vertical"
-        ? `bottom: ${percent}%; transform: translateY(50%);`
-        : `left: ${percent}%; transform: translateX(-50%);`;
+    const style = isVertical
+      ? `bottom: ${percent}%; transform: translateY(50%);`
+      : `left: ${percent}%; transform: translateX(-50%);`;
 
     return {
       value: mark.value,
@@ -118,10 +110,7 @@ export function connectSlider(service: SliderService): SliderApi {
       active,
       markerProps: {
         id: dom.getMarkerId(scope, mark.value),
-        "data-scope": "slider",
-        "data-part": "marker",
         "data-value": mark.value,
-        "data-active": String(active),
       },
     };
   });
@@ -133,22 +122,36 @@ export function connectSlider(service: SliderService): SliderApi {
   const thumbIds = thumbs.map((t) => t.id).join(",");
   const thumbPercents = thumbs.map((t) => t.percent);
   const rect = refs.get("rect");
-
+  const controlId = dom.getControlId(scope);
+  const selector = `#${controlId}`;
   const comp = prop("component");
-  const wxGlobal = (globalThis as Record<string, any>).wx;
   const canQuery =
     Boolean(comp) &&
-    (Boolean(wxGlobal) ||
+    (Boolean((globalThis as Record<string, any>).wx) ||
       typeof (comp as any)?.createSelectorQuery === "function");
 
-  if (canQuery && !rect) {
-    const controlId = dom.getControlId(scope);
-    queryRect(`#${controlId}`, comp).then((queried) => {
-      if (queried) {
-        refs.set("rect", queried);
-      }
-    });
-  }
+  const refreshRect = () => {
+    if (canQuery) {
+      queryRect(selector, comp).then((queried) => {
+        if (queried) refs.set("rect", queried);
+      });
+    }
+  };
+
+  const resolveControlRect = async (): Promise<MiniAppRect | undefined> => {
+    let r = refs.get("rect");
+    if (!r && canQuery) {
+      r = await queryRect(selector, comp);
+      if (r) refs.set("rect", r);
+    }
+    return r ?? undefined;
+  };
+
+  if (!rect) refreshRect();
+
+  const trackId = dom.getTrackId(scope);
+  const valueTextId = dom.getValueTextId(scope);
+  const markerGroupId = dom.getMarkerGroupId(scope);
 
   return {
     state: state.get(),
@@ -178,78 +181,50 @@ export function connectSlider(service: SliderService): SliderApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      "data-scope": "slider",
-      "data-part": "root",
-      "data-disabled": String(isDisabled),
-      "data-readonly": String(isReadOnly),
-      "data-invalid": String(isInvalid),
-      "data-dragging": String(isDragging),
-      "data-orientation": orientation,
-      "aria-disabled": String(isDisabled),
-      "aria-invalid": String(isInvalid),
     },
 
     controlProps: {
-      id: dom.getControlId(scope),
-      "data-scope": "slider",
-      "data-part": "control",
-      "data-orientation": orientation,
-      "data-disabled": String(isDisabled),
+      id: controlId,
     },
 
-    trackProps: {
-      id: dom.getTrackId(scope),
-      "data-scope": "slider",
-      "data-part": "track",
-      "data-orientation": orientation,
-      "data-disabled": String(isDisabled),
-    },
+    trackProps: trackId ? { id: trackId } : {},
 
     rangeProps: {
       id: dom.getRangeId(scope),
-      "data-scope": "slider",
-      "data-part": "range",
-      "data-orientation": orientation,
     },
 
     labelProps: {
       id: dom.getLabelId(scope),
-      "data-scope": "slider",
-      "data-part": "label",
     },
 
-    valueTextProps: {
-      id: dom.getValueTextId(scope),
-      "data-scope": "slider",
-      "data-part": "value-text",
-    },
+    valueTextProps: valueTextId ? { id: valueTextId } : {},
 
-    markerGroupProps: {
-      id: dom.getMarkerGroupId(scope),
-      "data-scope": "slider",
-      "data-part": "marker-group",
-    },
+    markerGroupProps: markerGroupId ? { id: markerGroupId } : {},
 
     getThumbProps(index = 0) {
-      return (
-        thumbs[index]?.thumbProps ?? {
-          id: dom.getThumbId(scope, index),
-          "data-scope": "slider",
-          "data-part": "thumb",
-          "data-index": index,
-        }
-      );
+      const val = values[index] ?? min;
+      const id = dom.getThumbId(scope, index);
+      return {
+        id,
+        "data-index": index,
+        "data-disabled": String(isDisabled),
+        "data-dragging": String(activeThumbIndex === index),
+        "aria-role": "slider",
+        "aria-disabled": isDisabled,
+        "aria-valuemin": min,
+        "aria-valuemax": max,
+        "aria-valuenow": val,
+        "aria-orientation": orientation,
+      };
     },
 
     getMarkerProps(val: number) {
-      return (
-        markers.find((m) => m.value === val)?.markerProps ?? {
-          id: dom.getMarkerId(scope, val),
-          "data-scope": "slider",
-          "data-part": "marker",
-          "data-value": val,
-        }
-      );
+      const m = markers.find((item) => item.value === val);
+      return {
+        id: dom.getMarkerId(scope, val),
+        "data-value": val,
+        ...(m?.active ? { "data-active": "true" } : {}),
+      };
     },
 
     setValue(value: number | number[], index?: number) {
@@ -269,86 +244,38 @@ export function connectSlider(service: SliderService): SliderApi {
     },
 
     async handleTouchStart(e: any) {
-      if (computed("isDisabled") || computed("isReadOnly")) return;
-      const clientX = e?.clientX ?? e?.touches?.[0]?.clientX;
-      const clientY = e?.clientY ?? e?.touches?.[0]?.clientY;
-      if (clientX === undefined || clientY === undefined) return;
-      const controlId = dom.getControlId(scope);
-      const selector = `#${controlId}`;
-      let currentRect = refs.get("rect");
-      if (!currentRect && canQuery) {
-        const queried = await queryRect(selector, comp);
-        if (queried) {
-          currentRect = queried;
-          refs.set("rect", currentRect);
-        }
-      }
+      if (!isInteractive) return;
+      const pt = extractPoint(e);
+      if (!pt) return;
       service.send({
         type: "POINTER_DOWN",
-        point: { x: clientX, y: clientY },
-        rect: currentRect ?? undefined,
+        point: pt,
+        rect: await resolveControlRect(),
       });
-      if (canQuery) {
-        queryRect(selector, comp).then((queried) => {
-          if (queried) {
-            refs.set("rect", queried);
-          }
-        });
-      }
+      refreshRect();
     },
 
     handleTouchMove(e: any) {
-      if (computed("isDisabled") || computed("isReadOnly")) return;
-      const clientX = e?.clientX ?? e?.touches?.[0]?.clientX;
-      const clientY = e?.clientY ?? e?.touches?.[0]?.clientY;
-      if (clientX === undefined || clientY === undefined) return;
-      service.send({
-        type: "POINTER_MOVE",
-        point: { x: clientX, y: clientY },
-      });
+      if (!isInteractive) return;
+      const pt = extractPoint(e);
+      if (pt) service.send({ type: "POINTER_MOVE", point: pt });
     },
 
     handleTouchEnd(_e?: any) {
-      if (computed("isDisabled") || computed("isReadOnly")) return;
-      service.send({
-        type: "POINTER_UP",
-      });
+      if (isInteractive) service.send({ type: "POINTER_UP" });
     },
 
     async handleTap(e: any) {
-      if (computed("isDisabled") || computed("isReadOnly")) return;
-      const detail = e?.detail as { x?: number; y?: number } | undefined;
-      const touches = (e as any)?.touches as
-        | Array<{ clientX: number; clientY: number }>
-        | undefined;
-      const x = e?.clientX ?? e?.x ?? detail?.x ?? touches?.[0]?.clientX;
-      const y = e?.clientY ?? e?.y ?? detail?.y ?? touches?.[0]?.clientY;
-      if (x === undefined || y === undefined) return;
-      const controlId = dom.getControlId(scope);
-      const selector = `#${controlId}`;
-      let currentRect = refs.get("rect");
-      if (!currentRect && canQuery) {
-        const queried = await queryRect(selector, comp);
-        if (queried) {
-          currentRect = queried;
-          refs.set("rect", currentRect);
-        }
-      }
+      if (!isInteractive) return;
+      const pt = extractPoint(e);
+      if (!pt) return;
       service.send({
         type: "POINTER_DOWN",
-        point: { x, y },
-        rect: currentRect ?? undefined,
+        point: pt,
+        rect: await resolveControlRect(),
       });
-      service.send({
-        type: "POINTER_UP",
-      });
-      if (canQuery) {
-        queryRect(selector, comp).then((queried) => {
-          if (queried) {
-            refs.set("rect", queried);
-          }
-        });
-      }
+      service.send({ type: "POINTER_UP" });
+      refreshRect();
     },
   };
 }

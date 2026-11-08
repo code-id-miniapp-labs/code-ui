@@ -229,94 +229,34 @@ export function getPageAppSignals(instance: any): PageAppSignals {
   return sigs;
 }
 
+function readDirectPageId(obj: any): string | undefined {
+  if (!obj) return undefined;
+  for (const target of [obj, obj.__page__, obj.$page]) {
+    if (!target) continue;
+    if (typeof target.getPageId === "function") {
+      const id = target.getPageId();
+      if (id !== undefined && id !== null && id !== "") return String(id);
+    }
+    const wv = target.__wxWebviewId__;
+    if (wv !== undefined && wv !== null && wv !== "") return String(wv);
+  }
+  const pid = obj.pageId;
+  return pid !== undefined && pid !== null && pid !== ""
+    ? String(pid)
+    : undefined;
+}
+
 function getPageIdOf(instance: any): string | undefined {
   if (!instance) return undefined;
   try {
-    if (typeof instance.getPageId === "function") {
-      const id = instance.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    if (
-      instance.__wxWebviewId__ !== undefined &&
-      instance.__wxWebviewId__ !== null &&
-      instance.__wxWebviewId__ !== ""
-    ) {
-      return String(instance.__wxWebviewId__);
-    }
-    if (
-      instance.__page__ &&
-      typeof instance.__page__.getPageId === "function"
-    ) {
-      const id = instance.__page__.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    if (
-      instance.__page__ &&
-      instance.__page__.__wxWebviewId__ !== undefined &&
-      instance.__page__.__wxWebviewId__ !== null &&
-      instance.__page__.__wxWebviewId__ !== ""
-    ) {
-      return String(instance.__page__.__wxWebviewId__);
-    }
-    if (
-      instance.pageId !== undefined &&
-      instance.pageId !== null &&
-      instance.pageId !== ""
-    ) {
-      return String(instance.pageId);
-    }
-    if (instance.$page && typeof instance.$page.getPageId === "function") {
-      const id = instance.$page.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    if (
-      instance.$page &&
-      instance.$page.__wxWebviewId__ !== undefined &&
-      instance.$page.__wxWebviewId__ !== null &&
-      instance.$page.__wxWebviewId__ !== ""
-    ) {
-      return String(instance.$page.__wxWebviewId__);
-    }
-    if (typeof instance.selectOwnerComponent === "function") {
-      let cur = instance.selectOwnerComponent();
-      let depth = 0;
-      while (cur && depth < 10) {
-        if (typeof cur.getPageId === "function") {
-          const id = cur.getPageId();
-          if (id !== undefined && id !== null && id !== "") return String(id);
-        }
-        if (
-          cur.__wxWebviewId__ !== undefined &&
-          cur.__wxWebviewId__ !== null &&
-          cur.__wxWebviewId__ !== ""
-        ) {
-          return String(cur.__wxWebviewId__);
-        }
-        if (cur.__page__ && typeof cur.__page__.getPageId === "function") {
-          const id = cur.__page__.getPageId();
-          if (id !== undefined && id !== null && id !== "") return String(id);
-        }
-        if (
-          cur.__page__ &&
-          cur.__page__.__wxWebviewId__ !== undefined &&
-          cur.__page__.__wxWebviewId__ !== null &&
-          cur.__page__.__wxWebviewId__ !== ""
-        ) {
-          return String(cur.__page__.__wxWebviewId__);
-        }
-        if (
-          cur.pageId !== undefined &&
-          cur.pageId !== null &&
-          cur.pageId !== ""
-        ) {
-          return String(cur.pageId);
-        }
-        cur =
-          typeof cur.selectOwnerComponent === "function"
-            ? cur.selectOwnerComponent()
-            : null;
-        depth++;
-      }
+    let cur = instance;
+    for (let depth = 0; cur && depth <= 10; depth++) {
+      const id = readDirectPageId(cur);
+      if (id !== undefined) return id;
+      cur =
+        typeof cur.selectOwnerComponent === "function"
+          ? cur.selectOwnerComponent()
+          : null;
     }
   } catch {}
   return undefined;
@@ -606,6 +546,53 @@ export function withAppScale(
   options: WithAppScaleOptions = {},
 ): MachinePlugin {
   let scaleCounter = 0;
+  const syncInstanceScale = (
+    instance: any,
+    machine: any,
+    propKey?: string,
+  ) => {
+    const props = instance.data;
+    const state = machine.service?.state;
+    const isExplicitOpen = propKey === "open" && Boolean(props?.open);
+    const isClosedOrClosing =
+      (!isExplicitOpen &&
+        (state?.matches?.("closed") ||
+          state?.matches?.("closing") ||
+          state?.hasTag?.("closing"))) ||
+      (propKey === "open" && !props?.open);
+    const shouldScale =
+      Boolean(props?.shouldScaleBackground) &&
+      !isClosedOrClosing &&
+      Boolean(
+        isExplicitOpen ||
+          state?.hasTag?.("open") ||
+          state?.matches?.("open") ||
+          state?.matches?.("dragging"),
+      );
+    const scaleId = instance.__cuiScaleId;
+    if (shouldScale !== Boolean(instance.__cuiScaled)) {
+      instance.__cuiScaled = shouldScale;
+      instance.__cuiScaleFactor = props?.scaleFactor;
+      instance.__cuiScaleBackground = props?.scaleBackground;
+      if (shouldScale) {
+        requestAppScale(instance, {
+          id: scaleId,
+          factor: props?.scaleFactor,
+          background: props?.scaleBackground,
+        });
+      } else {
+        releaseAppScale(instance, scaleId);
+      }
+    } else if (shouldScale && propKey) {
+      instance.__cuiScaleFactor = props?.scaleFactor;
+      instance.__cuiScaleBackground = props?.scaleBackground;
+      requestAppScale(instance, {
+        id: scaleId,
+        factor: props?.scaleFactor,
+        background: props?.scaleBackground,
+      });
+    }
+  };
   return {
     name: "scale-background",
     behaviors: [cuiAppChildBehavior],
@@ -617,95 +604,19 @@ export function withAppScale(
       instance.__cuiScaled = false;
     },
     onMachineStarted(instance, machine) {
-      const check = () => {
-        const props = instance.data;
-        const isClosedOrClosing =
-          machine.service?.state?.matches?.("closed") ||
-          machine.service?.state?.matches?.("closing") ||
-          machine.service?.state?.hasTag?.("closing");
-        const shouldScale =
-          Boolean(props?.shouldScaleBackground) &&
-          !isClosedOrClosing &&
-          Boolean(
-            machine.service?.state?.hasTag?.("open") ||
-              machine.service?.state?.matches?.("open") ||
-              machine.service?.state?.matches?.("dragging"),
-          );
-
-        if (shouldScale !== Boolean(instance.__cuiScaled)) {
-          instance.__cuiScaled = shouldScale;
-          const scaleId = instance.__cuiScaleId;
-          instance.__cuiScaleFactor = props?.scaleFactor;
-          instance.__cuiScaleBackground = props?.scaleBackground;
-          if (shouldScale) {
-            requestAppScale(instance, {
-              id: scaleId,
-              factor: props?.scaleFactor,
-              background: props?.scaleBackground,
-            });
-          } else {
-            releaseAppScale(instance, scaleId);
-          }
-        }
-      };
-
-      const unsub = machine.subscribe(check);
-      instance.__cuiScaleUnsub = unsub;
+      const check = () => syncInstanceScale(instance, machine);
+      instance.__cuiScaleUnsub = machine.subscribe(check);
       check();
     },
     onPropChanged(instance, propKey) {
       if (
-        propKey === "shouldScaleBackground" ||
-        propKey === "scaleFactor" ||
-        propKey === "scaleBackground" ||
-        propKey === "open"
+        (propKey === "shouldScaleBackground" ||
+          propKey === "scaleFactor" ||
+          propKey === "scaleBackground" ||
+          propKey === "open") &&
+        instance.__codeUiMachine
       ) {
-        const machine = instance.__codeUiMachine;
-        if (machine) {
-          const props = instance.data;
-          const isExplicitOpen =
-            propKey === "open" && Boolean(instance.data?.open);
-          const isClosedOrClosing =
-            (!isExplicitOpen &&
-              (machine.service?.state?.matches?.("closed") ||
-                machine.service?.state?.matches?.("closing") ||
-                machine.service?.state?.hasTag?.("closing"))) ||
-            (propKey === "open" && !instance.data?.open);
-
-          const shouldScale =
-            Boolean(props?.shouldScaleBackground) &&
-            !isClosedOrClosing &&
-            Boolean(
-              isExplicitOpen ||
-                machine.service?.state?.hasTag?.("open") ||
-                machine.service?.state?.matches?.("open") ||
-                machine.service?.state?.matches?.("dragging"),
-            );
-
-          if (shouldScale !== Boolean(instance.__cuiScaled)) {
-            instance.__cuiScaled = shouldScale;
-            instance.__cuiScaleFactor = props?.scaleFactor;
-            instance.__cuiScaleBackground = props?.scaleBackground;
-            const scaleId = instance.__cuiScaleId;
-            if (shouldScale) {
-              requestAppScale(instance, {
-                id: scaleId,
-                factor: props?.scaleFactor,
-                background: props?.scaleBackground,
-              });
-            } else {
-              releaseAppScale(instance, scaleId);
-            }
-          } else if (shouldScale) {
-            instance.__cuiScaleFactor = props?.scaleFactor;
-            instance.__cuiScaleBackground = props?.scaleBackground;
-            requestAppScale(instance, {
-              id: instance.__cuiScaleId,
-              factor: props?.scaleFactor,
-              background: props?.scaleBackground,
-            });
-          }
-        }
+        syncInstanceScale(instance, instance.__codeUiMachine, propKey);
       }
     },
     onDetached(instance) {
@@ -774,7 +685,8 @@ const DEFAULT_MENU_HEIGHT = 32;
 const DEFAULT_MENU_GAP = 4;
 
 let cachedMetrics: AppMetrics | null = null;
-export const appMetricsSignal = signal<AppMetrics>(calculateMetrics());
+export const appMetricsSignal = /* @__PURE__ */ (() =>
+  signal<AppMetrics>(calculateMetrics()))();
 
 function calculateMetrics(): AppMetrics {
   const empty: AppMetrics = {

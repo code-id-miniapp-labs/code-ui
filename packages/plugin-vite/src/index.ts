@@ -48,6 +48,7 @@ import {
 } from "./types";
 
 export { defineConfig } from "@code-ui/core";
+export { serializeCompactThemeModule } from "./core/serialize";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
 export type {
   AppWrapperOptions,

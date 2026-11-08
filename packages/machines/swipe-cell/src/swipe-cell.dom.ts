@@ -1,17 +1,14 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `cui-swipe-cell-${scope.id ?? "default"}-root`;
+  partId(scope, "sc", "root", "r");
 
 export const getWrapperId = (scope: Scope): string =>
-  scope.ids?.wrapper ?? `cui-swipe-cell-${scope.id ?? "default"}-wrapper`;
+  partId(scope, "sc", "wrapper", "w");
 
-export const getContentId = (scope: Scope): string =>
-  scope.ids?.content ?? `cui-swipe-cell-${scope.id ?? "default"}-content`;
+export const getContentId = (scope: Scope) => optPartId(scope, "content");
 
-export const getLeftId = (scope: Scope): string =>
-  scope.ids?.left ?? `cui-swipe-cell-${scope.id ?? "default"}-left`;
+export const getLeftId = (scope: Scope) => optPartId(scope, "left");
 
-export const getRightId = (scope: Scope): string =>
-  scope.ids?.right ?? `cui-swipe-cell-${scope.id ?? "default"}-right`;
+export const getRightId = (scope: Scope) => optPartId(scope, "right");
 

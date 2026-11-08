@@ -96,22 +96,7 @@ export type SwitchEvent =
   | { type: "RESET_VALUE" };
 
 export interface SwitchContext {
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  required: boolean;
-  loading: boolean;
-  color: SwitchColor;
-  size: SwitchSize;
-  value: string;
-  name: string;
-  form: string;
-  label: string;
-  description: string;
-  checkedIcon: string;
-  uncheckedIcon: string;
-  loadingIcon: string;
-  ui: SwitchUI;
 }
 
 export interface SwitchComputed {

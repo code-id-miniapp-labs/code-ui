@@ -86,32 +86,25 @@ export function handleCheckboxAttached(
   }
 }
 
+function syncCheckboxGroupChildren(group: any) {
+  if (typeof group.getRelationNodes === "function") {
+    const children = group.getRelationNodes("cuiCheckboxChild");
+    if (children) for (const c of children) linkCheckboxToParentGroup(group, c);
+  }
+}
+
 export function handleCheckboxMachineStarted(
   instance: any,
   options: { checkboxGroup?: boolean; checkboxItem?: boolean },
 ) {
-  if (options.checkboxGroup && typeof instance.getRelationNodes === "function") {
-    const children = instance.getRelationNodes("cuiCheckboxChild");
-    if (children && children.length > 0) {
-      for (const child of children) {
-        linkCheckboxToParentGroup(instance, child);
-      }
-    }
-  }
+  if (options.checkboxGroup) syncCheckboxGroupChildren(instance);
 }
 
 export function handleCheckboxReady(
   instance: any,
   options: { checkboxGroup?: boolean; checkboxItem?: boolean },
 ) {
-  if (options.checkboxGroup && typeof instance.getRelationNodes === "function") {
-    const children = instance.getRelationNodes("cuiCheckboxChild");
-    if (children && children.length > 0) {
-      for (const child of children) {
-        linkCheckboxToParentGroup(instance, child);
-      }
-    }
-  }
+  if (options.checkboxGroup) syncCheckboxGroupChildren(instance);
   if (options.checkboxItem && typeof instance.getRelationNodes === "function") {
     const parents = instance.getRelationNodes("cuiCheckboxGroupParent");
     if (parents && parents.length > 0) {

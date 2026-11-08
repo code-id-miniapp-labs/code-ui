@@ -12,7 +12,7 @@ import type {
 export function connectAccordionItem(
   service: AccordionItemService,
 ): AccordionItemApi {
-  const { context, computed, send, scope } = service;
+  const { context, computed, prop, send, scope } = service;
 
   const resolvedValue = computed("resolvedValue");
   const isOpen = computed("isOpen");
@@ -21,77 +21,59 @@ export function connectAccordionItem(
   const size = computed("effectiveSize");
   const variant = computed("effectiveVariant");
 
-  const label = context.get("label") ?? "";
-  const description = context.get("description") ?? "";
-  const content = context.get("content") ?? "";
-  const icon = context.get("icon") ?? "";
-  const trailingIcon = context.get("trailingIcon") ?? "";
-  const accordionId = context.get("accordionId") || "";
+  const label = prop("label") ?? "";
+  const description = prop("description") ?? "";
+  const content = prop("content") ?? "";
+  const icon = prop("icon") ?? "";
+  const trailingIcon = prop("trailingIcon") ?? "";
+  const accordionId = prop("accordionId") || "";
   const contentHeight = context.get("contentHeight") ?? 0;
 
-  const heightVal =
-    contentHeight > 0 ? `${contentHeight}px` : isOpen ? "auto" : "0px";
   const heightVar = contentHeight > 0 ? `${contentHeight}px` : "auto";
-  const contentStyle = isOpen
-    ? `--cui-accordion-content-height: ${heightVar}; height: ${heightVal}; opacity: 1;`
-    : `--cui-accordion-content-height: ${heightVar}; height: 0px; opacity: 0;`;
+  const heightVal = isOpen ? heightVar : "0px";
+  const contentStyle = `--cui-accordion-content-height: ${heightVar}; height: ${heightVal}; opacity: ${isOpen ? 1 : 0};`;
+  const stateStr = isOpen ? "open" : "closed";
+  const triggerId = getTriggerId(scope, resolvedValue, accordionId);
+  const lbId = getLabelId(scope, resolvedValue, accordionId);
 
   const itemProps: Record<string, any> = {
     id: getRootId(scope, resolvedValue, accordionId),
-    "data-scope": "accordion",
-    "data-part": "item",
     "data-value": resolvedValue,
-    "data-state": isOpen ? "open" : "closed",
+    "data-state": stateStr,
     "data-disabled": String(isDisabled),
-    "data-size": size,
-    "data-variant": variant,
   };
 
   const triggerProps: Record<string, any> = {
-    id: getTriggerId(scope, resolvedValue, accordionId),
-    role: "button",
-    "aria-expanded": String(isOpen),
-    "aria-disabled": String(isDisabled),
-    "data-scope": "accordion",
-    "data-part": "trigger",
+    id: triggerId,
+    "aria-role": "button",
+    "aria-disabled": isDisabled,
+    "aria-expanded": isOpen,
     "data-value": resolvedValue,
-    "data-state": isOpen ? "open" : "closed",
+    "data-state": stateStr,
     "data-disabled": String(isDisabled),
   };
 
   const contentProps: Record<string, any> = {
     id: getContentId(scope, resolvedValue, accordionId),
-    role: "region",
-    "aria-labelledby": getTriggerId(scope, resolvedValue, accordionId),
-    "aria-hidden": String(!isOpen),
+    "aria-role": "region",
+    "aria-labelledby": triggerId,
+    "aria-hidden": !isOpen,
     style: contentStyle,
-    "data-scope": "accordion",
-    "data-part": "content",
     "data-value": resolvedValue,
-    "data-state": isOpen ? "open" : "closed",
+    "data-state": stateStr,
   };
 
   const labelProps: Record<string, any> = {
-    id: getLabelId(scope, resolvedValue, accordionId),
-    "data-scope": "accordion",
-    "data-part": "label",
-    "data-state": isOpen ? "open" : "closed",
+    ...(lbId ? { id: lbId } : {}),
+    "data-state": stateStr,
   };
 
   const trailingIconProps: Record<string, any> = {
-    "data-scope": "accordion",
-    "data-part": "trailing-icon",
-    "data-state": isOpen ? "open" : "closed",
+    "data-state": stateStr,
   };
+  const leadingIconProps: Record<string, any> = {};
 
-  const leadingIconProps: Record<string, any> = {
-    "data-scope": "accordion",
-    "data-part": "leading-icon",
-  };
-
-  const handleTap = () => {
-    send({ type: "TOGGLE" });
-  };
+  const handleTap = () => send({ type: "TOGGLE" });
 
   return {
     isOpen,
@@ -118,8 +100,7 @@ export function connectAccordionItem(
     triggerProps,
     contentProps,
     labelProps,
-    trailingIconProps,
     leadingIconProps,
+    trailingIconProps,
   };
 }
-

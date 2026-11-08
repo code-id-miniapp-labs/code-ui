@@ -1,22 +1,15 @@
 import { createMachine } from "@code-ui/core";
-import type { BindableContext, PropFn } from "@code-ui/core";
+import type { PropFn } from "@code-ui/core";
 import type { RadioGroupContext } from "@code-ui/radio-group";
 import { isNotEmpty, isNotNull } from "@code-ui/utils";
-import type {
-  RadioContext,
-  RadioMachine,
-  RadioProps,
-  RadioSchema,
-} from "./radio.types";
+import type { RadioMachine, RadioSchema } from "./radio.types";
 import { defaultRadioProps } from "./radio.props";
 
 function emitRadioChange(
-  context: BindableContext<RadioSchema>,
   prop: PropFn<RadioSchema>,
   nextChecked: boolean,
 ): void {
-  const value = context.get("value") || prop("value") || "";
-  prop("onChange")?.({ value, checked: nextChecked });
+  prop("onChange")?.({ value: prop("value") || "", checked: nextChecked });
 }
 
 const selectToCheckedTransition = [
@@ -49,76 +42,51 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     return initial ? "checked" : "unchecked";
   },
 
-  context: ({ prop, bindable }) => {
-    const propBindable = <
-      K extends keyof RadioContext & keyof RadioProps,
-    >(
-      key: K,
-      defaultValue: RadioContext[K],
-    ) =>
-      bindable<RadioContext[K]>(() => ({
-        value: prop(key) as RadioContext[K] | undefined,
-        defaultValue,
-      }));
-
-    return {
-      value: propBindable("value", ""),
-      label: propBindable("label", ""),
-      description: propBindable("description", ""),
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
-
-      invalid: bindable<boolean>(() => {
-        const rawInvalid = prop("invalid");
-        return {
-          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-          defaultValue: false,
-        };
-      }),
-
-      color: propBindable("color", ""),
-      size: propBindable("size", ""),
-      variant: propBindable("variant", "outline"),
-
-      ui: propBindable("ui", {}),
-    };
-  },
+  context: ({ prop, bindable }) => ({
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
+  }),
 
   computed: {
-    isChecked: ({ context, prop, state }) => {
+    isChecked: ({ prop, state }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
       if (group) {
-        return group.value() === context.get("value");
+        return group.value() === (prop("value") ?? "");
       }
       return state.matches("checked");
     },
 
-    isDisabled: ({ context, prop }) => {
+    isDisabled: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return Boolean(group?.disabled() || context.get("disabled"));
+      return Boolean(group?.disabled() || prop("disabled"));
     },
 
-    isInteractive: ({ computed, context }) =>
-      !computed("isDisabled") && !context.get("readOnly"),
+    isInteractive: ({ computed, prop }) =>
+      !computed("isDisabled") && !prop("readOnly"),
 
     isInvalid: ({ context, prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
       return Boolean(context.get("invalid") || group?.invalid());
     },
 
-    effectiveSize: ({ context, prop }) => {
+    effectiveSize: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.size() || context.get("size") || "md";
+      return group?.size() || prop("size") || "md";
     },
 
-    effectiveColor: ({ context, prop }) => {
+    effectiveColor: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.color() || context.get("color") || "primary";
+      return group?.color() || prop("color") || "primary";
     },
 
-    effectiveVariant: ({ context, prop }) => {
+    effectiveVariant: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.variant() || context.get("variant") || "outline";
+      return group?.variant() || prop("variant") || "outline";
     },
   },
 
@@ -186,13 +154,13 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     },
 
     actions: {
-      selectGroup: ({ context, prop }) => {
+      selectGroup: ({ prop }) => {
         const group = prop("groupContext") as RadioGroupContext | undefined;
-        group?.select(context.get("value"));
+        group?.select(prop("value") ?? "");
       },
 
-      emitRadioChange: ({ context, prop, state }) => {
-        emitRadioChange(context, prop, state.matches("checked"));
+      emitRadioChange: ({ prop, state }) => {
+        emitRadioChange(prop, state.matches("checked"));
       },
     },
   },

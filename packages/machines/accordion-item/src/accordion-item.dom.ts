@@ -4,49 +4,32 @@ export interface AccordionItemDomScope {
   accordionId?: string | undefined;
 }
 
+const aidOf = (scope: AccordionItemDomScope, accordionId?: string): string =>
+  accordionId || scope.accordionId || scope.id || "d";
+
 export const getRootId = (
   scope: AccordionItemDomScope,
   value: string,
   accordionId?: string,
-): string => {
-  const aid = accordionId || scope.accordionId || scope.id || "root";
-  return (
-    scope.ids?.item?.(value) ?? `cui-accordion-${aid}-item-${value}`
-  );
-};
+): string =>
+  scope.ids?.item?.(value) ?? `ac-${aidOf(scope, accordionId)}-i-${value}`;
 
 export const getTriggerId = (
   scope: AccordionItemDomScope,
   value: string,
   accordionId?: string,
-): string => {
-  const aid = accordionId || scope.accordionId || scope.id || "root";
-  return (
-    scope.ids?.trigger?.(value) ??
-    `cui-accordion-${aid}-trigger-${value}`
-  );
-};
+): string =>
+  scope.ids?.trigger?.(value) ?? `ac-${aidOf(scope, accordionId)}-tr-${value}`;
 
 export const getContentId = (
   scope: AccordionItemDomScope,
   value: string,
   accordionId?: string,
-): string => {
-  const aid = accordionId || scope.accordionId || scope.id || "root";
-  return (
-    scope.ids?.content?.(value) ??
-    `cui-accordion-${aid}-content-${value}`
-  );
-};
+): string =>
+  scope.ids?.content?.(value) ?? `ac-${aidOf(scope, accordionId)}-c-${value}`;
 
 export const getLabelId = (
   scope: AccordionItemDomScope,
   value: string,
-  accordionId?: string,
-): string => {
-  const aid = accordionId || scope.accordionId || scope.id || "root";
-  return (
-    scope.ids?.label?.(value) ?? `cui-accordion-${aid}-label-${value}`
-  );
-};
-
+  _accordionId?: string,
+): string | undefined => scope.ids?.label?.(value);

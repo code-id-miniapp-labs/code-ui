@@ -48,7 +48,7 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     linkAccordionItemToParent(parentInstance, child2);
     await flush();
 
-    expect(parentMachine.context.get("linkedCount")).toBe(2);
+    expect(parentMachine.prop("linkedCount")).toBe(2);
     expect(childMachine1.computed("effectiveSize")).toBe("lg");
     expect(childMachine1.computed("effectiveVariant")).toBe("subtle");
     expect(childMachine1.computed("isOpen")).toBe(true);
@@ -58,7 +58,7 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     unlinkAccordionItemFromParent(parentInstance, child1);
     await flush();
 
-    expect(parentMachine.context.get("linkedCount")).toBe(1);
+    expect(parentMachine.prop("linkedCount")).toBe(1);
     expect(childMachine1.prop("groupContext")).toBeUndefined();
 
     parentMachine.stop();

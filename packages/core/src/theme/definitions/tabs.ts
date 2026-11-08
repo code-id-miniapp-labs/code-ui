@@ -85,13 +85,6 @@ export default function tabsTheme(_options: ThemeOptions = {}) {
       },
       {
         variant: "link",
-        orientation: "horizontal",
-        class: {
-          list: "border-b border-neutral-200 gap-5 p-0",
-        },
-      },
-      {
-        variant: "link",
         orientation: "vertical",
         class: {
           list: "border-b-0 border-r border-neutral-200 gap-1 p-0",

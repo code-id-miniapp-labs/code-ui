@@ -1,0 +1,385 @@
+{
+  "rows": [
+    {
+      "name": "accordion",
+      "own": 2819,
+      "total": 23562,
+      "shared": 20743,
+      "files": 10
+    },
+    {
+      "name": "accordion-item",
+      "own": 3417,
+      "total": 21917,
+      "shared": 18500,
+      "files": 10
+    },
+    {
+      "name": "app",
+      "own": 2400,
+      "total": 27696,
+      "shared": 25296,
+      "files": 10
+    },
+    {
+      "name": "avatar",
+      "own": 1366,
+      "total": 13521,
+      "shared": 12155,
+      "files": 8
+    },
+    {
+      "name": "avatar-group",
+      "own": 825,
+      "total": 13674,
+      "shared": 12849,
+      "files": 8
+    },
+    {
+      "name": "badge",
+      "own": 852,
+      "total": 11731,
+      "shared": 10879,
+      "files": 6
+    },
+    {
+      "name": "button",
+      "own": 3103,
+      "total": 20721,
+      "shared": 17618,
+      "files": 8
+    },
+    {
+      "name": "card",
+      "own": 903,
+      "total": 11782,
+      "shared": 10879,
+      "files": 6
+    },
+    {
+      "name": "checkbox",
+      "own": 3996,
+      "total": 25470,
+      "shared": 21474,
+      "files": 11
+    },
+    {
+      "name": "checkbox-group",
+      "own": 3219,
+      "total": 27700,
+      "shared": 24481,
+      "files": 11
+    },
+    {
+      "name": "chip",
+      "own": 1108,
+      "total": 11987,
+      "shared": 10879,
+      "files": 6
+    },
+    {
+      "name": "divider",
+      "own": 1159,
+      "total": 12399,
+      "shared": 11240,
+      "files": 7
+    },
+    {
+      "name": "drawer",
+      "own": 3718,
+      "total": 25248,
+      "shared": 21530,
+      "files": 11
+    },
+    {
+      "name": "form",
+      "own": 6879,
+      "total": 27426,
+      "shared": 20547,
+      "files": 8
+    },
+    {
+      "name": "form-field",
+      "own": 2769,
+      "total": 23316,
+      "shared": 20547,
+      "files": 8
+    },
+    {
+      "name": "icon",
+      "own": 581,
+      "total": 11460,
+      "shared": 10879,
+      "files": 6
+    },
+    {
+      "name": "input",
+      "own": 3967,
+      "total": 24875,
+      "shared": 20908,
+      "files": 9
+    },
+    {
+      "name": "pin-input",
+      "own": 4788,
+      "total": 25335,
+      "shared": 20547,
+      "files": 8
+    },
+    {
+      "name": "progress",
+      "own": 3620,
+      "total": 20877,
+      "shared": 17257,
+      "files": 8
+    },
+    {
+      "name": "pull-down-refresh",
+      "own": 3745,
+      "total": 22813,
+      "shared": 19068,
+      "files": 10
+    },
+    {
+      "name": "qr-code",
+      "own": 6809,
+      "total": 24066,
+      "shared": 17257,
+      "files": 7
+    },
+    {
+      "name": "radio",
+      "own": 2646,
+      "total": 20463,
+      "shared": 17817,
+      "files": 8
+    },
+    {
+      "name": "radio-group",
+      "own": 2787,
+      "total": 26107,
+      "shared": 23320,
+      "files": 10
+    },
+    {
+      "name": "skeleton",
+      "own": 521,
+      "total": 11400,
+      "shared": 10879,
+      "files": 6
+    },
+    {
+      "name": "slider",
+      "own": 5780,
+      "total": 28196,
+      "shared": 22416,
+      "files": 10
+    },
+    {
+      "name": "stepper",
+      "own": 4631,
+      "total": 25379,
+      "shared": 20748,
+      "files": 9
+    },
+    {
+      "name": "stepper-item",
+      "own": 3263,
+      "total": 21727,
+      "shared": 18464,
+      "files": 9
+    },
+    {
+      "name": "swipe-cell",
+      "own": 4437,
+      "total": 23519,
+      "shared": 19082,
+      "files": 10
+    },
+    {
+      "name": "switch",
+      "own": 3319,
+      "total": 24227,
+      "shared": 20908,
+      "files": 9
+    },
+    {
+      "name": "tabs",
+      "own": 4780,
+      "total": 25616,
+      "shared": 20836,
+      "files": 10
+    },
+    {
+      "name": "tabs-item",
+      "own": 2788,
+      "total": 21440,
+      "shared": 18652,
+      "files": 9
+    },
+    {
+      "name": "textarea",
+      "own": 4736,
+      "total": 25644,
+      "shared": 20908,
+      "files": 9
+    },
+    {
+      "name": "toast",
+      "own": 4559,
+      "total": 29732,
+      "shared": 25173,
+      "files": 12
+    }
+  ],
+  "chunks": [
+    {
+      "file": "weapp-vendors/miniapp-behavior.js",
+      "raw": 19126,
+      "gzip": 6378,
+      "usedBy": 25
+    },
+    {
+      "file": "common.js",
+      "raw": 16356,
+      "gzip": 6358,
+      "usedBy": 33
+    },
+    {
+      "file": "behaviors/form.js",
+      "raw": 9994,
+      "gzip": 3290,
+      "usedBy": 10
+    },
+    {
+      "file": "computed-behavior.js",
+      "raw": 6869,
+      "gzip": 2788,
+      "usedBy": 33
+    },
+    {
+      "file": "behaviors/app.js",
+      "raw": 7403,
+      "gzip": 2612,
+      "usedBy": 3
+    },
+    {
+      "file": "behaviors/toast.js",
+      "raw": 4742,
+      "gzip": 1738,
+      "usedBy": 1
+    },
+    {
+      "file": "alien-signals.js",
+      "raw": 4872,
+      "gzip": 1733,
+      "usedBy": 33
+    },
+    {
+      "file": "wxs/slider-gesture.wxs",
+      "raw": 3597,
+      "gzip": 1470,
+      "usedBy": 1
+    },
+    {
+      "file": "wxs/swipe-cell-gesture.wxs",
+      "raw": 2838,
+      "gzip": 1065,
+      "usedBy": 1
+    },
+    {
+      "file": "wxs/pull-down-refresh-gesture.wxs",
+      "raw": 2739,
+      "gzip": 1051,
+      "usedBy": 1
+    },
+    {
+      "file": "behaviors/tabs.js",
+      "raw": 3007,
+      "gzip": 1034,
+      "usedBy": 2
+    },
+    {
+      "file": "behaviors/avatar-group.js",
+      "raw": 2162,
+      "gzip": 915,
+      "usedBy": 2
+    },
+    {
+      "file": "wxs/drawer-gesture.wxs",
+      "raw": 2578,
+      "gzip": 901,
+      "usedBy": 1
+    },
+    {
+      "file": "behaviors/accordion.js",
+      "raw": 2747,
+      "gzip": 882,
+      "usedBy": 2
+    },
+    {
+      "file": "behaviors/stepper.js",
+      "raw": 2495,
+      "gzip": 846,
+      "usedBy": 2
+    },
+    {
+      "file": "behaviors/checkbox.js",
+      "raw": 1600,
+      "gzip": 566,
+      "usedBy": 2
+    },
+    {
+      "file": "behaviors/radio.js",
+      "raw": 1534,
+      "gzip": 560,
+      "usedBy": 2
+    },
+    {
+      "file": "wxs/dom.wxs",
+      "raw": 958,
+      "gzip": 399,
+      "usedBy": 4
+    },
+    {
+      "file": "app.json",
+      "raw": 115,
+      "gzip": 109,
+      "usedBy": 0
+    },
+    {
+      "file": "app.js",
+      "raw": 0,
+      "gzip": 20,
+      "usedBy": 0
+    }
+  ],
+  "reference": {
+    "features": [
+      "button",
+      "card",
+      "avatar",
+      "badge",
+      "divider",
+      "progress",
+      "skeleton",
+      "checkbox",
+      "radio",
+      "switch",
+      "slider",
+      "stepper",
+      "tabs",
+      "icon"
+    ],
+    "files": 58,
+    "raw": 192766,
+    "gzip": 68423,
+    "sharedGzip": 26337,
+    "componentsGzip": 42086
+  },
+  "runtimeTotal": 106290,
+  "distExclAppCssRaw": 401153,
+  "distExclAppCssGzip": 141005,
+  "distRawTotal": 401153,
+  "distTotal": 141005
+}

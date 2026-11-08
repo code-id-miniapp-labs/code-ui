@@ -32,12 +32,6 @@ Component(
     behaviors: [cuiAppChildBehavior, toastBehavior, computedBehavior],
     relations,
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultToastProps, {
       className: {
         type: String,
@@ -74,7 +68,8 @@ Component(
 
       classes() {
         const mode = this.data.mode;
-        const color = this.data.color;
+        const rawColor = this.data.color;
+        const color = rawColor === "error" ? "danger" : rawColor;
         const variant = this.data.variant;
         const orientation = this.data.orientation;
         const placement = this.data.placement;
