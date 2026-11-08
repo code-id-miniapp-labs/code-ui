@@ -1,34 +1,28 @@
-import type { Scope } from "@code-ui/core";
+import { itemPartId, optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `radio-group:${scope.id ?? "default"}:root`;
+  partId(scope, "rdg", "root", "r");
 
-export const getFieldsetId = (scope: Scope): string =>
-  scope.ids?.fieldset ?? `radio-group:${scope.id ?? "default"}:fieldset`;
+export const getFieldsetId = (scope: Scope): string | undefined =>
+  optPartId(scope, "fieldset");
 
 export const getLegendId = (scope: Scope): string =>
-  scope.ids?.legend ?? `radio-group:${scope.id ?? "default"}:legend`;
+  partId(scope, "rdg", "legend", "lg");
 
 export const getItemId = (scope: Scope, value: string): string =>
-  scope.ids?.item?.(value) ??
-  `radio-group:${scope.id ?? "default"}:item:${value}`;
+  itemPartId(scope, "rdg", "item", value, "i");
 
 export const getItemControlId = (scope: Scope, value: string): string =>
-  scope.ids?.itemControl?.(value) ??
-  `radio-group:${scope.id ?? "default"}:control:${value}`;
+  itemPartId(scope, "rdg", "itemControl", value, "c");
 
 export const getItemIndicatorId = (scope: Scope, value: string): string =>
-  scope.ids?.itemIndicator?.(value) ??
-  `radio-group:${scope.id ?? "default"}:indicator:${value}`;
+  itemPartId(scope, "rdg", "itemIndicator", value, "ind");
 
 export const getItemLabelId = (scope: Scope, value: string): string =>
-  scope.ids?.itemLabel?.(value) ??
-  `radio-group:${scope.id ?? "default"}:label:${value}`;
+  itemPartId(scope, "rdg", "itemLabel", value, "l");
 
 export const getItemDescriptionId = (scope: Scope, value: string): string =>
-  scope.ids?.itemDescription?.(value) ??
-  `radio-group:${scope.id ?? "default"}:desc:${value}`;
+  itemPartId(scope, "rdg", "itemDescription", value, "d");
 
-export const getHiddenInputId = (scope: Scope): string =>
-  scope.ids?.hiddenInput ??
-  `radio-group:${scope.id ?? "default"}:hidden-input`;
+export const getHiddenInputId = (scope: Scope): string | undefined =>
+  optPartId(scope, "hiddenInput");

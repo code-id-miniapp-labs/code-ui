@@ -1,8 +1,8 @@
 import { createMachine } from "@code-ui/core";
-import type { DrawerMachine, DrawerSchema, DrawerUI } from "./drawer.types";
+import type { DrawerMachine, DrawerSchema } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
 import * as dom from "./drawer.dom";
-import { isNotNull } from "@code-ui/utils";
+import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-ui/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
@@ -34,13 +34,9 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     return isOpen ? "open" : "closed";
   },
 
-  context: ({ prop, bindable }) => ({
+  context: ({ bindable }) => ({
     keyboardHeight: bindable<number>(() => ({
       defaultValue: 0,
-    })),
-    ui: bindable<DrawerUI>(() => ({
-      value: prop("ui"),
-      defaultValue: {},
     })),
   }),
 
@@ -193,8 +189,13 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
           return cleanup;
         }
 
-        scope.dom
-          .animationDuration(dom.getContentSelector(scope))
+        const comp = scope.component;
+        if (!comp && !isMiniApp()) {
+          scheduleEnd(DEFAULT_ANIMATION_DURATION);
+          return cleanup;
+        }
+
+        queryAnimationDuration(dom.getContentSelector(scope), comp)
           .then((duration) => {
             if (cancelled) return;
             const delay = duration > 0 ? duration : DEFAULT_ANIMATION_DURATION;

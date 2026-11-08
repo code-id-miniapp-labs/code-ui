@@ -7,11 +7,6 @@ const badgeTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
-    options: {
-      virtualHost: true,
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-    },
     properties: {
       ui: { type: Object, value: {} },
       className: { type: String, value: "" },

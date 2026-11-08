@@ -47,7 +47,7 @@ function buildStateIndex<T extends MachineSchema>(machine: Machine<T>) {
     index.set(basePath, state);
     const stateId = state.id;
     if (stateId) {
-      if (idIndex.has(stateId)) {
+      if (process.env.NODE_ENV !== "production" && idIndex.has(stateId)) {
         invariant(`[zag-js] Duplicate state id: "${stateId}"`);
       }
       idIndex.set(stateId, basePath);
@@ -55,22 +55,22 @@ function buildStateIndex<T extends MachineSchema>(machine: Machine<T>) {
     const childStates = state.states;
     if (!childStates) return;
 
-    ensure(
-      state.initial,
-      () =>
-        `[zag-js] Compound state "${basePath}" has child states but no "initial" property`,
-    );
-
-    if (!(state.initial in childStates)) {
-      invariant(
-        `[zag-js] Compound state "${basePath}" has initial "${String(state.initial)}" which is not a child state`,
+    if (process.env.NODE_ENV !== "production") {
+      ensure(
+        state.initial,
+        () =>
+          `[zag-js] Compound state "${basePath}" has child states but no "initial" property`,
       );
+      if (!(state.initial in childStates)) {
+        invariant(
+          `[zag-js] Compound state "${basePath}" has initial "${String(state.initial)}" which is not a child state`,
+        );
+      }
     }
 
     for (const [childKey, childState] of Object.entries(childStates)) {
       if (!childState) continue;
-      const childPath = appendStatePath(basePath, childKey);
-      visit(childPath, childState);
+      visit(appendStatePath(basePath, childKey), childState);
     }
   };
 
@@ -192,8 +192,10 @@ export function resolveStateValue<T extends MachineSchema>(
   if (isExplicitAbsoluteStatePath(stateValue)) {
     const stateId = stripAbsolutePrefix(stateValue);
     const statePath = getStatePathById(machine, stateId);
-    ensure(statePath, () => `[zag-js] Unknown state id: "${stateId}"`);
-    return resolveAbsoluteStateValue(machine, statePath);
+    if (process.env.NODE_ENV !== "production") {
+      ensure(statePath, () => `[zag-js] Unknown state id: "${stateId}"`);
+    }
+    return resolveAbsoluteStateValue(machine, statePath ?? stateId);
   }
 
   // Dot-prefixed child target (e.g. ".idle" from source "open" → "open.idle")

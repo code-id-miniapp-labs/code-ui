@@ -9,7 +9,7 @@ export const bindable: BindableFn = Object.assign(
     const initial = init.value ?? init.defaultValue;
     const eq = init.isEqual ?? Object.is;
 
-    if (init.debug) {
+    if (process.env.NODE_ENV !== "production" && init.debug) {
       console.log(`[bindable > ${init.debug}] initial`, initial);
     }
 
@@ -56,7 +56,7 @@ export const bindable: BindableFn = Object.assign(
             ? (nextValue as (prev: T) => T)(prev)
             : (nextValue as T);
 
-          if (init.debug) {
+          if (process.env.NODE_ENV !== "production" && init.debug) {
             console.log(`[bindable > ${init.debug}] setValue`, { next, prev });
           }
 

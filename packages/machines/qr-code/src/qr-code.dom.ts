@@ -1,13 +1,9 @@
-import type { Scope } from "@code-ui/core";
+import { optPartId, partId, type Scope } from "@code-ui/core";
 
-export const getRootId = (scope: Scope) =>
-  scope.ids?.root ?? `qr-code:${scope.id ?? "default"}:root`;
+export const getRootId = (scope: Scope) => partId(scope, "qr", "root", "r");
 
-export const getFrameId = (scope: Scope) =>
-  scope.ids?.frame ?? `qr-code:${scope.id ?? "default"}:frame`;
+export const getFrameId = (scope: Scope) => optPartId(scope, "frame");
 
-export const getPatternId = (scope: Scope) =>
-  scope.ids?.pattern ?? `qr-code:${scope.id ?? "default"}:pattern`;
+export const getPatternId = (scope: Scope) => optPartId(scope, "pattern");
 
-export const getOverlayId = (scope: Scope) =>
-  scope.ids?.overlay ?? `qr-code:${scope.id ?? "default"}:overlay`;
+export const getOverlayId = (scope: Scope) => optPartId(scope, "overlay");

@@ -53,16 +53,7 @@ export interface RadioProps {
 }
 
 export interface RadioContext {
-  value: string;
-  label: string;
-  description: string;
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  color: RadioColor | "";
-  size: RadioSize | "";
-  variant: RadioVariant;
-  ui: RadioUI;
 }
 
 export type RadioEvent =

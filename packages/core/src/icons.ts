@@ -1,37 +1,34 @@
-import { getConfig, type IconsConfig } from "./config";
+import type { IconsConfig } from "./config";
+
+function readIconsConfig(): IconsConfig {
+  const host =
+    typeof globalThis !== "undefined"
+      ? (globalThis as Record<string, any>)
+      : typeof window !== "undefined"
+        ? (window as unknown as Record<string, any>)
+        : typeof global !== "undefined"
+          ? (global as unknown as Record<string, any>)
+          : undefined;
+  return (host?.__CODE_UI_GLOBAL_CONFIG__?.icons ?? {}) as IconsConfig;
+}
+
+const mkPreset = <C extends string, L extends string>(close: C, loading: L) =>
+  ({
+    check: "check",
+    minus: "minus",
+    close,
+    loading,
+    chevronDown: "chevron-down",
+  }) as const;
 
 /**
  * Built-in icon mappings for popular Iconify collections.
  */
 export const ICON_COLLECTION_PRESETS = {
-  lucide: {
-    check: "check",
-    minus: "minus",
-    close: "x",
-    loading: "loader",
-    chevronDown: "chevron-down",
-  },
-  tabler: {
-    check: "check",
-    minus: "minus",
-    close: "x",
-    loading: "loader-2",
-    chevronDown: "chevron-down",
-  },
-  mdi: {
-    check: "check",
-    minus: "minus",
-    close: "close",
-    loading: "loading",
-    chevronDown: "chevron-down",
-  },
-  heroicons: {
-    check: "check",
-    minus: "minus",
-    close: "x-mark",
-    loading: "arrow-path",
-    chevronDown: "chevron-down",
-  },
+  lucide: /* @__PURE__ */ mkPreset("x", "loader"),
+  tabler: /* @__PURE__ */ mkPreset("x", "loader-2"),
+  mdi: /* @__PURE__ */ mkPreset("close", "loading"),
+  heroicons: /* @__PURE__ */ mkPreset("x-mark", "arrow-path"),
 } as const;
 
 export type DefaultIconName = keyof (typeof ICON_COLLECTION_PRESETS)["lucide"];
@@ -39,13 +36,15 @@ export type DefaultIconName = keyof (typeof ICON_COLLECTION_PRESETS)["lucide"];
 export type ResolvedIcons = Record<DefaultIconName, string> &
   Record<string, string>;
 
+const ICON_KEYS = ["check", "minus", "close", "loading", "chevronDown"] as const;
+
 /**
  * Resolves all active icon collection names from configuration.
  * Always ensures at least one collection (defaults to "lucide").
  * The first item in the returned array is the primary collection.
  */
 export function getActiveCollections(iconsConfig?: IconsConfig): string[] {
-  const cfg = iconsConfig ?? getConfig()?.icons ?? {};
+  const cfg = iconsConfig ?? readIconsConfig();
   const list: string[] = [];
 
   const rawCollections = cfg.collections;
@@ -67,50 +66,29 @@ export function getActiveCollections(iconsConfig?: IconsConfig): string[] {
  * Returns the active icon map (built-in defaults merged with `config.icons`).
  */
 export function getIcons(): ResolvedIcons {
-  const iconsConfig: IconsConfig = getConfig()?.icons ?? {};
+  const iconsConfig: IconsConfig = readIconsConfig();
   const prefix =
     typeof iconsConfig.prefix === "string" ? iconsConfig.prefix : "i";
   const collections = getActiveCollections(iconsConfig);
-  const primaryCollection = collections[0] || "lucide";
+  const primary = collections[0] || "lucide";
 
-  let baseIcons: Record<string, string> = {};
-
-  if (primaryCollection in ICON_COLLECTION_PRESETS) {
-    const preset =
-      ICON_COLLECTION_PRESETS[
-        primaryCollection as keyof typeof ICON_COLLECTION_PRESETS
-      ];
-    baseIcons = {
-      check: `${prefix}-${primaryCollection}-${preset.check}`,
-      minus: `${prefix}-${primaryCollection}-${preset.minus}`,
-      close: `${prefix}-${primaryCollection}-${preset.close}`,
-      loading: `${prefix}-${primaryCollection}-${preset.loading}`,
-      chevronDown: `${prefix}-${primaryCollection}-${preset.chevronDown}`,
-    };
-  } else {
-    baseIcons = {
-      check: `${prefix}-${primaryCollection}-check`,
-      minus: `${prefix}-${primaryCollection}-minus`,
-      close: `${prefix}-${primaryCollection}-close`,
-      loading: `${prefix}-${primaryCollection}-loading`,
-      chevronDown: `${prefix}-${primaryCollection}-chevron-down`,
-    };
+  const result: Record<string, string> = {};
+  const primaryPreset =
+    ICON_COLLECTION_PRESETS[primary as keyof typeof ICON_COLLECTION_PRESETS];
+  for (const k of ICON_KEYS) {
+    result[k] = `${prefix}-${primary}-${primaryPreset ? primaryPreset[k] : k === "chevronDown" ? "chevron-down" : k}`;
   }
 
-  // Register namespaced presets for all active collections
   for (const col of collections) {
-    if (col in ICON_COLLECTION_PRESETS) {
-      const preset =
-        ICON_COLLECTION_PRESETS[col as keyof typeof ICON_COLLECTION_PRESETS];
-      baseIcons[`${col}:check`] = `${prefix}-${col}-${preset.check}`;
-      baseIcons[`${col}:minus`] = `${prefix}-${col}-${preset.minus}`;
-      baseIcons[`${col}:close`] = `${prefix}-${col}-${preset.close}`;
-      baseIcons[`${col}:loading`] = `${prefix}-${col}-${preset.loading}`;
-      baseIcons[`${col}:chevronDown`] = `${prefix}-${col}-${preset.chevronDown}`;
+    const preset =
+      ICON_COLLECTION_PRESETS[col as keyof typeof ICON_COLLECTION_PRESETS];
+    if (preset) {
+      for (const k of ICON_KEYS) {
+        result[`${col}:${k}`] = `${prefix}-${col}-${preset[k]}`;
+      }
     }
   }
 
-  const result: Record<string, string> = { ...baseIcons };
   for (const [key, val] of Object.entries(iconsConfig)) {
     if (key === "collection" || key === "collections" || key === "prefix")
       continue;
@@ -135,7 +113,7 @@ export function getIcon(name: DefaultIconName | (string & {})): string {
     const col = name.slice(0, colonIdx);
     const icon = name.slice(colonIdx + 1);
     if (col && icon) {
-      const iconsConfig: IconsConfig = getConfig()?.icons ?? {};
+      const iconsConfig: IconsConfig = readIconsConfig();
       const prefix =
         typeof iconsConfig.prefix === "string" ? iconsConfig.prefix : "i";
       return `${prefix}-${col}-${icon}`;

@@ -25,12 +25,6 @@ Component(
   createComponentOptions({
     behaviors: [radioGroupBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultRadioGroupProps, {
       className: {
         type: String,

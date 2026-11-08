@@ -9,12 +9,6 @@ Component(
   createComponentOptions({
     behaviors: [computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: {
       variant: {
         type: String,

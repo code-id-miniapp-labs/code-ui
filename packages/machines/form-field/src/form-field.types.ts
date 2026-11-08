@@ -49,19 +49,7 @@ export type FormFieldEvent =
   | { type: "RESET" };
 
 export interface FormFieldContext {
-  name: string;
-  label: string;
-  description: string;
-  help: string;
-  helperText: string;
-  hint: string;
-  error: string;
   innerError: string;
-  required: boolean;
-  disabled: boolean;
-  rules: FormRule[];
-  size: FormFieldSize;
-  ui: Record<string, any>;
 }
 
 export interface FormFieldRefs {

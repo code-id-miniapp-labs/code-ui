@@ -284,15 +284,6 @@ export interface FormContext {
   validatingFields: string[];
   focusedField: string | null;
   submitCount: number;
-  disabled: boolean;
-  readOnly: boolean;
-  focusOnError: boolean;
-  scrollToError: boolean;
-  scrollOffset: number;
-  validateOn: FormValidateOn;
-  validateLazy: boolean;
-  showErrors: boolean;
-  ui: FormUI;
 }
 
 export interface FormComputed {

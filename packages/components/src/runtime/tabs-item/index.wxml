@@ -3,7 +3,7 @@
   wx:if="{{mode === 'trigger'}}"
   id="{{tabsItem.triggerProps.id}}"
   class="cui-tabs-trigger {{classes.trigger}}"
-  role="tab"
+  aria-role="tab"
   aria-selected="{{tabsItem.isSelected}}"
   aria-disabled="{{tabsItem.isDisabled}}"
   data-scope="tabs"
@@ -43,7 +43,7 @@
   wx:else
   id="{{tabsItem.contentProps.id}}"
   class="cui-tabs-item {{classes.root}}"
-  role="{{tabsItem.contentProps.role}}"
+  aria-role="tabpanel"
   aria-labelledby="{{tabsItem.contentProps['aria-labelledby']}}"
   data-scope="tabs-item"
   data-part="root"

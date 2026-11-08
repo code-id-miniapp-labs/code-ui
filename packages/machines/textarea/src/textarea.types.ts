@@ -164,27 +164,7 @@ export type TextareaEvent =
 
 export interface TextareaContext {
   value: string;
-  variant: TextareaVariant;
-  color: TextareaColor;
-  size: TextareaSize;
-  highlight: boolean;
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  placeholder: string;
-  maxlength: number;
-  autoHeight: boolean;
-  clearable: boolean;
-  clearIcon: string;
-  loading: boolean;
-  leading: boolean;
-  trailing: boolean;
-  leadingIcon: string;
-  trailingIcon: string;
-  count: boolean;
-  form: string;
-  name: string;
-  ui: TextareaUI;
 }
 
 export interface TextareaComputed {

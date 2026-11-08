@@ -30,12 +30,6 @@ Component(
   createComponentOptions({
     behaviors: [formBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: false,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultFormProps, {
       validateOn: {
         type: Array,

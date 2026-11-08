@@ -152,10 +152,10 @@ describe("TabsItem Machine", () => {
     machine.start();
 
     const api = connectTabsItem(machine.service);
-    expect(api.contentProps.id).toBe("cui-tabs-item-tab1-content");
-    expect(api.contentProps.role).toBe("tabpanel");
+    expect(api.contentProps.id).toBe("tbi-tab1-c");
+    expect(api.contentProps["aria-role"]).toBe("tabpanel");
     expect(api.contentProps["aria-labelledby"]).toBe(
-      "cui-tabs-demo-trigger-profile",
+      "tb-demo-tr-profile",
     );
     expect(api.contentProps["data-state"]).toBe("active");
     expect(api.contentProps.hidden).toBe(false);

@@ -1,22 +1,28 @@
-import { defaultNormalizer, type NormalizeProps, type PropTypes } from "@code-ui/core";
+import type {
+  NormalizeProps,
+  PropTypes,
+} from "@code-ui/core";
 import type { ButtonApi, ButtonService } from "./button.types";
-import { parts } from "./button.anatomy";
 import * as dom from "./button.dom";
 
 export function connectButton<T extends PropTypes = PropTypes>(
   service: ButtonService,
-  normalize: NormalizeProps<T> = defaultNormalizer as NormalizeProps<T>,
+  normalize?: NormalizeProps<T>,
 ): ButtonApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, context, computed, prop, scope } = service;
 
   const loading = computed("isLoading");
   const disabled = computed("isDisabled");
   const currentState = state.get();
   const internalLoading = Boolean(context.get("internalLoading"));
-  const variant = context.get("variant");
-  const color = context.get("color");
-  const size = context.get("size");
-  const block = context.get("block");
+  const variant = prop("variant") ?? "solid";
+  const color = prop("color") ?? "primary";
+  const size = prop("size") ?? "md";
+  const block = Boolean(prop("block"));
+  const spinnerId = dom.getSpinnerId(scope);
+  const labelId = dom.getLabelId(scope);
+  const iconId = dom.getIconId(scope);
+  const btn = normalize ? normalize.button : (v: Record<string, any>) => v;
 
   return {
     state: currentState,
@@ -41,36 +47,30 @@ export function connectButton<T extends PropTypes = PropTypes>(
       send({ type: "TAP", event });
     },
 
-    rootProps: normalize.button({
+    rootProps: btn({
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-loading": String(loading),
       "data-disabled": String(disabled),
+      "data-loading": String(loading),
       "data-variant": variant,
       "data-color": color,
       "data-size": size,
       "data-block": String(block),
       disabled: disabled || loading,
-      role: "button",
-      "aria-busy": String(loading),
-      "aria-disabled": String(disabled),
+      "aria-role": "button",
+      "aria-disabled": disabled,
+      "aria-busy": Boolean(loading),
     }),
 
     spinnerProps: {
-      id: dom.getSpinnerId(scope),
-      ...parts.spinner.attrs,
+      ...(spinnerId ? { id: spinnerId } : {}),
       "aria-hidden": "true",
     },
 
-    labelProps: {
-      id: dom.getLabelId(scope),
-      ...parts.label.attrs,
-    },
+    labelProps: labelId ? { id: labelId } : {},
 
     iconProps: {
-      id: dom.getIconId(scope),
-      ...parts.icon.attrs,
+      ...(iconId ? { id: iconId } : {}),
       "aria-hidden": "true",
     },
   };

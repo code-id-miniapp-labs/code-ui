@@ -7,11 +7,13 @@ export {
   queryScrollOffset,
   queryViewportScrollOffset,
   queryFields,
+  isMiniApp,
+} from "./dom";
+export {
   queryComputedStyle,
   queryAnimationDuration,
   parseTimeValue,
-  isMiniApp,
-} from "./dom";
+} from "./dom-style";
 
 export type {
   DOMQueryHelpers,

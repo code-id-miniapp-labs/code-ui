@@ -1,4 +1,4 @@
-import { createDOM } from "@code-ui/utils";
+import { queryFields, queryRect } from "@code-ui/utils";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { BindableContext, ComputedFn, PropFn, Scope } from "@code-ui/core";
 import type { TabsSchema, TabsSize } from "./tabs.types";
@@ -117,15 +117,18 @@ export function performTabsScrollUpdate(
     return;
   }
 
-  const dom = scope?.dom ?? createDOM(comp);
-  const scrollPromise = dom.fields(".cui-tabs-scroll", {
-    rect: true,
-    size: true,
-    scrollOffset: true,
-  });
+  const scrollPromise = queryFields(
+    ".cui-tabs-scroll",
+    {
+      rect: true,
+      size: true,
+      scrollOffset: true,
+    },
+    comp,
+  );
 
   const triggerPromises = triggers.map((t) =>
-    createDOM(t).rect(".cui-tabs-trigger"),
+    queryRect(".cui-tabs-trigger", t),
   );
 
   Promise.all([scrollPromise, Promise.all(triggerPromises)])

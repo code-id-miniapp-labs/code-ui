@@ -1,13 +1,13 @@
 import { createMachine } from "@code-ui/core";
 import {
-  setupFormFieldSync,
   cleanupFormFieldSync,
+  createFormFieldComputed,
+  hasFormFieldErrors,
+  setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
-  TextareaContext,
   TextareaMachine,
-  TextareaProps,
   TextareaSchema,
   TextareaSize,
 } from "./textarea.types";
@@ -24,131 +24,67 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
 
   initialState: ({ prop }) => (prop("autoFocus") ? "focused" : "idle"),
 
-  refs: ({ prop }) => {
-    const initial =
-      toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "";
-    return {
-      initialValue: initial,
-      formField: undefined,
-    };
-  },
+  refs: ({ prop }) => ({
+    initialValue:
+      toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "",
+    formField: undefined,
+  }),
 
-  context: ({ prop, bindable, getRefs }) => {
-    const propBindable = <
-      K extends keyof TextareaContext & keyof TextareaProps,
-    >(
-      key: K,
-      defaultValue: TextareaContext[K],
-    ) =>
-      bindable<TextareaContext[K]>(() => ({
-        value: prop(key) as TextareaContext[K] | undefined,
-        defaultValue,
-      }));
+  context: ({ prop, bindable, getRefs }) => ({
+    value: bindable<string>(() => {
+      const controlledVal = toStringValue(prop("value"));
+      const defaultVal = toStringValue(prop("defaultValue"));
 
-    return {
-      value: bindable<string>(() => {
-        const controlledVal = toStringValue(prop("value"));
-        const defaultVal = toStringValue(prop("defaultValue"));
+      return {
+        value: controlledVal,
+        defaultValue: controlledVal ?? defaultVal ?? "",
+        onChange: (nextVal) => {
+          prop("onChange")?.({ value: nextVal });
 
-        return {
-          value: controlledVal,
-          defaultValue: controlledVal ?? defaultVal ?? "",
-          onChange: (nextVal) => {
-            prop("onChange")?.({ value: nextVal });
+          const formField = getRefs().get("formField");
+          if (formField) {
+            formField.emitInput(nextVal);
+            formField.emitChange(nextVal);
+          }
+        },
+      };
+    }),
 
-            const formField = getRefs().get("formField");
-            if (formField) {
-              formField.emitInput(nextVal);
-              formField.emitChange(nextVal);
-            }
-          },
-        };
-      }),
-
-      variant: propBindable("variant", "outline"),
-      color: propBindable("color", "primary"),
-      size: propBindable("size", "md"),
-      highlight: propBindable("highlight", false),
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
-
-      invalid: bindable<boolean>(() => {
-        const rawInvalid = prop("invalid");
-        return {
-          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-          defaultValue: false,
-        };
-      }),
-
-      placeholder: propBindable("placeholder", ""),
-      maxlength: propBindable("maxlength", 140),
-      autoHeight: propBindable("autoHeight", false),
-      clearable: propBindable("clearable", false),
-      clearIcon: propBindable("clearIcon", ""),
-      loading: propBindable("loading", false),
-      leading: propBindable("leading", false),
-      trailing: propBindable("trailing", false),
-      leadingIcon: propBindable("leadingIcon", ""),
-      trailingIcon: propBindable("trailingIcon", ""),
-      count: propBindable("count", false),
-      form: propBindable("form", ""),
-      name: propBindable("name", ""),
-      ui: propBindable("ui", {}),
-    };
-  },
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
+  }),
 
   computed: {
-    formDisabled: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.disabled() ?? false;
-    },
-    formReadOnly: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.readOnly() ?? false;
-    },
-    fieldDisabled: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
-        prop("fieldDisabled") ||
-        host?.fieldState(prop("name") || scope.id || "textarea")?.disabled,
-      );
-    },
-    fieldSize: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return (
-        prop("fieldSize") ||
-        host?.fieldState(prop("name") || scope.id || "textarea")?.size ||
-        ""
-      );
-    },
-    isInvalid: ({ prop, refs, context, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
+    ...createFormFieldComputed("textarea"),
+    isInvalid: ({ prop, refs, context, scope }) =>
+      Boolean(
         context.get("invalid") ||
-        host?.errors(prop("name") || scope.id || "textarea").length,
-      );
-    },
+          hasFormFieldErrors(prop, refs, scope, "textarea"),
+      ),
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
     characterCount: ({ context }) => (context.get("value") ?? "").length,
-    isDisabled: ({ context, computed }) =>
+    isDisabled: ({ prop, computed }) =>
       Boolean(
-        context.get("disabled") ||
-        computed("formDisabled") ||
-        computed("fieldDisabled"),
+        prop("disabled") ||
+          computed("formDisabled") ||
+          computed("fieldDisabled"),
       ),
-    isReadOnly: ({ context, computed }) =>
-      Boolean(context.get("readOnly") || computed("formReadOnly")),
+    isReadOnly: ({ prop, computed }) =>
+      Boolean(prop("readOnly") || computed("formReadOnly")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
-    isClearable: ({ context, computed }) =>
+    isClearable: ({ prop, computed }) =>
       Boolean(
-        context.get("clearable") &&
-        computed("isInteractive") &&
-        computed("isFilled"),
+        prop("clearable") && computed("isInteractive") && computed("isFilled"),
       ),
-    effectiveSize: ({ context, computed }) => {
-      const rawSize = context.get("size");
+    effectiveSize: ({ prop, computed }) => {
+      const rawSize = prop("size");
       const fieldSize = computed("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
@@ -221,8 +157,8 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "textarea",
-            getFormId: () => context.get("form") || prop("form") || "",
-            getName: () => context.get("name") || prop("name") || "",
+            getFormId: () => prop("form") || "",
+            getName: () => prop("name") || "",
             getValue: () => context.get("value"),
             setValue: (rawVal: unknown) => {
               context.set("value", toStringValue(rawVal) ?? "");
@@ -265,18 +201,15 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       },
 
       handleConfirm: ({ context, prop }) => {
-        const val = context.get("value");
-        prop("onConfirm")?.({ value: val });
+        prop("onConfirm")?.({ value: context.get("value") });
       },
 
       handleLineChange: ({ prop, event }) => {
-        const details = (event as any).details;
-        prop("onLineChange")?.(details);
+        prop("onLineChange")?.((event as any).details);
       },
 
       setValue: ({ context, event }) => {
-        const val = toStringValue((event as any).value) ?? "";
-        context.set("value", val);
+        context.set("value", toStringValue((event as any).value) ?? "");
       },
 
       clearValue: ({ context, prop }) => {

@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [qrCodeBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultQrCodeProps, {
       className: {
         type: String,

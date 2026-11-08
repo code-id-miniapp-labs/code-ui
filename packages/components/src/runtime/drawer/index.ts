@@ -39,12 +39,6 @@ Component(
   createComponentOptions({
     behaviors: [drawerBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     computed: {
       classes() {
         const api = this.data.drawer;

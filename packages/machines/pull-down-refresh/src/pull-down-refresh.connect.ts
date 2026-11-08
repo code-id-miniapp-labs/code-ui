@@ -2,7 +2,6 @@ import type {
   PullDownRefreshApi,
   PullDownRefreshService,
 } from "./pull-down-refresh.types";
-import { parts } from "./pull-down-refresh.anatomy";
 import * as dom from "./pull-down-refresh.dom";
 
 export function connectPullDownRefresh(
@@ -86,47 +85,39 @@ export function connectPullDownRefresh(
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-disabled": disabled,
-      "data-refreshing": refreshing,
-      "data-at-top": atTop,
+      ...(disabled ? { "data-disabled": "true" } : {}),
+      ...(refreshing ? { "data-refreshing": "true" } : {}),
+      ...(atTop ? { "data-at-top": "true" } : {}),
     },
 
     headerProps: {
       id: dom.getHeaderId(scope),
-      ...parts.header.attrs,
     },
 
     trackProps: {
       id: dom.getTrackId(scope),
-      ...parts.track.attrs,
       "data-state": currentState,
-      "data-pulling": pulling,
-      "data-armed": armed,
-      "data-offset": offset,
+      ...(pulling ? { "data-pulling": "true" } : {}),
+      ...(armed ? { "data-armed": "true" } : {}),
+      ...(offset !== undefined ? { "data-offset": offset } : {}),
     },
 
     tipsProps: {
       id: dom.getTipsId(scope),
-      ...parts.tips.attrs,
       "data-state": currentState,
-      role: "status",
+      "aria-role": "status",
       "aria-live": "polite",
     },
 
     indicatorProps: {
-      ...parts.indicator.attrs,
       "aria-hidden": true,
     },
 
-    textProps: {
-      ...parts.text.attrs,
-    },
+    textProps: {},
 
     contentProps: {
       id: dom.getContentId(scope),
-      ...parts.content.attrs,
     },
   };
 }

@@ -25,9 +25,7 @@ Component(
     behaviors: [accordionBehavior, computedBehavior],
 
     options: {
-      multipleSlots: true,
       styleIsolation: "shared",
-      virtualHost: true,
     },
 
     properties: createProperties(defaultAccordionProps, {

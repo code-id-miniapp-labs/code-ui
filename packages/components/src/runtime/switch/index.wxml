@@ -1,7 +1,7 @@
-<view id="{{cSwitch.rootProps.id}}" class="{{classes.root}}" data-scope="switch" data-part="root" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.rootProps['data-checked']}}" data-disabled="{{cSwitch.rootProps['data-disabled']}}" data-readonly="{{cSwitch.rootProps['data-readonly']}}" data-loading="{{cSwitch.rootProps['data-loading']}}" data-invalid="{{cSwitch.rootProps['data-invalid']}}" role="group" aria-disabled="{{cSwitch.rootProps['aria-disabled']}}" aria-invalid="{{cSwitch.rootProps['aria-invalid']}}" catchtap="handleTap">
-  <view id="{{cSwitch.containerProps.id}}" class="{{classes.container}}" data-scope="switch" data-part="container">
-    <view id="{{cSwitch.baseProps.id}}" class="{{classes.base}}" data-scope="switch" data-part="base" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.baseProps['data-checked']}}" data-disabled="{{cSwitch.baseProps['data-disabled']}}" data-readonly="{{cSwitch.baseProps['data-readonly']}}" data-loading="{{cSwitch.baseProps['data-loading']}}" data-invalid="{{cSwitch.baseProps['data-invalid']}}" role="switch" aria-checked="{{cSwitch.baseProps['aria-checked']}}" aria-disabled="{{cSwitch.baseProps['aria-disabled']}}" aria-invalid="{{cSwitch.baseProps['aria-invalid']}}">
-      <view id="{{cSwitch.thumbProps.id}}" class="{{classes.thumb}}" data-scope="switch" data-part="thumb" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.thumbProps['data-checked']}}" data-disabled="{{cSwitch.thumbProps['data-disabled']}}" data-loading="{{cSwitch.thumbProps['data-loading']}}" aria-hidden="true">
+<view id="{{cSwitch.rootProps.id}}" class="{{classes.root}}" data-scope="switch" data-part="root" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.rootProps['data-checked']}}" data-disabled="{{cSwitch.rootProps['data-disabled']}}" data-readonly="{{cSwitch.rootProps['data-readonly']}}" data-loading="{{cSwitch.rootProps['data-loading']}}" data-invalid="{{cSwitch.rootProps['data-invalid']}}" aria-role="group" aria-disabled="{{cSwitch.disabled}}" aria-invalid="{{cSwitch.invalid}}" catchtap="handleTap">
+  <view class="{{classes.container}}" data-scope="switch" data-part="container">
+    <view id="{{cSwitch.baseProps.id}}" class="{{classes.base}}" data-scope="switch" data-part="base" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.baseProps['data-checked']}}" data-disabled="{{cSwitch.baseProps['data-disabled']}}" data-readonly="{{cSwitch.baseProps['data-readonly']}}" data-loading="{{cSwitch.baseProps['data-loading']}}" data-invalid="{{cSwitch.baseProps['data-invalid']}}" aria-role="switch" aria-checked="{{cSwitch.baseProps['aria-checked']}}" aria-disabled="{{cSwitch.disabled}}" aria-invalid="{{cSwitch.invalid}}">
+      <view class="{{classes.thumb}}" data-scope="switch" data-part="thumb" data-state="{{cSwitch.state}}" data-disabled="{{cSwitch.thumbProps['data-disabled']}}" aria-hidden="true">
         <c-icon wx:if="{{loading}}" name="{{loadingIcon || 'loading'}}" className="w-full h-full animate-spin" />
         <c-icon wx:elif="{{cSwitch.checked && checkedIcon}}" name="{{checkedIcon}}" className="{{classes.icon}}" />
         <c-icon wx:elif="{{!cSwitch.checked && uncheckedIcon}}" name="{{uncheckedIcon}}" className="{{classes.icon}}" />
@@ -13,7 +13,7 @@
     <view wx:if="{{label}}" id="{{cSwitch.labelProps.id}}" class="{{classes.label}}" data-scope="switch" data-part="label" data-disabled="{{cSwitch.labelProps['data-disabled']}}">
       {{label}}
     </view>
-    <view wx:if="{{description}}" id="{{cSwitch.descriptionProps.id}}" class="{{classes.description}}" data-scope="switch" data-part="description" data-disabled="{{cSwitch.descriptionProps['data-disabled']}}">
+    <view wx:if="{{description}}" class="{{classes.description}}" data-scope="switch" data-part="description" data-disabled="{{cSwitch.descriptionProps['data-disabled']}}">
       {{description}}
     </view>
   </view>

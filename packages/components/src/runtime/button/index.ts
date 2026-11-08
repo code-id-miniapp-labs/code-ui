@@ -27,12 +27,6 @@ Component(
   createComponentOptions({
     behaviors: [buttonBehavior, wxButtonBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     data: {},
     properties: createProperties(defaultButtonProps, {
       className: {
@@ -44,25 +38,16 @@ Component(
     computed: {
       classes() {
         const api = this.data.button;
-        const variant = api?.variant ?? this.data.variant;
-        const color = api?.color ?? this.data.color;
-        const size = api?.size ?? this.data.size;
-        const block = api?.block ?? this.data.block;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const loading = Boolean(api?.loading ?? this.data.loading);
-
-        const ui = this.data.ui;
-
         const themeFns = buttonTheme({
-          variant,
-          size,
-          color,
-          block,
-          disabled,
-          loading,
+          variant: this.data.variant,
+          size: this.data.size,
+          color: this.data.color,
+          block: this.data.block,
+          disabled: Boolean(api?.disabled ?? this.data.disabled),
+          loading: Boolean(api?.loading ?? this.data.loading),
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 

@@ -26,10 +26,10 @@ describe("toastTheme runtime resolution (@code-ui/components)", () => {
       expect(slots.root).toContain("-translate-x-1_f2");
       expect(slots.root).not.toContain("inset-x-auto");
 
-      expect(slots.title.split(" ")).toContain("text-neutral-900");
-      expect(slots.title.split(" ")).not.toContain("text-white");
-      expect(slots.description.split(" ")).toContain("text-neutral-500");
-      expect(slots.description.split(" ")).not.toContain("text-neutral-300");
+      expect(slots.title.split(" ")).toContain("text-white");
+      expect(slots.title.split(" ")).not.toContain("text-neutral-900");
+      expect(slots.description.split(" ")).toContain("text-white_f85");
+      expect(slots.description.split(" ")).not.toContain("text-neutral-500");
     },
   );
 });

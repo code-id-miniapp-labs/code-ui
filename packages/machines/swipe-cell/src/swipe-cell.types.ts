@@ -176,7 +176,6 @@ export type SwipeCellAction =
   | "invokeOnContentTap"
   | "setOpenedSide"
   | "clearOpenedSide"
-  | "setOpenedSideFromEvent"
   | "setWidths"
   | "measureWidths"
   | "setOffsetFromEvent";

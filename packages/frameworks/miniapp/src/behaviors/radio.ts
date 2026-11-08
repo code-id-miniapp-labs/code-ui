@@ -86,32 +86,25 @@ export function handleRadioAttached(
   }
 }
 
+function syncRadioGroupChildren(group: any) {
+  if (typeof group.getRelationNodes === "function") {
+    const children = group.getRelationNodes("cuiRadioChild");
+    if (children) for (const c of children) linkRadioToParentGroup(group, c);
+  }
+}
+
 export function handleRadioMachineStarted(
   instance: any,
   options: { radioGroup?: boolean; radioItem?: boolean },
 ) {
-  if (options.radioGroup && typeof instance.getRelationNodes === "function") {
-    const children = instance.getRelationNodes("cuiRadioChild");
-    if (children && children.length > 0) {
-      for (const child of children) {
-        linkRadioToParentGroup(instance, child);
-      }
-    }
-  }
+  if (options.radioGroup) syncRadioGroupChildren(instance);
 }
 
 export function handleRadioReady(
   instance: any,
   options: { radioGroup?: boolean; radioItem?: boolean },
 ) {
-  if (options.radioGroup && typeof instance.getRelationNodes === "function") {
-    const children = instance.getRelationNodes("cuiRadioChild");
-    if (children && children.length > 0) {
-      for (const child of children) {
-        linkRadioToParentGroup(instance, child);
-      }
-    }
-  }
+  if (options.radioGroup) syncRadioGroupChildren(instance);
   if (options.radioItem && typeof instance.getRelationNodes === "function") {
     const parents = instance.getRelationNodes("cuiRadioGroupParent");
     if (parents && parents.length > 0) {

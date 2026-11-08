@@ -346,24 +346,20 @@ describe("Switch Machine", () => {
       machine.start();
 
       const api = connectSwitch(machine.service);
-      expect(api.rootProps.id).toBe("switch:my-switch:root");
-      expect(api.rootProps["data-scope"]).toBe("switch");
-      expect(api.rootProps["data-part"]).toBe("root");
+      expect(api.rootProps.id).toBe("sw-my-switch-r");
       expect(api.rootProps["data-state"]).toBe("unchecked");
-      expect(api.rootProps.role).toBe("group");
+      expect(api.rootProps["aria-role"]).toBe("group");
 
-      expect(api.baseProps.id).toBe("switch:my-switch:base");
-      expect(api.baseProps.role).toBe("switch");
+      expect(api.baseProps.id).toBe("sw-my-switch-b");
+      expect(api.baseProps["aria-role"]).toBe("switch");
       expect(api.baseProps["aria-checked"]).toBe(false);
-      expect(api.baseProps["data-scope"]).toBe("switch");
-      expect(api.baseProps["data-part"]).toBe("base");
+      expect(api.baseProps["aria-disabled"]).toBe(false);
 
-      expect(api.thumbProps.id).toBe("switch:my-switch:thumb");
-      expect(api.thumbProps["data-scope"]).toBe("switch");
-      expect(api.thumbProps["data-part"]).toBe("thumb");
+      expect(api.thumbProps.id).toBeUndefined();
+      expect(api.thumbProps["aria-hidden"]).toBe("true");
 
-      expect(api.labelProps.id).toBe("switch:my-switch:label");
-      expect(api.descriptionProps.id).toBe("switch:my-switch:description");
+      expect(api.labelProps.id).toBe("sw-my-switch-l");
+      expect(api.descriptionProps.id).toBeUndefined();
 
       expect(api.hiddenInputProps.name).toBe("notifications");
       expect(api.hiddenInputProps.value).toBe("yes");

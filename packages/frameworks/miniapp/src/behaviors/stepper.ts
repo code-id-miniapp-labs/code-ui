@@ -1,17 +1,8 @@
 import type { MachinePlugin } from "../plugin";
 
-const instanceIds = new WeakMap<object, string>();
-let instanceCounter = 0;
-
-function getComponentId(instance: any, explicitId?: string): string {
-  if (explicitId) return explicitId;
-  let id = instanceIds.get(instance);
-  if (!id) {
-    id = `cui-${++instanceCounter}`;
-    instanceIds.set(instance, id);
-  }
-  return id;
-}
+let stepCounter = 0;
+const getComponentId = (inst: any, explicitId?: string): string =>
+  explicitId || (inst.__cuiStepId ||= `cui-${++stepCounter}`);
 
 /**
  * Shared Behavior reference for `<c-stepper>` parent components.

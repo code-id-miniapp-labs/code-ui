@@ -6,13 +6,21 @@ export function connectFormField(
   service: FormFieldService,
   scope: Scope = service.scope,
 ): FormFieldApi {
-  const displayError = service.computed("displayError");
-  const displayHelp = service.computed("displayHelp");
-  const isInvalid = service.computed("invalid");
-  const size = service.context.get("size") || "md";
-  const disabled = service.computed("isDisabled");
-  const required = Boolean(service.context.get("required"));
-  const effectiveRules = service.computed("effectiveRules");
+  const { computed, prop } = service;
+  const displayError = computed("displayError");
+  const displayHelp = computed("displayHelp");
+  const isInvalid = computed("invalid");
+  const size = prop("size") || "md";
+  const disabled = computed("isDisabled");
+  const required = Boolean(prop("required"));
+  const effectiveRules = computed("effectiveRules");
+
+  const labelWrapperId = dom.getLabelWrapperId(scope);
+  const requiredId = dom.getRequiredId(scope);
+  const hintId = dom.getHintId(scope);
+  const descId = dom.getDescriptionId(scope);
+  const containerId = dom.getContainerId(scope);
+  const helpId = dom.getHelpId(scope);
 
   return {
     invalid: isInvalid,
@@ -23,73 +31,47 @@ export function connectFormField(
     size,
     disabled,
     required,
-    label: service.context.get("label"),
-    description: service.context.get("description"),
-    hint: service.context.get("hint"),
-    help: service.context.get("help"),
-    helperText: service.context.get("helperText"),
+    label: prop("label") ?? "",
+    description: prop("description") ?? "",
+    hint: prop("hint") ?? "",
+    help: prop("help") ?? "",
+    helperText: prop("helperText") ?? "",
 
     rootProps: {
       id: dom.getRootId(scope),
-      "data-scope": "form-field",
-      "data-part": "root",
-      "data-invalid": String(isInvalid),
       "data-disabled": String(disabled),
+      "data-invalid": String(isInvalid),
       "data-required": String(required),
       "data-size": size,
     },
 
-    labelWrapperProps: {
-      id: dom.getLabelWrapperId(scope),
-      "data-scope": "form-field",
-      "data-part": "label-wrapper",
-    },
+    labelWrapperProps: labelWrapperId ? { id: labelWrapperId } : {},
 
     labelProps: {
       id: dom.getLabelId(scope),
-      "data-scope": "form-field",
-      "data-part": "label",
       "data-disabled": String(disabled),
       "data-required": String(required),
     },
 
     requiredProps: {
-      id: dom.getRequiredId(scope),
-      "data-scope": "form-field",
-      "data-part": "required",
+      ...(requiredId ? { id: requiredId } : {}),
       "aria-hidden": "true",
     },
 
-    hintProps: {
-      id: dom.getHintId(scope),
-      "data-scope": "form-field",
-      "data-part": "hint",
-    },
+    hintProps: hintId ? { id: hintId } : {},
 
-    descriptionProps: {
-      id: dom.getDescriptionId(scope),
-      "data-scope": "form-field",
-      "data-part": "description",
-    },
+    descriptionProps: descId ? { id: descId } : {},
 
     containerProps: {
-      id: dom.getContainerId(scope),
-      "data-scope": "form-field",
-      "data-part": "container",
+      ...(containerId ? { id: containerId } : {}),
       "data-invalid": String(isInvalid),
     },
 
-    helpProps: {
-      id: dom.getHelpId(scope),
-      "data-scope": "form-field",
-      "data-part": "help",
-    },
+    helpProps: helpId ? { id: helpId } : {},
 
     errorProps: {
       id: dom.getErrorId(scope),
-      "data-scope": "form-field",
-      "data-part": "error",
-      role: "alert",
+      "aria-role": "alert",
       "aria-live": "polite",
     },
   };

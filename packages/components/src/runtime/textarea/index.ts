@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [textareaBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultTextareaProps, {
       className: {
         type: String,

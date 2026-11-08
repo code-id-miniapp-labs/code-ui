@@ -1,48 +1,40 @@
+import { itemPartId, optPartId, partId } from "@code-ui/core";
+
 export interface TabsDomScope {
   id?: string | undefined;
   ids?: Record<string, any> | undefined;
 }
 
 export const getRootId = (scope: TabsDomScope): string =>
-  scope.ids?.root ?? `cui-tabs-${scope.id ?? "root"}`;
+  partId(scope as any, "tb", "root", "r");
 
 export const getListId = (scope: TabsDomScope): string =>
-  scope.ids?.list ?? `cui-tabs-${scope.id ?? "root"}-list`;
+  partId(scope as any, "tb", "list", "l");
 
-export const getIndicatorId = (scope: TabsDomScope): string =>
-  scope.ids?.indicator ?? `cui-tabs-${scope.id ?? "root"}-indicator`;
+export const getIndicatorId = (scope: TabsDomScope): string | undefined =>
+  optPartId(scope as any, "indicator");
 
 export const getTriggerId = (
   scope: TabsDomScope,
   value: string | number,
-): string =>
-  scope.ids?.trigger?.(value) ??
-  `cui-tabs-${scope.id ?? "root"}-trigger-${value}`;
+): string => itemPartId(scope as any, "tb", "trigger", value, "tr");
 
 export const getContentId = (
   scope: TabsDomScope,
   value: string | number,
-): string =>
-  scope.ids?.content?.(value) ??
-  `cui-tabs-${scope.id ?? "root"}-content-${value}`;
+): string => itemPartId(scope as any, "tb", "content", value, "c");
 
 export const getLeadingId = (
   scope: TabsDomScope,
   value: string | number,
-): string =>
-  scope.ids?.leading?.(value) ??
-  `cui-tabs-${scope.id ?? "root"}-leading-${value}`;
+): string | undefined => scope.ids?.leading?.(value);
 
 export const getLabelId = (
   scope: TabsDomScope,
   value: string | number,
-): string =>
-  scope.ids?.label?.(value) ?? `cui-tabs-${scope.id ?? "root"}-label-${value}`;
+): string | undefined => scope.ids?.label?.(value);
 
 export const getTrailingId = (
   scope: TabsDomScope,
   value: string | number,
-): string =>
-  scope.ids?.trailing?.(value) ??
-  `cui-tabs-${scope.id ?? "root"}-trailing-${value}`;
-
+): string | undefined => scope.ids?.trailing?.(value);

@@ -150,27 +150,7 @@ export type InputEvent =
 
 export interface InputContext {
   value: string;
-  variant: InputVariant;
-  color: InputColor;
-  size: InputSize;
-  highlight: boolean;
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  placeholder: string;
-  type: InputType;
-  password: boolean;
-  maxlength: number;
-  clearable: boolean;
-  clearIcon: string;
-  loading: boolean;
-  leading: boolean;
-  trailing: boolean;
-  leadingIcon: string;
-  trailingIcon: string;
-  form: string;
-  name: string;
-  ui: InputUI;
 }
 
 export interface InputComputed {

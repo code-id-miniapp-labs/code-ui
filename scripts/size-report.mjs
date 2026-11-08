@@ -13,9 +13,35 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join, dirname, resolve, relative, extname } from "node:path";
 
+const DEFAULT_REFERENCE_FEATURES = [
+  "button",
+  "card",
+  "avatar",
+  "badge",
+  "divider",
+  "progress",
+  "skeleton",
+  "checkbox",
+  "radio",
+  "switch",
+  "slider",
+  "stepper",
+  "tabs",
+  "icon",
+];
+
+const BUDGETS = {
+  referenceGzipKb: 68.0,
+  distGzipKb: 138.0,
+};
+
 const args = process.argv.slice(2);
 const distArg = args.includes("--dist") ? args[args.indexOf("--dist") + 1] : "packages/components/dist";
+const featuresArg = args.includes("--features")
+  ? args[args.indexOf("--features") + 1].split(",").map((s) => s.trim()).filter(Boolean)
+  : DEFAULT_REFERENCE_FEATURES;
 const asJson = args.includes("--json");
+const checkBudget = args.includes("--check");
 const dist = resolve(distArg);
 const runtime = join(dist, "runtime");
 
@@ -113,12 +139,62 @@ const chunks = walk(dist)
   .sort((a, b) => b.gzip - a.gzip);
 
 const runtimeTotal = rows.reduce((n, r) => n + r.own, 0);
-const distTotal = walk(dist)
-  .filter((f) => EXT.includes(extname(f)))
-  .reduce((n, f) => n + gz(f), 0);
+const allDistFiles = walk(dist).filter((f) => EXT.includes(extname(f)));
+const distTotal = allDistFiles.reduce((n, f) => n + gz(f), 0);
+const distRawTotal = allDistFiles.reduce((n, f) => n + statSync(f).size, 0);
+const distExclAppCssFiles = allDistFiles.filter((f) => relative(dist, f) !== "app.wxss");
+const distExclAppCssGzip = distExclAppCssFiles.reduce((n, f) => n + gz(f), 0);
+const distExclAppCssRaw = distExclAppCssFiles.reduce((n, f) => n + statSync(f).size, 0);
+
+// Reachable union for the requested feature set (default: 14-feature reference set)
+const featureUnionFiles = new Set();
+for (const feature of featuresArg) {
+  const dir = join(runtime, feature);
+  if (!existsSync(dir)) continue;
+  for (const f of reachable(dir)) {
+    featureUnionFiles.add(f);
+  }
+}
+
+let refRaw = 0;
+let refGzip = 0;
+let refSharedGzip = 0;
+for (const f of featureUnionFiles) {
+  const r = statSync(f).size;
+  const g = gz(f);
+  refRaw += r;
+  refGzip += g;
+  if (!f.startsWith(runtime + "/")) {
+    refSharedGzip += g;
+  }
+}
+
+const reference = {
+  features: featuresArg,
+  files: featureUnionFiles.size,
+  raw: refRaw,
+  gzip: refGzip,
+  sharedGzip: refSharedGzip,
+  componentsGzip: refGzip - refSharedGzip,
+};
 
 if (asJson) {
-  console.log(JSON.stringify({ rows, chunks, runtimeTotal, distTotal }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        rows,
+        chunks,
+        reference,
+        runtimeTotal,
+        distExclAppCssRaw,
+        distExclAppCssGzip,
+        distRawTotal,
+        distTotal,
+      },
+      null,
+      2,
+    ),
+  );
   process.exit(0);
 }
 
@@ -134,6 +210,30 @@ for (const c of chunks) {
   console.log(c.file.padEnd(44), kb(c.raw).padStart(7), kb(c.gzip).padStart(7), String(c.usedBy).padStart(8));
 }
 
-console.log(`\nSum of runtime component files: ${kb(runtimeTotal)} KB gzip`);
-console.log(`Sum of all dist files (per-file gzip): ${kb(distTotal)} KB gzip\n`);
+console.log(`\nReference ${reference.features.length}-feature reachable union (${reference.files} files):`);
+console.log(`  Total:       ${kb(reference.raw)} KB raw / ${kb(reference.gzip)} KB gzip (budget <= ${BUDGETS.referenceGzipKb.toFixed(1)} KB)`);
+console.log(`  Shared base: ${kb(reference.sharedGzip)} KB gzip`);
+console.log(`  Components:  ${kb(reference.componentsGzip)} KB gzip`);
+console.log(`\nSum of runtime component files:      ${kb(runtimeTotal)} KB gzip`);
+console.log(`Full dist (excl. app.wxss):          ${kb(distExclAppCssRaw)} KB raw / ${kb(distExclAppCssGzip)} KB gzip (budget <= ${BUDGETS.distGzipKb.toFixed(1)} KB)`);
+console.log(`Sum of all dist files (per-file gz): ${kb(distRawTotal)} KB raw / ${kb(distTotal)} KB gzip\n`);
+
+if (checkBudget) {
+  const failures = [];
+  if (reference.gzip / 1024 > BUDGETS.referenceGzipKb) {
+    failures.push(
+      `Reference bundle ${kb(reference.gzip)} KB gzip exceeds budget ${BUDGETS.referenceGzipKb.toFixed(1)} KB`,
+    );
+  }
+  if (distExclAppCssGzip / 1024 > BUDGETS.distGzipKb) {
+    failures.push(
+      `Full dist (excl. app.wxss) ${kb(distExclAppCssGzip)} KB gzip exceeds budget ${BUDGETS.distGzipKb.toFixed(1)} KB`,
+    );
+  }
+  if (failures.length > 0) {
+    for (const msg of failures) console.error(`❌ Budget exceeded: ${msg}`);
+    process.exit(1);
+  }
+  console.log("✅ All bundle size budgets passed.\n");
+}
 

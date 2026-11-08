@@ -22,20 +22,14 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
 
   const getRootProps = (): Record<string, any> => ({
     id: getRootId(scope, value),
-    "data-scope": "tabs-item",
-    "data-part": "root",
     "data-value": value,
-    "data-state": isSelected ? "active" : "inactive",
-    "data-disabled": isDisabled,
     hidden: !isSelected,
   });
 
   const getContentProps = (): Record<string, any> => ({
     id: getContentId(scope, value),
-    role: "tabpanel",
+    "aria-role": "tabpanel",
     "aria-labelledby": getTriggerId(scope, tabsId, value),
-    "data-scope": "tabs-item",
-    "data-part": "content",
     "data-value": value,
     "data-state": isSelected ? "active" : "inactive",
     hidden: !isSelected,
@@ -47,23 +41,9 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
       customTriggerId && customTriggerId !== ""
         ? customTriggerId
         : getTriggerId(scope, tabsId, value),
-    role: "tab",
-    tabindex: isSelected ? 0 : -1,
-    "aria-selected": isSelected,
-    "aria-disabled": isDisabled,
-    "aria-controls": getContentId(scope, value),
-    "data-scope": "tabs",
-    "data-part": "trigger",
     "data-value": value,
     "data-index": index,
-    "data-state": isSelected ? "active" : "inactive",
-    "data-disabled": isDisabled,
-    "data-orientation": orientation,
   });
-
-  const rootProps = getRootProps();
-  const contentProps = getContentProps();
-  const triggerProps = getTriggerProps();
 
   return {
     value,
@@ -81,16 +61,14 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
     fitted,
     index,
 
-    select() {
-      send({ type: "SELECT" });
-    },
+    select: () => send({ type: "SELECT" }),
 
     getRootProps,
     getContentProps,
     getTriggerProps,
 
-    rootProps,
-    contentProps,
-    triggerProps,
+    rootProps: getRootProps(),
+    contentProps: getContentProps(),
+    triggerProps: getTriggerProps(),
   };
 }

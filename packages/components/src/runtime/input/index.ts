@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [inputBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultInputProps, {
       className: {
         type: String,
@@ -41,12 +35,12 @@ Component(
       classes() {
         const api = this.data.input;
         const themeFns = inputTheme({
-          variant: api?.variant,
-          color: api?.color,
-          size: api?.size,
-          highlight: api?.highlight,
-          invalid: api?.invalid,
-          disabled: api?.disabled,
+          variant: api?.variant ?? this.data.variant,
+          color: api?.color ?? this.data.color,
+          size: api?.size ?? (this.data.size || "md"),
+          highlight: Boolean(api?.highlight ?? this.data.highlight),
+          invalid: Boolean(api?.invalid ?? this.data.invalid),
+          disabled: Boolean(api?.disabled ?? this.data.disabled),
           leading: Boolean(this.data.leading || this.data.leadingIcon),
           trailing: Boolean(
             this.data.trailing ||

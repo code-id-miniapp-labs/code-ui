@@ -1,26 +1,23 @@
 import { createMachine } from "@code-ui/core";
 import {
-  setupFormFieldSync,
   cleanupFormFieldSync,
+  createFormFieldComputed,
+  hasFormFieldErrors,
+  setupFormFieldSync,
 } from "@code-ui/form/context";
-import { isEmpty, isNotEmpty } from "@code-ui/utils";
+import { isEmpty, isEqual, isNotEmpty } from "@code-ui/utils";
 import type {
-  PinInputContext,
   PinInputMachine,
   PinInputParams,
-  PinInputProps,
   PinInputSchema,
+  PinInputSize,
   PinInputType,
 } from "./pin-input.types";
 import { defaultPinInputProps } from "./pin-input.props";
 
 export function isValidCharacter(char: string, type: PinInputType): boolean {
-  if (type === "numeric") {
-    return /^[0-9]$/.test(char);
-  }
-  if (type === "alphabetic") {
-    return /^[a-zA-Z]$/.test(char);
-  }
+  if (type === "numeric") return /^[0-9]$/.test(char);
+  if (type === "alphabetic") return /^[a-zA-Z]$/.test(char);
   return /^[a-zA-Z0-9]$/.test(char);
 }
 
@@ -37,12 +34,13 @@ function advanceFocusOrBlur(
   {
     context,
     computed,
+    prop,
     refs,
-  }: Pick<PinInputParams, "context" | "computed" | "refs">,
+  }: Pick<PinInputParams, "context" | "computed" | "prop" | "refs">,
   nextIndex: number,
   length: number,
 ): void {
-  if (computed("isValueComplete") && context.get("blurOnComplete")) {
+  if (computed("isValueComplete") && prop("blurOnComplete")) {
     context.set("focusedIndex", -1);
     refs.get("formField")?.emitBlur(computed("valueAsString"));
   } else {
@@ -61,173 +59,103 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
   refs: ({ prop }) => {
     const len = prop("length") ?? 4;
     const raw = prop("value") ?? prop("defaultValue");
-    const initial =
-      raw !== undefined && raw !== null
-        ? normalizePinValue(raw, len)
-        : Array(len).fill("");
     return {
-      initialValue: [...initial],
+      initialValue:
+        raw !== undefined && raw !== null
+          ? normalizePinValue(raw, len)
+          : Array(len).fill(""),
       formField: undefined,
     };
   },
 
-  context: ({ prop, bindable, getRefs }) => {
-    const propBindable = <
-      K extends keyof PinInputContext & keyof PinInputProps,
-    >(
-      key: K,
-      defaultValue: PinInputContext[K],
-    ) =>
-      bindable<PinInputContext[K]>(() => ({
-        value: prop(key) as PinInputContext[K] | undefined,
-        defaultValue,
-      }));
+  context: ({ prop, bindable, getRefs }) => ({
+    length: bindable<number>(() => ({
+      value: prop("length"),
+      defaultValue: 4,
+    })),
 
-    const stateBindable = <K extends keyof PinInputContext>(
-      _key: K,
-      defaultValue: PinInputContext[K],
-    ) =>
-      bindable<PinInputContext[K]>(() => ({
-        defaultValue,
-      }));
+    value: bindable<string[]>(() => {
+      const len = prop("length") ?? 4;
+      const rawVal = prop("value");
+      const isControlled = rawVal !== undefined && rawVal !== null;
+      const controlledVal = isControlled
+        ? normalizePinValue(rawVal, len)
+        : undefined;
 
-    return {
-      length: propBindable("length", 4),
+      const rawDefault = prop("defaultValue");
+      const initial = isControlled
+        ? (controlledVal as string[])
+        : rawDefault !== undefined && rawDefault !== null
+          ? normalizePinValue(rawDefault, len)
+          : Array(len).fill("");
 
-      value: bindable<string[]>(() => {
-        const len = prop("length") ?? 4;
-        const rawVal = prop("value");
-        const isControlled = rawVal !== undefined && rawVal !== null;
-        const controlledVal = isControlled
-          ? normalizePinValue(rawVal, len)
-          : undefined;
+      return {
+        value: controlledVal,
+        defaultValue: initial,
+        isEqual,
+        onChange: (nextVal) => {
+          const valueAsString = nextVal.join("");
+          prop("onChange")?.({
+            value: nextVal,
+            valueAsString,
+          });
 
-        const rawDefault = prop("defaultValue");
-        const initial = isControlled
-          ? (controlledVal as string[])
-          : rawDefault !== undefined && rawDefault !== null
-            ? normalizePinValue(rawDefault, len)
-            : Array(len).fill("");
+          const formField = getRefs().get("formField");
+          if (formField) {
+            formField.emitInput(valueAsString);
+            formField.emitChange(valueAsString);
+          }
 
-        return {
-          value: controlledVal,
-          defaultValue: initial,
-          isEqual: (prev, next) => {
-            if (prev === next) return true;
-            if (!Array.isArray(prev) || !Array.isArray(next)) return false;
-            if (prev.length !== next.length) return false;
-            for (let i = 0; i < prev.length; i++) {
-              if (prev[i] !== next[i]) return false;
-            }
-            return true;
-          },
-          onChange: (nextVal) => {
-            const valueAsString = nextVal.join("");
-            prop("onChange")?.({
+          if (
+            nextVal.length === (prop("length") ?? 4) &&
+            nextVal.every((c) => Boolean(c && c.trim() !== ""))
+          ) {
+            prop("onComplete")?.({
               value: nextVal,
               valueAsString,
             });
+          }
+        },
+      };
+    }),
 
-            const formField = getRefs().get("formField");
-            if (formField) {
-              formField.emitInput(valueAsString);
-              formField.emitChange(valueAsString);
-            }
+    focusedIndex: bindable<number>(() => ({
+      defaultValue: prop("autoFocus") ? 0 : -1,
+    })),
 
-            const isComplete =
-              nextVal.length === (prop("length") ?? 4) &&
-              nextVal.every((c) => Boolean(c && c.trim() !== ""));
-            if (isComplete) {
-              prop("onComplete")?.({
-                value: nextVal,
-                valueAsString,
-              });
-            }
-          },
-        };
-      }),
-
-      focusedIndex: stateBindable("focusedIndex", prop("autoFocus") ? 0 : -1),
-
-      variant: propBindable("variant", "outline"),
-      color: propBindable("color", "primary"),
-      size: propBindable("size", "md"),
-      highlight: propBindable("highlight", false),
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
-
-      invalid: bindable<boolean>(() => {
-        const rawInvalid = prop("invalid");
-        return {
-          value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
-          defaultValue: false,
-        };
-      }),
-
-      mask: propBindable("mask", false),
-      otp: propBindable("otp", true),
-      type: propBindable("type", "numeric"),
-      placeholder: propBindable("placeholder", ""),
-      separator: propBindable("separator", false),
-      separatorChar: propBindable("separatorChar", "-"),
-      blurOnComplete: propBindable("blurOnComplete", false),
-      selectOnFocus: propBindable("selectOnFocus", false),
-      form: propBindable("form", ""),
-      name: propBindable("name", ""),
-      ui: propBindable("ui", {}),
-    };
-  },
+    invalid: bindable<boolean>(() => {
+      const rawInvalid = prop("invalid");
+      return {
+        value: isNotEmpty(rawInvalid) ? Boolean(rawInvalid) : undefined,
+        defaultValue: false,
+      };
+    }),
+  }),
 
   computed: {
-    formDisabled: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.disabled() ?? false;
-    },
-    formReadOnly: ({ prop, refs }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return host?.readOnly() ?? false;
-    },
-    fieldDisabled: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
-        prop("fieldDisabled") ||
-        host?.fieldState(prop("name") || scope.id || "pin-input")?.disabled,
-      );
-    },
-    fieldSize: ({ prop, refs, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return (
-        prop("fieldSize") ||
-        host?.fieldState(prop("name") || scope.id || "pin-input")?.size ||
-        ""
-      );
-    },
-    isInvalid: ({ prop, refs, context, scope }) => {
-      const host = prop("formContext") ?? refs.get("formField")?.host;
-      return Boolean(
+    ...createFormFieldComputed("pin-input"),
+    isInvalid: ({ prop, refs, context, scope }) =>
+      Boolean(
         context.get("invalid") ||
-        host?.errors(prop("name") || scope.id || "pin-input").length,
-      );
-    },
+          hasFormFieldErrors(prop, refs, scope, "pin-input"),
+      ),
     valueAsString: ({ context }) => context.get("value").join(""),
     isValueComplete: ({ context }) => {
       const val = context.get("value");
-      const len = context.get("length");
-      return val.length === len && val.every((char) => !isEmpty(char));
+      return val.length === context.get("length") && val.every((c) => !isEmpty(c));
     },
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
-    isReadOnly: ({ context, computed }) =>
-      computed("formReadOnly") || context.get("readOnly"),
-    isDisabled: ({ context, computed }) =>
-      computed("formDisabled") ||
-      computed("fieldDisabled") ||
-      context.get("disabled"),
-    effectiveSize: ({ context, computed }) =>
-      (context.get("size") ||
-        computed("fieldSize") ||
-        "md") as PinInputContext["size"],
-
+    isReadOnly: ({ prop, computed }) =>
+      Boolean(computed("formReadOnly") || prop("readOnly")),
+    isDisabled: ({ prop, computed }) =>
+      Boolean(
+        computed("formDisabled") ||
+          computed("fieldDisabled") ||
+          prop("disabled"),
+      ),
+    effectiveSize: ({ prop, computed }) =>
+      (prop("size") || computed("fieldSize") || "md") as PinInputSize,
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
   },
@@ -294,15 +222,12 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       isBlurringActiveCell: ({ context, event }) => {
         const currentFocused = context.get("focusedIndex");
         const blurredIdx = (event as any)?.index;
-        if (
+        return !(
           typeof blurredIdx === "number" &&
           blurredIdx !== -1 &&
           currentFocused !== -1 &&
           blurredIdx !== currentFocused
-        ) {
-          return false;
-        }
-        return true;
+        );
       },
     },
 
@@ -313,12 +238,14 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "pin-input",
-            getFormId: () => context.get("form") || prop("form") || "",
-            getName: () => context.get("name") || prop("name") || "",
+            getFormId: () => prop("form") || "",
+            getName: () => prop("name") || "",
             getValue: () => computed("valueAsString"),
             setValue: (rawVal: any) => {
-              const len = context.get("length");
-              context.set("value", normalizePinValue(rawVal, len));
+              context.set(
+                "value",
+                normalizePinValue(rawVal, context.get("length")),
+              );
             },
             resetValue: () => {
               const len = context.get("length");
@@ -332,20 +259,13 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               state.set("idle");
             },
             focus: () => {
-              if (
-                context.get("disabled") ||
-                computed("formDisabled") ||
-                computed("fieldDisabled") ||
-                context.get("readOnly") ||
-                computed("formReadOnly")
-              ) {
-                return;
-              }
-              const currentValues = context.get("value");
-              const firstEmptyIndex = currentValues.findIndex(isEmpty);
-              const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
+              if (!computed("isInteractive")) return;
+              const firstEmptyIndex = context.get("value").findIndex(isEmpty);
               state.set("focused");
-              context.set("focusedIndex", targetIdx);
+              context.set(
+                "focusedIndex",
+                firstEmptyIndex !== -1 ? firstEmptyIndex : 0,
+              );
             },
             getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
@@ -368,9 +288,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         computed,
         prop,
       }) => {
-        if (!computed("isInteractive")) {
-          return;
-        }
+        if (!computed("isInteractive")) return;
         const len = context.get("length");
         const idx =
           typeof (event as any).index === "number" ? (event as any).index : 0;
@@ -381,8 +299,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             ? firstEmptyIndex
             : Math.max(0, Math.min(len - 1, idx));
 
-        const force = Boolean((event as any)?.force);
-        if (idx !== targetIndex || force) {
+        if (idx !== targetIndex || Boolean((event as any)?.force)) {
           context.set("focusedIndex", -1);
           flush(() => {
             state.set("focused");
@@ -393,13 +310,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         }
 
         const valueAsString = computed("valueAsString");
-
-        const formField = refs.get("formField");
-
-        if (formField) {
-          formField.emitFocus(valueAsString);
-        }
-
+        refs.get("formField")?.emitFocus(valueAsString);
         prop("onFocus")?.({
           value: currentValues,
           valueAsString,
@@ -410,11 +321,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       resetFocusedIndex: ({ context, refs, computed, prop }) => {
         context.set("focusedIndex", -1);
         const valueAsString = computed("valueAsString");
-        const formField = refs.get("formField");
-
-        if (formField) {
-          formField.emitBlur(valueAsString);
-        }
+        refs.get("formField")?.emitBlur(valueAsString);
         prop("onBlur")?.({
           value: context.get("value"),
           valueAsString,
@@ -422,37 +329,30 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       },
 
       handleInputChange: ({ context, prop, computed, event, refs }) => {
-        if (!computed("isInteractive")) {
-          return;
-        }
+        if (!computed("isInteractive")) return;
 
         const { index, value: rawVal } = event as any;
         const length = context.get("length");
-        const inputType = context.get("type");
+        const inputType = prop("type") ?? "numeric";
         const currentValues = [...context.get("value")];
 
-        // Ensure array is of correct length
         while (currentValues.length < length) {
           currentValues.push("");
         }
 
-        // Clean out zero-width spaces (\u200B)
         const cleanVal = (typeof rawVal === "string" ? rawVal : "").replace(
           /\u200B/g,
           "",
         );
 
-        // Case 1: Deletion / Backspace (cleanVal is empty)
         if (cleanVal === "") {
           if (currentValues[index] !== "") {
             currentValues[index] = "";
             context.set("value", currentValues);
-            if (index === length - 1) {
-              context.set("focusedIndex", index);
-              return;
-            }
-            const prevIndex = Math.max(0, index - 1);
-            context.set("focusedIndex", prevIndex);
+            context.set(
+              "focusedIndex",
+              index === length - 1 ? index : Math.max(0, index - 1),
+            );
             return;
           }
 
@@ -464,19 +364,19 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         }
 
         if (cleanVal.length > 1) {
+          const curChar = currentValues[index];
           if (
-            currentValues[index] &&
-            cleanVal.includes(currentValues[index]) &&
+            curChar &&
+            cleanVal.includes(curChar) &&
             (cleanVal.length === 2 || index === length - 1)
           ) {
             const newChar =
-              cleanVal.replace(currentValues[index], "").slice(-1) ||
-              cleanVal.slice(-1);
+              cleanVal.replace(curChar, "").slice(-1) || cleanVal.slice(-1);
             if (isValidCharacter(newChar, inputType)) {
               currentValues[index] = newChar;
               context.set("value", currentValues);
               advanceFocusOrBlur(
-                { context, computed, refs },
+                { context, computed, prop, refs },
                 index + 1,
                 length,
               );
@@ -489,10 +389,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             .filter((c: string) => isValidCharacter(c, inputType));
 
           if (validChars.length === 0) {
-            prop("onInvalid")?.({
-              value: cleanVal,
-              index,
-            });
+            prop("onInvalid")?.({ value: cleanVal, index });
             return;
           }
 
@@ -505,33 +402,29 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           }
 
           context.set("value", currentValues);
-          advanceFocusOrBlur({ context, computed, refs }, writeIdx, length);
+          advanceFocusOrBlur({ context, computed, prop, refs }, writeIdx, length);
           return;
         }
 
-        const char = cleanVal;
-        if (!isValidCharacter(char, inputType)) {
-          prop("onInvalid")?.({
-            value: char,
-            index,
-          });
+        if (!isValidCharacter(cleanVal, inputType)) {
+          prop("onInvalid")?.({ value: cleanVal, index });
           return;
         }
 
-        currentValues[index] = char;
+        currentValues[index] = cleanVal;
         context.set("value", currentValues);
-        advanceFocusOrBlur({ context, computed, refs }, index + 1, length);
+        advanceFocusOrBlur({ context, computed, prop, refs }, index + 1, length);
       },
 
       setValue: ({ context, event }) => {
-        const length = context.get("length");
-        const raw = (event as any).value;
-        context.set("value", normalizePinValue(raw, length));
+        context.set(
+          "value",
+          normalizePinValue((event as any).value, context.get("length")),
+        );
       },
 
       clearValue: ({ context }) => {
-        const length = context.get("length");
-        context.set("value", Array(length).fill(""));
+        context.set("value", Array(context.get("length")).fill(""));
         context.set("focusedIndex", 0);
       },
 

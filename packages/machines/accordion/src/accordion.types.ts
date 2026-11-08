@@ -118,16 +118,7 @@ export interface AccordionProps {
 }
 
 export interface AccordionContext {
-  id: string;
   value: string[];
-  multiple: boolean;
-  collapsible: boolean;
-  disabled: boolean;
-  size: AccordionSize;
-  variant: AccordionVariant;
-  items: AccordionItemData[];
-  linkedCount: number;
-  ui: AccordionUI;
 }
 
 export interface AccordionRefs {

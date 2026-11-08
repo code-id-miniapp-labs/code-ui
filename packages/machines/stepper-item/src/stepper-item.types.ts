@@ -52,24 +52,7 @@ export interface StepperItemProps {
     | undefined;
 }
 
-export interface StepperItemContext {
-  stepperId: string;
-  index: number | null;
-  title: string;
-  description: string;
-  icon: string;
-  completedIcon: string;
-  disabled: boolean;
-  completed: boolean | null;
-  status: StepperStatus | "";
-  value: string | number;
-  isLast: boolean | null;
-  orientation: StepperOrientation | "";
-  color: StepperColor | "";
-  size: StepperSize | "";
-  variant: StepperVariant | "";
-  ui: StepperItemUI;
-}
+export interface StepperItemContext {}
 
 export type StepperItemEvent = { type: "TAP" };
 

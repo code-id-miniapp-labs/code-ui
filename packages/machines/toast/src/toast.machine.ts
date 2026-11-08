@@ -4,7 +4,6 @@ import type {
   ToastAction,
   ToastMachine,
   ToastSchema,
-  ToastUI,
 } from "./toast.types";
 import { defaultToastProps } from "./toast.props";
 
@@ -51,12 +50,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     startedAt: undefined,
   }),
 
-  context: ({ prop, bindable }) => ({
-    ui: bindable<ToastUI>(() => ({
-      value: prop("ui"),
-      defaultValue: {},
-    })),
-  }),
+  context: () => ({}),
 
   computed: {
     isOpen: ({ state }) => state.hasTag("open"),

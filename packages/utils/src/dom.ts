@@ -119,64 +119,16 @@ export function queryFields(
   });
 }
 
+import {
+  parseTimeValue,
+  queryAnimationDuration,
+  queryComputedStyle,
+} from "./dom-style";
+
+export { parseTimeValue, queryAnimationDuration, queryComputedStyle };
+
 export function isMiniApp(): boolean {
   return (
     typeof wx !== "undefined" && typeof wx.createSelectorQuery === "function"
   );
-}
-
-export function parseTimeValue(value?: string): number {
-  if (!value || value === "0s" || value === "auto" || value === "none") return 0;
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .reduce((max, part) => {
-      const ms = part.endsWith("ms")
-        ? parseFloat(part)
-        : part.endsWith("s")
-          ? parseFloat(part) * 1000
-          : parseFloat(part) || 0;
-      return Math.max(max, isNaN(ms) ? 0 : ms);
-    }, 0);
-}
-
-export function queryComputedStyle(
-  selector: string,
-  properties: string[],
-  component?: MiniAppComponent,
-): Promise<Record<string, string> | null> {
-  return new Promise((resolve) => {
-    createQuery(component)
-      .select(selector)
-      .fields({ computedStyle: properties } as any)
-      .exec((res) => {
-        const item = Array.isArray(res) ? res[0] : res;
-        resolve((item as Record<string, string> | null) ?? null);
-      });
-  });
-}
-
-export function queryAnimationDuration(
-  selector: string,
-  component?: MiniAppComponent,
-): Promise<number> {
-  return queryComputedStyle(
-    selector,
-    [
-      "animationDuration",
-      "transitionDuration",
-      "animationDelay",
-      "transitionDelay",
-    ],
-    component,
-  ).then((styles) => {
-    if (!styles) return 0;
-    const totalAnim =
-      parseTimeValue(styles.animationDuration) +
-      parseTimeValue(styles.animationDelay);
-    const totalTrans =
-      parseTimeValue(styles.transitionDuration) +
-      parseTimeValue(styles.transitionDelay);
-    return Math.max(totalAnim, totalTrans);
-  });
 }

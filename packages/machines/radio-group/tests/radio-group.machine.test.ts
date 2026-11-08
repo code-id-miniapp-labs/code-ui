@@ -169,7 +169,7 @@ describe("RadioGroup Machine", () => {
         checked: false,
         disabled: true,
       });
-      expect(api.items[2]?.controlProps["aria-disabled"]).toBe("true");
+      expect(api.items[2]?.controlProps["aria-disabled"]).toBe(true);
 
       // API helper methods
       api.setValue("opt1");

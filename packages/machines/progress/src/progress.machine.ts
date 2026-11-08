@@ -8,9 +8,8 @@ import type {
   ProgressType,
 } from "./progress.types";
 import { defaultProgressProps } from "./progress.props";
-import { createCircleDataUrl, resolveColor } from "./progress.utils";
 
-const DEFAULT_STROKE_WIDTHS: Record<string, number> = {
+const STROKE_WIDTHS: Record<string, number> = {
   "2xs": 2,
   xs: 2.5,
   sm: 3,
@@ -56,8 +55,9 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
   },
 
   computed: {
-    isIndeterminate: ({ prop }) => {
-      return prop("indeterminate") ?? false;
+    isIndeterminate: ({ prop, context }) => {
+      const val = context.get("value");
+      return Boolean(prop("indeterminate") || val === null || val === undefined);
     },
 
     percent: ({ context, computed }) => {
@@ -73,116 +73,57 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
 
     isComplete: ({ computed }) => computed("percent") >= 100,
 
-    progressState: ({ computed }) => {
-      if (computed("isIndeterminate")) return "indeterminate";
-      if (computed("isComplete")) return "complete";
-      return "loading";
-    },
+    progressState: ({ computed }) =>
+      computed("isIndeterminate")
+        ? "indeterminate"
+        : computed("isComplete")
+          ? "complete"
+          : "loading",
 
     valueAsString: ({ context, computed, prop }) => {
-      const isIndeterminate = computed("isIndeterminate");
       const percent = computed("percent");
-      const max = context.get("max") ?? 100;
-      const value = context.get("value");
-      const translations = prop("translations");
-
-      if (translations?.value) {
-        return translations.value({ value, max, percent });
+      const fmt = prop("translations")?.value;
+      if (fmt) {
+        return fmt({
+          value: context.get("value"),
+          max: context.get("max") ?? 100,
+          percent,
+        });
       }
-
-      if (isIndeterminate) return "";
-      return `${percent}%`;
-    },
-
-    circleRadius: ({ prop }) => prop("circleRadius") ?? 42,
-
-    circleCircumference: ({ computed }) => {
-      const r = computed("circleRadius");
-      return 2 * Math.PI * r;
-    },
-
-    circleDashOffset: ({ computed }) => {
-      if (computed("isIndeterminate")) return 0;
-      const circumference = computed("circleCircumference");
-      const percent = computed("percent");
-      return circumference - (percent / 100) * circumference;
-    },
-
-    circleDataUrl: ({ computed, prop }) => {
-      const radius = computed("circleRadius");
-      const strokeWidth = prop("strokeWidth") ?? 8;
-      const color = resolveColor(prop("color") ?? "primary");
-      const trackColor = resolveColor(prop("trackColor") ?? "#e5e7eb");
-      const isIndeterminate = computed("isIndeterminate");
-      const percent = computed("percent");
-
-      return createCircleDataUrl(
-        radius,
-        strokeWidth,
-        trackColor,
-        color,
-        percent,
-        isIndeterminate,
-      );
+      return computed("isIndeterminate") ? "" : `${percent}%`;
     },
 
     circleStyle: ({ computed, prop }) => {
-      const isIndeterminate = computed("isIndeterminate");
-      const percent = isIndeterminate
+      const percent = computed("isIndeterminate")
         ? 25
         : Math.max(0, Math.min(100, computed("percent")));
       const color = prop("color");
-      const size = prop("size") ?? "md";
       const strokeWidth =
-        prop("strokeWidth") ?? DEFAULT_STROKE_WIDTHS[size] ?? 4;
+        prop("strokeWidth") ?? STROKE_WIDTHS[prop("size") ?? "md"] ?? 4;
       const trackColor = prop("trackColor");
-      const inverted = prop("inverted");
-
-      const parts: string[] = [
-        `--cui-progress-percent: ${percent}%;`,
-        `--cui-progress-stroke-width: ${strokeWidth}px;`,
-      ];
-      if (trackColor) {
-        parts.push(`--cui-progress-track-color: ${trackColor};`);
-      }
+      let style = `--cui-progress-percent: ${percent}%; --cui-progress-stroke-width: ${strokeWidth}px;`;
+      if (trackColor) style += ` --cui-progress-track-color: ${trackColor};`;
       if (
         typeof color === "string" &&
-        (color.startsWith("#") ||
-          color.startsWith("rgb") ||
-          color.startsWith("hsl") ||
-          color.startsWith("oklch"))
+        /^(#|rgb|hsl|oklch)/.test(color)
       ) {
-        parts.push(`color: ${color};`);
+        style += ` color: ${color};`;
       }
-      if (inverted) {
-        parts.push("transform: scaleX(-1);");
-      }
-      return parts.join(" ");
+      if (prop("inverted")) style += " transform: scaleX(-1);";
+      return style;
     },
   },
 
   on: {
-    SET_VALUE: {
-      actions: ["setValue"],
-    },
-    "VALUE.SET": {
-      actions: ["setValue"],
-    },
-    SET_MIN: {
-      actions: ["setMin"],
-    },
-    SET_MAX: {
-      actions: ["setMax"],
-    },
-    RESET: {
-      actions: ["resetValue"],
-    },
+    SET_VALUE: { actions: ["setValue"] },
+    "VALUE.SET": { actions: ["setValue"] },
+    SET_MIN: { actions: ["setMin"] },
+    SET_MAX: { actions: ["setMax"] },
+    RESET: { actions: ["resetValue"] },
   },
 
   states: {
-    idle: {
-      tags: ["idle"],
-    },
+    idle: { tags: ["idle"] },
   },
 
   implementations: {
@@ -190,22 +131,24 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       setValue: ({ context, event, prop, computed }) => {
         if (event.type !== "SET_VALUE" && event.type !== "VALUE.SET") return;
         context.set("value", event.value);
-        const percent = computed("percent");
-        prop("onValueChange")?.({ value: event.value, percent });
+        prop("onValueChange")?.({
+          value: event.value,
+          percent: computed("percent"),
+        });
       },
       setMin: ({ context, event }) => {
-        if (event.type !== "SET_MIN") return;
-        context.set("min", event.min);
+        if (event.type === "SET_MIN") context.set("min", event.min);
       },
       setMax: ({ context, event }) => {
-        if (event.type !== "SET_MAX") return;
-        context.set("max", event.max);
+        if (event.type === "SET_MAX") context.set("max", event.max);
       },
       resetValue: ({ context, prop, computed }) => {
         const defaultVal = (prop("defaultValue") as number | null) ?? null;
         context.set("value", defaultVal);
-        const percent = computed("percent");
-        prop("onValueChange")?.({ value: defaultVal, percent });
+        prop("onValueChange")?.({
+          value: defaultVal,
+          percent: computed("percent"),
+        });
       },
     },
   },

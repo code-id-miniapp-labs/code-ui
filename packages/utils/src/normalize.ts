@@ -1,33 +1,23 @@
-export const DEFAULT_ALIAS_MAP: Record<string, string[]> = {
-  onClick: ["onTap"],
-  onTap: ["onClick"],
-  onLongPress: ["onLongTap"],
-  onLongTap: ["onLongPress"],
-
-  onChange: ["onValueChange", "onInput"],
-  onValueChange: ["onChange"],
-  onInput: ["onChange"],
-
-  onClose: ["onDismiss"],
-  onDismiss: ["onClose"],
-  onBackdropClick: ["onBackdropTap", "onOverlayClick"],
-  onBackdropTap: ["onBackdropClick"],
-  onOverlayClick: ["onBackdropClick", "onBackdropTap"],
-
-  onConfirm: ["onOk"],
-  onOk: ["onConfirm"],
-
-  onGetphonenumber: ["onGetPhoneNumber"],
-  onGetPhoneNumber: ["onGetphonenumber"],
-  onChooseavatar: ["onChooseAvatar"],
-  onChooseAvatar: ["onChooseavatar"],
-  onOpensetting: ["onOpenSetting"],
-  onOpenSetting: ["onOpensetting"],
-  onLaunchapp: ["onLaunchApp"],
-  onLaunchApp: ["onLaunchapp"],
-  onAgreeprivacyauthorization: ["onAgreePrivacyAuthorization"],
-  onAgreePrivacyAuthorization: ["onAgreeprivacyauthorization"],
-};
+export const DEFAULT_ALIAS_MAP: Record<string, string[]> = /* @__PURE__ */ (() => {
+  const map: Record<string, string[]> = {
+    onChange: ["onValueChange", "onInput"],
+    onValueChange: ["onChange"],
+    onInput: ["onChange"],
+    onBackdropClick: ["onBackdropTap", "onOverlayClick"],
+    onBackdropTap: ["onBackdropClick"],
+    onOverlayClick: ["onBackdropClick", "onBackdropTap"],
+  };
+  for (const pair of "Click:Tap,LongPress:LongTap,Close:Dismiss,Confirm:Ok,Getphonenumber:GetPhoneNumber,Chooseavatar:ChooseAvatar,Opensetting:OpenSetting,Launchapp:LaunchApp,Agreeprivacyauthorization:AgreePrivacyAuthorization".split(
+    ",",
+  )) {
+    const [a, b] = pair.split(":");
+    if (a && b) {
+      map[`on${a}`] = [`on${b}`];
+      map[`on${b}`] = [`on${a}`];
+    }
+  }
+  return map;
+})();
 
 export function normalizeProps<
   T extends Record<string, any> = Record<string, any>,

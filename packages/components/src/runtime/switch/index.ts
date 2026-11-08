@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [switchBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultSwitchProps, {
       className: {
         type: String,

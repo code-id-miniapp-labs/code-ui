@@ -1,9 +1,8 @@
 import type { InputApi, InputService } from "./input.types";
-import { parts } from "./input.anatomy";
 import * as dom from "./input.dom";
 
 export function connectInput(service: InputService): InputApi {
-  const { state, send, context, computed, scope } = service;
+  const { state, send, context, computed, prop, scope } = service;
 
   const currentState = state.get();
   const isFocused = currentState === "focused";
@@ -12,18 +11,23 @@ export function connectInput(service: InputService): InputApi {
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const variant = context.get("variant");
-  const color = context.get("color");
-  const highlight = Boolean(context.get("highlight"));
-  const type = context.get("type");
-  const password = context.get("password");
-  const placeholder = context.get("placeholder");
-  const maxlength = context.get("maxlength");
-  const name = context.get("name") ?? "";
+  const variant = prop("variant") ?? "outline";
+  const color = prop("color") ?? "primary";
+  const highlight = Boolean(prop("highlight"));
+  const type = prop("type") ?? "text";
+  const password = Boolean(prop("password"));
+  const placeholder = prop("placeholder") ?? "";
+  const maxlength = prop("maxlength") ?? 140;
+  const name = prop("name") ?? "";
 
   const isFilled = computed("isFilled");
   const isEmptyVal = computed("isEmpty");
   const isClearable = computed("isClearable");
+
+  const leadingId = dom.getLeadingId(scope);
+  const trailingId = dom.getTrailingId(scope);
+  const clearId = dom.getClearButtonId(scope);
+  const hiddenId = dom.getHiddenInputId(scope);
 
   return {
     state: currentState,
@@ -78,8 +82,7 @@ export function connectInput(service: InputService): InputApi {
     },
 
     handleConfirm(event?: any) {
-      const val = event?.detail?.value ?? value;
-      send({ type: "INPUT.CONFIRM", value: val });
+      send({ type: "INPUT.CONFIRM", value: event?.detail?.value ?? value });
     },
 
     handleClear(_event?: any) {
@@ -88,27 +91,23 @@ export function connectInput(service: InputService): InputApi {
 
     rootProps: {
       id: dom.getRootId(scope),
-      ...parts.root.attrs,
       "data-state": currentState,
-      "data-empty": String(isEmptyVal),
       "data-disabled": String(disabled),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
-      role: "group",
-      "aria-disabled": String(disabled),
-      "aria-invalid": String(invalid),
+      "aria-role": "group",
+      "aria-disabled": disabled,
+      "aria-invalid": invalid,
     },
 
     inputProps: {
       id: dom.getInputId(scope),
-      ...parts.base.attrs,
-      name: name || undefined,
+      ...(name ? { name } : {}),
       "data-state": currentState,
-      "data-empty": String(isEmptyVal),
-      "data-focused": String(isFocused),
       "data-disabled": String(disabled),
       "data-readonly": String(readOnly),
       "data-invalid": String(invalid),
+      "data-focused": String(isFocused),
       value,
       focus: isFocused,
       disabled: disabled || readOnly,
@@ -116,33 +115,29 @@ export function connectInput(service: InputService): InputApi {
       password,
       placeholder,
       maxlength,
-      role: "textbox",
-      "aria-invalid": String(invalid),
+      "aria-role": "textbox",
+      ...(invalid ? { "aria-invalid": true } : {}),
     },
 
     leadingProps: {
-      id: dom.getLeadingId(scope),
-      ...parts.leading.attrs,
+      ...(leadingId ? { id: leadingId } : {}),
       "aria-hidden": "true",
     },
 
     trailingProps: {
-      id: dom.getTrailingId(scope),
-      ...parts.trailing.attrs,
+      ...(trailingId ? { id: trailingId } : {}),
       "aria-hidden": "true",
     },
 
     clearButtonProps: {
-      id: dom.getClearButtonId(scope),
-      ...parts.clear.attrs,
-      role: "button",
+      ...(clearId ? { id: clearId } : {}),
+      "aria-role": "button",
       "aria-label": "Clear input",
     },
 
     hiddenInputProps: {
-      id: dom.getHiddenInputId(scope),
+      ...(hiddenId ? { id: hiddenId } : {}),
       type: "text",
-      tabIndex: -1,
       name: name || undefined,
       value,
       disabled: disabled || readOnly,

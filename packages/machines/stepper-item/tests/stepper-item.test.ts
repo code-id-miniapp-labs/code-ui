@@ -152,8 +152,8 @@ describe("StepperItem Machine", () => {
     item.start();
 
     const api = connectStepperItem(item.service);
-    expect(api.itemProps.id).toBe("cui-step-order-stepper-2");
-    expect(api.triggerProps.id).toBe("cui-step-order-stepper-trigger-2");
+    expect(api.itemProps.id).toBe("st-order-stepper-i-2");
+    expect(api.triggerProps.id).toBe("st-order-stepper-tr-2");
     expect(api.itemProps.id).not.toContain(":");
 
     item.stop();

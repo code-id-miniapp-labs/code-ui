@@ -1,34 +1,28 @@
-import type { Scope } from "@code-ui/core";
+import { itemPartId, optPartId, partId, type Scope } from "@code-ui/core";
 
 export const getRootId = (scope: Scope): string =>
-  scope.ids?.root ?? `checkbox-group:${scope.id ?? "default"}:root`;
+  partId(scope, "cbg", "root", "r");
 
-export const getFieldsetId = (scope: Scope): string =>
-  scope.ids?.fieldset ?? `checkbox-group:${scope.id ?? "default"}:fieldset`;
+export const getFieldsetId = (scope: Scope): string | undefined =>
+  optPartId(scope, "fieldset");
 
 export const getLegendId = (scope: Scope): string =>
-  scope.ids?.legend ?? `checkbox-group:${scope.id ?? "default"}:legend`;
+  partId(scope, "cbg", "legend", "lg");
 
 export const getItemId = (scope: Scope, value: string): string =>
-  scope.ids?.item?.(value) ??
-  `checkbox-group:${scope.id ?? "default"}:item:${value}`;
+  itemPartId(scope, "cbg", "item", value, "i");
 
 export const getItemControlId = (scope: Scope, value: string): string =>
-  scope.ids?.itemControl?.(value) ??
-  `checkbox-group:${scope.id ?? "default"}:control:${value}`;
+  itemPartId(scope, "cbg", "itemControl", value, "c");
 
 export const getItemIndicatorId = (scope: Scope, value: string): string =>
-  scope.ids?.itemIndicator?.(value) ??
-  `checkbox-group:${scope.id ?? "default"}:indicator:${value}`;
+  itemPartId(scope, "cbg", "itemIndicator", value, "ind");
 
 export const getItemLabelId = (scope: Scope, value: string): string =>
-  scope.ids?.itemLabel?.(value) ??
-  `checkbox-group:${scope.id ?? "default"}:label:${value}`;
+  itemPartId(scope, "cbg", "itemLabel", value, "l");
 
 export const getItemDescriptionId = (scope: Scope, value: string): string =>
-  scope.ids?.itemDescription?.(value) ??
-  `checkbox-group:${scope.id ?? "default"}:desc:${value}`;
+  itemPartId(scope, "cbg", "itemDescription", value, "d");
 
-export const getHiddenInputId = (scope: Scope): string =>
-  scope.ids?.hiddenInput ??
-  `checkbox-group:${scope.id ?? "default"}:hidden-input`;
+export const getHiddenInputId = (scope: Scope): string | undefined =>
+  optPartId(scope, "hiddenInput");

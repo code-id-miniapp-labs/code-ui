@@ -36,7 +36,7 @@ describe("Textarea Machine", () => {
       expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.textareaProps["data-focused"]).toBe("false");
       expect(api.inputProps["data-focused"]).toBe("false");
-      expect(api.textareaProps["aria-multiline"]).toBe("true");
+      expect(api.textareaProps["aria-multiline"]).toBe(true);
 
       machine.stop();
     });

@@ -70,16 +70,8 @@ export interface SliderProps {
 }
 
 export interface SliderContext {
-  disabled: boolean;
-  readOnly: boolean;
   invalid: boolean;
-  min: number;
-  max: number;
-  step: number;
   value: number[];
-  orientation: SliderOrientation;
-  inverted: boolean;
-  minStepsBetweenThumbs: number;
   activeThumbIndex: number;
 }
 

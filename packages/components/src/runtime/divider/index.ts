@@ -7,11 +7,6 @@ const dividerTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
-    options: {
-      virtualHost: true,
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-    },
     properties: {
       ui: {
         type: Object,

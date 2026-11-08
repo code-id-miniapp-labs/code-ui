@@ -22,37 +22,29 @@ export default function qrCodeTheme(options: ThemeOptions = {}) {
             color,
             {
               root: `text-${color}`,
-              pattern: `fill-${color}`,
             },
           ]),
         ),
         neutral: {
           root: "text-neutral-900",
-          pattern: "fill-neutral-900",
         },
         primary: {
           root: "text-primary",
-          pattern: "fill-primary",
         },
         secondary: {
           root: "text-secondary",
-          pattern: "fill-secondary",
         },
         success: {
           root: "text-success",
-          pattern: "fill-success",
         },
         info: {
           root: "text-info",
-          pattern: "fill-info",
         },
         warning: {
           root: "text-warning",
-          pattern: "fill-warning",
         },
         danger: {
           root: "text-danger",
-          pattern: "fill-danger",
         },
       },
       size: {

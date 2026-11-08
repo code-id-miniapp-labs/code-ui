@@ -20,12 +20,6 @@ Component(
   createComponentOptions({
     behaviors: [radioBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultRadioProps, {
       className: {
         type: String,

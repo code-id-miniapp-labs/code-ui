@@ -39,12 +39,6 @@ Component(
     behaviors: [cuiAppParentBehavior, computedBehavior],
     relations,
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: {
       safeArea: {
         type: String,

@@ -22,32 +22,11 @@ export const hasProp = <T extends string>(
 ): obj is Record<T, unknown> =>
   Boolean(obj) && Object.prototype.hasOwnProperty.call(obj, prop);
 
-const baseGetTag = (v: unknown) => Object.prototype.toString.call(v);
-const fnToString = Function.prototype.toString;
-const objectCtorString = fnToString.call(Object);
-
 export const isPlainObject = (v: unknown): v is Record<string, unknown> => {
-  if (
-    !isObjectLike(v) ||
-    baseGetTag(v) !== "[object Object]" ||
-    isFrameworkElement(v)
-  )
-    return false;
+  if (typeof v !== "object" || v === null) return false;
   const proto = Object.getPrototypeOf(v);
-  if (proto === null) return true;
-  const Ctor = hasProp(proto, "constructor") && proto.constructor;
-  return (
-    typeof Ctor === "function" &&
-    Ctor instanceof Ctor &&
-    fnToString.call(Ctor) === objectCtorString
-  );
+  return proto === null || proto === Object.prototype;
 };
-
-const isReactElement = (x: unknown) =>
-  typeof x === "object" && x !== null && "$$typeof" in x && "props" in x;
-const isVueElement = (x: unknown) =>
-  typeof x === "object" && x !== null && "__v_isVNode" in x;
-const isFrameworkElement = (x: unknown) => isReactElement(x) || isVueElement(x);
 
 export const isEmpty = (v: unknown): boolean => {
   if (v === null || v === undefined) return true;

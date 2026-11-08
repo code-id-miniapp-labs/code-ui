@@ -9,60 +9,77 @@ import type {
   AccordionApi,
   AccordionItemSnapshot,
   AccordionService,
+  AccordionSize,
+  AccordionVariant,
 } from "./accordion.types";
 
 export function connectAccordion(service: AccordionService): AccordionApi {
-  const { context, send, scope } = service;
+  const { context, prop, send, scope } = service;
 
   const value = context.get("value") ?? [];
-  const multiple = Boolean(context.get("multiple"));
-  const collapsible = context.get("collapsible") !== false;
-  const disabled = Boolean(context.get("disabled"));
-  const size = context.get("size") || "md";
-  const variant = context.get("variant") || "outline";
-  const rawItems = context.get("items") ?? [];
+  const multiple = Boolean(prop("multiple"));
+  const collapsible = prop("collapsible") !== false;
+  const disabled = Boolean(prop("disabled"));
+  const size = (prop("size") || "md") as AccordionSize;
+  const variant = (prop("variant") || "outline") as AccordionVariant;
+  const rawItems = prop("items") ?? [];
   const hasItems = Array.isArray(rawItems) && rawItems.length > 0;
 
-  const isOpen = (val: string | number): boolean => {
-    return value.includes(String(val));
-  };
+  const isOpen = (val: string | number): boolean => value.includes(String(val));
 
   const getItemState = (val: string | number) => {
     const valStr = String(val);
-    const item = Array.isArray(rawItems)
+    const item = hasItems
       ? rawItems.find((it, idx) => String(it.value ?? idx) === valStr)
       : undefined;
-    const isItemDisabled = disabled || Boolean(item?.disabled);
     return {
       isOpen: value.includes(valStr),
-      isDisabled: isItemDisabled,
+      isDisabled: disabled || Boolean(item?.disabled),
     };
   };
 
   const rootProps: Record<string, any> = {
     id: getRootId(scope),
-    "data-scope": "accordion",
-    "data-part": "root",
-    "data-disabled": disabled,
-    "data-size": size,
-    "data-variant": variant,
+    "data-disabled": String(disabled),
   };
+
+  const buildItemProps = (val: string, open: boolean, itemDisabled: boolean) => ({
+    id: getItemId(scope, val),
+    "data-value": val,
+    "data-state": open ? "open" : "closed",
+    "data-disabled": String(itemDisabled),
+  });
+
+  const buildTriggerProps = (
+    val: string,
+    open: boolean,
+    itemDisabled: boolean,
+  ) => ({
+    id: getTriggerId(scope, val),
+    "aria-role": "button",
+    "aria-disabled": itemDisabled,
+    "aria-expanded": open,
+    "data-value": val,
+    "data-state": open ? "open" : "closed",
+    "data-disabled": String(itemDisabled),
+  });
+
+  const buildContentProps = (val: string, open: boolean) => ({
+    id: getContentId(scope, val),
+    "aria-role": "region",
+    "aria-labelledby": getTriggerId(scope, val),
+    hidden: !open,
+    "data-value": val,
+    "data-state": open ? "open" : "closed",
+  });
 
   const getItemProps = (props: {
     value: string | number;
     index?: number;
   }): Record<string, any> => {
     const val = String(props.value);
-    const open = isOpen(val);
-    const state = getItemState(val);
-    return {
-      id: getItemId(scope, val),
-      "data-scope": "accordion",
-      "data-part": "item",
-      "data-value": val,
-      "data-state": open ? "open" : "closed",
-      "data-disabled": state.isDisabled,
-    };
+    const st = getItemState(val);
+    return buildItemProps(val, st.isOpen, st.isDisabled);
   };
 
   const getTriggerProps = (props: {
@@ -70,19 +87,8 @@ export function connectAccordion(service: AccordionService): AccordionApi {
     index?: number;
   }): Record<string, any> => {
     const val = String(props.value);
-    const open = isOpen(val);
-    const state = getItemState(val);
-    return {
-      id: getTriggerId(scope, val),
-      role: "button",
-      "aria-expanded": open,
-      "aria-disabled": state.isDisabled,
-      "data-scope": "accordion",
-      "data-part": "trigger",
-      "data-value": val,
-      "data-state": open ? "open" : "closed",
-      "data-disabled": state.isDisabled,
-    };
+    const st = getItemState(val);
+    return buildTriggerProps(val, st.isOpen, st.isDisabled);
   };
 
   const getContentProps = (props: {
@@ -90,17 +96,7 @@ export function connectAccordion(service: AccordionService): AccordionApi {
     index?: number;
   }): Record<string, any> => {
     const val = String(props.value);
-    const open = isOpen(val);
-    return {
-      id: getContentId(scope, val),
-      role: "region",
-      "aria-labelledby": getTriggerId(scope, val),
-      hidden: !open,
-      "data-scope": "accordion",
-      "data-part": "content",
-      "data-value": val,
-      "data-state": open ? "open" : "closed",
-    };
+    return buildContentProps(val, isOpen(val));
   };
 
   const computedItems: AccordionItemSnapshot[] = hasItems
@@ -108,6 +104,8 @@ export function connectAccordion(service: AccordionService): AccordionApi {
         const valStr = String(item.value ?? index);
         const open = isOpen(valStr);
         const isItemDisabled = disabled || Boolean(item.disabled);
+        const stateStr = open ? "open" : "closed";
+        const lbId = getLabelId(scope, valStr);
 
         return {
           index,
@@ -120,49 +118,12 @@ export function connectAccordion(service: AccordionService): AccordionApi {
           isOpen: open,
           isDisabled: isItemDisabled,
           ui: item.ui,
-          itemProps: {
-            id: getItemId(scope, valStr),
-            "data-scope": "accordion",
-            "data-part": "item",
-            "data-value": valStr,
-            "data-state": open ? "open" : "closed",
-            "data-disabled": isItemDisabled,
-          },
-          triggerProps: {
-            id: getTriggerId(scope, valStr),
-            role: "button",
-            "aria-expanded": open,
-            "aria-disabled": isItemDisabled,
-            "data-scope": "accordion",
-            "data-part": "trigger",
-            "data-value": valStr,
-            "data-state": open ? "open" : "closed",
-            "data-disabled": isItemDisabled,
-          },
-          contentProps: {
-            id: getContentId(scope, valStr),
-            role: "region",
-            "aria-labelledby": getTriggerId(scope, valStr),
-            hidden: !open,
-            "data-scope": "accordion",
-            "data-part": "content",
-            "data-value": valStr,
-            "data-state": open ? "open" : "closed",
-          },
-          labelProps: {
-            id: getLabelId(scope, valStr),
-            "data-scope": "accordion",
-            "data-part": "label",
-          },
-          trailingIconProps: {
-            "data-scope": "accordion",
-            "data-part": "trailing-icon",
-            "data-state": open ? "open" : "closed",
-          },
-          leadingIconProps: {
-            "data-scope": "accordion",
-            "data-part": "leading-icon",
-          },
+          itemProps: buildItemProps(valStr, open, isItemDisabled),
+          triggerProps: buildTriggerProps(valStr, open, isItemDisabled),
+          contentProps: buildContentProps(valStr, open),
+          labelProps: lbId ? { id: lbId } : {},
+          trailingIconProps: { "data-state": stateStr },
+          leadingIconProps: {},
         };
       })
     : [];
@@ -176,34 +137,24 @@ export function connectAccordion(service: AccordionService): AccordionApi {
     variant,
     hasItems,
     items: computedItems,
-    setValue: (val) => {
-      send({ type: "VALUE.SET", value: val });
-    },
-    toggle: (val) => {
-      send({ type: "VALUE.TOGGLE", value: String(val) });
-    },
+    setValue: (val) => send({ type: "VALUE.SET", value: val }),
+    toggle: (val) => send({ type: "VALUE.TOGGLE", value: String(val) }),
     expand: (val) => {
       const targets = Array.isArray(val) ? val.map(String) : [String(val)];
-      const current = [...value];
       const next = multiple
-        ? Array.from(new Set([...current, ...targets]))
+        ? Array.from(new Set([...value, ...targets]))
         : [targets[0] ?? ""];
       send({ type: "VALUE.SET", value: next });
     },
     collapse: (val) => {
       const targets = Array.isArray(val) ? val.map(String) : [String(val)];
       const next = value.filter((v) => !targets.includes(v));
-      if (!collapsible && next.length === 0) {
-        return;
-      }
+      if (!collapsible && next.length === 0) return;
       send({ type: "VALUE.SET", value: next });
     },
-    expandAll: () => {
-      send({ type: "EXPAND_ALL" });
-    },
+    expandAll: () => send({ type: "EXPAND_ALL" }),
     collapseAll: () => {
-      if (!collapsible) return;
-      send({ type: "COLLAPSE_ALL" });
+      if (collapsible) send({ type: "COLLAPSE_ALL" });
     },
     isOpen,
     getItemState,

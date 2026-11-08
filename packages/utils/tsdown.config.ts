@@ -2,7 +2,8 @@ import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: ["src/*.ts"],
+  unbundle: true,
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: false,

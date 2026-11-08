@@ -77,24 +77,8 @@ export interface AccordionItemProps {
 }
 
 export interface AccordionItemContext {
-  id: string;
-  value: string | number;
-  label: string;
-  description: string;
-  content: string;
-  icon: string;
-  trailingIcon: string;
-  disabled: boolean;
   open: boolean;
-  size: AccordionSize | "";
-  variant: AccordionVariant | "";
-  collapsible: boolean;
   contentHeight: number;
-
-  accordionId: string;
-  groupIndex: number;
-
-  ui: AccordionItemUI;
 }
 
 export interface AccordionItemRefs {}

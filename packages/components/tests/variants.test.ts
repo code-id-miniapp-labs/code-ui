@@ -38,8 +38,8 @@ const progressTheme = tv(createProgressTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
-  resolveSlots,
-} from "../src/utils/ui";
+} from "../src/utils/theme-resolve";
+import { resolveSlots } from "../src/utils/ui";
 
 describe("escapeClass", () => {
   it("leaves safe classes untouched", () => {
@@ -672,9 +672,7 @@ describe("radioGroupTheme resolution", () => {
     const slots = resolveSlots(radioGroupTheme() as any);
     expect(slots.root).toContain("inline-flex flex-col");
     expect(slots.fieldset).toContain("flex flex-col gap-2");
-    expect(slots.item).toContain("inline-flex items-start");
-    expect(slots.base).toContain("rounded-full");
-    expect(slots.indicator).toContain("rounded-full");
+    expect(slots.legend).toContain("font-medium");
   });
 
   it("resolves horizontal orientation", () => {
@@ -684,24 +682,14 @@ describe("radioGroupTheme resolution", () => {
     expect(slots.fieldset).toContain("flex-row flex-wrap gap-4");
   });
 
-  it("resolves checked compound variant with color", () => {
-    const slots = resolveSlots(
-      radioGroupTheme({ color: "primary", checked: true }) as any,
-    );
-    expect(slots.base).toContain("border-primary");
-    expect(slots.indicator).toContain("bg-primary");
+  it("resolves size on legend", () => {
+    const slots = resolveSlots(radioGroupTheme({ size: "lg" }) as any);
+    expect(slots.legend).toContain("text-base");
   });
 
-  it("resolves invalid styling", () => {
-    const slots = resolveSlots(radioGroupTheme({ invalid: true }) as any);
-    expect(slots.base).toContain("border-danger");
-    expect(slots.base).toContain("ring-danger");
-  });
-
-  it("resolves disabled state", () => {
-    const slots = resolveSlots(radioGroupTheme({ disabled: true }) as any);
-    expect(slots.item).toContain("opacity-50 cursor-not-allowed");
-    expect(slots.base).toContain("cursor-not-allowed");
+  it("resolves required state", () => {
+    const slots = resolveSlots(radioGroupTheme({ required: true }) as any);
+    expect(slots.legend).toContain("after_ctext-danger");
   });
 });
 
@@ -792,7 +780,6 @@ describe("checkboxGroupTheme resolution", () => {
     expect(slots.root).toContain("relative");
     expect(slots.fieldset).toContain("flex-col");
     expect(slots.legend).toContain("font-medium");
-    expect(slots.base).toContain("rounded");
   });
 
   it("resolves horizontal orientation", () => {
@@ -802,20 +789,18 @@ describe("checkboxGroupTheme resolution", () => {
     expect(slots.fieldset).toContain("flex-row");
   });
 
-  it("resolves card variant and size", () => {
+  it("resolves size on legend", () => {
     const slots = resolveSlots(
-      checkboxGroupTheme({ variant: "card", size: "lg" }) as any,
+      checkboxGroupTheme({ size: "lg" }) as any,
     );
-    expect(slots.item).toContain("rounded-xl");
-    expect(slots.base).toContain("w-5");
+    expect(slots.legend).toContain("text-base");
   });
 
-  it("resolves required and invalid states", () => {
+  it("resolves required state", () => {
     const slots = resolveSlots(
-      checkboxGroupTheme({ required: true, invalid: true }) as any,
+      checkboxGroupTheme({ required: true }) as any,
     );
     expect(slots.legend).toContain("after_ctext-danger");
-    expect(slots.base).toContain("border-danger");
   });
 });
 

@@ -69,7 +69,6 @@ export type DrawerEvent =
 
 export interface DrawerContext {
   keyboardHeight: number;
-  ui: DrawerUI;
 }
 
 export interface DrawerComputed {

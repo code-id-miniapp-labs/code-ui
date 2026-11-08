@@ -8,17 +8,17 @@ import type { MachinePlugin } from "./plugin";
 const instanceIds = new WeakMap<object, string>();
 let instanceCounter = 0;
 
-function getComponentId(instance: object, explicitId?: string): string {
+export function getComponentId(instance: object, explicitId?: string): string {
   if (explicitId) return explicitId;
   let id = instanceIds.get(instance);
   if (!id) {
-    id = `cui-${++instanceCounter}`;
+    id = `c${(++instanceCounter).toString(36)}`;
     instanceIds.set(instance, id);
   }
   return id;
 }
 
-function cleanupComponentId(instance: object): void {
+export function cleanupComponentId(instance: object): void {
   instanceIds.delete(instance);
 }
 
@@ -66,47 +66,26 @@ export function createProperties<T extends Record<string, any>>(
   extraProps?: WechatMiniprogram.Component.PropertyOption,
 ): WechatMiniprogram.Component.PropertyOption {
   const properties: Record<string, any> = {};
-  for (const [propKey, val] of Object.entries(defaultProps)) {
-    if (val === undefined) continue;
-
-    if (typeof val === "boolean") {
-      properties[propKey] = {
-        type: Boolean,
-        value: val,
-      };
-    } else if (typeof val === "number") {
-      properties[propKey] = {
-        type: Number,
-        value: val,
-      };
-    } else if (typeof val === "string") {
-      properties[propKey] = {
-        type: String,
-        value: val,
-      };
-    } else if (Array.isArray(val)) {
-      properties[propKey] = {
-        type: Array,
-        value: val,
-      };
-    } else if (isObject(val)) {
-      properties[propKey] = {
-        type: Object,
-        value: val,
-      };
-    } else {
-      properties[propKey] = {
-        type: null,
-        value: val,
-      };
-    }
+  for (const [propKey, value] of Object.entries(defaultProps)) {
+    if (value === undefined) continue;
+    const t = typeof value;
+    properties[propKey] = {
+      type:
+        t === "boolean"
+          ? Boolean
+          : t === "number"
+            ? Number
+            : t === "string"
+              ? String
+              : Array.isArray(value)
+                ? Array
+                : isObject(value)
+                  ? Object
+                  : null,
+      value,
+    };
   }
-
-  if (extraProps) {
-    Object.assign(properties, extraProps);
-  }
-
-  return properties;
+  return extraProps ? Object.assign(properties, extraProps) : properties;
 }
 
 /**

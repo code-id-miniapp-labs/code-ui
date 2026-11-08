@@ -7,6 +7,10 @@ import {
 
 export default function toastTheme(options: ThemeOptions = {}) {
   const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const semanticColors = (colors as readonly string[]).filter(
+    (c) => c !== "neutral",
+  );
+  const hasNeutral = (colors as readonly string[]).includes("neutral");
 
   return defineTheme({
     slots: {
@@ -42,10 +46,6 @@ export default function toastTheme(options: ThemeOptions = {}) {
           title: "text-sm font-medium text-center text-white leading-snug",
           description: "text-xs text-white/85 text-center mt-1",
           icon: "w-9 h-9 mb-1.5 text-white shrink-0",
-          actions: "hidden",
-          action: "hidden",
-          closeTrigger: "hidden",
-          progress: "hidden",
         },
       },
       color: createColorVariants(colors),
@@ -123,145 +123,111 @@ export default function toastTheme(options: ThemeOptions = {}) {
         },
       },
 
-      // 1. Outline (Web Default Style):
-      // Clean elevated white card with neutral border and semantic colored icon
-      ...(colors as readonly string[]).map((color) => ({
+      // 1. Outline (Web Default Style)
+      ...semanticColors.map((color) => ({
         color: color as (typeof colors)[number],
         variant: "outline" as const,
         mode: "default" as const,
         class: {
-          root: "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white shadow-lg",
-          title: "text-neutral-900 dark:text-white",
-          description: "text-neutral-500 dark:text-neutral-400",
-          closeTrigger:
-            "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
-          icon:
-            color === "neutral"
-              ? "text-neutral-900 dark:text-white"
-              : `text-${color}`,
+          icon: `text-${color}`,
         },
       })),
-      {
-        color: "error" as any,
-        variant: "outline" as const,
-        mode: "default" as const,
-        class: {
-          root: "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white shadow-lg",
-          title: "text-neutral-900 dark:text-white",
-          description: "text-neutral-500 dark:text-neutral-400",
-          closeTrigger:
-            "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300",
-          icon: "text-danger",
-        },
-      },
+      ...(hasNeutral
+        ? [
+            {
+              color: "neutral" as (typeof colors)[number],
+              variant: "outline" as const,
+              mode: "default" as const,
+              class: {
+                icon: "text-neutral-900 dark:text-white",
+              },
+            },
+          ]
+        : []),
 
-      ...(colors as readonly string[]).map((color) => ({
+      // 2. Solid
+      ...semanticColors.map((color) => ({
         color: color as (typeof colors)[number],
         variant: "solid" as const,
         mode: "default" as const,
         class: {
-          root:
-            color === "neutral"
-              ? "bg-neutral-900 text-white border-neutral-800 dark:bg-neutral-800 dark:border-neutral-700"
-              : `bg-${color} border-transparent text-white`,
-          title: "text-white",
-          description: "text-white/85",
-          icon: "text-white",
-          closeTrigger: "text-white/70 hover:text-white",
+          root: `bg-${color} border-transparent text-white`,
         },
       })),
-      {
-        color: "error" as any,
-        variant: "solid" as const,
-        mode: "default" as const,
-        class: {
-          root: "bg-danger border-transparent text-white",
-          title: "text-white",
-          description: "text-white/85",
-          icon: "text-white",
-          closeTrigger: "text-white/70 hover:text-white",
-        },
-      },
+      ...(hasNeutral
+        ? [
+            {
+              color: "neutral" as (typeof colors)[number],
+              variant: "solid" as const,
+              mode: "default" as const,
+              class: {
+                root: "bg-neutral-900 text-white border-neutral-800 dark:bg-neutral-800 dark:border-neutral-700",
+              },
+            },
+          ]
+        : []),
 
-      ...(colors as readonly string[]).map((color) => ({
+      // 3. Soft
+      ...semanticColors.map((color) => ({
         color: color as (typeof colors)[number],
         variant: "soft" as const,
         mode: "default" as const,
         class: {
-          root:
-            color === "neutral"
-              ? "bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-900 dark:text-white"
-              : `bg-${color}/10 border-transparent text-${color}`,
-          title:
-            color === "neutral"
-              ? "text-neutral-900 dark:text-white"
-              : `text-${color}`,
-          description:
-            color === "neutral"
-              ? "text-neutral-600 dark:text-neutral-300"
-              : `text-${color}/80`,
-          icon:
-            color === "neutral"
-              ? "text-neutral-700 dark:text-neutral-300"
-              : `text-${color}`,
-          closeTrigger:
-            color === "neutral"
-              ? "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white"
-              : `text-${color}/70 hover:text-${color}`,
+          root: `bg-${color}/10 border-transparent text-${color}`,
+          title: `text-${color}`,
+          description: `text-${color}/80`,
+          icon: `text-${color}`,
+          closeTrigger: `text-${color}/70 hover:text-${color}`,
         },
       })),
-      {
-        color: "error" as any,
-        variant: "soft" as const,
-        mode: "default" as const,
-        class: {
-          root: "bg-danger/10 border-transparent text-danger",
-          title: "text-danger",
-          description: "text-danger/80",
-          icon: "text-danger",
-          closeTrigger: "text-danger/70 hover:text-danger",
-        },
-      },
+      ...(hasNeutral
+        ? [
+            {
+              color: "neutral" as (typeof colors)[number],
+              variant: "soft" as const,
+              mode: "default" as const,
+              class: {
+                root: "bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-900 dark:text-white",
+                title: "text-neutral-900 dark:text-white",
+                description: "text-neutral-600 dark:text-neutral-300",
+                icon: "text-neutral-700 dark:text-neutral-300",
+                closeTrigger:
+                  "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
+              },
+            },
+          ]
+        : []),
 
-      ...(colors as readonly string[]).map((color) => ({
+      // 4. Subtle
+      ...semanticColors.map((color) => ({
         color: color as (typeof colors)[number],
         variant: "subtle" as const,
         mode: "default" as const,
         class: {
-          root:
-            color === "neutral"
-              ? "bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white"
-              : `bg-${color}/10 border-${color}/20 text-${color}`,
-          title:
-            color === "neutral"
-              ? "text-neutral-900 dark:text-white"
-              : `text-${color}`,
-          description:
-            color === "neutral"
-              ? "text-neutral-600 dark:text-neutral-300"
-              : `text-${color}/80`,
-          icon:
-            color === "neutral"
-              ? "text-neutral-700 dark:text-neutral-300"
-              : `text-${color}`,
-          closeTrigger:
-            color === "neutral"
-              ? "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white"
-              : `text-${color}/70 hover:text-${color}`,
+          root: `bg-${color}/10 border-${color}/20 text-${color}`,
+          title: `text-${color}`,
+          description: `text-${color}/80`,
+          icon: `text-${color}`,
+          closeTrigger: `text-${color}/70 hover:text-${color}`,
         },
       })),
-      {
-        color: "error" as any,
-        variant: "subtle" as const,
-        mode: "default" as const,
-        class: {
-          root: "bg-danger/10 border-danger/20 text-danger",
-          title: "text-danger",
-          description: "text-danger/80",
-          icon: "text-danger",
-          closeTrigger: "text-danger/70 hover:text-danger",
-        },
-      },
+      ...(hasNeutral
+        ? [
+            {
+              color: "neutral" as (typeof colors)[number],
+              variant: "subtle" as const,
+              mode: "default" as const,
+              class: {
+                root: "bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white",
+                title: "text-neutral-900 dark:text-white",
+                description: "text-neutral-600 dark:text-neutral-300",
+                icon: "text-neutral-700 dark:text-neutral-300",
+                closeTrigger:
+                  "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
+              },
+            },
+          ]
+        : []),
     ],
     defaultVariants: {
       mode: "default",

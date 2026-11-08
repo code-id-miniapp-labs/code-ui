@@ -27,12 +27,6 @@ Component(
   createComponentOptions({
     behaviors: [pullDownRefreshBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultPullDownRefreshProps, {
       className: {
         type: String,

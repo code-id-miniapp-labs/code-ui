@@ -52,48 +52,27 @@ export interface ProgressTranslations {
 }
 
 export interface ProgressProps {
-  /** The unique id of the component */
   id?: string | undefined;
-  /** Sub-element ids */
   ids?: Partial<Record<ProgressAnatomyPart, string>> | undefined;
-  /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for progress anatomy parts */
   ui?: ProgressUI | undefined;
-  /** The current numeric progress value, or null for indeterminate mode */
   value?: number | null | undefined;
-  /** Initial progress value when uncontrolled */
   defaultValue?: number | null | undefined;
-  /** The minimum allowed value */
   min?: number | undefined;
-  /** The maximum allowed value */
   max?: number | undefined;
-  /** Orientation of the progress bar ("horizontal" | "vertical") */
   orientation?: ProgressOrientation | undefined;
-  /** Visual type of progress bar ("linear" | "circular") */
   type?: ProgressType | undefined;
-  /** Size variant */
   size?: ProgressSize | undefined;
-  /** Color theme of the progress range indicator */
   color?: ProgressColor | undefined;
-  /** Background track color for circular progress */
   trackColor?: string | undefined;
-  /** Whether the progress bar has striped pattern */
   striped?: boolean | undefined;
-  /** Whether stripes or progress bar are animated */
   animated?: boolean | undefined;
-  /** Indeterminate animation style ("carousel" | "carousel-inverse" | "swing" | "elastic") */
   animation?: ProgressAnimation | undefined;
-  /** Whether progress is inverted (fills right-to-left or top-to-bottom) */
   inverted?: boolean | undefined;
-  /** Circular progress circle radius (viewBox 0 0 100 100) */
   circleRadius?: number | undefined;
-  /** Circular progress stroke width */
   strokeWidth?: number | undefined;
-  /** Localized text / formatting callbacks */
   translations?: ProgressTranslations | undefined;
   indeterminate?: boolean | undefined;
-  /** Callback fired when progress value changes */
   onValueChange?: ((details: ProgressValueChangeDetails) => void) | undefined;
 }
 
@@ -118,10 +97,6 @@ export interface ProgressComputed {
   isComplete: boolean;
   progressState: ProgressStatus;
   valueAsString: string;
-  circleRadius: number;
-  circleCircumference: number;
-  circleDashOffset: number;
-  circleDataUrl: string;
   circleStyle: string;
 }
 
@@ -145,66 +120,29 @@ export type ProgressService = Service<ProgressSchema>;
 export type ProgressParams = Params<ProgressSchema>;
 
 export interface ProgressApi {
-  /** Current machine state ('idle') */
   state: ProgressState;
-  /** Current numeric value (or null if indeterminate) */
+  progressState: ProgressStatus;
   value: number | null;
-  /** Minimum progress value */
   min: number;
-  /** Maximum progress value */
   max: number;
-  /** Percentage representation (0 to 100, or -1 when indeterminate) */
   percent: number;
-  /** Whether the progress is in indeterminate state */
   isIndeterminate: boolean;
-  /** Whether the progress has reached maximum value */
   isComplete: boolean;
-  /** Formatted string representation of the current value */
   valueAsString: string;
-  /** Progress orientation */
   orientation: ProgressOrientation;
-  /** Visual type (linear or circular) */
   type: ProgressType;
-  /** Size variant */
-  size: ProgressSize;
-  /** Color theme */
-  color: ProgressColor;
-  /** Whether progress has striped pattern */
-  striped: boolean;
-  /** Whether progress is animated */
-  animated: boolean;
-  /** Whether progress is inverted */
-  inverted: boolean;
-  /** SVG Data URL for circular progress image */
-  circleDataUrl: string;
-  /** Pure CSS circular progress style */
   circleStyle: string;
 
-  /** Set the progress value */
   setValue(value: number | null): void;
-  /** Jump value to min */
   setToMin(): void;
-  /** Jump value to max */
   setToMax(): void;
-  /** Reset value to defaultValue or null */
   reset(): void;
 
-  /** Root element props */
   rootProps: Record<string, any>;
-  /** Label element props */
   labelProps: Record<string, any>;
-  /** Track element props */
   trackProps: Record<string, any>;
-  /** Range indicator props */
   rangeProps: Record<string, any>;
-  /** Value text element props */
   valueTextProps: Record<string, any>;
-  /** SVG view container props */
   viewProps: Record<string, any>;
-  /** Circular SVG root props */
   circleProps: Record<string, any>;
-  /** Circular track background circle props */
-  circleTrackProps: Record<string, any>;
-  /** Circular range indicator circle props */
-  circleRangeProps: Record<string, any>;
 }

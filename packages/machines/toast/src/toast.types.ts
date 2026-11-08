@@ -102,9 +102,7 @@ export type ToastEvent =
   | { type: "CONTROLLED.CLOSE" }
   | { type: "TRIGGER_ACTION"; action: ToastAction; index: number };
 
-export interface ToastContext {
-  ui: ToastUI;
-}
+export interface ToastContext {}
 
 export interface ToastComputed {
   isOpen: boolean;

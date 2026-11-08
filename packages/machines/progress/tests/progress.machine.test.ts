@@ -27,7 +27,6 @@ describe("Progress Machine", () => {
       expect(api.orientation).toBe("horizontal");
       expect(api.type).toBe("linear");
 
-      // Accessibility attrs
       expect(api.rootProps["aria-valuenow"]).toBeUndefined();
       expect(api.rootProps["data-state"]).toBe("indeterminate");
       expect(api.rangeProps.style).toBe("");
@@ -105,75 +104,39 @@ describe("Progress Machine", () => {
   });
 
   describe("Circular Progress Computations", () => {
-    it("calculates SVG circle dimensions and stroke offsets accurately", () => {
+    it("generates CSS variables in circleStyle for pure CSS circular progress", () => {
       const machine = new MiniappMachine(progressMachine, {
-        value: 50,
+        value: 60,
         type: "circular",
-        circleRadius: 40,
+        color: "primary",
         strokeWidth: 6,
       });
       machine.start();
 
       const api = connectProgress(machine.service);
       expect(api.type).toBe("circular");
-
-      const expectedCircumference = 2 * Math.PI * 40;
-      const expectedOffset = expectedCircumference * 0.5;
-
-      expect(api.circleTrackProps.r).toBe(40);
-      expect(api.circleTrackProps.strokeWidth).toBe(6);
-      expect(api.circleRangeProps.strokeDasharray).toBe(
-        `${expectedCircumference} ${expectedCircumference}`,
-      );
-      expect(api.circleRangeProps.strokeDashoffset).toBeCloseTo(expectedOffset);
-      expect(api.circleRangeProps.transform).toBe("rotate(-90 50 50)");
+      expect(api.circleStyle).toContain("--cui-progress-percent: 60%;");
+      expect(api.circleStyle).toContain("--cui-progress-stroke-width: 6px;");
+      expect(api.circleProps.style).toContain("--cui-progress-percent: 60%;");
 
       machine.stop();
     });
 
-    it("omits strokeDashoffset in indeterminate circular progress", () => {
+    it("uses 25% arc in indeterminate circular progress", () => {
       const machine = new MiniappMachine(progressMachine, {
         type: "circular",
+        trackColor: "#eee",
+        color: "#16a34a",
+        inverted: true,
       });
       machine.start();
 
       const api = connectProgress(machine.service);
       expect(api.isIndeterminate).toBe(true);
-      expect(api.circleRangeProps.strokeDashoffset).toBeUndefined();
-      expect(api.circleDataUrl).toContain("data:image/svg+xml");
-
-      machine.stop();
-    });
-
-    it("generates SVG circleDataUrl for circular progress in determinate mode", () => {
-      const machine = new MiniappMachine(progressMachine, {
-        value: 60,
-        type: "circular",
-        color: "success",
-      });
-      machine.start();
-
-      const api = connectProgress(machine.service);
-      expect(api.circleDataUrl).toContain("data:image/svg+xml");
-      const decoded = decodeURIComponent(api.circleDataUrl);
-      expect(decoded).toContain("<svg");
-      expect(decoded).toContain("<circle");
-      expect(decoded).toContain("#16a34a"); // success color
-
-      machine.stop();
-    });
-
-    it("generates CSS variables in circleStyle for pure CSS circular progress", () => {
-      const machine = new MiniappMachine(progressMachine, {
-        value: 60,
-        type: "circular",
-        color: "primary",
-      });
-      machine.start();
-
-      const api = connectProgress(machine.service);
-      expect(api.circleStyle).toContain("--cui-progress-percent: 60%;");
-      expect(api.circleProps.style).toContain("--cui-progress-percent: 60%;");
+      expect(api.circleStyle).toContain("--cui-progress-percent: 25%;");
+      expect(api.circleStyle).toContain("--cui-progress-track-color: #eee;");
+      expect(api.circleStyle).toContain("color: #16a34a;");
+      expect(api.circleStyle).toContain("transform: scaleX(-1);");
 
       machine.stop();
     });
@@ -312,27 +275,19 @@ describe("Progress Machine", () => {
       machine.stop();
     });
 
-    it("exposes consistent data-parts and IDs across all elements", () => {
+    it("generates compact functional IDs and supports custom scope.ids overrides", () => {
       const machine = new MiniappMachine(progressMachine, {
-        id: "test-progress",
+        id: "p1",
+        ids: { track: "custom-track" },
         value: 50,
       });
       machine.start();
 
       const api = connectProgress(machine.service);
-      expect(api.rootProps.id).toBe("progress:test-progress");
-      expect(api.labelProps.id).toBe("progress:test-progress:label");
-      expect(api.trackProps.id).toBe("progress:test-progress:track");
-      expect(api.rangeProps.id).toBe("progress:test-progress:range");
-      expect(api.valueTextProps.id).toBe("progress:test-progress:value-text");
-      expect(api.circleProps.id).toBe("progress:test-progress:circle");
-      expect(api.circleTrackProps.id).toBe("progress:test-progress:circle-track");
-      expect(api.circleRangeProps.id).toBe("progress:test-progress:circle-range");
-
-      expect(api.rootProps["data-part"]).toBe("root");
-      expect(api.trackProps["data-part"]).toBe("track");
-      expect(api.rangeProps["data-part"]).toBe("range");
-      expect(api.circleRangeProps["data-part"]).toBe("circle-range");
+      expect(api.rootProps.id).toBe("pg-p1-r");
+      expect(api.labelProps.id).toBe("pg-p1-l");
+      expect(api.trackProps.id).toBe("custom-track");
+      expect(api.rangeProps.id).toBeUndefined();
 
       machine.stop();
     });

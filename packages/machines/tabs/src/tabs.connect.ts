@@ -35,18 +35,15 @@ export function connectTabs(service: TabsService): TabsApi {
   const fitted = Boolean(prop("fitted"));
 
   let scrollMaskStyle = "";
-  if (!fitted && orientation === "horizontal") {
-    if (canScrollLeft && canScrollRight) {
-      scrollMaskStyle =
-        "-webkit-mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%); mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 calc(100% - 24px), transparent 100%);";
-    } else if (canScrollLeft) {
-      scrollMaskStyle =
-        "-webkit-mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 100%); mask-image: linear-gradient(to right, transparent 0%, #000 24px, #000 100%);";
-    } else if (canScrollRight) {
-      scrollMaskStyle =
-        "-webkit-mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%); mask-image: linear-gradient(to right, #000 0%, #000 calc(100% - 24px), transparent 100%);";
-    }
+  if (!fitted && orientation === "horizontal" && (canScrollLeft || canScrollRight)) {
+    const start = canScrollLeft ? "transparent 0%, #000 24px" : "#000 0%";
+    const end = canScrollRight
+      ? "#000 calc(100% - 24px), transparent 100%"
+      : "#000 100%";
+    const grad = `linear-gradient(to right, ${start}, ${end})`;
+    scrollMaskStyle = `-webkit-mask-image: ${grad}; mask-image: ${grad};`;
   }
+
   const activeTriggerId =
     value !== undefined && value !== null && value !== ""
       ? getTriggerId(scope, value)
@@ -58,39 +55,29 @@ export function connectTabs(service: TabsService): TabsApi {
 
   const getRootProps = (): Record<string, any> => ({
     id: getRootId(scope),
-    "data-scope": "tabs",
-    "data-part": "root",
     "data-orientation": orientation,
-    "data-disabled": disabled,
+    ...(disabled ? { "data-disabled": true } : {}),
   });
 
   const getListProps = (): Record<string, any> => ({
     id: getListId(scope),
-    role: "tablist",
+    "aria-role": "tablist",
     "aria-orientation": orientation,
-    "data-scope": "tabs",
-    "data-part": "list",
-    "data-orientation": orientation,
     "scroll-x": orientation === "horizontal",
     "scroll-y": orientation === "vertical",
-    scrollX: orientation === "horizontal",
-    scrollY: orientation === "vertical",
     "enable-flex": true,
-    enableFlex: true,
     enhanced: true,
     "show-scrollbar": false,
     "scroll-into-view": activeTriggerId,
     "scroll-left": scrollLeft,
-    scrollLeft,
   });
 
-  const getIndicatorProps = (): Record<string, any> => ({
-    id: getIndicatorId(scope),
-    "data-scope": "tabs",
-    "data-part": "indicator",
-    "data-orientation": orientation,
-    "data-state": "active",
-  });
+  const getIndicatorProps = (): Record<string, any> => {
+    const id = getIndicatorId(scope);
+    return id
+      ? { id, "data-state": "active", "data-orientation": orientation }
+      : {};
+  };
 
   const getTriggerProps = (props: {
     value: string | number;
@@ -103,17 +90,12 @@ export function connectTabs(service: TabsService): TabsApi {
 
     return {
       id: getTriggerId(scope, itemValue),
-      role: "tab",
-      tabindex: isSelected ? 0 : -1,
+      "aria-role": "tab",
       "aria-selected": isSelected,
-      "aria-disabled": itemDisabled,
       "aria-controls": getContentId(scope, itemValue),
-      "data-scope": "tabs",
-      "data-part": "trigger",
+      ...(itemDisabled ? { "aria-disabled": true } : {}),
       "data-value": itemValue,
       "data-state": isSelected ? "active" : "inactive",
-      "data-disabled": itemDisabled,
-      "data-orientation": orientation,
     };
   };
 
@@ -126,15 +108,11 @@ export function connectTabs(service: TabsService): TabsApi {
 
     return {
       id: getContentId(scope, itemValue),
-      role: "tabpanel",
+      "aria-role": "tabpanel",
       "aria-labelledby": getTriggerId(scope, itemValue),
       hidden: !isSelected,
-      tabindex: 0,
-      "data-scope": "tabs",
-      "data-part": "content",
       "data-value": itemValue,
       "data-state": isSelected ? "active" : "inactive",
-      "data-orientation": orientation,
     };
   };
 
@@ -142,7 +120,8 @@ export function connectTabs(service: TabsService): TabsApi {
     const isSelected = item.value === value;
     const itemDisabled = disabled || Boolean(item.disabled);
 
-    return Object.assign({}, item, {
+    return {
+      ...item,
       index,
       value: item.value,
       label: item.label,
@@ -155,12 +134,8 @@ export function connectTabs(service: TabsService): TabsApi {
       ui: item.ui,
       triggerProps: getTriggerProps({ value: item.value, index }),
       contentProps: getContentProps({ value: item.value, index }),
-    });
+    };
   });
-
-  const rootProps = getRootProps();
-  const listProps = getListProps();
-  const indicatorProps = getIndicatorProps();
 
   return {
     value,
@@ -182,30 +157,14 @@ export function connectTabs(service: TabsService): TabsApi {
     totalCount,
     indicatorStyle,
 
-    setValue(val) {
-      send({ type: "SET_VALUE", value: val });
-    },
-    select(val) {
-      send({ type: "SELECT", value: val });
-    },
-    setFocus(val) {
-      send({ type: "FOCUS", value: val });
-    },
-    clearFocus() {
-      send({ type: "BLUR" });
-    },
-    selectNext() {
-      send({ type: "NEXT" });
-    },
-    selectPrev() {
-      send({ type: "PREV" });
-    },
-    selectFirst() {
-      send({ type: "FIRST" });
-    },
-    selectLast() {
-      send({ type: "LAST" });
-    },
+    setValue: (val) => send({ type: "SET_VALUE", value: val }),
+    select: (val) => send({ type: "SELECT", value: val }),
+    setFocus: (val) => send({ type: "FOCUS", value: val }),
+    clearFocus: () => send({ type: "BLUR" }),
+    selectNext: () => send({ type: "NEXT" }),
+    selectPrev: () => send({ type: "PREV" }),
+    selectFirst: () => send({ type: "FIRST" }),
+    selectLast: () => send({ type: "LAST" }),
 
     getRootProps,
     getListProps,
@@ -213,8 +172,8 @@ export function connectTabs(service: TabsService): TabsApi {
     getContentProps,
     getIndicatorProps,
 
-    rootProps,
-    listProps,
-    indicatorProps,
+    rootProps: getRootProps(),
+    listProps: getListProps(),
+    indicatorProps: getIndicatorProps(),
   };
 }

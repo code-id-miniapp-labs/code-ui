@@ -242,3 +242,39 @@ export function cleanupFormFieldSync(refs: any): void {
   refs.get("formField")?.dispose();
   refs.set("formField", undefined);
 }
+
+function resolveFormHost(prop: any, refs: any): FormHostContext | undefined {
+  return prop("formContext") ?? refs.get("formField")?.host;
+}
+
+export function hasFormFieldErrors(
+  prop: any,
+  refs: any,
+  scope: { id?: string | undefined },
+  fallbackId: string,
+): boolean {
+  return Boolean(
+    resolveFormHost(prop, refs)?.errors(prop("name") || scope.id || fallbackId)
+      .length,
+  );
+}
+
+export function createFormFieldComputed(fallbackId: string) {
+  const key = (prop: any, scope: { id?: string | undefined }) =>
+    prop("name") || scope.id || fallbackId;
+  return {
+    formDisabled: ({ prop, refs }: any): boolean =>
+      resolveFormHost(prop, refs)?.disabled() ?? false,
+    formReadOnly: ({ prop, refs }: any): boolean =>
+      resolveFormHost(prop, refs)?.readOnly() ?? false,
+    fieldDisabled: ({ prop, refs, scope }: any): boolean =>
+      Boolean(
+        prop("fieldDisabled") ||
+          resolveFormHost(prop, refs)?.fieldState(key(prop, scope))?.disabled,
+      ),
+    fieldSize: ({ prop, refs, scope }: any): string =>
+      prop("fieldSize") ||
+      resolveFormHost(prop, refs)?.fieldState(key(prop, scope))?.size ||
+      "",
+  };
+}

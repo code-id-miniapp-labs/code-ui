@@ -24,12 +24,6 @@ Component(
   createComponentOptions({
     behaviors: [pinInputBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: false,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultPinInputProps, {
       label: {
         type: String,

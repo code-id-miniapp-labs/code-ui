@@ -42,12 +42,6 @@ Component(
   createComponentOptions({
     behaviors: [swipeCellBehavior, computedBehavior],
 
-    options: {
-      multipleSlots: true,
-      styleIsolation: "apply-shared",
-      virtualHost: true,
-    },
-
     properties: createProperties(defaultSwipeCellProps, {
       className: {
         type: String,

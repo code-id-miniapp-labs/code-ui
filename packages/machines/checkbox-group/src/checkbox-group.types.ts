@@ -130,21 +130,7 @@ export interface CheckboxGroupContext {
 
 export type CheckboxGroupMachineContext = {
   value: string[];
-  name: string;
-  form: string;
-  disabled: boolean;
-  readOnly: boolean;
-  required: boolean;
   invalid: boolean;
-  color: CheckboxGroupColor;
-  size: CheckboxGroupSize;
-  orientation: CheckboxGroupOrientation;
-  variant: CheckboxGroupVariant;
-  legend: string;
-  min: number | null;
-  max: number | null;
-  items: (string | CheckboxGroupItemRaw)[];
-  ui: CheckboxGroupUI;
 };
 
 export type CheckboxGroupEvent =

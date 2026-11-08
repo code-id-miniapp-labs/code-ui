@@ -191,9 +191,13 @@ export interface IconsConfig {
   [iconName: string]: unknown;
 }
 
+export type DataAttributesMode = "minimal" | "full";
+
 export interface CodeUIConfig {
   /** Global prefix for custom components */
   prefix?: string | undefined;
+  /** Global attribute emission mode ("full" by default in 0.x) */
+  dataAttributes?: DataAttributesMode | undefined;
   /** Global design token configuration (colors, radius, transitions) */
   ui?: UIConfig | undefined;
   /** Global default icons used by components (check, minus, close, loading) */
@@ -201,8 +205,14 @@ export interface CodeUIConfig {
   /** Component-level styling and configuration overrides */
   components?:
     | ({
+        /** Attribute emission mode ("full" by default in 0.x; "minimal" omits optional data-* hooks) */
+        dataAttributes?: DataAttributesMode | undefined;
+      } & {
         [K in keyof ComponentRegistry]?: ComponentConfig<ComponentRegistry[K]>;
-      } & Record<string, ComponentConfig<any> | undefined>)
+      } & Record<
+          string,
+          ComponentConfig<any> | DataAttributesMode | undefined
+        >)
     | undefined;
 }
 
@@ -240,22 +250,30 @@ export function defineConfig(config: CodeUIConfig): CodeUIConfig {
   return config;
 }
 
-const initialConfig: CodeUIConfig = {
-  prefix: "cui",
-  components: {},
-};
+const fallbackHost: Record<string, any> = {};
 
-const g: any =
-  typeof globalThis !== "undefined"
-    ? globalThis
-    : typeof window !== "undefined"
-      ? window
-      : typeof global !== "undefined"
-        ? global
-        : {};
+function getGlobalHost(): Record<string, any> {
+  if (typeof globalThis !== "undefined") {
+    return globalThis as Record<string, any>;
+  }
+  if (typeof window !== "undefined") {
+    return window as unknown as Record<string, any>;
+  }
+  if (typeof global !== "undefined") {
+    return global as unknown as Record<string, any>;
+  }
+  return fallbackHost;
+}
 
-if (!g.__CODE_UI_GLOBAL_CONFIG__) {
-  g.__CODE_UI_GLOBAL_CONFIG__ = initialConfig;
+/**
+ * Retrieve the current snapshot of the global configuration.
+ */
+export function getConfig(): CodeUIConfig {
+  const host = getGlobalHost();
+  return (host.__CODE_UI_GLOBAL_CONFIG__ ??= {
+    prefix: "cui",
+    components: {},
+  }) as CodeUIConfig;
 }
 
 /**
@@ -265,18 +283,12 @@ if (!g.__CODE_UI_GLOBAL_CONFIG__) {
 export function setConfig(
   config: CodeUIConfig | ((prev: CodeUIConfig) => CodeUIConfig),
 ): void {
-  const current = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
+  const host = getGlobalHost();
+  const current = getConfig();
   const next = typeof config === "function" ? config(current) : config;
   const merged = defu(next, current) as CodeUIConfig;
 
-  g.__CODE_UI_GLOBAL_CONFIG__ = merged;
-}
-
-/**
- * Retrieve the current snapshot of the global configuration.
- */
-export function getConfig(): CodeUIConfig {
-  return g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
+  host.__CODE_UI_GLOBAL_CONFIG__ = merged;
 }
 
 /**
@@ -286,15 +298,17 @@ export function getConfig(): CodeUIConfig {
 export function getComponentConfig<TSlots extends string = string>(
   componentName: string,
 ): ComponentConfig<TSlots> {
-  const config = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
+  const config = getConfig();
   const prefix = config.prefix || "cui";
   const normalizedName = componentName
     .replace(new RegExp(`^(?:${prefix}|cui|c)-`, "i"), "")
     .toLowerCase();
 
-  const raw = (config.components?.[componentName] ||
-    config.components?.[normalizedName] ||
-    {}) as ComponentConfig<TSlots>;
+  const rawCandidate =
+    config.components?.[componentName] || config.components?.[normalizedName];
+  const raw = (
+    rawCandidate && typeof rawCandidate === "object" ? rawCandidate : {}
+  ) as ComponentConfig<TSlots>;
 
   const slots = defu(raw.slots || {}, raw.ui || {}) as SlotRecord<TSlots>;
   const defaultVariants = defu(
@@ -316,8 +330,7 @@ export function getComponentConfig<TSlots extends string = string>(
  * Retrieve the active `ui` design tokens from global config.
  */
 export function getUI(): UIConfig {
-  const config = g.__CODE_UI_GLOBAL_CONFIG__ as CodeUIConfig;
-  return config.ui || {};
+  return getConfig().ui || {};
 }
 
 /**
@@ -379,5 +392,8 @@ export function getThemeStyle(): string {
  * Reset the global configuration back to initial defaults.
  */
 export function resetConfig(): void {
-  g.__CODE_UI_GLOBAL_CONFIG__ = initialConfig;
+  getGlobalHost().__CODE_UI_GLOBAL_CONFIG__ = {
+    prefix: "cui",
+    components: {},
+  };
 }

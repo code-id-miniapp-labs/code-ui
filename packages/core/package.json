@@ -16,6 +16,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./icons": {
+      "types": "./dist/icons.d.ts",
+      "import": "./dist/icons.js",
+      "require": "./dist/icons.cjs"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

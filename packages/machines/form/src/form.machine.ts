@@ -11,7 +11,6 @@ import type {
   FormFieldRegistration,
   FormFieldState,
   FormMachine,
-  FormProps,
   FormRule,
   FormSchema,
   FormService,
@@ -123,7 +122,7 @@ export function collectFormValues(service: ServiceLike): Record<string, any> {
 }
 
 function getEffectiveRules(service: ServiceLike, name: string): FormRule[] {
-  if (service.context.get("disabled")) return [];
+  if (service.prop("disabled")) return [];
   const field = service.refs.get("fields").get(name);
   if (field?.isDisabled?.()) return [];
 
@@ -146,7 +145,7 @@ function getEffectiveValidateOn(
 ): FormValidateOn {
   const field = service.refs.get("fields").get(name);
   const fieldValidateOn = field?.getValidateOn?.();
-  return fieldValidateOn ?? service.context.get("validateOn");
+  return fieldValidateOn ?? service.prop("validateOn") ?? ["input", "change", "blur"];
 }
 
 function applyFieldErrors(
@@ -547,7 +546,7 @@ export function handleFieldInteraction(
 
   const validateOn = getEffectiveValidateOn(service, name);
   const shouldRun = shouldValidateOnTrigger(trigger, validateOn, {
-    validateLazy: service.context.get("validateLazy"),
+    validateLazy: Boolean(service.prop("validateLazy")),
     isTouched,
     hasErrors: existingErrors.length > 0,
     submitCount: service.context.get("submitCount"),
@@ -578,7 +577,7 @@ export async function scrollToFirstInvalidField(
 ): Promise<boolean> {
   const errorBag = service.context.get("errorBag");
   const fields = service.refs.get("fields");
-  const scrollOffset = service.context.get("scrollOffset") ?? 24;
+  const scrollOffset = service.prop("scrollOffset") ?? 24;
 
   let targetReg: FormFieldRegistration | undefined;
   for (const [name, reg] of fields.entries()) {
@@ -824,7 +823,7 @@ export function setFormValues(
 export async function submitForm(
   service: ServiceLike,
 ): Promise<FormValidationResult> {
-  if (service.context.get("disabled")) {
+  if (service.prop("disabled")) {
     return {
       valid: service.context.get("errors").length === 0,
       errors: service.context.get("errors"),
@@ -846,10 +845,10 @@ export async function submitForm(
   if (!result.valid) {
     service.state.set("error");
 
-    if (service.context.get("focusOnError")) {
+    if (service.prop("focusOnError") ?? true) {
       focusFirstInvalidField(service);
     }
-    if (service.context.get("scrollToError")) {
+    if (service.prop("scrollToError")) {
       void scrollToFirstInvalidField(service);
     }
 
@@ -897,10 +896,10 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
 
   initialState: () => "idle",
 
-  refs: ({ context, send }) => {
+  refs: ({ context, prop, send }) => {
     const hostContext: FormHostContext = {
-      disabled: () => context.get("disabled"),
-      readOnly: () => context.get("readOnly"),
+      disabled: () => Boolean(prop("disabled")),
+      readOnly: () => Boolean(prop("readOnly")),
       errors: (name) => context.get("errorBag")[name] ?? [],
       fieldState: (name) => context.get("fieldOverrides")[name],
       register: (field) => {
@@ -932,14 +931,6 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
   },
 
   context: ({ prop, bindable }) => {
-    const propBindable = <K extends keyof FormContext & keyof FormProps>(
-      key: K,
-      defaultValue: FormContext[K],
-    ) =>
-      bindable<FormContext[K]>(() => ({
-        value: prop(key) as FormContext[K] | undefined,
-        defaultValue,
-      }));
     const stateBindable = <K extends keyof FormContext>(
       _key: K,
       defaultValue: FormContext[K],
@@ -968,15 +959,6 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
       validatingFields: stateBindable("validatingFields", []),
       focusedField: stateBindable("focusedField", null),
       submitCount: stateBindable("submitCount", 0),
-      disabled: propBindable("disabled", false),
-      readOnly: propBindable("readOnly", false),
-      focusOnError: propBindable("focusOnError", true),
-      scrollToError: propBindable("scrollToError", false),
-      scrollOffset: propBindable("scrollOffset", 24),
-      validateOn: propBindable("validateOn", ["input", "change", "blur"]),
-      validateLazy: propBindable("validateLazy", false),
-      showErrors: propBindable("showErrors", false),
-      ui: propBindable("ui", {}),
     };
   },
 

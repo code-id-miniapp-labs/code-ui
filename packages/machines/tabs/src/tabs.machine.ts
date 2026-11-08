@@ -16,23 +16,39 @@ import type {
 export function normalizeItems(
   rawItems: Array<TabsItem | string> | undefined,
 ): NormalizedTabItem[] {
-  if (!rawItems || !Array.isArray(rawItems)) return [];
-  return rawItems.map((item, index) => {
-    if (typeof item === "string") {
-      return {
-        label: item,
-        value: item,
-        disabled: false,
-      };
-    }
-    return {
-      ...item,
-      label: item.label ?? String(item.value ?? index),
-      value: item.value ?? item.label ?? index,
-      disabled: Boolean(item.disabled),
-    };
-  });
+  if (!Array.isArray(rawItems)) return [];
+  return rawItems.map((item, index) =>
+    typeof item === "string"
+      ? { label: item, value: item, disabled: false }
+      : {
+          ...item,
+          label: item.label ?? String(item.value ?? index),
+          value: item.value ?? item.label ?? index,
+          disabled: Boolean(item.disabled),
+        },
+  );
 }
+
+const rawItemsOf = (prop: (k: any) => any) => {
+  const items = prop("items");
+  return items?.length ? items : prop("childItems");
+};
+
+const stepTab = (
+  items: NormalizedTabItem[],
+  currentIndex: number,
+  delta: 1 | -1,
+  loop: boolean,
+): string | number | undefined => {
+  const len = items.length;
+  for (let i = 1; i < len; i++) {
+    const idx = (currentIndex + delta * i + len) % len;
+    if (!loop && (delta > 0 ? idx < currentIndex : idx > currentIndex)) break;
+    const item = items[idx];
+    if (item && !item.disabled) return item.value;
+  }
+  return undefined;
+};
 
 export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   props: ({ props }) => ({
@@ -65,9 +81,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
       const rawVal = prop("value");
       const controlledVal =
         rawVal !== null && rawVal !== undefined ? rawVal : undefined;
-
-      const raw = (prop("items") && prop("items")?.length) ? prop("items") : prop("childItems");
-      const normalized = normalizeItems(raw);
+      const normalized = normalizeItems(rawItemsOf(prop));
       let defaultVal = prop("defaultValue");
       if (defaultVal === null || defaultVal === undefined) {
         const firstEnabled =
@@ -78,35 +92,22 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
         value: controlledVal,
         defaultValue: defaultVal,
         onChange(value) {
-          const itemsRaw = (prop("items") && prop("items")?.length) ? prop("items") : prop("childItems");
-          const items = normalizeItems(itemsRaw);
+          const items = normalizeItems(rawItemsOf(prop));
           const index = items.findIndex((it) => it.value === value);
-          prop("onChange")?.({
-            value,
-            index: index >= 0 ? index : 0,
-          });
+          prop("onChange")?.({ value, index: index >= 0 ? index : 0 });
         },
       };
     }),
     focusedValue: bindable<string | number | null>(() => ({
       defaultValue: null,
     })),
-    scrollLeft: bindable<number>(() => ({
-      defaultValue: 0,
-    })),
-    canScrollLeft: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
-    canScrollRight: bindable<boolean>(() => ({
-      defaultValue: false,
-    })),
+    scrollLeft: bindable<number>(() => ({ defaultValue: 0 })),
+    canScrollLeft: bindable<boolean>(() => ({ defaultValue: false })),
+    canScrollRight: bindable<boolean>(() => ({ defaultValue: false })),
   }),
 
   computed: {
-    normalizedItems: ({ prop }) => {
-      const raw = (prop("items") && prop("items")?.length) ? prop("items") : prop("childItems");
-      return normalizeItems(raw);
-    },
+    normalizedItems: ({ prop }) => normalizeItems(rawItemsOf(prop)),
     selectedValue: ({ context, computed }) => {
       const current = context.get("value");
       if (current !== undefined && current !== null && current !== "") {
@@ -118,15 +119,15 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
     },
     selectedIndex: ({ computed }) => {
       const selected = computed("selectedValue");
-      const items = computed("normalizedItems");
-      return items.findIndex((it) => it.value === selected);
+      return computed("normalizedItems").findIndex(
+        (it) => it.value === selected,
+      );
     },
     totalCount: ({ computed }) => computed("normalizedItems").length,
     isDisabled: ({ prop }) => Boolean(prop("disabled")),
     selectedItem: ({ computed }) => {
       const selected = computed("selectedValue");
-      const items = computed("normalizedItems");
-      return items.find((it) => it.value === selected);
+      return computed("normalizedItems").find((it) => it.value === selected);
     },
   },
 
@@ -189,70 +190,54 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
     guards: {
       isInteractive: ({ computed }) => !computed("isDisabled"),
       canSelect: ({ computed, event }) => {
-        if (event.type !== "SELECT") return false;
-        if (computed("isDisabled")) return false;
-        const items = computed("normalizedItems");
-        const target = items.find((it) => it.value === event.value);
+        if (event.type !== "SELECT" || computed("isDisabled")) return false;
+        const target = computed("normalizedItems").find(
+          (it) => it.value === event.value,
+        );
         return target ? !target.disabled : true;
       },
     },
     actions: {
       selectTab: ({ context, event }) => {
-        if (event.type !== "SELECT" && event.type !== "SET_VALUE") return;
-        context.set("value", event.value);
+        if (event.type === "SELECT" || event.type === "SET_VALUE") {
+          context.set("value", event.value);
+        }
       },
       setFocusedValue: ({ context, event }) => {
-        if (event.type !== "FOCUS") return;
-        context.set("focusedValue", event.value);
+        if (event.type === "FOCUS") context.set("focusedValue", event.value);
       },
       clearFocusedValue: ({ context }) => {
         context.set("focusedValue", null);
       },
       autoSelectOnFocus: ({ context, prop, event }) => {
-        if (event.type !== "FOCUS") return;
-        const mode = prop("activationMode") ?? "automatic";
-        if (mode === "automatic") {
+        if (
+          event.type === "FOCUS" &&
+          (prop("activationMode") ?? "automatic") === "automatic"
+        ) {
           context.set("value", event.value);
         }
       },
       selectNextTab: ({ context, computed, prop }) => {
-        const items = computed("normalizedItems");
-        if (items.length === 0) return;
-        const currentIndex = computed("selectedIndex");
-        const loop = prop("loopFocus") ?? true;
-        const len = items.length;
-        for (let i = 1; i < len; i++) {
-          const nextIdx = (currentIndex + i) % len;
-          if (!loop && nextIdx < currentIndex) break;
-          const item = items[nextIdx];
-          if (item && !item.disabled) {
-            context.set("value", item.value);
-            return;
-          }
-        }
+        const next = stepTab(
+          computed("normalizedItems"),
+          computed("selectedIndex"),
+          1,
+          prop("loopFocus") ?? true,
+        );
+        if (next !== undefined) context.set("value", next);
       },
       selectPrevTab: ({ context, computed, prop }) => {
-        const items = computed("normalizedItems");
-        if (items.length === 0) return;
-        const currentIndex = computed("selectedIndex");
-        const loop = prop("loopFocus") ?? true;
-        const len = items.length;
-        for (let i = 1; i < len; i++) {
-          const prevIdx = (currentIndex - i + len) % len;
-          if (!loop && prevIdx > currentIndex) break;
-          const item = items[prevIdx];
-          if (item && !item.disabled) {
-            context.set("value", item.value);
-            return;
-          }
-        }
+        const prev = stepTab(
+          computed("normalizedItems"),
+          computed("selectedIndex"),
+          -1,
+          prop("loopFocus") ?? true,
+        );
+        if (prev !== undefined) context.set("value", prev);
       },
       selectFirstTab: ({ context, computed }) => {
-        const items = computed("normalizedItems");
-        const first = items.find((it) => !it.disabled);
-        if (first) {
-          context.set("value", first.value);
-        }
+        const first = computed("normalizedItems").find((it) => !it.disabled);
+        if (first) context.set("value", first.value);
       },
       selectLastTab: ({ context, computed }) => {
         const items = computed("normalizedItems");

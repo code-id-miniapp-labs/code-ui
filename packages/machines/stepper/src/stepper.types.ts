@@ -132,22 +132,12 @@ export interface StepperProps {
 }
 
 export interface StepperContext {
-  id: string;
   step: number;
   count: number;
-  linkedCount: number;
-  linear: boolean;
-  orientation: StepperOrientation;
-  color: StepperColor;
-  size: StepperSize;
-  variant: StepperVariant;
-  disabled: boolean;
-  hasContent: boolean;
   items: StepperItem[];
   focusedIndex: number | null;
   scrollLeft: number;
   scrollTargetIndex: number | null;
-  ui: StepperUI;
 }
 
 export type StepperEvent =
