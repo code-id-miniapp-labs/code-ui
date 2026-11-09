@@ -22,7 +22,10 @@ Page({
       { numeric: true, message: "PIN must contain digits only" },
     ],
     termsRules: [
-      { required: true, message: "You must accept the Terms of Service to register" },
+      {
+        required: true,
+        message: "You must accept the Terms of Service to register",
+      },
     ],
     newsletterControlled: true,
     formStatus: "",

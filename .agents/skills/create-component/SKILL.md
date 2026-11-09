@@ -51,6 +51,7 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
        withStepperItem,
      } from "@code-ui/miniapp/behaviors/stepper";
      ```
+   - Pass these plugins into `createMachineBehavior({ plugins: [withFormField(), withStepperItem()] })` (do NOT pass to `createComponentOptions`).
    - **Rule**: Never import relation behaviors from the root `@code-ui/miniapp` entry. Subpath imports preserve separate chunking and keep domain logic out of `common.js`.
 
 ---
@@ -201,7 +202,12 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
    - **Compound Loops**: Never hardcode generic `<view>` in data loops. Containers must delegate item rendering to their respective child item components in both declarative (`<slot />`) and data-driven (`wx:for="{{items}}"`) modes.
 
 3. Create `packages/components/src/runtime/<name>/index.ts`:
-   - **Presentational**:
+
+   > [!IMPORTANT]
+   > **No `machine` field on `createComponentOptions`**: `createComponentOptions` wraps the native WeChat `Component({...})` options to add fine-grained signal-computed properties. It does **not** accept a `machine` property.
+   > Instead, instantiate the machine behavior separately via `createMachineBehavior({ machine, connect, key, plugins, exportApi })` and add it to `behaviors: [<camelName>Behavior, computedBehavior]`.
+
+   - **Tier 1: Presentational**:
      ```ts
      import { computedBehavior, createComponentOptions } from "../_shared/base";
      import { resolveSlots } from "../../utils/ui";
@@ -230,7 +236,8 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
        }),
      );
      ```
-   - **Interactive (FSM Machine)**:
+
+   - **Tier 2: Interactive (FSM Machine)**:
      ```ts
      import { computedBehavior, createComponentOptions } from "../_shared/base";
      import {
@@ -276,6 +283,65 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
          },
          methods: {
            handleTap(e: WechatMiniprogram.TouchEvent) {
+             const api = getApi(this, "<name>");
+             return api.handleTap?.(e);
+           },
+         },
+       }),
+     );
+     ```
+
+   - **Tier 3: Domain Components with Relations / Form Integration** (e.g. `checkbox`, `radio`, `stepper`):
+     ```ts
+     import { computedBehavior, createComponentOptions } from "../_shared/base";
+     import {
+       createMachineBehavior,
+       createProperties,
+       getApi,
+     } from "../_shared/machine";
+     import { withFormField } from "@code-ui/miniapp/behaviors/form";
+     import { with<Domain>Item } from "@code-ui/miniapp/behaviors/<domain>";
+     import {
+       <camelName>Machine,
+       connect<Name>,
+       default<Name>Props,
+     } from "@code-ui/<name>";
+     import { resolveSlots } from "../../utils/ui";
+     import { tv } from "../../utils/variants";
+     import themeConfig from "virtual:cui/theme/<name>";
+
+     const <camelName>Theme = tv(themeConfig);
+
+     // Relations & form-field behaviors are passed into createMachineBehavior's plugins array:
+     const <camelName>Behavior = createMachineBehavior({
+       machine: <camelName>Machine,
+       connect: connect<Name>,
+       key: "<name>", // e.g. "cCheckbox", "cRadio", "<name>"
+       plugins: [withFormField(), with<Domain>Item()],
+       exportApi: true,
+     });
+
+     Component(
+       createComponentOptions({
+         behaviors: [<camelName>Behavior, computedBehavior],
+         properties: createProperties(default<Name>Props, {
+           className: { type: String, value: "" },
+         }),
+         computed: {
+           classes() {
+             const api = this.data.<name>;
+             const themeFns = <camelName>Theme({
+               variant: api?.variant ?? this.data.variant,
+               color: api?.color ?? this.data.color,
+               size: api?.size ?? this.data.size,
+               disabled: Boolean(api?.disabled ?? this.data.disabled),
+               // additional states like checked, indeterminate, invalid
+             });
+             return resolveSlots(themeFns, this.data.ui, this.data.className);
+           },
+         },
+         methods: {
+           handleTap(e: WechatMiniprogram.CustomEvent) {
              const api = getApi(this, "<name>");
              return api.handleTap?.(e);
            },
