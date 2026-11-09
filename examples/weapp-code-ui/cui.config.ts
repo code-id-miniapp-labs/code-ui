@@ -16,7 +16,7 @@ export default defineConfig({
       secondary: "amber",
       danger: "red",
     },
-    colorSystem: "light",
+    colorMode: "light",
   },
   components: {
     button: {

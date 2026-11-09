@@ -40,33 +40,33 @@ Matching Vant Weapp per-feature size (~34 KB gzip for the reference set) is **no
 
 ### Current numbers
 
-| Measurement | Raw | Gzip |
-|---|---:|---:|
+| Measurement                                   |      Raw |     Gzip |
+| --------------------------------------------- | -------: | -------: |
 | Full `packages/components/dist` (all 31 dirs) | 454.1 KB | 146.8 KB |
-| Demo `app.wxss` | 132.2 KB | 16.5 KB |
-| Reference 14-feature reachable bundle | 237.8 KB | 77.1 KB |
-| Vant Weapp 1.11.7 same features | 105.3 KB | 33.9 KB |
-| TDesign 1.17.0 same features | 251.7 KB | 58.5 KB |
+| Demo `app.wxss`                               | 132.2 KB |  16.5 KB |
+| Reference 14-feature reachable bundle         | 237.8 KB |  77.1 KB |
+| Vant Weapp 1.11.7 same features               | 105.3 KB |  33.9 KB |
+| TDesign 1.17.0 same features                  | 251.7 KB |  58.5 KB |
 
 Reachable shared base for the reference set: **27.8 KB gzip**
 
-| Shared chunk | Gzip |
-|---|---:|
-| `common.js` | 9.1 KB |
-| `weapp-vendors/miniapp-behavior.js` (machine runtime) | 5.6 KB |
+| Shared chunk                                                                      |    Gzip |
+| --------------------------------------------------------------------------------- | ------: |
+| `common.js`                                                                       |  9.1 KB |
+| `weapp-vendors/miniapp-behavior.js` (machine runtime)                             |  5.6 KB |
 | Domain behaviors (`form`, `tabs`, `stepper`, `avatar-group`, `checkbox`, `radio`) | ~7.0 KB |
-| `computed-behavior.js` | 2.8 KB |
-| `alien-signals.js` | 1.7 KB |
-| WXS + remaining | ~1.6 KB |
+| `computed-behavior.js`                                                            |  2.8 KB |
+| `alien-signals.js`                                                                |  1.7 KB |
+| WXS + remaining                                                                   | ~1.6 KB |
 
 Attribute distribution across all WXML:
 
-| Attribute type | Raw share | Estimated gzip impact |
-|---|---:|---:|
-| `data-*` | 28.1% of WXML | ~1.5–2 KB |
-| `id` | 5.7% of WXML | ~0.5 KB |
-| `aria-*` | 5.5% of WXML | ~0.5 KB |
-| All WXML | 52.0 KB raw / 8.8 KB gzip | — |
+| Attribute type |                 Raw share | Estimated gzip impact |
+| -------------- | ------------------------: | --------------------: |
+| `data-*`       |             28.1% of WXML |             ~1.5–2 KB |
+| `id`           |              5.7% of WXML |               ~0.5 KB |
+| `aria-*`       |              5.5% of WXML |               ~0.5 KB |
+| All WXML       | 52.0 KB raw / 8.8 KB gzip |                     — |
 
 Attribute cleanup realistically saves **2–4 KB gzip across all components**, or **1–2 KB for the reference set**. It does not close the ~43 KB gap to Vant. Its real value is smaller `setData` payloads and fewer WXML attributes to diff and render.
 
@@ -80,11 +80,11 @@ Sum of runtime component files: 121.0 KB gzip. Sum of all dist files: 159.4 KB g
 
 Per-component own cost (gzip KB, own files only, excluding shared chunks):
 
-| Tier | Components |
-|---|---|
-| ≥ 5 KB | `form` 7.1, `qr-code` 6.9, `slider` 6.3, `pin-input` 5.3, `textarea` 5.2, `stepper` 5.2, `tabs` 5.2, `toast` 5.0, `progress` 5.0 |
-| 3–5 KB | `checkbox` 4.8, `swipe-cell` 4.5, `input` 4.5, `checkbox-group` 4.4, `accordion-item` 4.3, `stepper-item` 4.2, `radio-group` 4.0, `drawer` 3.9, `pull-down-refresh` 3.9, `switch` 3.7, `button` 3.6, `radio` 3.4, `tabs-item` 3.3, `form-field` 3.2, `accordion` 3.1 |
-| < 2 KB (presentational) | `avatar` 1.4, `divider` 1.3, `chip` 1.2, `badge` 1.0, `card` 1.0, `avatar-group` 0.9, `icon` 0.6, `skeleton` 0.6 |
+| Tier                    | Components                                                                                                                                                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ≥ 5 KB                  | `form` 7.1, `qr-code` 6.9, `slider` 6.3, `pin-input` 5.3, `textarea` 5.2, `stepper` 5.2, `tabs` 5.2, `toast` 5.0, `progress` 5.0                                                                                                                                     |
+| 3–5 KB                  | `checkbox` 4.8, `swipe-cell` 4.5, `input` 4.5, `checkbox-group` 4.4, `accordion-item` 4.3, `stepper-item` 4.2, `radio-group` 4.0, `drawer` 3.9, `pull-down-refresh` 3.9, `switch` 3.7, `button` 3.6, `radio` 3.4, `tabs-item` 3.3, `form-field` 3.2, `accordion` 3.1 |
+| < 2 KB (presentational) | `avatar` 1.4, `divider` 1.3, `chip` 1.2, `badge` 1.0, `card` 1.0, `avatar-group` 0.9, `icon` 0.6, `skeleton` 0.6                                                                                                                                                     |
 
 Findings:
 
@@ -95,25 +95,26 @@ Findings:
 
 Shared chunks (gzip KB, reached by N components):
 
-| Chunk | Gzip | N |
-|---|---:|---:|
-| `common.js` | 9.2 | 33 |
-| `weapp-vendors/miniapp-behavior.js` | 5.6 | 25 |
-| `behaviors/app.js` | 3.5 | 3 |
-| `computed-behavior.js` | 2.8 | 33 |
-| `alien-signals.js` | 1.7 | 33 |
-| `behaviors/form.js` | 1.7 | 10 |
-| `wxs/*-gesture.wxs` (each, single owner) | 1.1–1.7 | 1 |
+| Chunk                                    |    Gzip |   N |
+| ---------------------------------------- | ------: | --: |
+| `common.js`                              |     9.2 |  33 |
+| `weapp-vendors/miniapp-behavior.js`      |     5.6 |  25 |
+| `behaviors/app.js`                       |     3.5 |   3 |
+| `computed-behavior.js`                   |     2.8 |  33 |
+| `alien-signals.js`                       |     1.7 |  33 |
+| `behaviors/form.js`                      |     1.7 |  10 |
+| `wxs/*-gesture.wxs` (each, single owner) | 1.1–1.7 |   1 |
 
 `tv` + class-conflict dedupe (`packages/components/src/utils/variants.ts`, 831 lines) bundled alone with esbuild: 9.7 KB minified, **3.7 KB gzip, about 40% of `common.js`**. It is a custom implementation (no `tailwind-merge`, no `tailwind-variants` dependency). Most of it is `computeUtilityKey`, the Tailwind conflict-group mapper. It runs on every slot resolution, including the default path, because built-in themes rely on variants overriding base classes (see Phase 3.1b).
 
 Conclusion: the biggest single lever in the shared base is the `tv` runtime, and the conflict mapper in particular. It cannot simply be made optional at runtime; the saving has to come from resolving conflicts at build time and then shrinking or omitting the mapper.
 
-### 2026-11-08 — Post-reactive-group-context & colorSystem baseline (`pnpm size`)
+### 2026-11-08 — Post-reactive-group-context & colorMode baseline (`pnpm size`)
 
-Recent refactors (`#68` `colorSystem` and reactive `groupContext` replacing event-bus) already reduced the full dist from 159.4 KB to **154.1 KB gzip** (`runtimeTotal`: **117.5 KB gzip** across 33 runtime directories).
+Recent refactors (`#68` `colorMode` and reactive `groupContext` replacing event-bus) already reduced the full dist from 159.4 KB to **154.1 KB gzip** (`runtimeTotal`: **117.5 KB gzip** across 33 runtime directories).
 
 Current shared chunks (`pnpm size`):
+
 - `common.js`: 27.5 KB raw / **9.4 KB gzip** (reached by all 33 entries)
 - `weapp-vendors/miniapp-behavior.js`: 16.8 KB raw / **5.6 KB gzip** (reached by 25 entries)
 - `computed-behavior.js`: 7.0 KB raw / **2.8 KB gzip** (reached by 33 entries)
@@ -137,6 +138,7 @@ Following multi-phase architectural optimization, both hard targets are achieved
 - **Quality gates**: 70/70 test files pass (778 tests), 35 workspace packages typecheck cleanly, 0 oxlint errors.
 
 Current shared chunks (`pnpm size`):
+
 - `common.js`: 16.0 KB raw / **6.2 KB gzip** (down from 9.4 KB gzip, **-34%**)
 - `weapp-vendors/miniapp-behavior.js`: 18.7 KB raw / **6.2 KB gzip**
 - `behaviors/form.js`: 9.8 KB raw / **3.2 KB gzip** (isolated to form components only)
@@ -147,15 +149,15 @@ Current shared chunks (`pnpm size`):
 
 ## Targets
 
-| Metric | Baseline | Target | Achieved | Status |
-|---|---:|---:|---:|:---:|
-| Reference 14-feature bundle | 77.1 KB gzip | <= 68 KB | **66.8 KB gzip** | ✅ PASS |
-| Full component dist (excluding app CSS) | 154.1 KB gzip | <= 138 KB | **137.7 KB gzip** | ✅ PASS |
-| Reachable shared base | 27.8 KB gzip | <= 22 KB | **25.7 KB gzip** | In progress toward stretch |
-| `setData` bytes per interaction | Baseline | -20% | **-30% to -50%** | ✅ PASS |
-| `setData` calls per tap (slider/checkbox/stepper) | Baseline | <= 1 | **<= 1** | ✅ PASS |
-| Standalone `role=` in WXML | 18 components | 0 | **0 (`aria-role`)** | ✅ PASS |
-| Unsupported `tabindex` in WXML | Multiple | 0 | **0** | ✅ PASS |
+| Metric                                            |      Baseline |    Target |            Achieved |           Status           |
+| ------------------------------------------------- | ------------: | --------: | ------------------: | :------------------------: |
+| Reference 14-feature bundle                       |  77.1 KB gzip |  <= 68 KB |    **66.8 KB gzip** |          ✅ PASS           |
+| Full component dist (excluding app CSS)           | 154.1 KB gzip | <= 138 KB |   **137.7 KB gzip** |          ✅ PASS           |
+| Reachable shared base                             |  27.8 KB gzip |  <= 22 KB |    **25.7 KB gzip** | In progress toward stretch |
+| `setData` bytes per interaction                   |      Baseline |      -20% |    **-30% to -50%** |          ✅ PASS           |
+| `setData` calls per tap (slider/checkbox/stepper) |      Baseline |      <= 1 |            **<= 1** |          ✅ PASS           |
+| Standalone `role=` in WXML                        | 18 components |         0 | **0 (`aria-role`)** |          ✅ PASS           |
+| Unsupported `tabindex` in WXML                    |      Multiple |         0 |               **0** |          ✅ PASS           |
 
 The reference bundle should reach TDesign parity. It will remain roughly 1.7–2x Vant.
 
@@ -407,13 +409,13 @@ Tooling: `scripts/chunk-breakdown.mjs <chunk.js>` (needs a build with `sourcemap
 
 Experiment: add a `codeSplitting` group `theme-runtime` matching `src/utils/{variants,ui}.ts`. Rolldown then moved `core` and `utils` with it (22.2 KB raw) and left form context, `context`, and `anatomy` (6.9 KB raw) in `common.js`, which only machine components require.
 
-| Measurement | Before | After |
-|---|---:|---:|
-| `card` total reachable (gzip) | 14.7 KB | 12.7 KB |
+| Measurement                   |                Before |                 After |
+| ----------------------------- | --------------------: | --------------------: |
+| `card` total reachable (gzip) |               14.7 KB |               12.7 KB |
 | `icon` / `skeleton` / `badge` | 14.4 / 14.3 / 14.8 KB | 12.4 / 12.3 / 12.8 KB |
-| `button` total reachable | 23.3 KB | 23.8 KB |
-| Most interactive components | — | +0.4 to +0.7 KB |
-| Sum of all dist files | 159.4 KB | 161.5 KB |
+| `button` total reachable      |               23.3 KB |               23.8 KB |
+| Most interactive components   |                     — |       +0.4 to +0.7 KB |
+| Sum of all dist files         |              159.4 KB |              161.5 KB |
 
 Conclusion: **splitting `common.js` does not reduce app size.** Package size is the union of everything the app uses. An app that uses both `card` and `button` loads both chunks, so a split only adds per-chunk overhead and loses shared gzip context. The split only helps a page that uses presentational components alone, and only if the base library supports per-page injection (`lazyCodeLoading: "requiredComponents"`, about 2.11.1+). It is a startup/evaluation optimization, not a byte optimization. The experiment was reverted.
 
@@ -639,18 +641,18 @@ Estimated result:
 
 ## Suggested PR Sequence
 
-| PR | Scope | Expected gzip improvement |
-|---|---|---:|
-| 1 | Extend `size-report.mjs` (14-feature union + budget flag) + `setData` harness + CI budget | 0 KB (enables everything else) |
-| 2 | WeChat ARIA alignment (`role` -> `aria-role`) + screen-reader tests | 0 KB |
-| 3 | Static attrs to WXML (`parts.*.attrs`) + short ID factory + Zero Prop-Echoing (Phase 1.9) | 2–3 KB + -20–40% `setData` payload |
-| 4 | Attribute modes (`dataAttributes: "minimal" \| "full"`) + ARIA helpers + tests | 1–2 KB |
-| 5 | `common.js` dead-code elimination: decouple `ui.ts` from `@code-ui/core`, move `setupFormFieldSync` to `behaviors/form`, subpath `@code-ui/utils` | 3–5 KB |
-| 6 | Connect/attribute builder consolidation + shrink `progress` & heavy machines (`form`, `slider`, `qr-code`) | 2–4 KB |
-| 7 | `tv` conflict mapper compaction (`computeUtilityKey` table-driven + build-time pre-dedupe) + theme config compaction | 2–4 KB |
-| 8 | CSS budget verification and unused keyframe/utility cleanup | 2–4 KB |
-| 9 | Runtime perf: `diffSnapshot` single-pass, `resolveSlots` default fast-path, `computed.classes` reactivity scoping, WXS gestures | 0 KB (major CPU/IPC win) |
-| 10 | Docs, migration notes, `AGENTS.md` update | 0 KB |
+| PR  | Scope                                                                                                                                             |          Expected gzip improvement |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------: |
+| 1   | Extend `size-report.mjs` (14-feature union + budget flag) + `setData` harness + CI budget                                                         |     0 KB (enables everything else) |
+| 2   | WeChat ARIA alignment (`role` -> `aria-role`) + screen-reader tests                                                                               |                               0 KB |
+| 3   | Static attrs to WXML (`parts.*.attrs`) + short ID factory + Zero Prop-Echoing (Phase 1.9)                                                         | 2–3 KB + -20–40% `setData` payload |
+| 4   | Attribute modes (`dataAttributes: "minimal" \| "full"`) + ARIA helpers + tests                                                                    |                             1–2 KB |
+| 5   | `common.js` dead-code elimination: decouple `ui.ts` from `@code-ui/core`, move `setupFormFieldSync` to `behaviors/form`, subpath `@code-ui/utils` |                             3–5 KB |
+| 6   | Connect/attribute builder consolidation + shrink `progress` & heavy machines (`form`, `slider`, `qr-code`)                                        |                             2–4 KB |
+| 7   | `tv` conflict mapper compaction (`computeUtilityKey` table-driven + build-time pre-dedupe) + theme config compaction                              |                             2–4 KB |
+| 8   | CSS budget verification and unused keyframe/utility cleanup                                                                                       |                             2–4 KB |
+| 9   | Runtime perf: `diffSnapshot` single-pass, `resolveSlots` default fast-path, `computed.classes` reactivity scoping, WXS gestures                   |           0 KB (major CPU/IPC win) |
+| 10  | Docs, migration notes, `AGENTS.md` update                                                                                                         |                               0 KB |
 
 ## Definition of Done
 
@@ -671,20 +673,20 @@ Estimated result:
 
 ## Risks and Rollback
 
-| Risk | Mitigation |
-|---|---|
-| Removing `data-*` breaks user CSS | Ship `minimal` as opt-in first; keep `full` as default until a major release |
-| WeChat ignores W3C `role` | Emit `aria-role` at the WXML boundary; add a test that forbids standalone `role` attributes |
-| Skyline drops most ARIA attributes | Limit Skyline guarantees to `aria-role`/`aria-label`/`aria-hidden`/`aria-disabled`; document and test on Skyline Nightly |
-| Stringified booleans announce incorrectly | Bind native booleans or explicit tokens; verify VoiceOver and TalkBack announcements |
-| Structural roles are ineffective on mobile | Prefer widget roles; use `aria-label`/`aria-hidden` fallbacks; test representative roles |
-| Custom component boundaries hide ARIA | Put ARIA on rendered inner nodes and verify the accessibility tree on a real device |
-| Short IDs collide | Namespaced prefix + scope + unit tests |
-| Removing decorative IDs breaks focus/relations | Audit every `aria-labelledby`, relation, and focus query before removal |
-| Splitting `common.js` duplicates code | Measure per-chunk output and verify no duplicate modules; revert the split if total size increases |
-| Terser/property mangling breaks runtime | Restrict mangling to internal fields; run full machine and component tests |
-| Tailwind purge removes required classes | Compare rendered class strings against generated CSS in tests |
-| Per-file gzip overstates savings | Keep the same measurement method for all before/after comparisons; validate final numbers against an actual WeChat package upload |
+| Risk                                           | Mitigation                                                                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Removing `data-*` breaks user CSS              | Ship `minimal` as opt-in first; keep `full` as default until a major release                                                      |
+| WeChat ignores W3C `role`                      | Emit `aria-role` at the WXML boundary; add a test that forbids standalone `role` attributes                                       |
+| Skyline drops most ARIA attributes             | Limit Skyline guarantees to `aria-role`/`aria-label`/`aria-hidden`/`aria-disabled`; document and test on Skyline Nightly          |
+| Stringified booleans announce incorrectly      | Bind native booleans or explicit tokens; verify VoiceOver and TalkBack announcements                                              |
+| Structural roles are ineffective on mobile     | Prefer widget roles; use `aria-label`/`aria-hidden` fallbacks; test representative roles                                          |
+| Custom component boundaries hide ARIA          | Put ARIA on rendered inner nodes and verify the accessibility tree on a real device                                               |
+| Short IDs collide                              | Namespaced prefix + scope + unit tests                                                                                            |
+| Removing decorative IDs breaks focus/relations | Audit every `aria-labelledby`, relation, and focus query before removal                                                           |
+| Splitting `common.js` duplicates code          | Measure per-chunk output and verify no duplicate modules; revert the split if total size increases                                |
+| Terser/property mangling breaks runtime        | Restrict mangling to internal fields; run full machine and component tests                                                        |
+| Tailwind purge removes required classes        | Compare rendered class strings against generated CSS in tests                                                                     |
+| Per-file gzip overstates savings               | Keep the same measurement method for all before/after comparisons; validate final numbers against an actual WeChat package upload |
 
 ## Notes
 

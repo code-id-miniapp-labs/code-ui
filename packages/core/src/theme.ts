@@ -59,7 +59,7 @@ export interface ThemeOptions<
 > {
   colors?: C | readonly string[] | string[];
   errorColor?: string;
-  colorSystem?: ColorSystem;
+  colorMode?: ColorSystem;
   transitions?: boolean;
   [key: string]: any;
 }

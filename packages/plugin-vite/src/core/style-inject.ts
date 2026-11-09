@@ -157,16 +157,16 @@ function resolveIconsPluginDirective(
 }
 
 function resolveColorSystemDirective(
-  colorSystem: string | undefined,
+  colorMode: string | undefined,
   code: string,
 ): string {
   if (code.includes("@custom-variant dark")) return "";
 
-  if (colorSystem === "light") {
+  if (colorMode === "light") {
     return "\n@custom-variant dark (&:where(.cui-color-system-light, .cui-color-system-light *));\n";
   }
 
-  if (colorSystem === "dark") {
+  if (colorMode === "dark") {
     return "\n@custom-variant dark (&:not(.cui-color-system-light));\n";
   }
 
@@ -184,7 +184,7 @@ export function transformAppStyle(
   let injection = "";
 
   injection += resolveColorSystemDirective(
-    configManager.resolvedConfig.ui?.colorSystem,
+    configManager.resolvedConfig.ui?.colorMode,
     code,
   );
 

@@ -141,7 +141,7 @@ export interface UIConfig {
    * - `"dark"`: compile only dark classes (applied unconditionally) and use
    *   dark design tokens as the default.
    */
-  colorSystem?: ColorSystem;
+  colorMode?: ColorSystem;
   /** Border radius tokens (base radius string or object with custom overrides) */
   radius?: UIRadiusConfig;
   /** Transition duration tokens */
@@ -209,10 +209,7 @@ export interface CodeUIConfig {
         dataAttributes?: DataAttributesMode | undefined;
       } & {
         [K in keyof ComponentRegistry]?: ComponentConfig<ComponentRegistry[K]>;
-      } & Record<
-          string,
-          ComponentConfig<any> | DataAttributesMode | undefined
-        >)
+      } & Record<string, ComponentConfig<any> | DataAttributesMode | undefined>)
     | undefined;
 }
 

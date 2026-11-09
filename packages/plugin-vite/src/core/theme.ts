@@ -515,9 +515,9 @@ function getPropertyFamily(utility: string): string | null {
 }
 
 function createColorSystemClassTransformer(
-  colorSystem: ColorSystem,
+  colorMode: ColorSystem,
 ): (value: string) => string {
-  if (colorSystem === "light") {
+  if (colorMode === "light") {
     return (value) =>
       value
         .split(WHITESPACE_RE)
@@ -626,11 +626,11 @@ function transformColorSystemNode(
  */
 export function applyColorSystemToTheme(
   theme: any,
-  colorSystem: ColorSystem | undefined,
+  colorMode: ColorSystem | undefined,
 ): any {
-  if (!colorSystem || colorSystem === "system") return theme;
+  if (!colorMode || colorMode === "system") return theme;
 
-  const transform = createColorSystemClassTransformer(colorSystem);
+  const transform = createColorSystemClassTransformer(colorMode);
 
   return {
     ...theme,
@@ -658,7 +658,7 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   const themeLines: string[] = [];
   const rootLines: string[] = [];
   const darkLines: string[] = [];
-  const colorSystem = ui?.colorSystem ?? "system";
+  const colorMode = ui?.colorMode ?? "system";
 
   const configuredColors: Record<string, ColorValue | string | undefined> = {
     ...DEFAULT_COLORS,
@@ -744,13 +744,13 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   rootLines.push("  --tw-translate-y: 0;");
   rootLines.push("  --tw-translate-z: 0;");
 
-  if (colorSystem === "dark") {
+  if (colorMode === "dark") {
     rootLines.push(...darkLines);
   }
 
   let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page, :host {\n${rootLines.join("\n")}\n}\n`;
 
-  if (colorSystem === "system" && darkLines.length > 0) {
+  if (colorMode === "system" && darkLines.length > 0) {
     css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="dark"], .dark {\n${darkLines.join("\n")}\n}\n`;
   }
 
@@ -853,11 +853,11 @@ export function compileComponentTheme(
       : DEFAULT_THEME_COLORS;
 
   const errorColor = resolvedConfig.ui?.colors?.error ? "error" : "danger";
-  const colorSystem = resolvedConfig.ui?.colorSystem ?? "system";
+  const colorMode = resolvedConfig.ui?.colorMode ?? "system";
 
   const isFactoryFn = typeof factory === "function";
   const rawTheme = isFactoryFn
-    ? factory({ colors: allColors, errorColor, colorSystem })
+    ? factory({ colors: allColors, errorColor, colorMode })
     : factory;
   const camelName = componentName.replace(/-([a-z])/g, (_, c: string) =>
     c.toUpperCase(),
@@ -875,7 +875,7 @@ export function compileComponentTheme(
     ? mergeComponentConfig(baseTheme, overrides)
     : baseTheme;
 
-  return applyColorSystemToTheme(compiled, colorSystem);
+  return applyColorSystemToTheme(compiled, colorMode);
 }
 
 export function extractClassesFromThemeConfig(themeConfig: any): string[] {

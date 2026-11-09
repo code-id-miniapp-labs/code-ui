@@ -124,7 +124,7 @@ describe("generateThemeCSS", () => {
   });
 
   it("skips dark token overrides for a light color system", () => {
-    const css = generateThemeCSS({ colorSystem: "light" });
+    const css = generateThemeCSS({ colorMode: "light" });
 
     expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
     expect(css).not.toContain("@media (prefers-color-scheme: dark)");
@@ -133,7 +133,7 @@ describe("generateThemeCSS", () => {
   });
 
   it("uses dark token values as defaults for a dark color system", () => {
-    const css = generateThemeCSS({ colorSystem: "dark" });
+    const css = generateThemeCSS({ colorMode: "dark" });
 
     expect(css).toContain("--ui-primary: var(--ui-color-primary-500);");
     expect(css).toContain("--ui-primary: var(--ui-color-primary-400);");
@@ -176,7 +176,7 @@ describe("codeUI virtual themes", () => {
   it("keeps light and dark classes for the system color system", () => {
     const compiled = compileComponentTheme("toast", toastTheme, {
       prefix: "cui",
-      ui: { colorSystem: "system" },
+      ui: { colorMode: "system" },
     });
     const classes = extractClassesFromThemeConfig(compiled);
 
@@ -189,7 +189,7 @@ describe("codeUI virtual themes", () => {
   it("strips dark classes for the light color system", () => {
     const compiled = compileComponentTheme("toast", toastTheme, {
       prefix: "cui",
-      ui: { colorSystem: "light" },
+      ui: { colorMode: "light" },
     });
     const classes = extractClassesFromThemeConfig(compiled);
 
@@ -205,7 +205,7 @@ describe("codeUI virtual themes", () => {
   it("compiles only unconditional dark classes for the dark color system", () => {
     const compiled = compileComponentTheme("toast", toastTheme, {
       prefix: "cui",
-      ui: { colorSystem: "dark" },
+      ui: { colorMode: "dark" },
     });
     const classes = extractClassesFromThemeConfig(compiled);
 
@@ -300,7 +300,7 @@ describe("codeUI virtual themes", () => {
 
   it("disables dark variants for the light color system", () => {
     const configManager = new PluginConfigManager({
-      ui: { colorSystem: "light" },
+      ui: { colorMode: "light" },
     });
     const result = transformAppStyle(
       '@import "tailwindcss";',
@@ -316,7 +316,7 @@ describe("codeUI virtual themes", () => {
 
   it("forces dark variants for the dark color system", () => {
     const configManager = new PluginConfigManager({
-      ui: { colorSystem: "dark" },
+      ui: { colorMode: "dark" },
     });
     const result = transformAppStyle(
       '@import "tailwindcss";',
