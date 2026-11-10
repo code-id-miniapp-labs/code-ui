@@ -23,7 +23,6 @@ export const defaultFileUploadProps: FileUploadProps = {
   interactive: true,
   dropzone: true,
   layout: "list",
-  label: "",
   title: "",
   description: "",
   icon: "upload",
@@ -32,6 +31,7 @@ export const defaultFileUploadProps: FileUploadProps = {
   fileIcon: "file",
   imageIcon: "image",
   videoIcon: "video",
+  audioIcon: "audio",
   successIcon: "check",
   errorIcon: "",
   color: "primary",
@@ -40,4 +40,3 @@ export const defaultFileUploadProps: FileUploadProps = {
   uploading: false,
   ui: {},
 };
-

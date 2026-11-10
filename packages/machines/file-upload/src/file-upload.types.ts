@@ -130,8 +130,6 @@ export interface FileUploadProps {
   dropzone?: boolean | undefined;
   /** Layout for file list: list or grid */
   layout?: FileUploadLayout | undefined;
-  /** Dropzone prompt title */
-  label?: string | undefined;
   /** Dropzone prompt title alias */
   title?: string | undefined;
   /** Dropzone hint description */
@@ -148,6 +146,8 @@ export interface FileUploadProps {
   imageIcon?: string | undefined;
   /** Video file icon name */
   videoIcon?: string | undefined;
+  /** Audio file icon name */
+  audioIcon?: string | undefined;
   /** Success status icon name */
   successIcon?: string | undefined;
   /** Error status icon name */
@@ -239,10 +239,12 @@ export type FileUploadService = Service<FileUploadSchema>;
 export type FileUploadMachine = Machine<FileUploadSchema>;
 export type FileUploadParams = Params<FileUploadSchema>;
 
+export type FileUploadItemType = "image" | "video" | "audio" | "file";
+
 export interface FileUploadItemView extends FileUploadFile {
   index: number;
   formattedSize: string;
-  isImage: boolean;
+  fileType: FileUploadItemType;
   itemProps: Record<string, any>;
   removeProps: Record<string, any>;
   previewProps: Record<string, any>;
@@ -264,6 +266,7 @@ export interface FileUploadApi {
   fileListProps: Record<string, any>;
   chooseFiles: () => Promise<void>;
   handleDropzoneTap: (event: any) => Promise<void>;
+  addFiles: (files: any[]) => void;
   removeFile: (idOrIndex: string | number) => void;
   handleRemove: (event: any) => void;
   previewFile: (idOrIndex: string | number) => void;

@@ -8,6 +8,7 @@
     "pages/card/index",
     "pages/chip/index",
     "pages/drawer/index",
+    "pages/file-upload/index",
     "pages/input/index",
     "pages/pin-input/index",
     "pages/progress/index",

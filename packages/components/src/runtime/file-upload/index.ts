@@ -10,6 +10,7 @@ import {
   fileUploadMachine,
   connectFileUpload,
   defaultFileUploadProps,
+  stopActiveAudio,
 } from "@code-ui/file-upload";
 import themeConfig from "virtual:cui/theme/file-upload";
 import { tv } from "../../utils/variants";
@@ -34,6 +35,12 @@ Component(
         value: "",
       },
     }),
+
+    lifetimes: {
+      detached() {
+        stopActiveAudio();
+      },
+    },
 
     computed: {
       classes() {

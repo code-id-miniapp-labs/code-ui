@@ -2,71 +2,28 @@ import type {
   FileUploadApi,
   FileUploadFile,
   FileUploadItemView,
-  FileUploadRejectedFile,
   FileUploadService,
 } from "./file-upload.types";
 import * as dom from "./file-upload.dom";
+import {
+  cleanExtensions,
+  formatBytes,
+  getFileType,
+  hasDocumentExtension,
+  isAudioFile,
+  isImageFile,
+  isVideoFile,
+  validateFiles,
+} from "./file-upload.utils";
 
-export function formatBytes(bytes: number, decimals = 1): string {
-  if (bytes <= 0) return "0 B";
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  const safeI = Math.min(i, sizes.length - 1);
-  return `${parseFloat((bytes / Math.pow(k, safeI)).toFixed(dm))} ${sizes[safeI]}`;
-}
-
-export function isImageFile(
-  type?: string,
-  path?: string,
-  name?: string,
-): boolean {
-  if (type === "image" || type?.startsWith("image/")) return true;
-  const check = (path || name || "").toLowerCase();
-  return /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/.test(check);
-}
-
-export function isVideoFile(
-  type?: string,
-  path?: string,
-  name?: string,
-): boolean {
-  if (type === "video" || type?.startsWith("video/")) return true;
-  const check = (path || name || "").toLowerCase();
-  return /\.(mp4|mov|m4v|avi|mkv|webm)$/.test(check);
-}
-
-function matchesAccept(
-  file: FileUploadFile,
-  accept: string | string[],
-): boolean {
-  if (!accept) return true;
-  const acceptList = Array.isArray(accept)
-    ? accept
-    : accept.split(",").map((s) => s.trim().toLowerCase());
-
-  const fileName = (file.name || "").toLowerCase();
-  const filePath = (file.path || "").toLowerCase();
-  const fileType = (file.type || "").toLowerCase();
-
-  return acceptList.some((pattern) => {
-    if (!pattern) return true;
-    if (pattern === "*/*") return true;
-    if (pattern.startsWith(".")) {
-      return fileName.endsWith(pattern) || filePath.endsWith(pattern);
-    }
-    if (pattern.endsWith("/*")) {
-      const category = pattern.slice(0, -2);
-      return (
-        fileType.startsWith(category) ||
-        (category === "image" && isImageFile(fileType, filePath, fileName)) ||
-        (category === "video" && isVideoFile(fileType, filePath, fileName))
-      );
-    }
-    return fileType === pattern;
-  });
-}
+export {
+  formatBytes,
+  getFileType,
+  hasDocumentExtension,
+  isImageFile,
+  isVideoFile,
+  isAudioFile,
+} from "./file-upload.utils";
 
 function getEventIndex(event: any, fallback = -1): number {
   const index =
@@ -82,6 +39,77 @@ let fileIdCounter = 0;
 function generateFileId(): string {
   fileIdCounter += 1;
   return `file-${Date.now()}-${fileIdCounter}`;
+}
+
+let activeAudioCtx: any = null;
+let activeAudioPath: string | null = null;
+
+export function stopActiveAudio(): void {
+  if (activeAudioCtx) {
+    try {
+      activeAudioCtx.stop();
+      activeAudioCtx.destroy();
+    } catch {
+      // Audio context may already be closed
+    }
+    activeAudioCtx = null;
+    activeAudioPath = null;
+  }
+}
+
+function playAudio(file: FileUploadFile, wxApi: any): void {
+  if (typeof wxApi.createInnerAudioContext !== "function") return;
+
+  // Toggle play/pause if the same audio file is clicked
+  if (activeAudioCtx && activeAudioPath === file.path) {
+    if (activeAudioCtx.paused) {
+      activeAudioCtx.play();
+      wxApi.showToast?.({
+        title: `Playing ${file.name}`,
+        icon: "none",
+        duration: 1500,
+      });
+    } else {
+      activeAudioCtx.pause();
+      wxApi.showToast?.({
+        title: `Paused ${file.name}`,
+        icon: "none",
+        duration: 1500,
+      });
+    }
+    return;
+  }
+
+  stopActiveAudio();
+
+  const audio = wxApi.createInnerAudioContext();
+  activeAudioCtx = audio;
+  activeAudioPath = file.path || "";
+  audio.src = file.path;
+  audio.autoplay = true;
+
+  audio.onPlay(() => {
+    wxApi.showToast?.({
+      title: `Playing ${file.name}`,
+      icon: "none",
+      duration: 1500,
+    });
+  });
+
+  audio.onEnded(() => {
+    activeAudioPath = null;
+  });
+
+  audio.onError((err: any) => {
+    console.warn("[file-upload] Audio playback error:", err);
+    wxApi.showToast?.({
+      title: "Audio playback error",
+      icon: "none",
+      duration: 2000,
+    });
+  });
+
+  audio.play();
 }
 
 export function connectFileUpload(service: FileUploadService): FileUploadApi {
@@ -109,36 +137,25 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     : `Upload files, ${fileCount} of ${maxFiles} files selected`;
 
   const items: FileUploadItemView[] = files.map((file, index) => {
-    const isImage = isImageFile(file.type, file.path, file.name);
+    const fileType = getFileType(file);
     const fileId = file.id || String(index);
 
     return {
       ...file,
       index,
       formattedSize: formatBytes(file.size),
-      isImage,
+      fileType,
       itemProps: {
         id: dom.getFileId(scope, fileId),
-        "data-scope": "file-upload",
-        "data-part": "file",
-        "data-index": index,
-        "data-status": file.status || "idle",
         "aria-role": "listitem",
       },
       removeProps: {
         id: dom.getFileRemoveId(scope, fileId),
-        "data-scope": "file-upload",
-        "data-part": "file-remove",
-        "data-index": index,
         "aria-role": "button",
         "aria-label": `Remove ${file.name}`,
-        "aria-disabled": disabled || readOnly,
       },
       previewProps: {
         id: dom.getFilePreviewId(scope, fileId),
-        "data-scope": "file-upload",
-        "data-part": "file-preview",
-        "data-index": index,
         "aria-role": "button",
         "aria-label": `Preview ${file.name}`,
       },
@@ -148,10 +165,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const handlePickedFiles = (rawFiles: any[]) => {
     const mapped: FileUploadFile[] = rawFiles.map((item) => {
       const path = item.tempFilePath || item.path || "";
-      const name =
-        item.name ||
-        path.split("/").pop() ||
-        `file-${Date.now()}`;
+      const name = item.name || path.split("/").pop() || `file-${Date.now()}`;
       const size = item.size ?? 0;
       const type =
         item.fileType ||
@@ -160,7 +174,9 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
           ? "image"
           : isVideoFile(undefined, path, name)
             ? "video"
-            : "file");
+            : isAudioFile(undefined, path, name)
+              ? "audio"
+              : "file");
       const thumb =
         item.thumbTempFilePath ||
         (isImageFile(type, path, name) ? path : undefined);
@@ -179,20 +195,14 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
       };
     });
 
-    const accepted: FileUploadFile[] = [];
-    const rejected: FileUploadRejectedFile[] = [];
-
-    for (const file of mapped) {
-      if (file.size > maxSize) {
-        rejected.push({ file, reason: "size-too-large" });
-      } else if (file.size < minSize) {
-        rejected.push({ file, reason: "size-too-small" });
-      } else if (accept && !matchesAccept(file, accept)) {
-        rejected.push({ file, reason: "type-not-allowed" });
-      } else {
-        accepted.push(file);
-      }
-    }
+    const { accepted, rejected } = validateFiles(mapped, {
+      maxSize,
+      minSize,
+      accept,
+      maxFiles,
+      multiple,
+      currentCount: files.length,
+    });
 
     if (rejected.length > 0) {
       prop("onReject")?.({ files: rejected });
@@ -220,19 +230,16 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     // Detect messageFile requirement: explicit mode or accept contains document extensions
     const acceptStr = (Array.isArray(accept) ? accept.join(",") : accept || "")
       .toLowerCase();
-    const hasDocExtensions =
-      /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar|csv)/i.test(acceptStr);
+    const hasDoc = hasDocumentExtension(acceptStr);
 
-    if (mode === "messageFile" || (mode === "auto" && hasDocExtensions)) {
+    if (mode === "messageFile" || (mode === "auto" && hasDoc)) {
       if (typeof wxApi.chooseMessageFile === "function") {
+        const cleanExts = cleanExtensions(accept);
+
         wxApi.chooseMessageFile({
           count: remainingSlots,
-          type: "all",
-          extension: Array.isArray(accept)
-            ? accept
-            : accept
-              ? accept.split(",").map((s) => s.trim())
-              : undefined,
+          type: cleanExts.length > 0 ? "file" : "all",
+          extension: cleanExts.length > 0 ? cleanExts : undefined,
           success: (res: any) => {
             handlePickedFiles(res.tempFiles || []);
           },
@@ -289,6 +296,10 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
         ? idOrIndex
         : files.findIndex((f) => f.id === idOrIndex);
     if (index >= 0) {
+      const target = files[index];
+      if (target?.path && target.path === activeAudioPath) {
+        stopActiveAudio();
+      }
       send({ type: "REMOVE_FILE", index });
     }
   };
@@ -315,23 +326,43 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     const wxApi = getWx();
     if (!wxApi || !file.path) return;
 
-    if (isImageFile(file.type, file.path, file.name)) {
+    const fileType = getFileType(file);
+    if (fileType === "image") {
       if (typeof wxApi.previewImage === "function") {
+        const imageUrls = files
+          .filter((f) => getFileType(f) === "image" && f.path)
+          .map((f) => f.path as string);
         wxApi.previewImage({
           current: file.path,
-          urls: [file.path],
+          urls: imageUrls.length > 0 ? imageUrls : [file.path],
         });
       }
-    } else if (isVideoFile(file.type, file.path, file.name)) {
+    } else if (fileType === "video") {
       if (typeof wxApi.previewMedia === "function") {
         wxApi.previewMedia({
-          sources: [{ url: file.path, type: "video" }],
+          current: 0,
+          sources: [
+            {
+              url: file.path,
+              type: "video",
+              poster: file.thumb || "",
+            },
+          ],
+          fail: (err: any) => {
+            console.warn("[file-upload] previewMedia failed:", err);
+          },
         });
       }
+    } else if (fileType === "audio") {
+      playAudio(file, wxApi);
     } else {
       if (typeof wxApi.openDocument === "function") {
         wxApi.openDocument({
           filePath: file.path,
+          showMenu: true,
+          fail: (err: any) => {
+            console.warn("[file-upload] openDocument failed:", err);
+          },
         });
       }
     }
@@ -356,6 +387,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
 
   const clearFiles = (): void => {
     if (!interactive) return;
+    stopActiveAudio();
     send({ type: "CLEAR_FILES" });
   };
 
@@ -404,6 +436,10 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     chooseFiles,
     handleDropzoneTap: async (_event: any) => {
       await chooseFiles();
+    },
+    addFiles: (rawFiles: any[]) => {
+      if (!interactive) return;
+      handlePickedFiles(rawFiles);
     },
     removeFile,
     handleRemove,

@@ -5,9 +5,29 @@ export {
 export {
   connectFileUpload,
   formatBytes,
+  isAudioFile,
   isImageFile,
   isVideoFile,
+  stopActiveAudio,
 } from "./file-upload.connect";
+export {
+  cleanExtensions,
+  createFileTypeValidator,
+  getFileExtension,
+  getFileMimeType,
+  getFileType,
+  getTotalFileSize,
+  hasDocumentExtension,
+  isDocumentFile,
+  isValidFileSize,
+  isValidFileType,
+  validateFiles,
+} from "./file-upload.utils";
+export type {
+  FileSizeOptions,
+  ValidateFilesOptions,
+  ValidateFilesResult,
+} from "./file-upload.utils";
 export * as fileUploadDom from "./file-upload.dom";
 export { fileUploadMachine } from "./file-upload.machine";
 export { defaultFileUploadProps } from "./file-upload.props";
@@ -22,6 +42,7 @@ export type {
   FileUploadEvent,
   FileUploadFile,
   FileUploadGuard,
+  FileUploadItemType,
   FileUploadItemView,
   FileUploadLayout,
   FileUploadMachine,
