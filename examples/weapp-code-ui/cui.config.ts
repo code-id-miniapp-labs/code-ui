@@ -9,6 +9,11 @@ export default defineConfig({
     close: "i-lucide-x",
     minus: "i-lucide-minus",
     chevronDown: "i-lucide-chevron-down",
+    upload: "i-lucide-upload",
+    file: "i-lucide-file-text",
+    image: "i-lucide-image",
+    video: "i-lucide-video",
+    audio: "i-lucide-music",
   },
   ui: {
     colors: {

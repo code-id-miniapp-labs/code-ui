@@ -373,7 +373,7 @@ pnpm test
 # 3. Typecheck entire monorepo (exactOptionalPropertyTypes: true)
 pnpm typecheck
 
-# 4. Check bundle size budgets (reference <= 68.0 KB gz, full dist <= 138.0 KB gz)
+# 4. Check bundle size budgets (reference <= 68.0 KB gz, full dist <= 145.0 KB gz)
 pnpm size:check
 
 # 5. Lint touched packages (forbids non-null assertions and inline type imports)

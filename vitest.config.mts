@@ -25,6 +25,10 @@ export default defineConfig({
       "@code-ui/checkbox": resolve(import.meta.dirname, "packages/machines/checkbox/src"),
       "@code-ui/checkbox-group": resolve(import.meta.dirname, "packages/machines/checkbox-group/src"),
       "@code-ui/drawer": resolve(import.meta.dirname, "packages/machines/drawer/src"),
+      "@code-ui/file-upload": resolve(
+        import.meta.dirname,
+        "packages/machines/file-upload/src",
+      ),
       "@code-ui/form/context": resolve(
         import.meta.dirname,
         "packages/machines/form/src/form.context.ts",

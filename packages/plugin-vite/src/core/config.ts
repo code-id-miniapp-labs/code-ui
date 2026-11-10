@@ -392,6 +392,8 @@ if (import.meta.hot) {
         allThemeClasses.add(`${prefix}-${col}-close`);
         allThemeClasses.add(`${prefix}-${col}-loading`);
         allThemeClasses.add(`${prefix}-${col}-chevron-down`);
+        allThemeClasses.add(`${prefix}-${col}-upload`);
+        allThemeClasses.add(`${prefix}-${col}-file`);
       }
     }
 

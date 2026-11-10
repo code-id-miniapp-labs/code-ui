@@ -17,6 +17,12 @@ import type {
 } from "@code-ui/checkbox-group";
 import type { DrawerProps } from "@code-ui/drawer";
 import type {
+  FileUploadChangeDetails,
+  FileUploadFile,
+  FileUploadProps,
+  FileUploadRejectedFile,
+} from "@code-ui/file-upload";
+import type {
   FormErrorDetails,
   FormProps,
   FormRule,
@@ -162,6 +168,63 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   onDragStart?: (event: WechatMiniprogram.CustomEvent) => void;
   onDrag?: (event: WechatMiniprogram.CustomEvent) => void;
   onDragEnd?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
+export interface CuiFileUploadElementProps extends CuiCommonElementProps {
+  ui?: FileUploadProps["ui"];
+  name?: string;
+  value?: FileUploadFile[];
+  defaultValue?: FileUploadFile[];
+  color?: FileUploadProps["color"];
+  variant?: FileUploadProps["variant"];
+  size?: FileUploadProps["size"];
+  layout?: FileUploadProps["layout"];
+  multiple?: boolean;
+  maxFiles?: number;
+  maxSize?: number;
+  minSize?: number;
+  accept?: string | string[];
+  mode?: FileUploadProps["mode"];
+  sourceType?: FileUploadProps["sourceType"];
+  mediaType?: FileUploadProps["mediaType"];
+  sizeType?: FileUploadProps["sizeType"];
+  camera?: FileUploadProps["camera"];
+  maxDuration?: number;
+  interactive?: boolean;
+  dropzone?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  invalid?: boolean;
+  label?: string;
+  title?: string;
+  description?: string;
+  icon?: string;
+  loadingIcon?: string;
+  deleteIcon?: string;
+  fileIcon?: string;
+  imageIcon?: string;
+  videoIcon?: string;
+  successIcon?: string;
+  errorIcon?: string;
+  uploading?: boolean;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<FileUploadChangeDetails>,
+  ) => void;
+  onAccept?: (
+    event: WechatMiniprogram.CustomEvent<{ files: FileUploadFile[] }>,
+  ) => void;
+  onReject?: (
+    event: WechatMiniprogram.CustomEvent<{ files: FileUploadRejectedFile[] }>,
+  ) => void;
+  onRemove?: (
+    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+  ) => void;
+  onPreview?: (
+    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+  ) => void;
+  onFileClick?: (
+    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+  ) => void;
 }
 
 export interface CuiFormElementProps extends CuiCommonElementProps {

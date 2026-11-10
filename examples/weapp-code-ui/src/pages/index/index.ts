@@ -135,6 +135,13 @@ Page({
         path: "/pages/drawer/index",
       },
       {
+        id: "file-upload",
+        name: "FileUpload",
+        desc: "WeChat media & file selector supporting preview, progress, validation, grid/list layouts & Form link.",
+        badge: "Interactive",
+        path: "/pages/file-upload/index",
+      },
+      {
         id: "form",
         name: "Form & Validation",
         desc: "Form validation engine with errorBag, rules, focusOnError & coexisting forms.",
