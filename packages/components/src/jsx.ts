@@ -6,6 +6,7 @@ import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
 } from "@code-ui/accordion-item";
+import type { BannerProps } from "@code-ui/banner";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -101,6 +102,43 @@ export interface CuiAppElementProps extends CuiCommonElementProps {
   ui?: Partial<Record<"root", string>>;
   /** Apply safe-area padding. Defaults to `"none"`. */
   safeArea?: "none" | "top" | "bottom" | "both";
+  topBarHeight?: number;
+  bottomBarHeight?: number;
+  autoDetectBars?: boolean;
+}
+
+export interface CuiBannerElementProps extends CuiCommonElementProps {
+  ui?: BannerProps["ui"];
+  open?: boolean;
+  defaultOpen?: boolean;
+  loading?: boolean;
+  loadingIcon?: string;
+  color?: BannerProps["color"];
+  variant?: BannerProps["variant"];
+  placement?: BannerProps["placement"];
+  mode?: BannerProps["mode"];
+  title?: string;
+  description?: string;
+  icon?: string;
+  infoIcon?: string;
+  successIcon?: string;
+  warningIcon?: string;
+  errorIcon?: string;
+  close?: boolean;
+  closeIcon?: string;
+  actions?: BannerProps["actions"];
+  topOffset?: number | string;
+  bottomOffset?: number | string;
+  autoInset?: boolean;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<{ open: boolean; id?: string }>,
+  ) => void;
+  onDismiss?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
+  ) => void;
+  onAction?: (
+    event: WechatMiniprogram.CustomEvent<{ action: any; index: number; id?: string }>,
+  ) => void;
 }
 
 export interface CuiCardElementProps extends CuiCommonElementProps {

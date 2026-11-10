@@ -4,6 +4,7 @@ export { default as app } from "./app";
 export { default as avatar } from "./avatar";
 export { default as avatarGroup } from "./avatar-group";
 export { default as badge } from "./badge";
+export { default as banner } from "./banner";
 export { default as button } from "./button";
 export { default as card } from "./card";
 export { default as checkbox } from "./checkbox";

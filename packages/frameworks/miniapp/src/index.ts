@@ -92,6 +92,7 @@ export {
   unlinkAppChildFromParent,
   withAppScale,
   withAppInset,
+  withAppBannerInset,
   registerAppHost,
   unregisterAppHost,
   setAppHostVisible,
