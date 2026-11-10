@@ -7,6 +7,11 @@ import type {
   AccordionItemOpenChangeDetails,
 } from "@code-ui/accordion-item";
 import type { BannerBadgeProps, BannerProps } from "@code-ui/banner";
+import type {
+  ActionSheetItem,
+  ActionSheetProps,
+  ActionSheetSelectDetails,
+} from "@code-ui/action-sheet";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -140,21 +145,19 @@ export interface CuiBannerElementProps extends CuiCommonElementProps {
   topOffset?: number | string;
   bottomOffset?: number | string;
   autoInset?: boolean;
-  onTap?: (
-    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
-  ) => void;
+  onTap?: (event: WechatMiniprogram.CustomEvent<{ id?: string }>) => void;
   onOpenChange?: (
     event: WechatMiniprogram.CustomEvent<{ open: boolean; id?: string }>,
   ) => void;
-  onDismiss?: (
-    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
-  ) => void;
+  onDismiss?: (event: WechatMiniprogram.CustomEvent<{ id?: string }>) => void;
   onAction?: (
-    event: WechatMiniprogram.CustomEvent<{ action: any; index: number; id?: string }>,
+    event: WechatMiniprogram.CustomEvent<{
+      action: any;
+      index: number;
+      id?: string;
+    }>,
   ) => void;
-  onMore?: (
-    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
-  ) => void;
+  onMore?: (event: WechatMiniprogram.CustomEvent<{ id?: string }>) => void;
 }
 
 export interface CuiCardElementProps extends CuiCommonElementProps {
@@ -271,13 +274,22 @@ export interface CuiFileUploadElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<{ files: FileUploadRejectedFile[] }>,
   ) => void;
   onRemove?: (
-    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+    event: WechatMiniprogram.CustomEvent<{
+      file: FileUploadFile;
+      index: number;
+    }>,
   ) => void;
   onPreview?: (
-    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+    event: WechatMiniprogram.CustomEvent<{
+      file: FileUploadFile;
+      index: number;
+    }>,
   ) => void;
   onFileClick?: (
-    event: WechatMiniprogram.CustomEvent<{ file: FileUploadFile; index: number }>,
+    event: WechatMiniprogram.CustomEvent<{
+      file: FileUploadFile;
+      index: number;
+    }>,
   ) => void;
 }
 
@@ -732,6 +744,34 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
   onOpenChange?: (
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
+}
+
+export interface CuiActionSheetElementProps extends CuiCommonElementProps {
+  ui?: ActionSheetProps["ui"];
+  open?: boolean;
+  defaultOpen?: boolean;
+  title?: string;
+  description?: string;
+  actions?: ActionSheetItem[];
+  cancelText?: string;
+  showCancel?: boolean;
+  cancelIcon?: string;
+  loadingIcon?: string;
+  close?: boolean;
+  closeIcon?: string;
+  closeOnAction?: boolean;
+  closeOnBackdropClick?: boolean;
+  duration?: number;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<{ open: boolean }>,
+  ) => void;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<ActionSheetSelectDetails>,
+  ) => void;
+  onCancel?: (event: WechatMiniprogram.CustomEvent) => void;
+  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
+  onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
 export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
