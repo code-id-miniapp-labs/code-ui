@@ -52,6 +52,12 @@ declare module "virtual:cui/theme/drawer" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/file-upload" {
+  import type { default as fileUploadTheme } from "@code-ui/core/src/theme/definitions/file-upload";
+  const theme: ReturnType<typeof fileUploadTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/form" {
   import type { default as formTheme } from "@code-ui/core/src/theme/definitions/form";
   const theme: ReturnType<typeof formTheme>;

@@ -1,0 +1,107 @@
+<view id="{{fileUpload.rootProps.id}}" class="{{classes.root}}" data-scope="file-upload" data-part="root" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled}}" data-readonly="{{fileUpload.readOnly}}" data-invalid="{{fileUpload.invalid}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="group" aria-disabled="{{fileUpload.disabled}}" aria-invalid="{{fileUpload.invalid}}">
+  <!-- Dropzone Area -->
+  <view
+    wx:if="{{dropzone && !fileUpload.isMaxFiles}}"
+    id="{{fileUpload.dropzoneProps.id}}"
+    class="{{classes.dropzone}}"
+    data-scope="file-upload"
+    data-part="dropzone"
+    data-state="{{fileUpload.state}}"
+    data-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}"
+    data-readonly="{{fileUpload.readOnly}}"
+    data-max="{{fileUpload.isMaxFiles}}"
+    aria-role="button"
+    aria-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}"
+    aria-busy="{{fileUpload.isUploading}}"
+    aria-label="{{dropzoneAriaLabel}}"
+    bindtap="handleDropzoneTap"
+  >
+    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:if="{{fileUpload.isUploading && loadingIcon}}">
+      <c-icon name="{{loadingIcon}}" className="w-full h-full animate-spin" />
+    </view>
+    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:elif="{{icon}}">
+      <c-icon name="{{icon}}" className="w-full h-full" />
+    </view>
+    <slot name="icon" wx:else />
+
+    <view class="{{classes.content}}" data-scope="file-upload" data-part="content">
+      <text wx:if="{{label || title}}" class="{{classes.title}}" data-scope="file-upload" data-part="title">{{label || title}}</text>
+      <slot name="title" wx:else />
+
+      <text wx:if="{{description}}" class="{{classes.description}}" data-scope="file-upload" data-part="description">{{description}}</text>
+      <slot name="description" wx:else />
+    </view>
+
+    <slot />
+  </view>
+
+  <!-- File List Area -->
+  <view
+    wx:if="{{fileUpload.hasFiles}}"
+    id="{{fileUpload.fileListProps.id}}"
+    class="{{classes.fileList}}"
+    data-scope="file-upload"
+    data-part="file-list"
+    data-layout="{{layout || 'list'}}"
+    aria-role="list"
+    aria-label="Uploaded files"
+  >
+    <block wx:for="{{fileUpload.files}}" wx:key="id">
+      <view
+        id="{{item.itemProps.id}}"
+        class="{{classes.file}}"
+        data-scope="file-upload"
+        data-part="file"
+        data-index="{{index}}"
+        data-status="{{item.status}}"
+        aria-role="listitem"
+        bindtap="handleFileClick"
+      >
+        <!-- File Leading: Image Thumbnail or Icon -->
+        <view class="{{classes.fileLeading}}" data-scope="file-upload" data-part="file-leading" data-index="{{index}}" bindtap="handlePreview" aria-role="button" aria-label="Preview {{item.name}}">
+          <image wx:if="{{item.isImage && item.thumb}}" src="{{item.thumb}}" mode="aspectFill" class="w-full h-full rounded-lg object-cover" />
+          <c-icon wx:elif="{{item.isImage && imageIcon}}" name="{{imageIcon}}" className="w-5 h-5 text-neutral-400" />
+          <c-icon wx:elif="{{item.type === 'video' && videoIcon}}" name="{{videoIcon}}" className="w-5 h-5 text-neutral-400" />
+          <c-icon wx:elif="{{fileIcon}}" name="{{fileIcon}}" className="w-5 h-5 text-neutral-400" />
+        </view>
+
+        <!-- File Content: Name and Formatted Size -->
+        <view class="{{classes.fileContent}}" data-scope="file-upload" data-part="file-content" data-index="{{index}}" bindtap="handlePreview">
+          <text class="{{classes.fileName}}" data-scope="file-upload" data-part="file-name">{{item.name}}</text>
+          <text class="{{classes.fileSize}}" data-scope="file-upload" data-part="file-size">{{item.formattedSize}}</text>
+          <view wx:if="{{item.status === 'uploading' && item.progress != null}}" class="{{classes.fileProgress}}" data-scope="file-upload" data-part="file-progress">
+            <view class="h-1 bg-primary rounded-full transition-all duration-200" style="width: {{item.progress}}%;" />
+          </view>
+        </view>
+
+        <!-- File Trailing: Status Indicator & Delete Button -->
+        <view wx:if="{{!fileUpload.disabled && !fileUpload.readOnly}}" class="{{classes.fileTrailing}}" data-scope="file-upload" data-part="file-trailing">
+          <!-- Status icon -->
+          <view wx:if="{{item.status === 'uploading' && loadingIcon}}" class="shrink-0 flex items-center justify-center" aria-hidden="true">
+            <c-icon name="{{loadingIcon}}" className="w-4 h-4 animate-spin text-neutral-400" />
+          </view>
+          <view wx:elif="{{item.status === 'error' && errorIcon}}" class="shrink-0 flex items-center justify-center" aria-hidden="true">
+            <c-icon name="{{errorIcon}}" className="w-4 h-4 text-danger" />
+          </view>
+          <view wx:elif="{{item.status === 'success' && successIcon}}" class="shrink-0 flex items-center justify-center" aria-hidden="true">
+            <c-icon name="{{successIcon}}" className="w-4 h-4 text-success" />
+          </view>
+
+          <!-- Delete button -->
+          <view
+            wx:if="{{deleteIcon}}"
+            class="{{classes.fileRemove}}"
+            data-scope="file-upload"
+            data-part="file-remove"
+            data-index="{{index}}"
+            aria-role="button"
+            aria-label="Remove {{item.name}}"
+            catchtap="handleRemove"
+          >
+            <c-icon name="{{deleteIcon}}" className="w-4 h-4" />
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

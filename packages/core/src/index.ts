@@ -135,6 +135,7 @@ export { default as checkboxGroupTheme } from "./theme/definitions/checkbox-grou
 export { default as chipTheme } from "./theme/definitions/chip";
 export { default as dividerTheme } from "./theme/definitions/divider";
 export { default as drawerTheme } from "./theme/definitions/drawer";
+export { default as fileUploadTheme } from "./theme/definitions/file-upload";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as iconTheme } from "./theme/definitions/icon";

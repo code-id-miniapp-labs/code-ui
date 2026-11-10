@@ -187,6 +187,10 @@ export interface IconsConfig {
   loading?: string | undefined;
   /** Chevron for input menu/ select menu */
   chevronDown?: string | undefined;
+  /** Upload icon for dropzone / file-upload */
+  upload?: string | undefined;
+  /** File icon for uploaded file items */
+  file?: string | undefined;
   /** Allow custom icon aliases */
   [iconName: string]: unknown;
 }

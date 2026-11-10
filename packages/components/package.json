@@ -92,6 +92,12 @@
       "require": "./dist/runtime/drawer/index.js"
     },
     "./drawer/*": "./dist/runtime/drawer/*",
+    "./file-upload": {
+      "types": "./dist/runtime/file-upload/index.d.ts",
+      "import": "./dist/runtime/file-upload/index.js",
+      "require": "./dist/runtime/file-upload/index.js"
+    },
+    "./file-upload/*": "./dist/runtime/file-upload/*",
     "./form": {
       "types": "./dist/runtime/form/index.d.ts",
       "import": "./dist/runtime/form/index.js",
@@ -248,6 +254,7 @@
     "@code-ui/context": "workspace:*",
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
+    "@code-ui/file-upload": "workspace:*",
     "@code-ui/form": "workspace:*",
     "@code-ui/form-field": "workspace:*",
     "@code-ui/input": "workspace:*",

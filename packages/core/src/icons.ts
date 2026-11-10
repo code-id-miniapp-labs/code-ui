@@ -12,23 +12,40 @@ function readIconsConfig(): IconsConfig {
   return (host?.__CODE_UI_GLOBAL_CONFIG__?.icons ?? {}) as IconsConfig;
 }
 
-const mkPreset = <C extends string, L extends string>(close: C, loading: L) =>
+const mkPreset = <
+  C extends string,
+  L extends string,
+  U extends string,
+  F extends string,
+>(
+  close: C,
+  loading: L,
+  upload: U,
+  file: F,
+) =>
   ({
     check: "check",
     minus: "minus",
     close,
     loading,
     chevronDown: "chevron-down",
+    upload,
+    file,
   }) as const;
 
 /**
  * Built-in icon mappings for popular Iconify collections.
  */
 export const ICON_COLLECTION_PRESETS = {
-  lucide: /* @__PURE__ */ mkPreset("x", "loader"),
-  tabler: /* @__PURE__ */ mkPreset("x", "loader-2"),
-  mdi: /* @__PURE__ */ mkPreset("close", "loading"),
-  heroicons: /* @__PURE__ */ mkPreset("x-mark", "arrow-path"),
+  lucide: /* @__PURE__ */ mkPreset("x", "loader", "upload", "file"),
+  tabler: /* @__PURE__ */ mkPreset("x", "loader-2", "upload", "file"),
+  mdi: /* @__PURE__ */ mkPreset("close", "loading", "upload", "file"),
+  heroicons: /* @__PURE__ */ mkPreset(
+    "x-mark",
+    "arrow-path",
+    "arrow-up-tray",
+    "document",
+  ),
 } as const;
 
 export type DefaultIconName = keyof (typeof ICON_COLLECTION_PRESETS)["lucide"];
@@ -36,7 +53,15 @@ export type DefaultIconName = keyof (typeof ICON_COLLECTION_PRESETS)["lucide"];
 export type ResolvedIcons = Record<DefaultIconName, string> &
   Record<string, string>;
 
-const ICON_KEYS = ["check", "minus", "close", "loading", "chevronDown"] as const;
+const ICON_KEYS = [
+  "check",
+  "minus",
+  "close",
+  "loading",
+  "chevronDown",
+  "upload",
+  "file",
+] as const;
 
 /**
  * Resolves all active icon collection names from configuration.

@@ -16,6 +16,7 @@
     "cui-checkbox-group": "runtime/checkbox-group/index",
     "cui-chip": "runtime/chip/index",
     "cui-drawer": "runtime/drawer/index",
+    "cui-file-upload": "runtime/file-upload/index",
     "cui-form": "runtime/form/index",
     "cui-form-field": "runtime/form-field/index",
     "cui-icon": "runtime/icon/index",

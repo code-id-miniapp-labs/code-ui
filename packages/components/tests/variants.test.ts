@@ -16,6 +16,7 @@ import {
   tabsTheme as createTabsTheme,
   tabsItemTheme as createTabsItemTheme,
   progressTheme as createProgressTheme,
+  fileUploadTheme as createFileUploadTheme,
 } from "@code-ui/core";
 import {
   cn,
@@ -35,6 +36,7 @@ const avatarTheme = tv(createAvatarTheme());
 const tabsTheme = tv(createTabsTheme());
 const tabsItemTheme = tv(createTabsItemTheme());
 const progressTheme = tv(createProgressTheme());
+const fileUploadTheme = tv(createFileUploadTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -914,6 +916,39 @@ describe("avatarTheme resolution", () => {
       expect(slots.track).toContain("h-3");
       expect(slots.range).toContain("cui-progress-striped");
       expect(slots.range).toContain("cui-progress-animated");
+    });
+  });
+
+  describe("fileUploadTheme resolution", () => {
+    it("resolves default file upload slots", () => {
+      const slots = resolveSlots(fileUploadTheme() as any);
+      expect(slots.root).toContain("relative");
+      expect(slots.dropzone).toContain("border-dashed");
+      expect(slots.icon).toContain("text-neutral-400");
+      expect(slots.title).toContain("font-medium");
+      expect(slots.description).toContain("text-neutral-500");
+      expect(slots.fileList).toContain("flex-col");
+      expect(slots.file).toContain("rounded-xl");
+      expect(slots.fileRemove).toContain("rounded-lg");
+    });
+
+    it("resolves grid layout and invalid state", () => {
+      const slots = resolveSlots(
+        fileUploadTheme({ layout: "grid", invalid: true }) as any,
+      );
+      expect(slots.fileList).toContain("grid");
+      expect(slots.dropzone).toContain("border-danger");
+    });
+
+    it("resolves custom ui overrides and custom class", () => {
+      const slots = resolveSlots(
+        fileUploadTheme({ size: "lg" }) as any,
+        { dropzone: "custom-dropzone" },
+        "custom-root",
+      );
+      expect(slots.root).toContain("custom-root");
+      expect(slots.dropzone).toContain("custom-dropzone");
+      expect(slots.dropzone).toContain("p-8");
     });
   });
 });

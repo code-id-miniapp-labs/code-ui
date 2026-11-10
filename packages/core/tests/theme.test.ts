@@ -161,6 +161,8 @@ describe("@code-ui/core color generation", () => {
     expect(getIcon("minus")).toBe("i-lucide-minus");
     expect(getIcon("close")).toBe("i-lucide-x");
     expect(getIcon("loading")).toBe("i-lucide-loader");
+    expect(getIcon("upload")).toBe("i-lucide-upload");
+    expect(getIcon("file")).toBe("i-lucide-file");
 
     // Multiple collections: first entry is the primary (drives default aliases)
     const { setConfig, resetConfig, getActiveCollections } =
@@ -183,6 +185,8 @@ describe("@code-ui/core color generation", () => {
     expect(getIcon("minus")).toBe("i-tabler-minus");
     expect(getIcon("close")).toBe("i-tabler-x");
     expect(getIcon("loading")).toBe("i-tabler-loader-2");
+    expect(getIcon("upload")).toBe("i-tabler-upload");
+    expect(getIcon("file")).toBe("i-tabler-file");
     resetConfig();
 
     // Test custom prefix and granular overrides
