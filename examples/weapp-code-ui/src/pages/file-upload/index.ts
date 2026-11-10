@@ -17,6 +17,8 @@ Page({
         id: "file-1",
         name: "sunset-horizon.jpg",
         size: 1542890,
+        progress: 40,
+
         type: "image",
         path: "https://picsum.photos/id/10/400/300",
         thumb: "https://picsum.photos/id/10/400/300",
@@ -62,6 +64,7 @@ Page({
         id: "grid-1",
         name: "mountain-view.jpg",
         size: 2450000,
+        progress: 40,
         type: "image",
         path: "https://picsum.photos/id/29/400/300",
         thumb: "https://picsum.photos/id/29/400/300",

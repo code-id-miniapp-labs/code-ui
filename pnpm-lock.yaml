@@ -45,6 +45,9 @@ importers:
       '@code-ui/checkbox-group':
         specifier: workspace:*
         version: link:../../packages/machines/checkbox-group
+      '@code-ui/file-upload':
+        specifier: workspace:*
+        version: link:../../packages/machines/file-upload
       '@code-ui/input':
         specifier: workspace:*
         version: link:../../packages/machines/input

@@ -55,6 +55,7 @@ describe("FileUpload Machine", () => {
       expect(api.hasFiles).toBe(false);
       expect(api.isMaxFiles).toBe(false);
       expect(api.isUploading).toBe(false);
+      expect(api.progress).toBe(null);
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
@@ -99,6 +100,35 @@ describe("FileUpload Machine", () => {
       expect(api.files[0]?.itemProps["aria-role"]).toBe("listitem");
       expect(api.files[0]?.removeProps["aria-role"]).toBe("button");
       expect(api.files[0]?.removeProps["aria-label"]).toBe("Remove test.png");
+
+      machine.stop();
+    });
+
+    it("handles progress prop and cascades to files without explicit progress", () => {
+      const machine = new MiniappMachine(fileUploadMachine, {
+        progress: 75,
+        defaultValue: [
+          {
+            id: "1",
+            name: "test1.png",
+            size: 1024,
+            type: "image",
+          },
+          {
+            id: "2",
+            name: "test2.png",
+            size: 2048,
+            type: "image",
+            progress: 30,
+          },
+        ],
+      });
+      machine.start();
+
+      const api = connectFileUpload(machine.service);
+      expect(api.progress).toBe(75);
+      expect(api.files[0]?.progress).toBe(75);
+      expect(api.files[1]?.progress).toBe(30);
 
       machine.stop();
     });

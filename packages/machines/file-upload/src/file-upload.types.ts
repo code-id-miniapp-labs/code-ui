@@ -40,7 +40,7 @@ export interface FileUploadFile {
   path?: string | undefined;
   thumb?: string | undefined;
   status?: "idle" | "uploading" | "success" | "error" | undefined;
-  progress?: number | undefined;
+  progress?: number | null | undefined;
   error?: string | undefined;
   duration?: number | undefined;
   width?: number | undefined;
@@ -154,6 +154,8 @@ export interface FileUploadProps {
   errorIcon?: string | undefined;
   /** Whether component is in uploading state */
   uploading?: boolean | undefined;
+  /** Overall upload progress percentage (0-100) or null */
+  progress?: number | null | undefined;
   /** Value change callback */
   onChange?: ((details: FileUploadChangeDetails) => void) | undefined;
   /** Files accepted callback */
@@ -257,6 +259,7 @@ export interface FileUploadApi {
   hasFiles: boolean;
   isMaxFiles: boolean;
   isUploading: boolean;
+  progress: number | null | undefined;
   disabled: boolean;
   readOnly: boolean;
   invalid: boolean;

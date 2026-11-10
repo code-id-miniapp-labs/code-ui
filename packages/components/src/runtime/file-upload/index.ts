@@ -55,6 +55,7 @@ Component(
         });
         return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
+
       dropzoneAriaLabel() {
         const api = this.data.fileUpload;
         const maxFiles = this.data.maxFiles ?? 10;
@@ -85,4 +86,3 @@ Component(
     },
   }),
 );
-
