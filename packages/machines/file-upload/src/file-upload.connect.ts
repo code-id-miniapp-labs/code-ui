@@ -125,6 +125,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const hasFiles = computed("hasFiles");
   const fileCount = computed("fileCount");
   const isUploading = computed("isUploading");
+  const progress = prop("progress");
   const maxFiles = prop("maxFiles") ?? 10;
   const multiple = Boolean(prop("multiple") ?? true);
   const maxSize = prop("maxSize") ?? Infinity;
@@ -139,10 +140,12 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const items: FileUploadItemView[] = files.map((file, index) => {
     const fileType = getFileType(file);
     const fileId = file.id || String(index);
+    const itemProgress = file.progress;
 
     return {
       ...file,
       index,
+      progress: itemProgress,
       formattedSize: formatBytes(file.size),
       fileType,
       itemProps: {
@@ -228,8 +231,9 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     const remainingSlots = multiple ? Math.max(1, maxFiles - files.length) : 1;
 
     // Detect messageFile requirement: explicit mode or accept contains document extensions
-    const acceptStr = (Array.isArray(accept) ? accept.join(",") : accept || "")
-      .toLowerCase();
+    const acceptStr = (
+      Array.isArray(accept) ? accept.join(",") : accept || ""
+    ).toLowerCase();
     const hasDoc = hasDocumentExtension(acceptStr);
 
     if (mode === "messageFile" || (mode === "auto" && hasDoc)) {
@@ -402,6 +406,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     hasFiles,
     isMaxFiles,
     isUploading,
+    progress,
     disabled,
     readOnly,
     invalid,

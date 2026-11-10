@@ -27,10 +27,10 @@
         <!-- File Leading: Image Thumbnail or Icon -->
         <view class="{{classes.fileLeading}}" data-scope="file-upload" data-part="file-leading" data-index="{{index}}" bindtap="handlePreview" aria-role="button" aria-label="Preview {{item.name}}">
           <image wx:if="{{item.fileType === 'image' && item.thumb}}" src="{{item.thumb}}" mode="aspectFill" class="w-full h-full rounded-lg object-cover" />
-          <c-icon wx:elif="{{item.fileType === 'image' && imageIcon}}" name="{{imageIcon}}" className="w-5 h-5 text-neutral-400" />
-          <c-icon wx:elif="{{item.fileType === 'video' && videoIcon}}" name="{{videoIcon}}" className="w-5 h-5 text-neutral-400" />
-          <c-icon wx:elif="{{item.fileType === 'audio' && audioIcon}}" name="{{audioIcon}}" className="w-5 h-5 text-neutral-400" />
-          <c-icon wx:elif="{{fileIcon}}" name="{{fileIcon}}" className="w-5 h-5 text-neutral-400" />
+          <c-icon wx:elif="{{item.fileType === 'image' && imageIcon}}" name="{{imageIcon}}" className="{{classes.fileIcon}}" />
+          <c-icon wx:elif="{{item.fileType === 'video' && videoIcon}}" name="{{videoIcon}}" className="{{classes.fileIcon}}" />
+          <c-icon wx:elif="{{item.fileType === 'audio' && audioIcon}}" name="{{audioIcon}}" className="{{classes.fileIcon}}" />
+          <c-icon wx:elif="{{fileIcon}}" name="{{fileIcon}}" className="{{classes.fileIcon}}" />
         </view>
         <!-- File Content: Name and Formatted Size -->
         <view class="{{classes.fileContent}}" data-scope="file-upload" data-part="file-content" data-index="{{index}}" bindtap="handlePreview">
@@ -40,20 +40,11 @@
           <view class="{{classes.fileSize}}" data-scope="file-upload" data-part="file-size">
             {{item.formattedSize}}
           </view>
-          <view wx:if="{{item.status === 'uploading' && item.progress != null}}" class="{{classes.fileProgress}}" data-scope="file-upload" data-part="file-progress">
-            <view class="h-1 bg-primary rounded-full transition-all duration-200" style="width: {{item.progress}}%;" />
+          <view wx:if="{{(fileUpload.isUploading || (item.progress !== null && item.progress !== undefined))}}" class="{{classes.fileProgress}}" data-scope="file-upload" data-part="file-progress">
+            <c-progress value="{{item.progress != null ? item.progress : progress}}" size="2xs" color="{{color}}" />
           </view>
         </view>
-        <!-- File Trailing: Status Indicator & Delete Button -->
         <view wx:if="{{!fileUpload.disabled && !fileUpload.readOnly}}" class="{{classes.fileTrailing}}" data-scope="file-upload" data-part="file-trailing">
-          <!-- Status icon -->
-          <view wx:if="{{item.status === 'uploading' && loadingIcon}}" class="shrink-0 flex items-center justify-center" aria-hidden="true">
-            <c-icon name="{{loadingIcon}}" className="w-4 h-4 animate-spin text-neutral-400" />
-          </view>
-          <view wx:elif="{{item.status === 'error' && errorIcon}}" class="shrink-0 flex items-center justify-center" aria-hidden="true">
-            <c-icon name="{{errorIcon}}" className="w-4 h-4 text-danger" />
-          </view>
-          <!-- Delete button -->
           <view wx:if="{{deleteIcon}}" class="{{classes.fileRemove}}" data-scope="file-upload" data-part="file-remove" data-index="{{index}}" aria-role="button" aria-label="Remove {{item.name}}" catchtap="handleRemove">
             <c-icon name="{{deleteIcon}}" className="w-4 h-4" />
           </view>

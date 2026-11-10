@@ -2,7 +2,8 @@
   "component": true,
   "virtualHost": true,
   "usingComponents": {
-    "c-icon": "../icon/index"
+    "c-icon": "../icon/index",
+    "c-progress": "../progress/index"
   }
 }
 

@@ -25,6 +25,7 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
       fileName: "font-medium text-neutral-900 truncate",
       fileSize: "text-neutral-500 shrink-0",
       fileTrailing: "flex items-center shrink-0 ml-auto gap-1",
+      fileIcon: "w-5 h-5 text-neutral-400",
       fileRemove:
         "flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-600 transition-colors p-1",
       fileProgress: "w-full mt-1.5",
@@ -112,7 +113,8 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
           file: "relative flex flex-col p-2.5 rounded-xl border border-neutral-200 bg-white shadow-xs transition-colors overflow-hidden",
           fileLeading:
             "w-full h-24 aspect-video rounded-lg overflow-hidden bg-neutral-100 shrink-0 relative flex items-center justify-center",
-          fileTrailing: "absolute top-3.5 right-3.5 z-10 flex items-center gap-1",
+          fileTrailing:
+            "absolute top-3.5 right-3.5 z-10 flex items-center gap-1",
           fileRemove:
             "flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-xs",
           fileContent: "w-full pt-1.5 flex flex-col items-center min-w-0",
