@@ -1,5 +1,6 @@
 export * from "@code-ui/accordion";
 export * from "@code-ui/accordion-item";
+export * from "@code-ui/action-sheet";
 export * from "@code-ui/button";
 export * from "@code-ui/checkbox";
 export * from "@code-ui/checkbox-group";

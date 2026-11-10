@@ -6,6 +6,11 @@ import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
 } from "@code-ui/accordion-item";
+import type {
+  ActionSheetItem,
+  ActionSheetProps,
+  ActionSheetSelectDetails,
+} from "@code-ui/action-sheet";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -615,6 +620,34 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
   onOpenChange?: (
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
+}
+
+export interface CuiActionSheetElementProps extends CuiCommonElementProps {
+  ui?: ActionSheetProps["ui"];
+  open?: boolean;
+  defaultOpen?: boolean;
+  title?: string;
+  description?: string;
+  actions?: ActionSheetItem[];
+  cancelText?: string;
+  showCancel?: boolean;
+  cancelIcon?: string;
+  loadingIcon?: string;
+  close?: boolean;
+  closeIcon?: string;
+  closeOnAction?: boolean;
+  closeOnBackdropClick?: boolean;
+  duration?: number;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<{ open: boolean }>,
+  ) => void;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<ActionSheetSelectDetails>,
+  ) => void;
+  onCancel?: (event: WechatMiniprogram.CustomEvent) => void;
+  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
+  onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
 export interface CuiSwipeCellElementProps extends CuiCommonElementProps {

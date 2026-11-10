@@ -17,6 +17,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/accordion/src",
       ),
+      "@code-ui/action-sheet": resolve(
+        import.meta.dirname,
+        "packages/machines/action-sheet/src",
+      ),
       "@code-ui/accordion-item": resolve(
         import.meta.dirname,
         "packages/machines/accordion-item/src",

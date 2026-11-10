@@ -6,6 +6,7 @@
   "usingComponents": {
     "cui-accordion": "runtime/accordion/index",
     "cui-accordion-item": "runtime/accordion-item/index",
+    "cui-action-sheet": "runtime/action-sheet/index",
     "cui-app": "runtime/app/index",
     "cui-button": "runtime/button/index",
     "cui-card": "runtime/card/index",
