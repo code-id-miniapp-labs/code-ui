@@ -128,6 +128,7 @@ export { default as appTheme } from "./theme/definitions/app";
 export { default as avatarTheme } from "./theme/definitions/avatar";
 export { default as avatarGroupTheme } from "./theme/definitions/avatar-group";
 export { default as badgeTheme } from "./theme/definitions/badge";
+export { default as bannerTheme } from "./theme/definitions/banner";
 export { default as buttonTheme } from "./theme/definitions/button";
 export { default as cardTheme } from "./theme/definitions/card";
 export { default as checkboxTheme } from "./theme/definitions/checkbox";

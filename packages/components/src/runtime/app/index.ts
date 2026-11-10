@@ -64,6 +64,18 @@ Component(
         type: Number,
         value: 2,
       },
+      topBarHeight: {
+        type: Number,
+        value: 0,
+      },
+      bottomBarHeight: {
+        type: Number,
+        value: 0,
+      },
+      autoDetectBars: {
+        type: Boolean,
+        value: true,
+      },
     },
 
     data: {
@@ -73,6 +85,8 @@ Component(
       hostScaleBackground: "",
       topInset: 0,
       bottomInset: 0,
+      detectedTopBarHeight: 0,
+      detectedBottomBarHeight: 0,
       gestureScaleStyle: "",
     },
 
@@ -116,9 +130,22 @@ Component(
         const topInset: number = this.data.topInset || 0;
         const bottomInset: number = this.data.bottomInset || 0;
 
-        const offsetTop = (hasEdge(safeArea, "top") ? m.safeTop : 0) + topInset;
+        const effectiveTopBarHeight =
+          Number(this.data.topBarHeight || 0) > 0
+            ? Number(this.data.topBarHeight)
+            : Number(this.data.detectedTopBarHeight || 0);
+
+        const effectiveBottomBarHeight =
+          Number(this.data.bottomBarHeight || 0) > 0
+            ? Number(this.data.bottomBarHeight)
+            : Number(this.data.detectedBottomBarHeight || 0);
+
+        const safeTopOffset = hasEdge(safeArea, "top") ? m.safeTop : 0;
+        const safeBottomOffset = hasEdge(safeArea, "bottom") ? m.safeBottom : 0;
+
+        const offsetTop = safeTopOffset + effectiveTopBarHeight + topInset;
         const offsetBottom =
-          (hasEdge(safeArea, "bottom") ? m.safeBottom : 0) + bottomInset;
+          safeBottomOffset + effectiveBottomBarHeight + bottomInset;
 
         const scaled = Boolean(this.data.scaled);
         const bg =
@@ -127,6 +154,10 @@ Component(
           scaled && (bg.startsWith("#") || bg.startsWith("rgb"))
             ? `background-color:${bg};`
             : "";
+
+        const bannerTopOffset = safeTopOffset + effectiveTopBarHeight;
+        const bannerBottomOffset =
+          safeBottomOffset + effectiveBottomBarHeight;
 
         const toastTopOffset = offsetTop;
         const toastBottomOffset = offsetBottom;
@@ -140,10 +171,14 @@ Component(
           `--cui-menu-inset:${px(m.menuInset)};` +
           `--cui-nav-bar-height:${px(m.navBarHeight)};` +
           `--cui-nav-height:${px(m.navHeight)};` +
+          `--cui-top-bar-height:${px(effectiveTopBarHeight)};` +
+          `--cui-bottom-bar-height:${px(effectiveBottomBarHeight)};` +
           `--cui-top-inset:${px(topInset)};` +
           `--cui-bottom-inset:${px(bottomInset)};` +
           `--cui-top-offset:${px(offsetTop)};` +
           `--cui-bottom-offset:${px(offsetBottom)};` +
+          `--cui-banner-top-offset:${px(bannerTopOffset)};` +
+          `--cui-banner-bottom-offset:${px(bannerBottomOffset)};` +
           `--cui-toast-top-offset:${px(toastTopOffset)};` +
           `--cui-toast-bottom-offset:${px(toastBottomOffset)};` +
           `padding-top:var(--cui-top-offset);` +
@@ -192,6 +227,10 @@ Component(
         unregisterToastHost(this);
         unregisterAppHost(this);
       },
+
+      ready(this: any) {
+        this.detectCustomBars();
+      },
     },
 
     pageLifetimes: {
@@ -206,17 +245,57 @@ Component(
           } catch {}
         }
         setAppHostVisible(this, true);
+        this.detectCustomBars();
       },
       hide(this: any) {
         setAppHostVisible(this, false);
       },
       resize(this: any) {
         refreshAppMetrics();
+        this.detectCustomBars();
       },
     },
 
     methods: {
       noop() {},
+
+      detectCustomBars(this: any) {
+        if (!this.data.autoDetectBars) return;
+        if (
+          typeof wx === "undefined" ||
+          typeof wx.createSelectorQuery !== "function"
+        ) {
+          return;
+        }
+        try {
+          const q = wx.createSelectorQuery();
+          q.select("[data-cui-topbar], [data-cui-top-bar], .cui-topbar").boundingClientRect();
+          q.select("[data-cui-bottombar], [data-cui-bottom-bar], .cui-bottombar").boundingClientRect();
+          q.exec((res: any) => {
+            if (!this.__cuiAppAttached) return;
+            const topRect = res?.[0];
+            const bottomRect = res?.[1];
+            const patch: Record<string, any> = {};
+            if (
+              topRect &&
+              typeof topRect.height === "number" &&
+              topRect.height !== this.data.detectedTopBarHeight
+            ) {
+              patch.detectedTopBarHeight = Math.max(0, Math.round(topRect.height));
+            }
+            if (
+              bottomRect &&
+              typeof bottomRect.height === "number" &&
+              bottomRect.height !== this.data.detectedBottomBarHeight
+            ) {
+              patch.detectedBottomBarHeight = Math.max(0, Math.round(bottomRect.height));
+            }
+            if (Object.keys(patch).length > 0) {
+              this.setData(patch);
+            }
+          });
+        } catch {}
+      },
 
       removeToast(this: any, id: string) {
         return removeToast(id, this);

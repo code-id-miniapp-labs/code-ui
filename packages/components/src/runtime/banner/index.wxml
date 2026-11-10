@@ -1,0 +1,32 @@
+<view wx:if="{{banner ? banner.visible : true}}" id="{{banner.rootProps.id}}" class="cui-banner-root {{classes.root}}" style="{{rootStyle}}" aria-role="region" aria-live="polite" aria-busy="{{banner.loading || loading || false}}" data-scope="banner" data-part="root" data-id="{{id || banner.rootProps.id}}" data-state="{{banner.state || 'open'}}" data-loading="{{banner.loading || loading ? 'true' : 'false'}}" data-color="{{color || 'primary'}}" data-variant="{{variant || 'soft'}}" data-placement="{{placement || 'top'}}" data-mode="{{mode || 'fixed'}}">
+  <c-icon wx:if="{{banner.loading || loading}}" name="{{banner.loadingIcon || loadingIcon || 'loading'}}" className="{{classes.icon}} animate-spin" data-scope="banner" data-part="icon" aria-hidden="true" />
+  <c-icon wx:elif="{{resolvedIcon}}" name="{{resolvedIcon}}" className="{{classes.icon}}" data-scope="banner" data-part="icon" aria-hidden="true" />
+  <slot wx:else name="icon" />
+
+  <view class="{{classes.wrapper}}" data-scope="banner" data-part="wrapper">
+    <view class="min-w-0 flex-1">
+      <view wx:if="{{title}}" class="{{classes.title}}" data-scope="banner" data-part="title">
+        {{title}}
+      </view>
+      <slot wx:else name="title" />
+      <view wx:if="{{description}}" class="{{classes.description}}" data-scope="banner" data-part="description">
+        {{description}}
+      </view>
+      <slot wx:else name="description" />
+      <slot />
+    </view>
+
+    <view wx:if="{{banner.actions && banner.actions.length > 0}}" class="{{classes.actions}}" data-scope="banner" data-part="actions">
+      <c-button wx:for="{{banner.actions}}" wx:key="index" size="{{item.size || 'xs'}}" color="{{item.color || 'neutral'}}" variant="{{item.variant || 'solid'}}" loading="{{item.loading}}" data-index="{{item.index}}" catch:tap="handleActionTap">
+        <c-icon wx:if="{{item.icon && !item.loading}}" slot="icon" name="{{item.icon}}" className="w-3.5 h-3.5 mr-1" />
+        {{item.label}}
+      </c-button>
+    </view>
+    <slot wx:else name="actions" />
+  </view>
+
+  <view wx:if="{{close !== false}}" class="{{classes.closeTrigger}}" data-scope="banner" data-part="close-trigger" aria-role="button" aria-label="Dismiss" catchtap="handleCloseTap">
+    <c-icon name="{{banner.closeIcon || closeIcon || 'close'}}" className="w-4 h-4" />
+  </view>
+</view>
+

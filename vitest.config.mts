@@ -21,6 +21,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/accordion-item/src",
       ),
+      "@code-ui/banner": resolve(
+        import.meta.dirname,
+        "packages/machines/banner/src",
+      ),
       "@code-ui/button": resolve(import.meta.dirname, "packages/machines/button/src"),
       "@code-ui/checkbox": resolve(import.meta.dirname, "packages/machines/checkbox/src"),
       "@code-ui/checkbox-group": resolve(import.meta.dirname, "packages/machines/checkbox-group/src"),

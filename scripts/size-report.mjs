@@ -32,7 +32,7 @@ const DEFAULT_REFERENCE_FEATURES = [
 
 const BUDGETS = {
   referenceGzipKb: 68.0,
-  distGzipKb: 138.0,
+  distGzipKb: 142.5,
 };
 
 const args = process.argv.slice(2);

@@ -11,6 +11,7 @@ import {
   requestAppScale,
   setupAppRelations,
   unlinkAppChildFromParent,
+  withAppBannerInset,
   withAppInset,
   withAppScale,
 } from "../src/behaviors/app";
@@ -186,6 +187,61 @@ describe("withAppInset behavior", () => {
 
     behaviorDef.lifetimes.detached.call(instance);
     expect(signals.insets().top).toBe(0);
+  });
+});
+
+describe("withAppBannerInset plugin", () => {
+  it("registers layout insets when banner is open with height and unregisters on close", () => {
+    pageStack = [{ getPageId: () => "p1" }];
+    const host = createHost("p1");
+    const signals = getPageAppSignals(host.instance);
+    const plugin = withAppBannerInset({ idPrefix: "test-banner" });
+
+    let subscriber: (() => void) | undefined;
+    const mockMachine: any = {
+      service: {
+        state: { matches: (s: string) => s === "open", hasTag: (t: string) => t === "open" },
+        context: { get: (k: string) => (k === "height" ? 54 : 0) },
+      },
+      subscribe(fn: () => void) {
+        subscriber = fn;
+        return () => {
+          subscriber = undefined;
+        };
+      },
+    };
+
+    const instance: any = {
+      data: {
+        open: true,
+        placement: "top",
+        mode: "fixed",
+        autoInset: true,
+      },
+      getPageId: () => "p1",
+      __codeUiMachine: mockMachine,
+    };
+
+    plugin.onAttached?.(instance, {});
+    expect(instance.__cuiBannerInsetId).toBe("test-banner:1");
+
+    plugin.onMachineStarted?.(instance, mockMachine);
+    expect(signals.insets().top).toBe(54);
+
+    // When placement changes to bottom
+    instance.data.placement = "bottom";
+    subscriber?.();
+    expect(signals.insets().top).toBe(0);
+    expect(signals.insets().bottom).toBe(54);
+
+    // When banner is dismissed / closed
+    mockMachine.service.state.matches = (s: string) => s === "closed";
+    mockMachine.service.state.hasTag = () => false;
+    subscriber?.();
+    expect(signals.insets().bottom).toBe(0);
+
+    plugin.onDetached?.(instance);
+    expect(signals.insets().bottom).toBe(0);
   });
 });
 

@@ -254,3 +254,39 @@ describe("app scale coordination", () => {
     );
   });
 });
+
+describe("custom top-bar and bottom-bar insets", () => {
+  it("accumulates custom top-bar and banner insets for total top offset", () => {
+    pageStack = [createPage("p1")];
+    const host = createHost("p1");
+    host.register();
+    const signals = getPageAppSignals(host.instance);
+
+    // Register topbar inset (44px) and top banner inset (52px)
+    registerInset(createInstance("p1"), { id: "topbar", edge: "top", size: 44 });
+    registerInset(createInstance("p1"), { id: "banner", edge: "top", size: 52 });
+
+    expect(signals.insets().top).toBe(96);
+
+    // When banner is dismissed
+    unregisterInset(createInstance("p1"), "banner");
+    expect(signals.insets().top).toBe(44);
+  });
+
+  it("accumulates custom bottom-bar and bottom banner insets", () => {
+    pageStack = [createPage("p1")];
+    const host = createHost("p1");
+    host.register();
+    const signals = getPageAppSignals(host.instance);
+
+    // Register bottombar inset (50px) and bottom banner inset (48px)
+    registerInset(createInstance("p1"), { id: "bottombar", edge: "bottom", size: 50 });
+    registerInset(createInstance("p1"), { id: "banner:bottom", edge: "bottom", size: 48 });
+
+    expect(signals.insets().bottom).toBe(98);
+
+    // When banner is dismissed
+    unregisterInset(createInstance("p1"), "banner:bottom");
+    expect(signals.insets().bottom).toBe(50);
+  });
+});

@@ -681,6 +681,110 @@ export function withAppInset(options: WithAppInsetOptions = {}): any {
   });
 }
 
+export interface WithAppBannerInsetOptions {
+  idPrefix?: string;
+}
+
+export function withAppBannerInset(
+  options: WithAppBannerInsetOptions = {},
+): MachinePlugin {
+  let bannerCounter = 0;
+  const syncBanner = (instance: any, machine: any) => {
+    const props = instance.data;
+    const state = machine.service?.state;
+    const isClosedOrClosing =
+      state?.matches?.("closed") ||
+      state?.matches?.("closing") ||
+      state?.matches?.("dismissing") ||
+      state?.hasTag?.("closed") ||
+      state?.hasTag?.("dismissing") ||
+      props?.open === false;
+
+    const isOpen =
+      !isClosedOrClosing &&
+      (Boolean(props?.open) ||
+        state?.hasTag?.("open") ||
+        state?.matches?.("open"));
+
+    const autoInset = props?.autoInset !== false;
+    const mode =
+      props?.mode || (props?.placement === "inline" ? "inline" : "fixed");
+    const edge: AppInsetEdge =
+      props?.placement === "bottom" ? "bottom" : "top";
+    const height: number = Number(
+      machine.service?.context?.get("height") || 0,
+    );
+
+    const bannerId = instance.__cuiBannerInsetId;
+
+    if (!isOpen || !autoInset || mode === "inline" || height <= 0) {
+      if (instance.__cuiRegisteredBannerSize > 0) {
+        unregisterInset(instance, bannerId);
+        instance.__cuiRegisteredBannerSize = 0;
+        instance.__cuiRegisteredBannerEdge = undefined;
+      }
+      return;
+    }
+
+    if (
+      instance.__cuiRegisteredBannerEdge !== edge &&
+      instance.__cuiRegisteredBannerSize > 0
+    ) {
+      unregisterInset(instance, bannerId);
+    }
+
+    instance.__cuiRegisteredBannerEdge = edge;
+    instance.__cuiRegisteredBannerSize = height;
+    registerInset(instance, {
+      id: bannerId,
+      edge,
+      size: height,
+    });
+  };
+
+  return {
+    name: "banner-layout-inset",
+    behaviors: [cuiAppChildBehavior],
+    setupRelations(relations) {
+      setupAppRelations(relations, "child");
+    },
+    onAttached(instance) {
+      instance.__cuiBannerInsetId = `${options.idPrefix ?? "banner"}:${++bannerCounter}`;
+      instance.__cuiRegisteredBannerSize = 0;
+      instance.__cuiRegisteredBannerEdge = undefined;
+    },
+    onMachineStarted(instance, machine) {
+      const check = () => syncBanner(instance, machine);
+      instance.__cuiBannerUnsub = machine.subscribe(check);
+      check();
+    },
+    onReady(instance) {
+      if (instance.__codeUiMachine) {
+        instance.__codeUiMachine.service?.send?.({ type: "MEASURE" });
+      }
+    },
+    onPropChanged(instance, propKey) {
+      if (
+        (propKey === "open" ||
+          propKey === "placement" ||
+          propKey === "mode" ||
+          propKey === "autoInset") &&
+        instance.__codeUiMachine
+      ) {
+        syncBanner(instance, instance.__codeUiMachine);
+      }
+    },
+    onDetached(instance) {
+      instance.__cuiBannerUnsub?.();
+      if (instance.__cuiRegisteredBannerSize > 0) {
+        unregisterInset(instance, instance.__cuiBannerInsetId);
+        instance.__cuiRegisteredBannerSize = 0;
+        instance.__cuiRegisteredBannerEdge = undefined;
+      }
+    },
+  };
+}
+
 const DEFAULT_MENU_HEIGHT = 32;
 const DEFAULT_MENU_GAP = 4;
 

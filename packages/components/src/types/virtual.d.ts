@@ -16,6 +16,12 @@ declare module "virtual:cui/theme/app" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/banner" {
+  import type { default as bannerTheme } from "@code-ui/core/src/theme/definitions/banner";
+  const theme: ReturnType<typeof bannerTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/button" {
   import type { default as buttonTheme } from "@code-ui/core/src/theme/definitions/button";
   const theme: ReturnType<typeof buttonTheme>;
