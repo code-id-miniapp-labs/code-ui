@@ -1,0 +1,60 @@
+<view wx:if="{{banner ? banner.visible : true}}" id="{{banner.rootProps.id}}" class="cui-banner-root {{classes.root}}" style="{{rootStyle}}" aria-role="region" aria-live="polite" data-scope="banner" data-part="root" data-id="{{id || banner.rootProps.id}}" data-state="{{banner.state || 'open'}}" data-color="{{color || 'primary'}}" data-variant="{{variant || 'solid'}}" data-size="{{size || 'md'}}" data-placement="{{placement || 'top'}}" data-mode="{{mode || 'fixed'}}" data-image-position="{{imagePosition || 'none'}}" hover-class="{{hoverClass || 'none'}}" bindtap="handleTap">
+  <view class="cui-banner-background {{classes.background}}" data-scope="banner" data-part="background">
+    <view class="cui-banner-body {{classes.body}}" data-scope="banner" data-part="body">
+      <view wx:if="{{image && imagePosition === 'background'}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
+        <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode || 'aspectFill'}}" data-scope="banner" data-part="image" aria-hidden="true" />
+      </view>
+      <view wx:if="{{image && imagePosition === 'left'}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
+        <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode || 'aspectFill'}}" data-scope="banner" data-part="image" aria-hidden="true" />
+      </view>
+      <view wx:if="{{icon}}" class="cui-banner-icon {{classes.icon}}" data-scope="banner" data-part="icon" aria-hidden="true">
+        <c-icon name="{{icon}}" className="w-full h-full" />
+      </view>
+      <slot wx:else name="leading" />
+      <view class="cui-banner-content {{classes.content}}" data-scope="banner" data-part="content">
+        <view wx:if="{{badge}}" class="{{classes.badge}}" data-scope="banner" data-part="badge">
+          {{badge}}
+        </view>
+        <slot wx:else name="badge" />
+        <view wx:if="{{caption}}" class="{{classes.caption}}" data-scope="banner" data-part="caption">
+          {{caption}}
+        </view>
+        <slot wx:else name="caption" />
+        <view wx:if="{{title}}" class="{{classes.title}}" data-scope="banner" data-part="title">
+          {{title}}
+        </view>
+        <slot wx:else name="title" />
+        <view wx:if="{{description}}" class="{{classes.description}}" data-scope="banner" data-part="description">
+          {{description}}
+        </view>
+        <slot wx:else name="description" />
+        <slot />
+      </view>
+      <view wx:if="{{image && (imagePosition === 'right' || !imagePosition || imagePosition === 'none')}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
+        <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode || 'aspectFill'}}" data-scope="banner" data-part="image" aria-hidden="true" />
+      </view>
+      <slot wx:else name="image" />
+      <view wx:if="{{more || (close !== false && closable !== false)}}" class="cui-banner-button-area {{classes.buttonArea}}" data-scope="banner" data-part="buttonArea">
+        <view wx:if="{{close !== false && closable !== false}}" class="{{classes.close}}" data-scope="banner" data-part="close" aria-role="button" aria-label="Dismiss" catchtap="handleCloseTap">
+          <c-icon name="{{closeIcon || 'close'}}" className="w-4 h-4" />
+        </view>
+        <slot wx:else name="close" />
+        <view wx:if="{{more}}" class="{{classes.more}}" data-scope="banner" data-part="more" aria-role="button" aria-label="More" catchtap="handleMoreTap">
+          <c-icon name="{{moreIcon || 'chevronRight'}}" className="w-4 h-4" />
+        </view>
+        <slot wx:else name="more" />
+      </view>
+      <slot wx:else name="buttonArea" />
+    </view>
+    <view wx:if="{{banner.actions && banner.actions.length > 0}}" class="{{classes.actions}}" data-scope="banner" data-part="actions">
+      <block wx:for="{{banner.actions}}" wx:key="index">
+        <view class="{{classes.action}}" data-scope="banner" data-part="action">
+          <c-button data-index="{{index}}" block ui="{{item.ui}}" catch:tap="handleActionTap" icon="{{item.icon}}" loading="{{item.loading}}" variant="{{item.variant || 'ghost'}}" color="{{item.color || ''}}" size="{{item.size || 'xs'}}" className="{{!item.color && 'text-inherit'}}">
+            {{item.label}}
+          </c-button>
+        </view>
+      </block>
+    </view>
+    <slot wx:else name="actions" />
+  </view>
+</view>

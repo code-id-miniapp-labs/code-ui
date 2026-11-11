@@ -6,6 +6,7 @@ import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
 } from "@code-ui/accordion-item";
+import type { BannerProps } from "@code-ui/banner";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -101,6 +102,58 @@ export interface CuiAppElementProps extends CuiCommonElementProps {
   ui?: Partial<Record<"root", string>>;
   /** Apply safe-area padding. Defaults to `"none"`. */
   safeArea?: "none" | "top" | "bottom" | "both";
+  topBarHeight?: number;
+  bottomBarHeight?: number;
+  autoDetectBars?: boolean;
+}
+
+export interface CuiBannerElementProps extends CuiCommonElementProps {
+  ui?: BannerProps["ui"];
+  open?: boolean;
+  defaultOpen?: boolean;
+  color?: BannerProps["color"];
+  variant?: BannerProps["variant"];
+  size?: BannerProps["size"];
+  placement?: BannerProps["placement"];
+  mode?: BannerProps["mode"];
+  title?: string;
+  description?: string;
+  caption?: string;
+  badge?: string;
+  icon?: string;
+  infoIcon?: string;
+  successIcon?: string;
+  warningIcon?: string;
+  errorIcon?: string;
+  image?: string;
+  imagePosition?: BannerProps["imagePosition"];
+  imageShape?: BannerProps["imageShape"];
+  imageMode?: string;
+  close?: boolean;
+  closable?: boolean;
+  closeIcon?: string;
+  more?: boolean;
+  moreIcon?: string;
+  actions?: BannerProps["actions"];
+  hoverClass?: string;
+  topOffset?: number | string;
+  bottomOffset?: number | string;
+  autoInset?: boolean;
+  onTap?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
+  ) => void;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<{ open: boolean; id?: string }>,
+  ) => void;
+  onDismiss?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
+  ) => void;
+  onAction?: (
+    event: WechatMiniprogram.CustomEvent<{ action: any; index: number; id?: string }>,
+  ) => void;
+  onMore?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
+  ) => void;
 }
 
 export interface CuiCardElementProps extends CuiCommonElementProps {

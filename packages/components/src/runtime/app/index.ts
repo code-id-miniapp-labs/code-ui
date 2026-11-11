@@ -20,16 +20,15 @@ import type { ToastEntry } from "@code-ui/miniapp/behaviors/toast";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";
+import {
+  buildRootCssVars,
+  detectBars,
+  extractBottomBarHeight,
+  extractTopBarHeight,
+  resolveAppLayout,
+} from "./utils";
 
 const appTheme = tv(themeConfig);
-
-function px(value: number): string {
-  return `${Math.round(value * 100) / 100}px`;
-}
-
-function hasEdge(safeArea: string, edge: "top" | "bottom"): boolean {
-  return safeArea === "both" || safeArea === edge;
-}
 
 const relations: Record<string, any> = {};
 setupAppRelations(relations, "parent");
@@ -64,6 +63,18 @@ Component(
         type: Number,
         value: 2,
       },
+      topBarHeight: {
+        type: Number,
+        value: 0,
+      },
+      bottomBarHeight: {
+        type: Number,
+        value: 0,
+      },
+      autoDetectBars: {
+        type: Boolean,
+        value: true,
+      },
     },
 
     data: {
@@ -73,6 +84,8 @@ Component(
       hostScaleBackground: "",
       topInset: 0,
       bottomInset: 0,
+      detectedTopBarHeight: 0,
+      detectedBottomBarHeight: 0,
       gestureScaleStyle: "",
     },
 
@@ -103,7 +116,7 @@ Component(
         }
         const scaled = Boolean(this.data.scaled);
         if (!scaled) {
-          return "transform: scale(1) translateY(0);";
+          return "";
         }
         const factor =
           this.data.hostScaleFactor || this.data.scaleFactor || 0.94;
@@ -112,13 +125,19 @@ Component(
 
       rootStyle() {
         const m: AppMetrics = appMetricsSignal();
-        const safeArea: string = this.data.safeArea || "none";
         const topInset: number = this.data.topInset || 0;
         const bottomInset: number = this.data.bottomInset || 0;
 
-        const offsetTop = (hasEdge(safeArea, "top") ? m.safeTop : 0) + topInset;
-        const offsetBottom =
-          (hasEdge(safeArea, "bottom") ? m.safeBottom : 0) + bottomInset;
+        const layout = resolveAppLayout({
+          safeArea: this.data.safeArea,
+          metrics: m,
+          topBarHeight: this.data.topBarHeight,
+          bottomBarHeight: this.data.bottomBarHeight,
+          detectedTopBarHeight: this.data.detectedTopBarHeight,
+          detectedBottomBarHeight: this.data.detectedBottomBarHeight,
+          topInset,
+          bottomInset,
+        });
 
         const scaled = Boolean(this.data.scaled);
         const bg =
@@ -128,28 +147,7 @@ Component(
             ? `background-color:${bg};`
             : "";
 
-        const toastTopOffset = offsetTop;
-        const toastBottomOffset = offsetBottom;
-
-        return (
-          `--cui-status-bar-height:${px(m.statusBarHeight)};` +
-          `--cui-safe-top:${px(m.safeTop)};` +
-          `--cui-safe-bottom:${px(m.safeBottom)};` +
-          `--cui-menu-top:${px(m.menuTop)};` +
-          `--cui-menu-height:${px(m.menuHeight)};` +
-          `--cui-menu-inset:${px(m.menuInset)};` +
-          `--cui-nav-bar-height:${px(m.navBarHeight)};` +
-          `--cui-nav-height:${px(m.navHeight)};` +
-          `--cui-top-inset:${px(topInset)};` +
-          `--cui-bottom-inset:${px(bottomInset)};` +
-          `--cui-top-offset:${px(offsetTop)};` +
-          `--cui-bottom-offset:${px(offsetBottom)};` +
-          `--cui-toast-top-offset:${px(toastTopOffset)};` +
-          `--cui-toast-bottom-offset:${px(toastBottomOffset)};` +
-          `padding-top:var(--cui-top-offset);` +
-          `padding-bottom:var(--cui-bottom-offset);` +
-          bgStyle
-        );
+        return buildRootCssVars(layout, m, topInset, bottomInset, bgStyle);
       },
     },
 
@@ -192,6 +190,15 @@ Component(
         unregisterToastHost(this);
         unregisterAppHost(this);
       },
+
+      ready(this: any) {
+        this.detectCustomBars();
+        wx.nextTick(() => {
+          if (this.__cuiAppAttached) {
+            this.detectCustomBars();
+          }
+        });
+      },
     },
 
     pageLifetimes: {
@@ -206,17 +213,57 @@ Component(
           } catch {}
         }
         setAppHostVisible(this, true);
+        this.detectCustomBars();
       },
       hide(this: any) {
         setAppHostVisible(this, false);
       },
       resize(this: any) {
         refreshAppMetrics();
+        this.detectCustomBars();
       },
     },
 
     methods: {
       noop() {},
+
+      detectCustomBars(this: any) {
+        if (!this.data.autoDetectBars) return;
+        if (
+          typeof wx === "undefined" ||
+          typeof wx.createSelectorQuery !== "function"
+        ) {
+          return;
+        }
+        try {
+          const applyRects = (topRect: any, bottomRect: any) => {
+            if (!this.__cuiAppAttached) return;
+            const patch: Record<string, any> = {};
+
+            if (topRect && typeof topRect.height === "number") {
+              const topHeight = extractTopBarHeight(topRect);
+              if (topHeight !== this.data.detectedTopBarHeight) {
+                patch.detectedTopBarHeight = topHeight;
+              }
+            }
+
+            if (bottomRect && typeof bottomRect.height === "number") {
+              const bottomHeight = extractBottomBarHeight(bottomRect);
+              if (bottomHeight !== this.data.detectedBottomBarHeight) {
+                patch.detectedBottomBarHeight = bottomHeight;
+              }
+            }
+
+            if (Object.keys(patch).length > 0) {
+              this.setData(patch);
+            }
+          };
+
+          detectBars(this, ({ topRect, bottomRect }) => {
+            applyRects(topRect, bottomRect);
+          });
+        } catch {}
+      },
 
       removeToast(this: any, id: string) {
         return removeToast(id, this);
@@ -293,6 +340,9 @@ Component(
         }
         if (Object.keys(patch).length > 0) {
           this.setData(patch);
+        }
+        if (this.data.autoDetectBars && this.data.detectedTopBarHeight === 0) {
+          this.detectCustomBars();
         }
       },
     },

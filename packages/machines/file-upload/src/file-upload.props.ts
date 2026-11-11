@@ -26,6 +26,7 @@ export const defaultFileUploadProps: FileUploadProps = {
   title: "",
   description: "",
   icon: "upload",
+  loadingIcon: "loading",
   deleteIcon: "close",
   fileIcon: "file",
   imageIcon: "image",

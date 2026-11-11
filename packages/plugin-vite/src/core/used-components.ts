@@ -36,6 +36,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
   "avatar-group": ["avatar", "icon"],
   avatar: ["icon"],
   badge: ["icon"],
+  banner: ["icon", "button"],
   button: ["icon"],
   card: ["icon"],
   checkbox: ["icon"],

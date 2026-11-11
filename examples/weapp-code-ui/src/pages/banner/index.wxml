@@ -1,0 +1,202 @@
+<!-- Custom Top-Bar (Detected by <c-app> via #cui-top-bar) -->
+<view id="cui-top-bar" class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-neutral-200">
+  <!-- Status bar spacer -->
+  <view style="height: var(--cui-status-bar-height, 44px);" />
+  <!-- Custom Navigation bar content -->
+  <view class="h-11 px-4 flex items-center justify-between">
+    <view class="flex items-center gap-2 cursor-pointer active:opacity-70" bindtap="handleBack">
+      <c-icon name="chevron-left" className="w-5 h-5 -rotate-90 text-neutral-800" />
+      <text class="text-base font-bold text-neutral-900">Banner</text>
+    </view>
+    <view class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700">
+      #cui-top-bar
+    </view>
+  </view>
+</view>
+<!-- Pinned Fixed Top Banner (Automatically positioned below custom top-bar via --cui-banner-top-offset) -->
+<c-banner open="{{showTopBanner}}" placement="top" mode="fixed" color="{{topBannerColor}}" title="{{topBannerTitle}}" description="{{topBannerDesc}}" close="{{true}}" bind:dismiss="onTopBannerDismiss" bind:action="onTopBannerAction" />
+<!-- Page Main Content Stream (Padded by <c-app> automatically via --cui-top-offset and --cui-bottom-offset) -->
+<view class="p-4 flex flex-col gap-5 text-neutral-900">
+  <!-- Layout Coordination Explainer Card -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="flex items-center justify-between">
+      <view class="text-sm font-bold text-neutral-950">Layout Coordination</view>
+      <view class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+        c-app Inset Registry
+      </view>
+    </view>
+    <view class="text-xs text-neutral-600 leading-relaxed">
+      This page features a custom fixed top-bar (
+      <text class="font-mono text-[11px] text-emerald-600">#cui-top-bar</text>
+      ) and a custom fixed bottom tab-bar (
+      <text class="font-mono text-[11px] text-indigo-600">#cui-bottom-bar</text>
+      ).
+    </view>
+    <view class="text-xs text-neutral-600 leading-relaxed">
+      When fixed banners appear or dismiss,
+      <text class="font-semibold text-neutral-900">&lt;c-app&gt;</text>
+      automatically recalculates offsets and adjusts container padding smoothly, preventing content overlap.
+    </view>
+  </view>
+  <!-- Interactive Controls Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+    <view class="text-sm font-bold text-neutral-950">Fixed Banners Controls</view>
+    <view class="text-xs text-neutral-500">
+      Toggle fixed banners to see how &lt;c-app&gt; dynamically updates layout padding below the top-bar and above the tab-bar.
+    </view>
+    <!-- Top Banner Toggle & Color Selection -->
+    <view class="flex flex-col gap-2 pt-1 border-t border-neutral-100">
+      <view class="text-xs font-semibold text-neutral-700">Top Fixed Banner</view>
+      <view class="flex flex-wrap gap-2">
+        <c-button size="xs" color="{{showTopBanner ? 'danger' : 'primary'}}" variant="solid" bind:tap="toggleTopBanner">
+          {{showTopBanner ? 'Hide Top Banner' : 'Show Top Banner'}}
+        </c-button>
+        <c-button size="xs" color="warning" variant="outline" data-color="warning" bind:tap="setTopBannerColor">
+          Warning
+        </c-button>
+        <c-button size="xs" color="info" variant="outline" data-color="info" bind:tap="setTopBannerColor">
+          Info
+        </c-button>
+        <c-button size="xs" color="danger" variant="outline" data-color="danger" bind:tap="setTopBannerColor">
+          Error
+        </c-button>
+      </view>
+    </view>
+    <!-- Bottom Banner Toggle & Color Selection -->
+    <view class="flex flex-col gap-2 pt-2 border-t border-neutral-100">
+      <view class="text-xs font-semibold text-neutral-700">
+        Bottom Fixed Banner (Above Tab-bar)
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <c-button size="xs" color="{{showBottomBanner ? 'danger' : 'neutral'}}" variant="solid" bind:tap="toggleBottomBanner">
+          {{showBottomBanner ? 'Hide Bottom Banner' : 'Show Bottom Banner'}}
+        </c-button>
+        <c-button size="xs" color="primary" variant="outline" data-color="primary" bind:tap="setBottomBannerColor">
+          Primary
+        </c-button>
+        <c-button size="xs" color="success" variant="outline" data-color="success" bind:tap="setBottomBannerColor">
+          Success
+        </c-button>
+      </view>
+    </view>
+  </view>
+  <!-- LINE Design System Examples Showcase Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-4">
+    <view class="flex items-center justify-between">
+      <view class="text-sm font-bold text-neutral-950">LINE Design System Banner Showcase</view>
+      <view class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+        LINE LDSM
+      </view>
+    </view>
+    <view class="text-xs text-neutral-500">
+      Official LINE-style banners: image area with multiple actions, box & full images, and button controls.
+    </view>
+    <!-- 1. LDS Banner 3: Image with Multiple Actions (Core Pattern) -->
+    <view class="flex flex-col gap-1.5 pt-1 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          1. Image with Multiple Actions (LDS Banner 3)
+        </text>
+        <text class="text-[10px] text-blue-600 font-mono">solid · image + actions</text>
+      </view>
+      <c-banner mode="inline" color="primary" variant="solid" title="Pin Code Setup Guide!" description="In order to prevent unauthorized access" image="https://api.dicebear.com/7.x/shapes/svg?seed=pincode" imageShape="full" close="{{true}}" actions="{{pinCodeActions}}" bind:action="onPinCodeAction" />
+    </view>
+    <!-- 2. Soft Variant: Image with Multiple Actions (E-Commerce Promo) -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          2. Promotion: Image + Multiple Actions
+        </text>
+        <text class="text-[10px] text-emerald-600 font-mono">soft · badge + actions</text>
+      </view>
+      <c-banner mode="inline" color="success" variant="soft" badge="EXCLUSIVE" title="Get 50% Off Your Next Purchase" description="Use coupon code CODEUI50 at checkout." image="https://api.dicebear.com/7.x/shapes/svg?seed=promo" imageShape="rect" close="{{true}}" actions="{{promoActions}}" bind:action="onPromoAction" />
+    </view>
+    <!-- 3. Warning Alert: Image with Multiple Actions (Security Notice) -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          3. Security Alert: Image + Multiple Actions
+        </text>
+        <text class="text-[10px] text-amber-600 font-mono">warning · security + actions</text>
+      </view>
+      <c-banner mode="inline" color="neutral" imagePosition="right" variant="outline" caption="Security Alert" title="Unrecognized Login Attempt Detected" image="https://api.dicebear.com/7.x/shapes/svg?seed=security" imageShape="full" close="{{true}}" actions="{{securityActions}}" bind:action="onSecurityAction" />
+    </view>
+    <!-- 4. LDS Banner 1: Box Image + Close & More Buttons -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          4. Box Image + Close & More (LDS Banner 1)
+        </text>
+        <text class="text-[10px] text-neutral-600 font-mono">outline · box image + more</text>
+      </view>
+      <c-banner mode="inline" color="neutral" variant="outline" caption="LINE Music" title="Recommend music that favorites new album is release" description="Listen to trending playlists curated for your taste." image="https://api.dicebear.com/7.x/shapes/svg?seed=music" imageShape="square" close="{{true}}" />
+    </view>
+    <!-- 5. LDS Banner 2: Illustration Banner (Full Image) -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          5. Illustration Banner (LDS Banner 2)
+        </text>
+        <text class="text-[10px] text-purple-600 font-mono">solid · full image</text>
+      </view>
+      <c-banner mode="inline" color="primary" variant="solid" title="Emoji LINE Messenger" description="Emoji and Stickers for iMessage & more!" image="https://api.dicebear.com/7.x/shapes/svg?seed=emoji" imageShape="full" close="{{false}}" />
+    </view>
+    <!-- 6. Background Image Overlay Mode -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <view class="flex items-center justify-between">
+        <text class="text-xs font-semibold text-neutral-700">
+          6. Background Image Mode + Actions
+        </text>
+        <text class="text-[10px] text-neutral-500 font-mono">bg overlay · actions</text>
+      </view>
+      <c-banner mode="inline" color="neutral" variant="solid" image="https://api.dicebear.com/7.x/shapes/svg?seed=festival" imagePosition="background" badge="VIP PASS" title="Summer Music Festival 2026" description="Get early bird tickets before they sell out." close="{{true}}" actions="{{musicActions}}" bind:action="onMusicAction" />
+    </view>
+    <!-- 7. Basic Closable Banner with Icon -->
+    <view class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+      <text class="text-xs font-semibold text-neutral-700">7. Basic Closable Banner with Icon</text>
+      <c-banner mode="inline" color="info" variant="subtle" icon="info" title="Nuxt UI v4 & WeChat MiniProgram component library." close="{{true}}" />
+    </view>
+    <!-- 8. Sizing System (xs, sm, md, lg, xl) -->
+    <view class="flex flex-col gap-2 pt-2 border-t border-neutral-100">
+      <text class="text-xs font-semibold text-neutral-700">
+        8. Sizing System (py / px rule: xs, sm, md, lg, xl)
+      </text>
+      <c-banner mode="inline" placement="inline" size="xs" color="info" variant="soft" icon="info" title="Extra Small (xs) banner" close="{{false}}" />
+      <c-banner mode="inline" placement="inline" size="sm" color="success" variant="soft" icon="check" caption="Account" title="Small (sm) banner: profile up to date." close="{{false}}" />
+      <c-banner mode="inline" placement="inline" size="md" color="primary" variant="soft" icon="info" caption="Default" title="Medium (md) banner (standard size)." close="{{false}}" />
+      <c-banner mode="inline" placement="inline" size="lg" color="warning" variant="soft" icon="alert" title="Large (lg) banner" close="{{false}}" />
+      <c-banner mode="inline" placement="inline" size="xl" color="neutral" variant="soft" icon="info" title="Extra Large (xl) banner" close="{{false}}" />
+    </view>
+  </view>
+  <!-- Event Log Section -->
+  <view class="bg-white p-4 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-2">
+    <view class="text-sm font-bold text-neutral-950">Interactive Event Log</view>
+    <view class="p-3 bg-neutral-900 text-neutral-100 rounded-xl font-mono text-[11px] leading-relaxed break-all">
+      {{lastEvent}}
+    </view>
+  </view>
+</view>
+<!-- Pinned Fixed Bottom Banner (Automatically positioned above custom bottom-bar via --cui-banner-bottom-offset) -->
+<c-banner open="{{showBottomBanner}}" placement="bottom" mode="fixed" color="{{bottomBannerColor}}" title="{{bottomBannerTitle}}" description="{{bottomBannerDesc}}" close="{{true}}" more="{{true}}" actions="{{bottomBannerActions}}" bind:dismiss="onBottomBannerDismiss" bind:action="onBottomBannerAction" />
+<!-- Custom Bottom Tab-Bar (Detected by <c-app> via #cui-bottom-bar) -->
+<view id="cui-bottom-bar" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-neutral-200">
+  <view class="h-14 px-6 flex items-center justify-around">
+    <!-- Tab 0 -->
+    <view class="flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition-transform {{activeTab === 0 ? 'text-primary' : 'text-neutral-500'}}" data-tab="{{0}}" bindtap="switchTab">
+      <c-icon name="home" className="w-5 h-5" />
+      <text class="text-[10px] font-semibold">Overview</text>
+    </view>
+    <!-- Tab 1 -->
+    <view class="flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition-transform {{activeTab === 1 ? 'text-primary' : 'text-neutral-500'}}" data-tab="{{1}}" bindtap="switchTab">
+      <c-icon name="bell" className="w-5 h-5" />
+      <text class="text-[10px] font-semibold">Alerts</text>
+    </view>
+    <!-- Tab 2 -->
+    <view class="flex flex-col items-center gap-1 cursor-pointer active:scale-95 transition-transform {{activeTab === 2 ? 'text-primary' : 'text-neutral-500'}}" data-tab="{{2}}" bindtap="switchTab">
+      <c-icon name="settings" className="w-5 h-5" />
+      <text class="text-[10px] font-semibold">Settings</text>
+    </view>
+  </view>
+  <!-- Safe area bottom spacer -->
+  <view style="height: env(safe-area-inset-bottom, 0px);" />
+</view>

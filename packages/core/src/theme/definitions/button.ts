@@ -11,7 +11,7 @@ export default function buttonTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "inline-flex rounded-md items-center justify-center font-medium select-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 transition-colors appearance-none",
+      root: "inline-flex font-sans rounded-md items-center justify-center font-medium select-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 transition-colors appearance-none",
       label: "truncate",
       icon: "shrink-0",
       spinner: "shrink-0",

@@ -1,4 +1,6 @@
 import { signal } from "alien-signals";
+import { isMiniApp, queryRect } from "@code-ui/utils";
+import { nextTick } from "../machine";
 import type { MachinePlugin } from "../plugin";
 
 export type AppSignal<T> = ReturnType<typeof signal<T>>;
@@ -125,11 +127,21 @@ export function linkAppChildToParent(parent: any, child: any): void {
         changed = true;
       }
     }
-    if (child.__cuiRegisteredSize > 0 && child.__cuiInsetId) {
-      host.insets.set(child.__cuiInsetId, {
-        id: child.__cuiInsetId,
-        edge: child.__cuiInsetEdge ?? "top",
-        size: child.__cuiRegisteredSize,
+    const insetSize =
+      child.__cuiRegisteredSize > 0
+        ? child.__cuiRegisteredSize
+        : child.__cuiRegisteredBannerSize > 0
+          ? child.__cuiRegisteredBannerSize
+          : 0;
+    const insetId = child.__cuiInsetId ?? child.__cuiBannerInsetId;
+    const insetEdge =
+      child.__cuiInsetEdge ?? child.__cuiRegisteredBannerEdge ?? "top";
+
+    if (insetSize > 0 && insetId) {
+      host.insets.set(insetId, {
+        id: insetId,
+        edge: insetEdge,
+        size: insetSize,
       });
       changed = true;
     }
@@ -152,7 +164,8 @@ export function unlinkAppChildFromParent(parent: any, child: any): void {
     if (child.__cuiScaleId && host.scales.delete(child.__cuiScaleId)) {
       changed = true;
     }
-    if (child.__cuiInsetId && host.insets.delete(child.__cuiInsetId)) {
+    const insetId = child.__cuiInsetId ?? child.__cuiBannerInsetId;
+    if (insetId && host.insets.delete(insetId)) {
       changed = true;
     }
     if (changed) notify(host);
@@ -418,11 +431,21 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
           background: child.__cuiScaleBackground,
         });
       }
-      if (child.__cuiRegisteredSize > 0 && child.__cuiInsetId) {
-        record.insets.set(child.__cuiInsetId, {
-          id: child.__cuiInsetId,
-          edge: child.__cuiInsetEdge ?? "top",
-          size: child.__cuiRegisteredSize,
+      const insetSize =
+        child.__cuiRegisteredSize > 0
+          ? child.__cuiRegisteredSize
+          : child.__cuiRegisteredBannerSize > 0
+            ? child.__cuiRegisteredBannerSize
+            : 0;
+      const insetId = child.__cuiInsetId ?? child.__cuiBannerInsetId;
+      const insetEdge =
+        child.__cuiInsetEdge ?? child.__cuiRegisteredBannerEdge ?? "top";
+
+      if (insetSize > 0 && insetId) {
+        record.insets.set(insetId, {
+          id: insetId,
+          edge: insetEdge,
+          size: insetSize,
         });
       }
     }
@@ -679,6 +702,252 @@ export function withAppInset(options: WithAppInsetOptions = {}): any {
       },
     },
   });
+}
+
+export interface WithAppBannerInsetOptions {
+  idPrefix?: string;
+}
+
+export function withAppBannerInset(
+  options: WithAppBannerInsetOptions = {},
+): MachinePlugin {
+  let bannerCounter = 0;
+
+  const syncBanner = (instance: any, machine: any) => {
+    const props = instance.data;
+    const state = machine.service?.state;
+    const isClosedOrClosing =
+      state?.matches?.("closed") ||
+      state?.matches?.("closing") ||
+      state?.matches?.("dismissing") ||
+      state?.hasTag?.("closed") ||
+      state?.hasTag?.("dismissing") ||
+      props?.open === false;
+
+    const isOpen =
+      !isClosedOrClosing &&
+      (Boolean(props?.open) ||
+        state?.hasTag?.("open") ||
+        state?.matches?.("open"));
+
+    const autoInset = props?.autoInset !== false;
+    const mode =
+      props?.mode || (props?.placement === "inline" ? "inline" : "fixed");
+    const edge: AppInsetEdge =
+      props?.placement === "bottom" ? "bottom" : "top";
+    const bannerId = instance.__cuiBannerInsetId;
+
+    if (!isOpen || !autoInset || mode === "inline") {
+      instance.__cuiBannerHeight = 0;
+      if (instance.__cuiMeasureRetryTimer) {
+        clearTimeout(instance.__cuiMeasureRetryTimer);
+        instance.__cuiMeasureRetryTimer = null;
+      }
+      if (instance.__cuiRegisteredBannerSize > 0) {
+        unregisterInset(instance, bannerId);
+        instance.__cuiRegisteredBannerSize = 0;
+        instance.__cuiRegisteredBannerEdge = undefined;
+        instance.__cuiRegisteredSize = 0;
+        instance.__cuiInsetEdge = undefined;
+      }
+      return;
+    }
+
+    // Resolve effective height: use current measurement or restore last known height
+    let height = Number(instance.__cuiBannerHeight || 0);
+    if (height <= 0 && Number(instance.__cuiLastKnownHeight || 0) > 0) {
+      height = Number(instance.__cuiLastKnownHeight);
+      instance.__cuiBannerHeight = height;
+    }
+
+    if (height <= 0) {
+      if (instance.__cuiRegisteredBannerSize > 0) {
+        unregisterInset(instance, bannerId);
+        instance.__cuiRegisteredBannerSize = 0;
+        instance.__cuiRegisteredBannerEdge = undefined;
+        instance.__cuiRegisteredSize = 0;
+        instance.__cuiInsetEdge = undefined;
+      }
+      return;
+    }
+
+    if (
+      (instance.__cuiRegisteredBannerEdge !== edge ||
+        instance.__cuiRegisteredBannerSize !== height) &&
+      instance.__cuiRegisteredBannerSize > 0
+    ) {
+      unregisterInset(instance, bannerId);
+    }
+
+    instance.__cuiRegisteredBannerEdge = edge;
+    instance.__cuiRegisteredBannerSize = height;
+    instance.__cuiInsetId = bannerId;
+    instance.__cuiInsetEdge = edge;
+    instance.__cuiRegisteredSize = height;
+
+    registerInset(instance, {
+      id: bannerId,
+      edge,
+      size: height,
+    });
+  };
+
+  const measureBanner = (instance: any, retry = 0) => {
+    const canQuery =
+      typeof instance?.createSelectorQuery === "function" || isMiniApp();
+    if (!canQuery) return;
+
+    queryRect(".cui-banner-root", instance)
+      .then((res) => {
+        const props = instance.data;
+        const state = instance.__codeUiMachine?.service?.state;
+        const isClosedOrClosing =
+          state?.matches?.("closed") ||
+          state?.matches?.("closing") ||
+          state?.matches?.("dismissing") ||
+          state?.hasTag?.("closed") ||
+          state?.hasTag?.("dismissing") ||
+          props?.open === false;
+        const isOpen =
+          !isClosedOrClosing &&
+          (Boolean(props?.open) ||
+            state?.hasTag?.("open") ||
+            state?.matches?.("open"));
+
+        if (!res || typeof res.height !== "number" || res.height <= 0) {
+          if (isOpen && retry < 5) {
+            if (instance.__cuiMeasureRetryTimer) {
+              clearTimeout(instance.__cuiMeasureRetryTimer);
+            }
+            instance.__cuiMeasureRetryTimer = setTimeout(() => {
+              instance.__cuiMeasureRetryTimer = null;
+              measureBanner(instance, retry + 1);
+            }, 30 * (retry + 1));
+          }
+          return;
+        }
+
+        const height = Math.round(res.height);
+        instance.__cuiLastKnownHeight = height;
+
+        if (
+          height !== instance.__cuiBannerHeight ||
+          instance.__cuiRegisteredBannerSize !== height
+        ) {
+          instance.__cuiBannerHeight = height;
+          if (instance.__codeUiMachine) {
+            syncBanner(instance, instance.__codeUiMachine);
+          }
+        }
+      })
+      .catch(() => {
+        if (retry < 3) {
+          if (instance.__cuiMeasureRetryTimer) {
+            clearTimeout(instance.__cuiMeasureRetryTimer);
+          }
+          instance.__cuiMeasureRetryTimer = setTimeout(() => {
+            instance.__cuiMeasureRetryTimer = null;
+            measureBanner(instance, retry + 1);
+          }, 40);
+        }
+      });
+  };
+
+  const scheduleMeasure = (instance: any) => {
+    if (instance.__cuiMeasureRetryTimer) {
+      clearTimeout(instance.__cuiMeasureRetryTimer);
+      instance.__cuiMeasureRetryTimer = null;
+    }
+    if (instance.__cuiBannerMeasureQueued) {
+      instance.__cuiBannerMeasureNeedsRerun = true;
+      return;
+    }
+    instance.__cuiBannerMeasureQueued = true;
+    nextTick(() => {
+      instance.__cuiBannerMeasureQueued = false;
+      measureBanner(instance, 0);
+      if (instance.__cuiBannerMeasureNeedsRerun) {
+        instance.__cuiBannerMeasureNeedsRerun = false;
+        scheduleMeasure(instance);
+      }
+    });
+  };
+
+  return {
+    name: "banner-layout-inset",
+    behaviors: [cuiAppChildBehavior],
+    setupRelations(relations) {
+      setupAppRelations(relations, "child");
+    },
+    onAttached(instance) {
+      instance.__cuiBannerInsetId = `${options.idPrefix ?? "banner"}:${++bannerCounter}`;
+      instance.__cuiRegisteredBannerSize = 0;
+      instance.__cuiRegisteredBannerEdge = undefined;
+      instance.__cuiBannerHeight = 0;
+      instance.__cuiLastKnownHeight = 0;
+      instance.__cuiBannerMeasureQueued = false;
+      instance.__cuiBannerMeasureNeedsRerun = false;
+      instance.__cuiMeasureRetryTimer = null;
+    },
+    onMachineStarted(instance, machine) {
+      instance.__cuiBannerUnsub = machine.subscribe(() => {
+        const state = machine.service?.state;
+        const isOpen = state?.hasTag?.("open") || state?.matches?.("open");
+        if (isOpen) {
+          if (
+            Number(instance.__cuiBannerHeight || 0) <= 0 &&
+            Number(instance.__cuiLastKnownHeight || 0) > 0
+          ) {
+            instance.__cuiBannerHeight = Number(instance.__cuiLastKnownHeight);
+          }
+          scheduleMeasure(instance);
+        }
+        syncBanner(instance, machine);
+      });
+      syncBanner(instance, machine);
+    },
+    onReady(instance) {
+      scheduleMeasure(instance);
+    },
+    onPropChanged(instance, propKey, val) {
+      if (propKey === "open") {
+        if (val) {
+          if (Number(instance.__cuiLastKnownHeight || 0) > 0) {
+            instance.__cuiBannerHeight = Number(instance.__cuiLastKnownHeight);
+            if (instance.__codeUiMachine) {
+              syncBanner(instance, instance.__codeUiMachine);
+            }
+          }
+        } else {
+          if (instance.__codeUiMachine) {
+            syncBanner(instance, instance.__codeUiMachine);
+          }
+        }
+      }
+      scheduleMeasure(instance);
+      if (instance.__codeUiMachine) {
+        syncBanner(instance, instance.__codeUiMachine);
+      }
+    },
+    onDetached(instance) {
+      instance.__cuiBannerUnsub?.();
+      instance.__cuiBannerUnsub = undefined;
+      instance.__cuiBannerMeasureQueued = false;
+      instance.__cuiBannerMeasureNeedsRerun = false;
+      if (instance.__cuiMeasureRetryTimer) {
+        clearTimeout(instance.__cuiMeasureRetryTimer);
+        instance.__cuiMeasureRetryTimer = null;
+      }
+      if (instance.__cuiRegisteredBannerSize > 0) {
+        unregisterInset(instance, instance.__cuiBannerInsetId);
+        instance.__cuiRegisteredBannerSize = 0;
+        instance.__cuiRegisteredBannerEdge = undefined;
+        instance.__cuiRegisteredSize = 0;
+        instance.__cuiInsetEdge = undefined;
+      }
+      instance.__cuiBannerHeight = 0;
+    },
+  };
 }
 
 const DEFAULT_MENU_HEIGHT = 32;

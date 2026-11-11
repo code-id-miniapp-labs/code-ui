@@ -161,6 +161,14 @@ describe("@code-ui/core color generation", () => {
     expect(getIcon("minus")).toBe("i-lucide-minus");
     expect(getIcon("close")).toBe("i-lucide-x");
     expect(getIcon("loading")).toBe("i-lucide-loader");
+    expect(getIcon("chevronDown")).toBe("i-lucide-chevron-down");
+    expect(getIcon("chevron-down")).toBe("i-lucide-chevron-down");
+    expect(getIcon("chevronRight")).toBe("i-lucide-chevron-right");
+    expect(getIcon("chevron-right")).toBe("i-lucide-chevron-right");
+    expect(getIcon("chevronLeft")).toBe("i-lucide-chevron-left");
+    expect(getIcon("chevron-left")).toBe("i-lucide-chevron-left");
+    expect(getIcon("chevronUp")).toBe("i-lucide-chevron-up");
+    expect(getIcon("chevron-up")).toBe("i-lucide-chevron-up");
     expect(getIcon("upload")).toBe("i-lucide-upload");
     expect(getIcon("file")).toBe("i-lucide-file");
 
@@ -195,10 +203,13 @@ describe("@code-ui/core color generation", () => {
         collections: ["mdi"],
         prefix: "icon",
         check: "icon-custom-check",
+        chevronRight: "icon-custom-chevron",
         search: "icon-mdi-magnify",
       },
     });
     expect(getIcon("check")).toBe("icon-custom-check");
+    expect(getIcon("chevronRight")).toBe("icon-custom-chevron");
+    expect(getIcon("chevron-right")).toBe("icon-custom-chevron");
     expect(getIcon("minus")).toBe("icon-mdi-minus");
     expect(getIcon("close")).toBe("icon-mdi-close");
     expect(getIcon("loading")).toBe("icon-mdi-loading");

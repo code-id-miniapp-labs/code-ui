@@ -228,6 +228,32 @@ function mergePageMetaStyle(pageMetaXml: string): string {
   );
 }
 
+export function injectBarIds(code: string): string {
+  let result = code.replace(
+    /(<[a-zA-Z0-9_-]+(?:\s+[^>]*)?\bdata-cui-top-?bar\b[^>]*>)/gi,
+    (tag) => {
+      if (/\bid=["'][^"']*["']/i.test(tag)) {
+        return tag;
+      }
+      return tag.replace(/^<([a-zA-Z0-9_-]+)/, '<$1 id="cui-top-bar"');
+    },
+  );
+
+  result = result.replace(
+    /(<[a-zA-Z0-9_-]+(?:\s+[^>]*)?\bdata-cui-bottom-?bar\b[^>]*>)/gi,
+    (tag) => {
+      if (/\bid=["'][^"']*["']/i.test(tag)) {
+        return tag;
+      }
+      return tag.replace(/^<([a-zA-Z0-9_-]+)/, '<$1 id="cui-bottom-bar"');
+    },
+  );
+
+  return result;
+}
+
+export const injectBarClasses = injectBarIds;
+
 export function hasAppWrapperTag(code: string, tag: string): boolean {
   // Strip XML comments
   const withoutComments = code.replace(/<!--[\s\S]*?-->/g, "");
@@ -249,24 +275,26 @@ export function wrapPageWxml(
   options: ResolvedAppWrapperOptions,
 ): string {
   const { tag, defaultProps, pageMeta = false } = options;
+  const processedCode = injectBarClasses(code);
 
   // Check if already contains app wrapper tag
-  if (hasAppWrapperTag(code, tag)) {
-    if (!pageMeta) return code;
+  if (hasAppWrapperTag(processedCode, tag)) {
+    if (!pageMeta) return processedCode;
     const match =
-      PAGE_META_PAIRED_RE.exec(code) || PAGE_META_SELF_CLOSING_RE.exec(code);
+      PAGE_META_PAIRED_RE.exec(processedCode) ||
+      PAGE_META_SELF_CLOSING_RE.exec(processedCode);
     if (match) {
       const merged = mergePageMetaStyle(match[0]);
       if (merged !== match[0]) {
         return (
-          code.slice(0, match.index) +
+          processedCode.slice(0, match.index) +
           merged +
-          code.slice(match.index + match[0].length)
+          processedCode.slice(match.index + match[0].length)
         );
       }
-      return code;
+      return processedCode;
     }
-    return `<page-meta page-style="{{ cuiPageStyle }}" />\n${code}`;
+    return `<page-meta page-style="{{ cuiPageStyle }}" />\n${processedCode}`;
   }
 
   const propsStr = formatProps(defaultProps);
@@ -275,13 +303,16 @@ export function wrapPageWxml(
 
   // Check for <page-meta>
   const match =
-    PAGE_META_PAIRED_RE.exec(code) || PAGE_META_SELF_CLOSING_RE.exec(code);
+    PAGE_META_PAIRED_RE.exec(processedCode) ||
+    PAGE_META_SELF_CLOSING_RE.exec(processedCode);
   if (match) {
     const matchIndex = match.index;
     const matchLength = match[0].length;
-    const beforeRaw = code.slice(0, matchIndex + matchLength).trimEnd();
+    const beforeRaw = processedCode
+      .slice(0, matchIndex + matchLength)
+      .trimEnd();
     const before = pageMeta ? mergePageMetaStyle(beforeRaw) : beforeRaw;
-    const after = code.slice(matchIndex + matchLength).trim();
+    const after = processedCode.slice(matchIndex + matchLength).trim();
 
     if (!after) {
       return `${before}\n${openTag}\n${closeTag}\n`;
@@ -289,7 +320,7 @@ export function wrapPageWxml(
     return `${before}\n${openTag}\n${after}\n${closeTag}\n`;
   }
 
-  const trimmed = code.trim();
+  const trimmed = processedCode.trim();
   const pageMetaTag = pageMeta
     ? `<page-meta page-style="{{ cuiPageStyle }}" />\n`
     : "";

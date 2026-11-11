@@ -56,6 +56,12 @@
       "require": "./dist/runtime/avatar-group/index.js"
     },
     "./avatar-group/*": "./dist/runtime/avatar-group/*",
+    "./banner": {
+      "types": "./dist/runtime/banner/index.d.ts",
+      "import": "./dist/runtime/banner/index.js",
+      "require": "./dist/runtime/banner/index.js"
+    },
+    "./banner/*": "./dist/runtime/banner/*",
     "./card": {
       "types": "./dist/runtime/card/index.d.ts",
       "import": "./dist/runtime/card/index.js",
@@ -248,6 +254,7 @@
     "@code-ui/accordion": "workspace:*",
     "@code-ui/accordion-item": "workspace:*",
     "@code-ui/anatomy": "workspace:*",
+    "@code-ui/banner": "workspace:*",
     "@code-ui/button": "workspace:*",
     "@code-ui/checkbox": "workspace:*",
     "@code-ui/checkbox-group": "workspace:*",

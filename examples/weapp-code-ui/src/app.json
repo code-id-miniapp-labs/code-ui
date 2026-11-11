@@ -29,7 +29,8 @@
     "pages/accordion/index",
     "pages/swipe-cell/index",
     "pages/tabs/index",
-    "pages/toast/index"
+    "pages/toast/index",
+    "pages/banner/index"
   ],
   "window": {},
   "style": "v2",

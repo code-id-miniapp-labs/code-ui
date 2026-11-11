@@ -187,6 +187,12 @@ export interface IconsConfig {
   loading?: string | undefined;
   /** Chevron for input menu/ select menu */
   chevronDown?: string | undefined;
+  /** Chevron for navigation / more button */
+  chevronRight?: string | undefined;
+  /** Chevron for pagination previous / back */
+  chevronLeft?: string | undefined;
+  /** Chevron for collapse / pagination */
+  chevronUp?: string | undefined;
   /** Upload icon for dropzone / file-upload */
   upload?: string | undefined;
   /** File icon for uploaded file items */

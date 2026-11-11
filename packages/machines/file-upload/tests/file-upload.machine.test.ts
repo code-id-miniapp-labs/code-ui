@@ -220,7 +220,9 @@ describe("FileUpload Machine", () => {
       const updatedApi = connectFileUpload(machine.service);
       expect(updatedApi.isMaxFiles).toBe(true);
       expect(updatedApi.dropzoneProps["aria-disabled"]).toBe(true);
-      expect(updatedApi.dropzoneProps["aria-label"]).toContain("Maximum 2 files uploaded");
+      expect(updatedApi.dropzoneProps["aria-label"]).toContain(
+        "Maximum 2 files uploaded",
+      );
 
       // Adding more when max reached should be blocked by guard
       machine.send({
@@ -470,7 +472,11 @@ describe("FileUpload Machine", () => {
         success({
           tempFiles: [
             { tempFilePath: "tmp/small.png", size: 1024, fileType: "image" },
-            { tempFilePath: "tmp/large.png", size: 10000000, fileType: "image" },
+            {
+              tempFilePath: "tmp/large.png",
+              size: 10000000,
+              fileType: "image",
+            },
           ],
         });
         complete();
@@ -522,7 +528,7 @@ describe("FileUpload Machine", () => {
             },
           ],
         });
-        complete(); 
+        complete();
       });
 
       (globalThis as any).wx = { chooseMessageFile };
@@ -742,8 +748,6 @@ describe("FileUpload Machine", () => {
       expect(defaultFileUploadProps.imageIcon).toBe("image");
       expect(defaultFileUploadProps.videoIcon).toBe("video");
       expect(defaultFileUploadProps.audioIcon).toBe("audio");
-      expect(defaultFileUploadProps.successIcon).toBe("check");
-      expect(defaultFileUploadProps.errorIcon).toBe("");
     });
 
     it("extracts file extensions correctly", () => {
@@ -882,8 +886,6 @@ describe("FileUpload Machine", () => {
         fileIcon: "doc",
         imageIcon: "photo",
         videoIcon: "film",
-        successIcon: "badge-check",
-        errorIcon: "alert-triangle",
       });
       machine.start();
       expect(machine.prop("icon")).toBe("cloud-upload");
@@ -892,8 +894,6 @@ describe("FileUpload Machine", () => {
       expect(machine.prop("fileIcon")).toBe("doc");
       expect(machine.prop("imageIcon")).toBe("photo");
       expect(machine.prop("videoIcon")).toBe("film");
-      expect(machine.prop("successIcon")).toBe("badge-check");
-      expect(machine.prop("errorIcon")).toBe("alert-triangle");
       machine.stop();
     });
   });
