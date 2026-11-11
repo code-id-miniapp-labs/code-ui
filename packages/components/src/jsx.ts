@@ -115,21 +115,35 @@ export interface CuiBannerElementProps extends CuiCommonElementProps {
   loadingIcon?: string;
   color?: BannerProps["color"];
   variant?: BannerProps["variant"];
+  size?: BannerProps["size"];
   placement?: BannerProps["placement"];
   mode?: BannerProps["mode"];
   title?: string;
   description?: string;
+  caption?: string;
+  badge?: string;
   icon?: string;
   infoIcon?: string;
   successIcon?: string;
   warningIcon?: string;
   errorIcon?: string;
+  image?: string;
+  imagePosition?: BannerProps["imagePosition"];
+  imageShape?: BannerProps["imageShape"];
+  imageMode?: string;
   close?: boolean;
+  closable?: boolean;
   closeIcon?: string;
+  more?: boolean;
+  moreIcon?: string;
   actions?: BannerProps["actions"];
+  hoverClass?: string;
   topOffset?: number | string;
   bottomOffset?: number | string;
   autoInset?: boolean;
+  onTap?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
+  ) => void;
   onOpenChange?: (
     event: WechatMiniprogram.CustomEvent<{ open: boolean; id?: string }>,
   ) => void;
@@ -138,6 +152,9 @@ export interface CuiBannerElementProps extends CuiCommonElementProps {
   ) => void;
   onAction?: (
     event: WechatMiniprogram.CustomEvent<{ action: any; index: number; id?: string }>,
+  ) => void;
+  onMore?: (
+    event: WechatMiniprogram.CustomEvent<{ id?: string }>,
   ) => void;
 }
 

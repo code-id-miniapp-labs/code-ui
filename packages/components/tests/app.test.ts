@@ -289,4 +289,13 @@ describe("custom top-bar and bottom-bar insets", () => {
     unregisterInset(createInstance("p1"), "banner:bottom");
     expect(signals.insets().bottom).toBe(50);
   });
+
+  it("handles empty insets when no bars or banners are registered", () => {
+    pageStack = [createPage("p1")];
+    const host = createHost("p1");
+    host.register();
+    const signals = getPageAppSignals(host.instance);
+    expect(signals.insets().top).toBe(0);
+    expect(signals.insets().bottom).toBe(0);
+  });
 });

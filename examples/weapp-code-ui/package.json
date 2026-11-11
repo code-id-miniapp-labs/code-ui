@@ -41,6 +41,7 @@
   "devDependencies": {
     "@code-ui/accordion": "workspace:*",
     "@code-ui/accordion-item": "workspace:*",
+    "@code-ui/banner": "workspace:*",
     "@code-ui/checkbox": "workspace:*",
     "@code-ui/checkbox-group": "workspace:*",
     "@code-ui/input": "workspace:*",

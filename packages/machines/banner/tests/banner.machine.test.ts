@@ -33,8 +33,15 @@ describe("bannerMachine", () => {
     machine.stop();
   });
 
-  it("syncs controlled open prop", async () => {
-    const machine = new MiniappMachine(bannerMachine, { open: false });
+  it("syncs controlled open prop without echoing callbacks", async () => {
+    const onOpenChange = vi.fn();
+    const onDismiss = vi.fn();
+
+    const machine = new MiniappMachine(bannerMachine, {
+      open: false,
+      onOpenChange,
+      onDismiss,
+    });
     machine.start();
 
     expect(machine.state.get()).toBe("closed");
@@ -48,6 +55,8 @@ describe("bannerMachine", () => {
     await flush();
 
     expect(machine.state.get()).toBe("dismissing");
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(onDismiss).not.toHaveBeenCalled();
 
     machine.stop();
   });
@@ -69,7 +78,10 @@ describe("bannerMachine", () => {
     await flush();
 
     expect(onDismiss).toHaveBeenCalledWith({ id: "sale-banner" });
-    expect(onOpenChange).toHaveBeenCalledWith({ open: false, id: "sale-banner" });
+    expect(onOpenChange).toHaveBeenCalledWith({
+      open: false,
+      id: "sale-banner",
+    });
     expect(machine.state.get()).toBe("dismissing");
     expect(connectBanner(machine.service).dismissing).toBe(true);
     expect(connectBanner(machine.service).visible).toBe(true);
@@ -89,9 +101,7 @@ describe("bannerMachine", () => {
     const onClick = vi.fn();
 
     const machine = new MiniappMachine(bannerMachine, {
-      actions: [
-        { label: "Learn More", onClick },
-      ],
+      actions: [{ label: "Learn More", onClick }],
       onAction,
     });
     machine.start();
@@ -117,14 +127,14 @@ describe("bannerMachine", () => {
   it("handles action buttons with closeOnClick: true", async () => {
     const onAction = vi.fn();
     const onDismiss = vi.fn();
+    const onOpenChange = vi.fn();
     const onClick = vi.fn();
 
     const machine = new MiniappMachine(bannerMachine, {
-      actions: [
-        { label: "Accept", onClick, closeOnClick: true },
-      ],
+      actions: [{ label: "Accept", onClick, closeOnClick: true }],
       onAction,
       onDismiss,
+      onOpenChange,
     });
     machine.start();
 
@@ -135,16 +145,18 @@ describe("bannerMachine", () => {
     expect(onClick).toHaveBeenCalled();
     expect(onAction).toHaveBeenCalled();
     expect(onDismiss).toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith({
+      open: false,
+      id: undefined,
+    });
     expect(machine.state.get()).toBe("dismissing");
 
     machine.stop();
   });
 
-  it("supports configurable icon props (loadingIcon, closeIcon, action icons)", () => {
+  it("precomputes action defaults for WXML rendering", () => {
     const machine = new MiniappMachine(bannerMachine, {
-      loading: true,
       loadingIcon: "custom-spinner",
-      closeIcon: "custom-close",
       actions: [
         { label: "Action 1", icon: "check", loading: false },
         { label: "Action 2", loading: true, loadingIcon: "action-spinner" },
@@ -153,19 +165,49 @@ describe("bannerMachine", () => {
     machine.start();
 
     const api = connectBanner(machine.service);
-    expect(api.loading).toBe(true);
-    expect(api.loadingIcon).toBe("custom-spinner");
-    expect(api.closeIcon).toBe("custom-close");
-    expect(api.rootProps["data-loading"]).toBe("true");
-    expect(api.rootProps["aria-busy"]).toBe(true);
-
     expect(api.actions).toHaveLength(2);
-    expect(api.actions[0]?.icon).toBe("check");
-    expect(api.actions[0]?.loading).toBe(false);
-    expect(api.actions[0]?.loadingIcon).toBe("custom-spinner");
+    expect(api.actions[0]).toEqual(
+      expect.objectContaining({
+        label: "Action 1",
+        index: 0,
+        icon: "check",
+        loading: false,
+        loadingIcon: "custom-spinner",
+        color: "neutral",
+        variant: "ghost",
+        size: "xs",
+      }),
+    );
 
-    expect(api.actions[1]?.loading).toBe(true);
-    expect(api.actions[1]?.loadingIcon).toBe("action-spinner");
+    expect(api.actions[1]).toEqual(
+      expect.objectContaining({
+        label: "Action 2",
+        loading: true,
+        loadingIcon: "action-spinner",
+      }),
+    );
+
+    machine.stop();
+  });
+
+  it("invokes tap and more callbacks", async () => {
+    const onTap = vi.fn();
+    const onMore = vi.fn();
+
+    const machine = new MiniappMachine(bannerMachine, {
+      id: "promo-banner",
+      onTap,
+      onMore,
+    });
+    machine.start();
+
+    const api = connectBanner(machine.service);
+    api.handleTap();
+    api.handleMore();
+    await flush();
+
+    expect(onTap).toHaveBeenCalledWith({ id: "promo-banner" });
+    expect(onMore).toHaveBeenCalledWith({ id: "promo-banner" });
 
     machine.stop();
   });
@@ -175,11 +217,28 @@ describe("bannerMachine", () => {
     machine.start();
 
     const before = connectBanner(machine.service);
-    machine.send({ type: "MEASURE" });
+    machine.send({ type: "ANIMATION_END" });
     const after = connectBanner(machine.service);
 
     expect(diffSnapshot(before, after, "banner")).toBeNull();
 
     machine.stop();
+  });
+
+  it("cleans up the dismiss timer on stop()", async () => {
+    vi.useFakeTimers();
+    const machine = new MiniappMachine(bannerMachine, {});
+    try {
+      machine.start();
+      connectBanner(machine.service).dismiss();
+      await flush();
+      expect(vi.getTimerCount()).toBe(1);
+
+      machine.stop();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      machine.stop();
+      vi.useRealTimers();
+    }
   });
 });

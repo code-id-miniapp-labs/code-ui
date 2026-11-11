@@ -197,6 +197,13 @@ Page({
         badge: "Feedback",
         path: "/pages/toast/index",
       },
+      {
+        id: "banner",
+        name: "Banner",
+        desc: "Persistent banners with auto layout coordination, custom top-bar/tab-bar insets, Baymard UI philosophy & configurable icons.",
+        badge: "Feedback",
+        path: "/pages/banner/index",
+      },
     ],
   },
 

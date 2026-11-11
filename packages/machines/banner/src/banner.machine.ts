@@ -1,5 +1,5 @@
 import { createMachine } from "@code-ui/core";
-import { isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
+import { isNotNull } from "@code-ui/utils";
 import type {
   BannerMachine,
   BannerParams,
@@ -9,31 +9,11 @@ import { defaultBannerProps } from "./banner.props";
 
 const DISMISS_ANIMATION_DURATION = 200;
 
-function measureBannerHeight(
-  scope: BannerParams["scope"] | undefined,
-  context: BannerParams["context"],
-): void {
-  const comp = scope?.component;
-  const canQuery =
-    Boolean(
-      comp &&
-        typeof (comp as { createSelectorQuery?: unknown })
-          .createSelectorQuery === "function",
-    ) || isMiniApp();
-  if (!canQuery) return;
-
-  queryRect(".cui-banner-root", comp)
-    .then((res) => {
-      if (
-        res &&
-        typeof res.height === "number" &&
-        res.height > 0 &&
-        res.height !== context.get("height")
-      ) {
-        context.set("height", res.height);
-      }
-    })
-    .catch(() => {});
+function resolveId(
+  prop: BannerParams["prop"],
+  scope: BannerParams["scope"],
+): string | undefined {
+  return prop("id") || scope?.id;
 }
 
 export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
@@ -50,15 +30,7 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
     return isOpen ? "open" : "closed";
   },
 
-  refs: () => ({
-    dismissTimer: undefined,
-  }),
-
-  context: ({ bindable }) => ({
-    height: bindable<number>(() => ({
-      defaultValue: 0,
-    })),
-  }),
+  context: () => ({}),
 
   computed: {
     isOpen: ({ state }) => state.hasTag("open"),
@@ -67,58 +39,39 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
     isDismissing: ({ state }) => state.hasTag("dismissing"),
   },
 
-  watch: ({ prop, state, send }) => {
+  watch: ({ prop, state }) => {
     const controlledOpen = prop("open");
     if (!isNotNull(controlledOpen)) return;
 
-    if (controlledOpen && state.matches("closed")) {
-      send({ type: "CONTROLLED.OPEN" });
-    } else if (!controlledOpen && state.hasTag("open")) {
-      send({ type: "CONTROLLED.CLOSE" });
+    if (controlledOpen) {
+      if (!state.matches("open")) state.set("open");
+    } else if (state.matches("open")) {
+      state.set("dismissing");
     }
   },
 
-  exit: ["cleanup"],
+  on: {
+    MORE: { actions: ["invokeOnMore"] },
+    TAP: { actions: ["invokeOnTap"] },
+  },
 
   states: {
     closed: {
       tags: ["closed"],
-      entry: ["resetHeight"],
-      on: {
-        "CONTROLLED.OPEN": {
-          target: "open",
-          actions: ["invokeOnOpenChangeTrue"],
-        },
-        MEASURE: {
-          actions: ["resetHeight"],
-        },
-      },
     },
 
     open: {
       tags: ["open"],
-      effects: ["measureOnOpen"],
       on: {
         DISMISS: {
           target: "dismissing",
-          actions: ["invokeOnDismiss", "invokeOnOpenChangeFalse"],
-        },
-        "CONTROLLED.CLOSE": {
-          target: "dismissing",
-          actions: ["invokeOnOpenChangeFalse"],
-        },
-        MEASURE: {
-          actions: ["measureHeightAction"],
+          actions: ["invokeOnDismiss", "emitOpenChange"],
         },
         TRIGGER_ACTION: [
           {
             guard: "shouldCloseOnAction",
             target: "dismissing",
-            actions: [
-              "invokeOnAction",
-              "invokeOnDismiss",
-              "invokeOnOpenChangeFalse",
-            ],
+            actions: ["invokeOnAction", "invokeOnDismiss", "emitOpenChange"],
           },
           {
             actions: ["invokeOnAction"],
@@ -134,10 +87,6 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
         ANIMATION_END: {
           target: "closed",
         },
-        "CONTROLLED.OPEN": {
-          target: "open",
-          actions: ["invokeOnOpenChangeTrue"],
-        },
       },
     },
   },
@@ -145,18 +94,10 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
   implementations: {
     guards: {
       shouldCloseOnAction: ({ event }) =>
-        Boolean(event?.type === "TRIGGER_ACTION" && event.action?.closeOnClick),
+        event.type === "TRIGGER_ACTION" && Boolean(event.action.closeOnClick),
     },
 
     effects: {
-      measureOnOpen: ({ scope, context }) => {
-        measureBannerHeight(scope, context);
-        const timer = setTimeout(() => {
-          measureBannerHeight(scope, context);
-        }, 50);
-        return () => clearTimeout(timer);
-      },
-
       waitForDismissAnimation: ({ send }) => {
         const id = setTimeout(() => {
           send({ type: "ANIMATION_END" });
@@ -166,48 +107,34 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
     },
 
     actions: {
-      measureHeightAction: ({ scope, context }) => {
-        measureBannerHeight(scope, context);
+      invokeOnTap: ({ prop, scope }) => {
+        prop("onTap")?.({ id: resolveId(prop, scope) });
       },
 
-      resetHeight: ({ context }) => {
-        if (context.get("height") !== 0) {
-          context.set("height", 0);
-        }
+      invokeOnMore: ({ prop, scope }) => {
+        prop("onMore")?.({ id: resolveId(prop, scope) });
       },
 
       invokeOnDismiss: ({ prop, scope }) => {
-        const id = prop("id") || scope?.id;
-        prop("onDismiss")?.({ id });
+        prop("onDismiss")?.({ id: resolveId(prop, scope) });
       },
 
-      invokeOnOpenChangeFalse: ({ prop, scope }) => {
-        const id = prop("id") || scope?.id;
-        prop("onOpenChange")?.({ open: false, id });
-      },
-
-      invokeOnOpenChangeTrue: ({ prop, scope }) => {
-        const id = prop("id") || scope?.id;
-        prop("onOpenChange")?.({ open: true, id });
+      emitOpenChange: ({ prop, scope, state }) => {
+        prop("onOpenChange")?.({
+          open: state.matches("open"),
+          id: resolveId(prop, scope),
+        });
       },
 
       invokeOnAction: ({ prop, scope, event }) => {
-        if (event?.type !== "TRIGGER_ACTION") return;
-        const id = prop("id") || scope?.id;
-        const details = {
+        if (event.type !== "TRIGGER_ACTION") return;
+        const id = resolveId(prop, scope);
+        event.action.onClick?.();
+        prop("onAction")?.({
           action: event.action,
           index: event.index,
           id,
-        };
-        event.action.onClick?.();
-        prop("onAction")?.(details);
-      },
-
-      cleanup: ({ refs }) => {
-        if (refs.get("dismissTimer")) {
-          clearTimeout(refs.get("dismissTimer"));
-          refs.set("dismissTimer", undefined);
-        }
+        });
       },
     },
   },

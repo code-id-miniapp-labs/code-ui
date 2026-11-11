@@ -200,8 +200,10 @@ describe("withAppBannerInset plugin", () => {
     let subscriber: (() => void) | undefined;
     const mockMachine: any = {
       service: {
-        state: { matches: (s: string) => s === "open", hasTag: (t: string) => t === "open" },
-        context: { get: (k: string) => (k === "height" ? 54 : 0) },
+        state: {
+          matches: (s: string) => s === "open",
+          hasTag: (t: string) => t === "open",
+        },
       },
       subscribe(fn: () => void) {
         subscriber = fn;
@@ -225,6 +227,7 @@ describe("withAppBannerInset plugin", () => {
     plugin.onAttached?.(instance, {});
     expect(instance.__cuiBannerInsetId).toBe("test-banner:1");
 
+    instance.__cuiBannerHeight = 54;
     plugin.onMachineStarted?.(instance, mockMachine);
     expect(signals.insets().top).toBe(54);
 
@@ -242,6 +245,78 @@ describe("withAppBannerInset plugin", () => {
 
     plugin.onDetached?.(instance);
     expect(signals.insets().bottom).toBe(0);
+  });
+
+  it("restores last known height immediately upon rapid toggle without layout mismatch", () => {
+    pageStack = [{ getPageId: () => "p1" }];
+    const host = createHost("p1");
+    const signals = getPageAppSignals(host.instance);
+    const plugin = withAppBannerInset({ idPrefix: "rapid-banner" });
+
+    let subscriber: (() => void) | undefined;
+    let isOpenState = true;
+    const mockMachine: any = {
+      service: {
+        state: {
+          matches: (s: string) => (isOpenState ? s === "open" : s === "closed"),
+          hasTag: (t: string) => (isOpenState ? t === "open" : false),
+        },
+      },
+      subscribe(fn: () => void) {
+        subscriber = fn;
+        return () => {
+          subscriber = undefined;
+        };
+      },
+    };
+
+    const instance: any = {
+      data: {
+        open: true,
+        placement: "top",
+        mode: "fixed",
+        autoInset: true,
+      },
+      getPageId: () => "p1",
+      __codeUiMachine: mockMachine,
+    };
+
+    plugin.onAttached?.(instance, {});
+    instance.__cuiBannerHeight = 72;
+    instance.__cuiLastKnownHeight = 72;
+    plugin.onMachineStarted?.(instance, mockMachine);
+
+    expect(signals.insets().top).toBe(72);
+
+    // 1. User toggles open = false (hide banner)
+    instance.data.open = false;
+    isOpenState = false;
+    plugin.onPropChanged?.(instance, "open", false);
+    subscriber?.();
+    expect(signals.insets().top).toBe(0);
+
+    // 2. User rapidly toggles open = true (show banner again)
+    instance.data.open = true;
+    isOpenState = true;
+    plugin.onPropChanged?.(instance, "open", true);
+    subscriber?.();
+
+    // Inset must be restored immediately to last known height (72px)
+    expect(signals.insets().top).toBe(72);
+
+    // 3. Toggle off and on again
+    instance.data.open = false;
+    isOpenState = false;
+    plugin.onPropChanged?.(instance, "open", false);
+    expect(signals.insets().top).toBe(0);
+
+    instance.data.open = true;
+    isOpenState = true;
+    plugin.onPropChanged?.(instance, "open", true);
+    expect(signals.insets().top).toBe(72);
+
+    plugin.onDetached?.(instance);
+    expect(signals.insets().top).toBe(0);
   });
 });
 

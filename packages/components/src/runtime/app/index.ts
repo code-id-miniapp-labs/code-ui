@@ -20,16 +20,15 @@ import type { ToastEntry } from "@code-ui/miniapp/behaviors/toast";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";
+import {
+  buildRootCssVars,
+  detectBars,
+  extractBottomBarHeight,
+  extractTopBarHeight,
+  resolveAppLayout,
+} from "./utils";
 
 const appTheme = tv(themeConfig);
-
-function px(value: number): string {
-  return `${Math.round(value * 100) / 100}px`;
-}
-
-function hasEdge(safeArea: string, edge: "top" | "bottom"): boolean {
-  return safeArea === "both" || safeArea === edge;
-}
 
 const relations: Record<string, any> = {};
 setupAppRelations(relations, "parent");
@@ -117,7 +116,7 @@ Component(
         }
         const scaled = Boolean(this.data.scaled);
         if (!scaled) {
-          return "transform: scale(1) translateY(0);";
+          return "";
         }
         const factor =
           this.data.hostScaleFactor || this.data.scaleFactor || 0.94;
@@ -126,26 +125,19 @@ Component(
 
       rootStyle() {
         const m: AppMetrics = appMetricsSignal();
-        const safeArea: string = this.data.safeArea || "none";
         const topInset: number = this.data.topInset || 0;
         const bottomInset: number = this.data.bottomInset || 0;
 
-        const effectiveTopBarHeight =
-          Number(this.data.topBarHeight || 0) > 0
-            ? Number(this.data.topBarHeight)
-            : Number(this.data.detectedTopBarHeight || 0);
-
-        const effectiveBottomBarHeight =
-          Number(this.data.bottomBarHeight || 0) > 0
-            ? Number(this.data.bottomBarHeight)
-            : Number(this.data.detectedBottomBarHeight || 0);
-
-        const safeTopOffset = hasEdge(safeArea, "top") ? m.safeTop : 0;
-        const safeBottomOffset = hasEdge(safeArea, "bottom") ? m.safeBottom : 0;
-
-        const offsetTop = safeTopOffset + effectiveTopBarHeight + topInset;
-        const offsetBottom =
-          safeBottomOffset + effectiveBottomBarHeight + bottomInset;
+        const layout = resolveAppLayout({
+          safeArea: this.data.safeArea,
+          metrics: m,
+          topBarHeight: this.data.topBarHeight,
+          bottomBarHeight: this.data.bottomBarHeight,
+          detectedTopBarHeight: this.data.detectedTopBarHeight,
+          detectedBottomBarHeight: this.data.detectedBottomBarHeight,
+          topInset,
+          bottomInset,
+        });
 
         const scaled = Boolean(this.data.scaled);
         const bg =
@@ -155,36 +147,7 @@ Component(
             ? `background-color:${bg};`
             : "";
 
-        const bannerTopOffset = safeTopOffset + effectiveTopBarHeight;
-        const bannerBottomOffset =
-          safeBottomOffset + effectiveBottomBarHeight;
-
-        const toastTopOffset = offsetTop;
-        const toastBottomOffset = offsetBottom;
-
-        return (
-          `--cui-status-bar-height:${px(m.statusBarHeight)};` +
-          `--cui-safe-top:${px(m.safeTop)};` +
-          `--cui-safe-bottom:${px(m.safeBottom)};` +
-          `--cui-menu-top:${px(m.menuTop)};` +
-          `--cui-menu-height:${px(m.menuHeight)};` +
-          `--cui-menu-inset:${px(m.menuInset)};` +
-          `--cui-nav-bar-height:${px(m.navBarHeight)};` +
-          `--cui-nav-height:${px(m.navHeight)};` +
-          `--cui-top-bar-height:${px(effectiveTopBarHeight)};` +
-          `--cui-bottom-bar-height:${px(effectiveBottomBarHeight)};` +
-          `--cui-top-inset:${px(topInset)};` +
-          `--cui-bottom-inset:${px(bottomInset)};` +
-          `--cui-top-offset:${px(offsetTop)};` +
-          `--cui-bottom-offset:${px(offsetBottom)};` +
-          `--cui-banner-top-offset:${px(bannerTopOffset)};` +
-          `--cui-banner-bottom-offset:${px(bannerBottomOffset)};` +
-          `--cui-toast-top-offset:${px(toastTopOffset)};` +
-          `--cui-toast-bottom-offset:${px(toastBottomOffset)};` +
-          `padding-top:var(--cui-top-offset);` +
-          `padding-bottom:var(--cui-bottom-offset);` +
-          bgStyle
-        );
+        return buildRootCssVars(layout, m, topInset, bottomInset, bgStyle);
       },
     },
 
@@ -230,6 +193,11 @@ Component(
 
       ready(this: any) {
         this.detectCustomBars();
+        wx.nextTick(() => {
+          if (this.__cuiAppAttached) {
+            this.detectCustomBars();
+          }
+        });
       },
     },
 
@@ -268,31 +236,31 @@ Component(
           return;
         }
         try {
-          const q = wx.createSelectorQuery();
-          q.select("[data-cui-topbar], [data-cui-top-bar], .cui-topbar").boundingClientRect();
-          q.select("[data-cui-bottombar], [data-cui-bottom-bar], .cui-bottombar").boundingClientRect();
-          q.exec((res: any) => {
+          const applyRects = (topRect: any, bottomRect: any) => {
             if (!this.__cuiAppAttached) return;
-            const topRect = res?.[0];
-            const bottomRect = res?.[1];
             const patch: Record<string, any> = {};
-            if (
-              topRect &&
-              typeof topRect.height === "number" &&
-              topRect.height !== this.data.detectedTopBarHeight
-            ) {
-              patch.detectedTopBarHeight = Math.max(0, Math.round(topRect.height));
+
+            if (topRect && typeof topRect.height === "number") {
+              const topHeight = extractTopBarHeight(topRect);
+              if (topHeight !== this.data.detectedTopBarHeight) {
+                patch.detectedTopBarHeight = topHeight;
+              }
             }
-            if (
-              bottomRect &&
-              typeof bottomRect.height === "number" &&
-              bottomRect.height !== this.data.detectedBottomBarHeight
-            ) {
-              patch.detectedBottomBarHeight = Math.max(0, Math.round(bottomRect.height));
+
+            if (bottomRect && typeof bottomRect.height === "number") {
+              const bottomHeight = extractBottomBarHeight(bottomRect);
+              if (bottomHeight !== this.data.detectedBottomBarHeight) {
+                patch.detectedBottomBarHeight = bottomHeight;
+              }
             }
+
             if (Object.keys(patch).length > 0) {
               this.setData(patch);
             }
+          };
+
+          detectBars(this, ({ topRect, bottomRect }) => {
+            applyRects(topRect, bottomRect);
           });
         } catch {}
       },
@@ -372,6 +340,9 @@ Component(
         }
         if (Object.keys(patch).length > 0) {
           this.setData(patch);
+        }
+        if (this.data.autoDetectBars && this.data.detectedTopBarHeight === 0) {
+          this.detectCustomBars();
         }
       },
     },

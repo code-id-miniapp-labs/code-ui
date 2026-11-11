@@ -25,21 +25,11 @@ const bannerBehavior = createMachineBehavior({
   connect: connectBanner,
   key: "banner",
   exportApi: true,
-  syncProps: [
-    "id",
-    "open",
-    "loading",
-    "loadingIcon",
-    "closeIcon",
-    "actions",
-    "placement",
-    "mode",
-    "autoInset",
-  ],
   plugins: [withAppBannerInset()],
 });
 
-const relations: Record<string, WechatMiniprogram.Component.RelationOption> = {};
+const relations: Record<string, WechatMiniprogram.Component.RelationOption> =
+  {};
 setupAppRelations(relations, "child");
 
 function px(value: number | string): string {
@@ -64,39 +54,31 @@ Component(
     }),
 
     computed: {
-      resolvedIcon() {
-        const icon = this.data.icon;
-        if (icon) return icon;
-        const color = this.data.color;
-        if (color === "info") return this.data.infoIcon || "info";
-        if (color === "success") return this.data.successIcon || "check";
-        if (color === "warning") return this.data.warningIcon || "alert";
-        if (color === "error" || color === "danger") return this.data.errorIcon || "close";
-        return "";
-      },
-
       classes() {
-        const rawColor = this.data.color || "primary";
-        const color = rawColor === "error" ? "danger" : rawColor;
-        const variant = this.data.variant || "soft";
-        const placement = this.data.placement || "top";
-        const mode =
-          this.data.mode || (placement === "inline" ? "inline" : "fixed");
+        const color = this.data.color;
+        const variant = this.data.variant;
+        const size = this.data.size;
+        const placement = this.data.placement;
+        const mode = this.data.mode;
+        const imagePosition = this.data.imagePosition;
+        const imageShape = this.data.imageShape;
 
         const themeFns = bannerTheme({
           color,
           variant,
+          size,
           placement,
           mode,
+          imagePosition,
+          imageShape,
         });
 
         return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
 
       rootStyle() {
-        const placement = this.data.placement || "top";
-        const mode =
-          this.data.mode || (placement === "inline" ? "inline" : "fixed");
+        const placement = this.data.placement;
+        const mode = this.data.mode;
 
         if (mode === "inline" || placement === "inline") {
           return "";
@@ -126,10 +108,21 @@ Component(
       },
 
       handleActionTap(this: any, event: any) {
-        const index = Number(event.currentTarget.dataset.index);
-        getApi(this, "banner")?.handleAction(index);
+        const raw =
+          event?.currentTarget?.dataset?.index ?? event?.target?.dataset?.index;
+        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
+        if (!Number.isNaN(index)) {
+          getApi(this, "banner")?.handleAction(index);
+        }
+      },
+
+      handleMoreTap(this: any) {
+        getApi(this, "banner")?.handleMore();
+      },
+
+      handleTap(this: any) {
+        getApi(this, "banner")?.handleTap();
       },
     },
   }),
 );
-

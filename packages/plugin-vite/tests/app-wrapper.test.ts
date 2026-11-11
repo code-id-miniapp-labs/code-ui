@@ -149,6 +149,19 @@ describe("app-wrapper", () => {
       const output = wrapPageWxml("   \n   ", defaultOptions);
       expect(output).toBe(`<c-app>\n</c-app>\n`);
     });
+
+    it("automatically injects cui-top-bar and cui-bottom-bar id for data attributes", () => {
+      const input = `<view data-cui-top-bar class="fixed top-0">Header</view>\n<view data-cui-bottom-bar class="fixed bottom-0">Footer</view>`;
+      const output = wrapPageWxml(input, defaultOptions);
+      expect(output).toContain('id="cui-top-bar"');
+      expect(output).toContain('id="cui-bottom-bar"');
+
+      // Also supports data-cui-topbar / data-cui-bottombar without hyphen
+      const legacyInput = `<view data-cui-topbar class="fixed top-0">Header</view>\n<view data-cui-bottombar class="fixed bottom-0">Footer</view>`;
+      const legacyOutput = wrapPageWxml(legacyInput, defaultOptions);
+      expect(legacyOutput).toContain('id="cui-top-bar"');
+      expect(legacyOutput).toContain('id="cui-bottom-bar"');
+    });
   });
 
   describe("getAppPages & isPageFile", () => {

@@ -3,14 +3,21 @@ import { createAnatomy } from "@code-ui/anatomy";
 export const anatomy = /* @__PURE__ */ (() =>
   createAnatomy("banner").parts(
     "root",
-    "wrapper",
+    "body",
+    "background",
+    "content",
     "title",
     "description",
+    "caption",
+    "badge",
+    "imageArea",
+    "image",
     "icon",
+    "buttonArea",
+    "close",
+    "more",
     "actions",
     "action",
-    "closeTrigger",
   ))();
 
 export const parts = /* @__PURE__ */ (() => anatomy.build())();
-

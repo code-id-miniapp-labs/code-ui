@@ -9,29 +9,33 @@
 
 
 
-
-* {
-  box-sizing: border-box;
-}
-
-/* WeChat MiniProgram button reset */
-button {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-button:not([size=mini]) {
-  margin-left: 0;
-  margin-right: 0;
+button,
+button[size="default"],
+button[size="mini"],
+button[plain] {
+  margin: 0;
+  padding: 0;
   width: auto;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  line-height: inherit;
+  font-size: inherit;
+  color: inherit;
+  font-weight: inherit;
+  text-align: inherit;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 button::after {
   border: none;
+  content: none;
 }
 
-button.w-full,
-button[class*="w-full"],
-button[data-block="true"] {
-  width: 100%;
+
+button:not([size="mini"]) {
+  width: auto !important;
+  margin: 0 !important;
+  min-height: 0 !important;
 }

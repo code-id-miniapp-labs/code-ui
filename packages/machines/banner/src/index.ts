@@ -11,6 +11,8 @@ export type {
   BannerComputed,
   BannerContext,
   BannerEvent,
+  BannerImagePosition,
+  BannerImageShape,
   BannerMachine,
   BannerMode,
   BannerParams,
@@ -19,8 +21,8 @@ export type {
   BannerRefs,
   BannerSchema,
   BannerService,
+  BannerSize,
   BannerState,
   BannerUI,
   BannerVariant,
 } from "./banner.types";
-
