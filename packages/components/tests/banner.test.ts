@@ -44,7 +44,7 @@ describe("bannerTheme runtime resolution (@code-ui/components)", () => {
     expect(slots.root).toContain("right-0");
     expect(slots.root).toContain("w-full");
     expect(slots.background).toContain("py-2_d5");
-    expect(slots.background).toContain("px-4");
+    expect(slots.background).toContain("px-3");
     expect(slots.background).not.toContain("min-h");
     expect(slots.title).toContain("font-medium");
     expect(slots.close).toContain("cursor-pointer");
@@ -104,7 +104,7 @@ describe("bannerTheme runtime resolution (@code-ui/components)", () => {
 
     expect(slots.root).toContain("relative");
     expect(slots.root).not.toContain("fixed");
-    expect(slots.background).toContain("rounded-xl");
+    expect(slots.background).toContain("rounded-md");
   });
 
   it("resolves small banners", () => {
@@ -149,7 +149,7 @@ describe("bannerTheme runtime resolution (@code-ui/components)", () => {
       "",
     );
     expect(xlSlots.background).toContain("py-3_d5");
-    expect(xlSlots.background).toContain("px-5");
+    expect(xlSlots.background).toContain("px-4");
     expect(xlSlots.background).not.toContain("min-h");
     expect(xlSlots.title).toContain("text-lg");
   });

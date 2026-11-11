@@ -42,7 +42,7 @@
         <slot name="trailing" />
         <c-icon
           wx:if="{{!customTrailing}}"
-          name="{{cAccordionItem.trailingIcon || 'i-lucide-chevron-down'}}"
+          name="{{cAccordionItem.trailingIcon || 'chevronDown'}}"
           className="{{classes.trailingIcon}}"
         />
       </view>

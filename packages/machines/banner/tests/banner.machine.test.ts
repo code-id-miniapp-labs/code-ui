@@ -156,7 +156,6 @@ describe("bannerMachine", () => {
 
   it("precomputes action defaults for WXML rendering", () => {
     const machine = new MiniappMachine(bannerMachine, {
-      loadingIcon: "custom-spinner",
       actions: [
         { label: "Action 1", icon: "check", loading: false },
         { label: "Action 2", loading: true, loadingIcon: "action-spinner" },
@@ -172,8 +171,8 @@ describe("bannerMachine", () => {
         index: 0,
         icon: "check",
         loading: false,
-        loadingIcon: "custom-spinner",
-        color: "neutral",
+        loadingIcon: "loading",
+        color: "",
         variant: "ghost",
         size: "xs",
       }),

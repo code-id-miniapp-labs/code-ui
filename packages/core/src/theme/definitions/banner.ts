@@ -27,7 +27,8 @@ export default function bannerTheme(options: ThemeOptions = {}) {
       imageArea: "shrink-0 overflow-hidden flex items-center justify-center",
       image: "w-full h-full object-cover",
       icon: "shrink-0",
-      buttonArea: "flex items-center self-start shrink-0 gap-1",
+      buttonArea:
+        "flex flex-col justify-between items-center self-start shrink-0 gap-2",
       close:
         "rounded-md transition-opacity opacity-75 hover:opacity-100 shrink-0 cursor-pointer flex items-center justify-center text-inherit",
       more: "rounded-md transition-opacity opacity-75 hover:opacity-100 shrink-0 cursor-pointer flex items-center justify-center text-inherit",

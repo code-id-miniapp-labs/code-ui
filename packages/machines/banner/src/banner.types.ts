@@ -68,10 +68,6 @@ export interface BannerProps {
   open?: boolean | undefined;
   /** Default open state (uncontrolled) */
   defaultOpen?: boolean | undefined;
-  /** Whether the banner is in a loading state */
-  loading?: boolean | undefined;
-  /** Custom loading icon name (defaults to 'loading') */
-  loadingIcon?: string | undefined;
   /** Color variant of the banner */
   color?: BannerColor | undefined;
   /** Style variant of the banner */

@@ -5,7 +5,7 @@
   <!-- Custom Navigation bar content -->
   <view class="h-11 px-4 flex items-center justify-between">
     <view class="flex items-center gap-2 cursor-pointer active:opacity-70" bindtap="handleBack">
-      <c-icon name="chevron-down" className="w-5 h-5 -rotate-90 text-neutral-800" />
+      <c-icon name="chevron-left" className="w-5 h-5 -rotate-90 text-neutral-800" />
       <text class="text-base font-bold text-neutral-900">Banner</text>
     </view>
     <view class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700">
@@ -177,7 +177,7 @@
   </view>
 </view>
 <!-- Pinned Fixed Bottom Banner (Automatically positioned above custom bottom-bar via --cui-banner-bottom-offset) -->
-<c-banner open="{{showBottomBanner}}" placement="bottom" mode="fixed" color="{{bottomBannerColor}}" title="{{bottomBannerTitle}}" description="{{bottomBannerDesc}}" close="{{true}}" actions="{{bottomBannerActions}}" bind:dismiss="onBottomBannerDismiss" bind:action="onBottomBannerAction" />
+<c-banner open="{{showBottomBanner}}" placement="bottom" mode="fixed" color="{{bottomBannerColor}}" title="{{bottomBannerTitle}}" description="{{bottomBannerDesc}}" close="{{true}}" more="{{true}}" actions="{{bottomBannerActions}}" bind:dismiss="onBottomBannerDismiss" bind:action="onBottomBannerAction" />
 <!-- Custom Bottom Tab-Bar (Detected by <c-app> via #cui-bottom-bar) -->
 <view id="cui-bottom-bar" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-neutral-200">
   <view class="h-14 px-6 flex items-center justify-around">

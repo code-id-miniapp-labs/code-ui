@@ -94,6 +94,8 @@ export type {
 } from "./config";
 
 export {
+  BASE_ICON_PRESET,
+  ICON_KEYS,
   ICON_COLLECTION_PRESETS,
   getActiveCollections,
   getIcons,

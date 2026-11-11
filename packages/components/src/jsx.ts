@@ -111,8 +111,6 @@ export interface CuiBannerElementProps extends CuiCommonElementProps {
   ui?: BannerProps["ui"];
   open?: boolean;
   defaultOpen?: boolean;
-  loading?: boolean;
-  loadingIcon?: string;
   color?: BannerProps["color"];
   variant?: BannerProps["variant"];
   size?: BannerProps["size"];

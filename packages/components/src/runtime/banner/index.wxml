@@ -1,4 +1,4 @@
-<view wx:if="{{banner ? banner.visible : true}}" id="{{banner.rootProps.id}}" class="cui-banner-root {{classes.root}}" style="{{rootStyle}}" aria-role="region" aria-live="polite" aria-busy="{{loading ? 'true' : 'false'}}" data-scope="banner" data-part="root" data-id="{{id || banner.rootProps.id}}" data-state="{{banner.state || 'open'}}" data-color="{{color || 'primary'}}" data-variant="{{variant || 'solid'}}" data-size="{{size || 'md'}}" data-placement="{{placement || 'top'}}" data-mode="{{mode || 'fixed'}}" data-image-position="{{imagePosition || 'none'}}" hover-class="{{hoverClass || 'none'}}" bindtap="handleTap">
+<view wx:if="{{banner ? banner.visible : true}}" id="{{banner.rootProps.id}}" class="cui-banner-root {{classes.root}}" style="{{rootStyle}}" aria-role="region" aria-live="polite" data-scope="banner" data-part="root" data-id="{{id || banner.rootProps.id}}" data-state="{{banner.state || 'open'}}" data-color="{{color || 'primary'}}" data-variant="{{variant || 'solid'}}" data-size="{{size || 'md'}}" data-placement="{{placement || 'top'}}" data-mode="{{mode || 'fixed'}}" data-image-position="{{imagePosition || 'none'}}" hover-class="{{hoverClass || 'none'}}" bindtap="handleTap">
   <view class="cui-banner-background {{classes.background}}" data-scope="banner" data-part="background">
     <view class="cui-banner-body {{classes.body}}" data-scope="banner" data-part="body">
       <view wx:if="{{image && imagePosition === 'background'}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
@@ -7,9 +7,8 @@
       <view wx:if="{{image && imagePosition === 'left'}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
         <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode || 'aspectFill'}}" data-scope="banner" data-part="image" aria-hidden="true" />
       </view>
-      <view wx:if="{{loading || resolvedIcon}}" class="cui-banner-icon {{classes.icon}}" data-scope="banner" data-part="icon" aria-hidden="true">
-        <c-icon wx:if="{{loading}}" name="{{loadingIcon || 'loading'}}" className="w-full h-full animate-spin" />
-        <c-icon wx:else name="{{resolvedIcon}}" className="w-full h-full" />
+      <view wx:if="{{icon}}" class="cui-banner-icon {{classes.icon}}" data-scope="banner" data-part="icon" aria-hidden="true">
+        <c-icon name="{{icon}}" className="w-full h-full" />
       </view>
       <slot wx:else name="leading" />
       <view class="cui-banner-content {{classes.content}}" data-scope="banner" data-part="content">
@@ -41,7 +40,7 @@
         </view>
         <slot wx:else name="close" />
         <view wx:if="{{more}}" class="{{classes.more}}" data-scope="banner" data-part="more" aria-role="button" aria-label="More" catchtap="handleMoreTap">
-          <c-icon name="{{moreIcon}}" className="w-4 h-4" />
+          <c-icon name="{{moreIcon || 'chevronRight'}}" className="w-4 h-4" />
         </view>
         <slot wx:else name="more" />
       </view>
@@ -50,7 +49,7 @@
     <view wx:if="{{banner.actions && banner.actions.length > 0}}" class="{{classes.actions}}" data-scope="banner" data-part="actions">
       <block wx:for="{{banner.actions}}" wx:key="index">
         <view class="{{classes.action}}" data-scope="banner" data-part="action">
-          <c-button data-index="{{index}}" block ui="{{item.ui}}" catch:tap="handleActionTap" icon="{{item.icon}}" variant="{{item.variant || 'ghost'}}" color="{{item.color || ''}}" size="{{item.size || 'xs'}}" className="{{!item.color && 'text-inherit'}}">
+          <c-button data-index="{{index}}" block ui="{{item.ui}}" catch:tap="handleActionTap" icon="{{item.icon}}" loading="{{item.loading}}" variant="{{item.variant || 'ghost'}}" color="{{item.color || ''}}" size="{{item.size || 'xs'}}" className="{{!item.color && 'text-inherit'}}">
             {{item.label}}
           </c-button>
         </view>

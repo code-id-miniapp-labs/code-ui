@@ -22,7 +22,7 @@ export const defaultBannerProps: BannerProps = {
   closable: true,
   closeIcon: "close",
   more: false,
-  moreIcon: "chevron-right",
+  moreIcon: "more",
   actions: [],
   hoverClass: "none",
   topOffset: undefined,

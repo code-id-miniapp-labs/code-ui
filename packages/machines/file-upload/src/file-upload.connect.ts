@@ -140,7 +140,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const items: FileUploadItemView[] = files.map((file, index) => {
     const fileType = getFileType(file);
     const fileId = file.id || String(index);
-    const itemProgress = file.progress;
+    const itemProgress = file.progress ?? progress ?? undefined;
 
     return {
       ...file,
