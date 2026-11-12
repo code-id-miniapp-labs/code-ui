@@ -224,6 +224,96 @@ describe("bannerMachine", () => {
     machine.stop();
   });
 
+  describe("badge normalization with c-badge shape", () => {
+    it("returns null badge when badge prop is omitted or empty", () => {
+      const machine = new MiniappMachine(bannerMachine, {});
+      machine.start();
+
+      const api = connectBanner(machine.service);
+      expect(api.badge).toBeNull();
+
+      machine.stop();
+    });
+
+    it("normalizes a string badge into c-badge props shape", () => {
+      const machine = new MiniappMachine(bannerMachine, {
+        badge: "EXCLUSIVE",
+        color: "success",
+        variant: "soft",
+        size: "md",
+      });
+      machine.start();
+
+      const api = connectBanner(machine.service);
+      expect(api.badge).toEqual({
+        label: "EXCLUSIVE",
+        color: "success",
+        variant: "solid",
+        size: "sm",
+        ui: undefined,
+        className: undefined,
+        leading: false,
+        trailing: false,
+      });
+
+      machine.stop();
+    });
+
+    it("normalizes a badge object matching c-badge shape", () => {
+      const machine = new MiniappMachine(bannerMachine, {
+        badge: {
+          label: "PROMO",
+          color: "danger",
+          variant: "outline",
+          size: "xs",
+          className: "my-badge",
+          leading: true,
+        },
+      });
+      machine.start();
+
+      const api = connectBanner(machine.service);
+      expect(api.badge).toEqual({
+        label: "PROMO",
+        color: "danger",
+        variant: "outline",
+        size: "xs",
+        ui: undefined,
+        className: "my-badge",
+        leading: true,
+        trailing: false,
+      });
+
+      machine.stop();
+    });
+
+    it("merges badge and badgeProps", () => {
+      const machine = new MiniappMachine(bannerMachine, {
+        badge: "SALE",
+        badgeProps: {
+          color: "warning",
+          variant: "soft",
+          size: "sm",
+        },
+      });
+      machine.start();
+
+      const api = connectBanner(machine.service);
+      expect(api.badge).toEqual({
+        label: "SALE",
+        color: "warning",
+        variant: "soft",
+        size: "sm",
+        ui: undefined,
+        className: undefined,
+        leading: false,
+        trailing: false,
+      });
+
+      machine.stop();
+    });
+  });
+
   it("cleans up the dismiss timer on stop()", async () => {
     vi.useFakeTimers();
     const machine = new MiniappMachine(bannerMachine, {});

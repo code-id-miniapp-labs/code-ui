@@ -51,6 +51,14 @@ Component(
         type: String,
         value: "",
       },
+      badge: {
+        type: null,
+        value: null,
+      },
+      badgeProps: {
+        type: Object,
+        value: null,
+      },
     }),
 
     computed: {

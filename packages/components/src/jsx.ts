@@ -6,7 +6,7 @@ import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
 } from "@code-ui/accordion-item";
-import type { BannerProps } from "@code-ui/banner";
+import type { BannerBadgeProps, BannerProps } from "@code-ui/banner";
 import type { ButtonProps } from "@code-ui/button";
 import type {
   CheckboxProps,
@@ -119,7 +119,8 @@ export interface CuiBannerElementProps extends CuiCommonElementProps {
   title?: string;
   description?: string;
   caption?: string;
-  badge?: string;
+  badge?: string | BannerBadgeProps;
+  badgeProps?: BannerBadgeProps;
   icon?: string;
   infoIcon?: string;
   successIcon?: string;

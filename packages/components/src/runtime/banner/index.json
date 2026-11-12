@@ -4,7 +4,8 @@
   "virtualHost": true,
   "usingComponents": {
     "c-icon": "../icon/index",
-    "c-button": "../button/index"
+    "c-button": "../button/index",
+    "c-badge": "../badge/index"
   }
 }
 

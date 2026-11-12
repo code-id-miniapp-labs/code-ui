@@ -55,6 +55,31 @@ export interface BannerAction {
   ui?: any | undefined;
 }
 
+export type BannerBadgeColor =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "info"
+  | "warning"
+  | "danger"
+  | "neutral"
+  | (string & {});
+
+export type BannerBadgeVariant = "solid" | "outline" | "soft" | (string & {});
+
+export type BannerBadgeSize = "xs" | "sm" | "md" | "lg" | "xl" | (string & {});
+
+export interface BannerBadgeProps {
+  label?: string | undefined;
+  color?: BannerBadgeColor | undefined;
+  variant?: BannerBadgeVariant | undefined;
+  size?: BannerBadgeSize | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
+  leading?: boolean | undefined;
+  trailing?: boolean | undefined;
+}
+
 export interface BannerProps {
   /** The unique id of the component */
   id?: string | undefined;
@@ -84,8 +109,10 @@ export interface BannerProps {
   description?: string | undefined;
   /** Small caption displayed above the title */
   caption?: string | undefined;
-  /** Badge / label displayed above the title */
-  badge?: string | undefined;
+  /** Badge / label displayed above the title, or badge config matching c-badge */
+  badge?: string | BannerBadgeProps | undefined;
+  /** Explicit badge props matching c-badge */
+  badgeProps?: BannerBadgeProps | undefined;
   /** Custom icon name or path */
   icon?: string | undefined;
   /** Custom icon name for info color */
@@ -187,6 +214,8 @@ export interface BannerApi {
   visible: boolean;
   /** Whether the banner is currently animating out */
   dismissing: boolean;
+  /** Badge configuration pre-computed for c-badge rendering, or null when absent */
+  badge: BannerBadgeProps | null;
   /** Actions array pre-computed for WXML rendering */
   actions: Array<{
     label: string;

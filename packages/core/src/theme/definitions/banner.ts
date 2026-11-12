@@ -19,8 +19,7 @@ export default function bannerTheme(options: ThemeOptions = {}) {
         "relative flex flex-col justify-center mx-auto w-full transition-colors",
       body: "flex items-center justify-between w-full gap-3",
       content: "flex flex-col min-w-0 flex-1 justify-center gap-0.5",
-      badge:
-        "inline-flex items-center self-start rounded font-semibold uppercase tracking-wide",
+      badge: "inline-flex items-center self-start",
       caption: "text-neutral leading-tight truncate",
       title: "font-medium leading-tight line-clamp-2",
       description: "opacity-90 leading-tight",
@@ -70,7 +69,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           title: "text-xs",
           description: "text-[10px]",
           caption: "text-[9px]",
-          badge: "px-1 py-0.5 text-[8px]",
           icon: "w-3.5 h-3.5",
           close: "p-0.5 -mr-0.5",
           more: "p-0.5 -mr-0.5",
@@ -80,7 +78,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           title: "text-xs sm:text-sm",
           description: "text-[11px]",
           caption: "text-[10px]",
-          badge: "px-1.5 py-0.5 text-[9px]",
           icon: "w-4 h-4",
           close: "p-1 -mr-1",
           more: "p-1 -mr-1",
@@ -90,7 +87,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           title: "text-sm",
           description: "text-xs",
           caption: "text-sm",
-          badge: "px-1.5 py-0.5 text-xs",
           icon: "w-4.5 h-4.5",
           close: "p-1 -mr-1",
           more: "p-1 -mr-1",
@@ -100,7 +96,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           title: "text-base",
           description: "text-sm",
           caption: "text-xs",
-          badge: "px-2 py-0.5 text-xs",
           icon: "w-5 h-5",
           close: "p-1.5 -mr-1",
           more: "p-1.5 -mr-1",
@@ -110,7 +105,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           title: "text-lg",
           description: "text-base",
           caption: "text-sm",
-          badge: "px-2 py-1 text-xs",
           icon: "w-6 h-6",
           close: "p-1.5 -mr-1",
           more: "p-1.5 -mr-1",
@@ -156,10 +150,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
               ? "bg-warning text-neutral-950"
               : `bg-${color} text-white`,
           icon: color === "warning" ? "text-neutral-950" : "text-white",
-          badge:
-            color === "warning"
-              ? "bg-neutral-950/10 text-neutral-950"
-              : "bg-white/20 text-white",
           close:
             color === "warning"
               ? "text-neutral-950/80 hover:text-neutral-950"
@@ -182,7 +172,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
               class: {
                 background: "bg-neutral-900 text-white dark:bg-neutral-800",
                 icon: "text-white",
-                badge: "bg-white/20 text-white",
                 close: "text-white/80 hover:text-white",
                 more: "text-white/80 hover:text-white",
                 actions: "border-white/20 divide-white/20",
@@ -197,7 +186,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
         class: {
           background: `bg-white dark:bg-neutral-900 border border-${color}/30 text-neutral-900 dark:text-white`,
           icon: `text-${color}`,
-          badge: `bg-${color}/10 text-${color}`,
           close:
             "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
           more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
@@ -213,8 +201,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
                 background:
                   "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white",
                 icon: "text-neutral-900 dark:text-white",
-                badge:
-                  "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
                 close:
                   "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
                 more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
@@ -231,7 +217,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
         class: {
           background: `bg-${color}/10 text-${color}`,
           icon: `text-${color}`,
-          badge: `bg-${color}/15 text-${color}`,
           close: `text-${color}/70 hover:text-${color}`,
           more: `text-${color}/70 hover:text-${color}`,
           actions: `border-${color}/20 divide-${color}/20`,
@@ -246,8 +231,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
                 background:
                   "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white",
                 icon: "text-neutral-700 dark:text-neutral-300",
-                badge:
-                  "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200",
                 close:
                   "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
                 more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
@@ -265,7 +248,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
         class: {
           background: `bg-${color}/10 border-b border-${color}/20 text-${color}`,
           icon: `text-${color}`,
-          badge: `bg-${color}/15 text-${color}`,
           close: `text-${color}/70 hover:text-${color}`,
           more: `text-${color}/70 hover:text-${color}`,
           actions: `border-${color}/20 divide-${color}/20`,
@@ -280,8 +262,6 @@ export default function bannerTheme(options: ThemeOptions = {}) {
                 background:
                   "bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white",
                 icon: "text-neutral-700 dark:text-neutral-300",
-                badge:
-                  "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200",
                 close:
                   "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
                 more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",

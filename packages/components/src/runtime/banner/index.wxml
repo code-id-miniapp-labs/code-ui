@@ -12,8 +12,17 @@
       </view>
       <slot wx:else name="leading" />
       <view class="cui-banner-content {{classes.content}}" data-scope="banner" data-part="content">
-        <view wx:if="{{badge}}" class="{{classes.badge}}" data-scope="banner" data-part="badge">
-          {{badge}}
+        <view wx:if="{{banner.badge}}" class="cui-banner-badge {{classes.badge}}" data-scope="banner" data-part="badge">
+          <c-badge
+            label="{{banner.badge.label}}"
+            color="{{banner.badge.color}}"
+            variant="{{banner.badge.variant}}"
+            size="{{banner.badge.size}}"
+            ui="{{banner.badge.ui}}"
+            className="{{banner.badge.className}}"
+            leading="{{banner.badge.leading}}"
+            trailing="{{banner.badge.trailing}}"
+          />
         </view>
         <slot wx:else name="badge" />
         <view wx:if="{{caption}}" class="{{classes.caption}}" data-scope="banner" data-part="caption">
