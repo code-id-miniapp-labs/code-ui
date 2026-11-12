@@ -4,6 +4,12 @@ declare module "virtual:cui/theme/accordion" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/action-sheet" {
+  import type { default as actionSheetTheme } from "@code-ui/core/src/theme/definitions/action-sheet";
+  const theme: ReturnType<typeof actionSheetTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/accordion-item" {
   import type { default as accordionItemTheme } from "@code-ui/core/src/theme/definitions/accordion-item";
   const theme: ReturnType<typeof accordionItemTheme>;

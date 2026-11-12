@@ -38,6 +38,12 @@
       "require": "./dist/runtime/accordion/index.js"
     },
     "./accordion/*": "./dist/runtime/accordion/*",
+    "./action-sheet": {
+      "types": "./dist/runtime/action-sheet/index.d.ts",
+      "import": "./dist/runtime/action-sheet/index.js",
+      "require": "./dist/runtime/action-sheet/index.js"
+    },
+    "./action-sheet/*": "./dist/runtime/action-sheet/*",
     "./accordion-item": {
       "types": "./dist/runtime/accordion-item/index.d.ts",
       "import": "./dist/runtime/accordion-item/index.js",
@@ -253,6 +259,7 @@
     "weapp-vite": "^7.3.0",
     "@code-ui/accordion": "workspace:*",
     "@code-ui/accordion-item": "workspace:*",
+    "@code-ui/action-sheet": "workspace:*",
     "@code-ui/anatomy": "workspace:*",
     "@code-ui/banner": "workspace:*",
     "@code-ui/button": "workspace:*",

@@ -204,6 +204,13 @@ Page({
         badge: "Feedback",
         path: "/pages/banner/index",
       },
+      {
+        id: "action-sheet",
+        name: "ActionSheet",
+        desc: "Modal bottom action sheet with actions, status variants, descriptions, WeChat open-type triggers, and custom slots.",
+        badge: "Feedback",
+        path: "/pages/action-sheet/index",
+      },
     ],
   },
 

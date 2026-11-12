@@ -1,0 +1,176 @@
+<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-20">
+  <!-- Page Header -->
+  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
+    <view class="flex items-center gap-2">
+      <view class="text-xl font-extrabold text-neutral-950">ActionSheet</view>
+      <c-badge color="primary" variant="subtle" size="xs">FSM</c-badge>
+    </view>
+    <view class="text-xs text-neutral-500 mt-1">
+      Modal action sheet sliding up from screen bottom, with items, titles, footer actions via c-button (with autoLoading), destructive styling, WeChat open-type triggers, and custom slots.
+    </view>
+  </view>
+
+  <view class="px-5 flex flex-col gap-6">
+    <!-- 1. Live State & Event Feedback Card -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="flex items-center justify-between">
+        <view class="text-sm font-bold text-neutral-900">Live Status & Events</view>
+        <c-badge color="{{isOpen ? 'primary' : 'neutral'}}" variant="solid" size="xs">
+          {{isOpen ? 'Sheet Open (' + activeScenario + ')' : 'Sheet Closed'}}
+        </c-badge>
+      </view>
+
+      <!-- Last Event Banner -->
+      <view class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 flex flex-col gap-1">
+        <view class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Last Event</view>
+        <view class="text-xs font-mono font-medium text-neutral-800 break-all">{{lastEvent}}</view>
+      </view>
+
+      <!-- Event History Log -->
+      <view wx:if="{{eventLog.length > 0}}" class="flex flex-col gap-1.5 pt-2 border-t border-neutral-100">
+        <view class="flex items-center justify-between">
+          <view class="text-[11px] font-semibold text-neutral-500">Event History</view>
+          <view class="text-[10px] text-primary cursor-pointer active:opacity-70" bindtap="clearLog">Clear</view>
+        </view>
+        <view class="flex flex-col gap-1 max-h-36 overflow-y-auto">
+          <block wx:for="{{eventLog}}" wx:key="*this">
+            <view class="text-[11px] font-mono text-neutral-600 bg-neutral-50 px-2 py-1 rounded border border-neutral-150">
+              {{item}}
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 2. Standard Scenarios -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">1. Basic & Document Actions</view>
+      <view class="text-xs text-neutral-400">
+        Simple option list or structured document sheet with title and item descriptions.
+      </view>
+      <view class="grid grid-cols-2 gap-2.5 pt-1">
+        <c-button color="primary" bind:tap="openBasic">
+          Basic ActionSheet
+        </c-button>
+        <c-button variant="outline" color="neutral" bind:tap="openWithHeader">
+          Document Actions
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 3. Status Variants -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">2. Status & Item Variants</view>
+      <view class="text-xs text-neutral-400">
+        Supports loading spinner, disabled items, and red destructive tone for dangerous operations.
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" variant="soft" color="danger" bind:tap="openStatusVariants">
+          Preview Status Variants (Destructive, Loading, Disabled)
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 4. Footer Actions via c-button -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">3. Footer Actions via &lt;c-button&gt;</view>
+      <view class="text-xs text-neutral-400">
+        Side-by-side footer buttons with async autoLoading and unified button design system.
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" color="primary" variant="solid" bind:tap="openFooterActionsVariety">
+          Footer Actions (c-button AutoLoading)
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 5. Modals & Header Close Trigger -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">4. Strict Modal & Header Close</view>
+      <view class="text-xs text-neutral-400">
+        Disables backdrop tap (closeOnBackdropClick=false) and displays close button ('X') in header.
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" variant="soft" color="warning" bind:tap="openModalWithClose">
+          Strict Modal with Close Button
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 6. WeChat Open-Type Actions -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">5. WeChat Native Open-Type</view>
+      <view class="text-xs text-neutral-400">
+        Native MiniProgram triggers: Forward to friends, choose avatar, or customer service chat.
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" color="primary" variant="outline" bind:tap="openWeChatFeatures">
+          WeChat Open-Type Items
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 7. Custom Declarative Content Slot -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">6. Declarative Content Slot</view>
+      <view class="text-xs text-neutral-400">
+        Render custom markup inside default slot (e.g. multi-channel share icon grid).
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" variant="soft" color="primary" bind:tap="openCustomSlot">
+          Custom Share Grid (Default Slot)
+        </c-button>
+      </view>
+    </view>
+
+    <!-- 8. Custom Theming via ui Prop -->
+    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs flex flex-col gap-3">
+      <view class="text-sm font-bold text-neutral-900">7. Custom Theming (ui Prop)</view>
+      <view class="text-xs text-neutral-400">
+        Override slot styling with custom border radii, shadow, and darker backdrop.
+      </view>
+      <view class="pt-1">
+        <c-button block="{{true}}" variant="outline" color="neutral" bind:tap="openCustomTheme">
+          Themed ActionSheet (ui prop)
+        </c-button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- ActionSheet Component Instance -->
+<c-action-sheet
+  open="{{isOpen}}"
+  title="{{title}}"
+  description="{{description}}"
+  items="{{items}}"
+  actions="{{actions}}"
+  close="{{close}}"
+  closeOnItem="{{closeOnItem}}"
+  closeOnBackdropClick="{{closeOnBackdropClick}}"
+  ui="{{ui}}"
+  bind:select="onItemSelect"
+  bind:action="onFooterAction"
+  bind:close="onSheetClose"
+  bind:backdropTap="onBackdropTap"
+  bind:closeTriggerTap="onCloseTriggerTap"
+  bind:chooseavatar="onChooseAvatar"
+>
+  <!-- Declarative Default Slot Content: Multi-channel Share Grid -->
+  <view wx:if="{{isCustomSlot}}" class="p-4 grid grid-cols-3 gap-3 bg-white dark:bg-neutral-800">
+    <block wx:for="{{shareOptions}}" wx:key="id">
+      <button
+        class="flex flex-col items-center justify-center p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-700/30 border-0 after:border-none m-0 leading-normal"
+        open-type="{{item.openType || ''}}"
+        hover-class="opacity-70"
+        data-item="{{item}}"
+        catchtap="onCustomShareItemTap"
+      >
+        <view class="w-12 h-12 rounded-2xl flex items-center justify-center mb-1.5 {{item.bgClass}}">
+          <c-icon name="{{item.icon}}" className="w-6 h-6 {{item.iconClass}}" />
+        </view>
+        <text class="text-xs font-medium text-neutral-800 dark:text-neutral-200 text-center">{{item.name}}</text>
+      </button>
+    </block>
+  </view>
+</c-action-sheet>
