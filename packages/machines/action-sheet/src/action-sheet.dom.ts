@@ -15,4 +15,4 @@ export const getCloseTriggerId = (scope: Scope) =>
 
 export const getBodyId = (scope: Scope) => optPartId(scope, "body");
 
-export const getCancelId = (scope: Scope) => optPartId(scope, "cancel");
+export const getActionsId = (scope: Scope) => optPartId(scope, "actions");

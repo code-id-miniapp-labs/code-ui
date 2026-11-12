@@ -56,21 +56,31 @@ Component(
         this.triggerEvent("backdropTap", ev);
       },
 
-      handleCancelTap(ev: WechatMiniprogram.CustomEvent) {
-        const api = getApi(this, "actionSheet");
-        api.cancel?.();
-        this.triggerEvent("cancelTap", ev);
-      },
-
       handleCloseTriggerTap(ev: WechatMiniprogram.CustomEvent) {
         this.send({ type: "CLOSE_TRIGGER.TAP" });
         this.triggerEvent("closeTriggerTap", ev);
       },
 
-      handleActionTap(ev: WechatMiniprogram.TouchEvent) {
-        const index = Number(ev.currentTarget.dataset.index);
-        const api = getApi(this, "actionSheet");
-        api.select?.(index);
+      handleItemTap(this: any, ev: any) {
+        const raw =
+          ev?.currentTarget?.dataset?.index ?? ev?.target?.dataset?.index;
+        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
+        if (!Number.isNaN(index)) {
+          const api = getApi(this, "actionSheet");
+          api?.select?.(index);
+        }
+      },
+
+      handleActionTap(this: any, event: any) {
+        const raw =
+          event?.currentTarget?.dataset?.index ??
+          event?.target?.dataset?.index ??
+          event?.detail?.index;
+        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
+        if (!Number.isNaN(index)) {
+          const api = getApi(this, "actionSheet");
+          return api?.handleAction?.(index);
+        }
       },
 
       handleGetPhoneNumber(ev: WechatMiniprogram.CustomEvent) {
@@ -87,4 +97,3 @@ Component(
     },
   }),
 );
-

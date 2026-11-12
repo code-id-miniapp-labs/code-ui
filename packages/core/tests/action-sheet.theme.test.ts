@@ -13,13 +13,14 @@ describe("actionSheetTheme (@code-ui/core)", () => {
     expect(theme.slots).toHaveProperty("closeTrigger");
     expect(theme.slots).toHaveProperty("body");
     expect(theme.slots).toHaveProperty("item");
+    expect(theme.slots).toHaveProperty("itemText");
+    expect(theme.slots).toHaveProperty("itemTitle");
     expect(theme.slots).toHaveProperty("itemLabel");
     expect(theme.slots).toHaveProperty("itemDescription");
     expect(theme.slots).toHaveProperty("itemIcon");
     expect(theme.slots).toHaveProperty("gap");
-    expect(theme.slots).toHaveProperty("cancel");
-    expect(theme.slots).toHaveProperty("cancelText");
-    expect(theme.slots).toHaveProperty("cancelIcon");
+    expect(theme.slots).toHaveProperty("actions");
+    expect(theme.slots).toHaveProperty("action");
   });
 
   it("sets correct default variants", () => {

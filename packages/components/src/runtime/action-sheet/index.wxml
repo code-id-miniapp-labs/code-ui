@@ -1,166 +1,56 @@
-<view
-  wx:if="{{actionSheet.visible}}"
-  id="{{actionSheet.rootProps.id}}"
-  class="{{classes.root}}"
-  data-scope="action-sheet"
-  data-part="root"
-  data-state="{{actionSheet.state}}"
-  catchtouchmove="noop"
->
+<view wx:if="{{actionSheet.visible}}" id="{{actionSheet.rootProps.id}}" class="{{classes.root}}" data-scope="action-sheet" data-part="root" data-state="{{actionSheet.state}}" catchtouchmove="noop">
   <!-- Backdrop -->
-  <view
-    id="{{actionSheet.backdropProps.id}}"
-    class="{{classes.backdrop}}"
-    data-scope="action-sheet"
-    data-part="backdrop"
-    data-state="{{actionSheet.open ? 'open' : 'closed'}}"
-    aria-hidden="{{true}}"
-    bindtap="handleBackdropTap"
-  />
-
+  <view id="{{actionSheet.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="action-sheet" data-part="backdrop" data-state="{{actionSheet.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleBackdropTap" />
   <!-- Content sheet -->
-  <view
-    id="{{actionSheet.contentProps.id}}"
-    class="{{classes.content}}"
-    data-scope="action-sheet"
-    data-part="content"
-    data-state="{{actionSheet.state}}"
-    aria-role="dialog"
-    aria-modal="{{true}}"
-    aria-hidden="{{!actionSheet.open}}"
-  >
+  <view id="{{actionSheet.contentProps.id}}" class="{{classes.content}}" data-scope="action-sheet" data-part="content" data-state="{{actionSheet.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!actionSheet.open}}">
     <!-- Header (Title / Description / Optional Close Button) -->
-    <view
-      wx:if="{{title || description || close}}"
-      class="{{classes.header}}"
-      data-scope="action-sheet"
-      data-part="header"
-    >
-      <view
-        wx:if="{{close}}"
-        id="{{actionSheet.closeTriggerProps.id}}"
-        class="{{classes.closeTrigger}}"
-        data-scope="action-sheet"
-        data-part="close-trigger"
-        aria-role="button"
-        aria-label="Close"
-        catchtap="handleCloseTriggerTap"
-      >
+    <view wx:if="{{title || description || close}}" class="{{classes.header}}" data-scope="action-sheet" data-part="header">
+      <view wx:if="{{close}}" id="{{actionSheet.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="action-sheet" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTriggerTap">
         <c-icon name="{{closeIcon}}" className="w-4 h-4" />
       </view>
-      <view
-        wx:if="{{title}}"
-        class="{{classes.title}}"
-        data-scope="action-sheet"
-        data-part="title"
-      >
+      <view wx:if="{{title}}" class="{{classes.title}}" data-scope="action-sheet" data-part="title">
         {{title}}
       </view>
       <slot wx:else name="title" />
-      <view
-        wx:if="{{description}}"
-        class="{{classes.description}}"
-        data-scope="action-sheet"
-        data-part="description"
-      >
+      <view wx:if="{{description}}" class="{{classes.description}}" data-scope="action-sheet" data-part="description">
         {{description}}
       </view>
       <slot wx:else name="description" />
     </view>
     <slot wx:else name="header" />
-
-    <!-- Actions Body -->
     <view class="{{classes.body}}" data-scope="action-sheet" data-part="body">
-      <!-- Data-driven actions list -->
-      <block wx:if="{{actionSheet.actions && actionSheet.actions.length > 0}}">
-        <button
-          wx:for="{{actionSheet.actions}}"
-          wx:key="key"
-          class="{{classes.item}} {{item.className || ''}}"
-          style="{{item.style || ''}}"
-          data-scope="action-sheet"
-          data-part="item"
-          data-index="{{index}}"
-          aria-role="button"
-          aria-disabled="{{item.disabled ? 'true' : 'false'}}"
-          aria-busy="{{item.loading ? 'true' : 'false'}}"
-          disabled="{{item.disabled}}"
-          open-type="{{item.openType || ''}}"
-          hover-class="opacity-70"
-          catchtap="handleActionTap"
-          bindgetphonenumber="handleGetPhoneNumber"
-          bindchooseavatar="handleChooseAvatar"
-          bindcontact="handleContact"
-        >
-          <!-- Item Loading / Icon -->
-          <c-icon
-            wx:if="{{item.loading}}"
-            name="{{item.loadingIcon}}"
-            className="{{classes.itemIcon}} animate-spin"
-            data-scope="action-sheet"
-            data-part="item-icon"
-            aria-hidden="true"
-          />
-          <c-icon
-            wx:elif="{{item.icon}}"
-            name="{{item.icon}}"
-            className="{{classes.itemIcon}}"
-            data-scope="action-sheet"
-            data-part="item-icon"
-            aria-hidden="true"
-          />
-
-          <!-- Item Text (Label + Description) -->
-          <view class="flex flex-col items-center justify-center pointer-events-none">
-            <text
-              class="{{classes.itemLabel}} {{item.destructive ? 'text-red-600 dark:text-red-500 font-medium' : ''}}"
-              data-scope="action-sheet"
-              data-part="item-label"
-            >{{item.label}}</text>
-            <text
-              wx:if="{{item.description}}"
-              class="{{classes.itemDescription}}"
-              data-scope="action-sheet"
-              data-part="item-description"
-            >{{item.description}}</text>
+      <block wx:if="{{actionSheet.items && actionSheet.items.length > 0}}">
+        <button wx:for="{{actionSheet.items}}" wx:key="key" class="{{classes.item}} {{item.className || ''}}" style="{{item.style || ''}}" data-scope="action-sheet" data-part="item" data-index="{{index}}" aria-role="button" aria-disabled="{{item.disabled ? 'true' : 'false'}}" aria-busy="{{item.loading ? 'true' : 'false'}}" disabled="{{item.disabled}}" open-type="{{item.openType || ''}}" hover-class="opacity-70" catchtap="handleItemTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+          <view class="{{classes.itemText}}" data-scope="action-sheet" data-part="item-text">
+            <view class="{{classes.itemTitle}}" data-scope="action-sheet" data-part="item-title">
+              <c-icon wx:if="{{item.loading}}" name="{{item.loadingIcon}}" className="{{classes.itemIcon}} animate-spin text-primary" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
+              <c-icon wx:elif="{{item.icon}}" name="{{item.icon}}" className="{{classes.itemIcon}} {{item.destructive ? 'text-red-500 dark:text-red-400' : ''}}" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
+              <view class="{{classes.itemLabel}} {{item.destructive ? 'text-red-500 dark:text-red-400 font-medium' : ''}}" data-scope="action-sheet" data-part="item-label">
+                {{item.label}}
+              </view>
+            </view>
+            <view wx:if="{{item.description}}" class="{{classes.itemDescription}}" data-scope="action-sheet" data-part="item-description">
+              {{item.description}}
+            </view>
           </view>
         </button>
       </block>
-
       <!-- Declarative default slot (for custom items or content) -->
       <slot wx:else />
     </view>
-
-    <!-- Cancel button -->
-    <block wx:if="{{actionSheet.showCancel}}">
+    <!-- Footer Actions (powered by c-button) -->
+    <block wx:if="{{actionSheet.actions && actionSheet.actions.length > 0}}">
       <view class="{{classes.gap}}" data-scope="action-sheet" data-part="gap" />
-      <button
-        id="{{actionSheet.cancelProps.id}}"
-        class="{{classes.cancel}}"
-        data-scope="action-sheet"
-        data-part="cancel"
-        aria-role="button"
-        aria-label="{{cancelText}}"
-        hover-class="opacity-70"
-        catchtap="handleCancelTap"
-      >
-        <c-icon
-          wx:if="{{cancelIcon}}"
-          name="{{cancelIcon}}"
-          className="{{classes.cancelIcon}}"
-          data-scope="action-sheet"
-          data-part="cancel-icon"
-          aria-hidden="true"
-        />
-        <text
-          wx:if="{{cancelText}}"
-          class="{{classes.cancelText}}"
-          data-scope="action-sheet"
-          data-part="cancel-text"
-        >{{cancelText}}</text>
-        <slot wx:else name="cancel" />
-      </button>
+      <view id="{{actionSheet.actionsProps.id}}" class="{{classes.actions}}" data-scope="action-sheet" data-part="actions">
+        <block wx:for="{{actionSheet.actions}}" wx:key="index">
+          <view class="{{classes.action}}" data-scope="action-sheet" data-part="action" data-index="{{index}}">
+            <c-button data-index="{{index}}" block="{{true}}" ui="{{item.ui}}" variant="{{item.variant || 'ghost'}}" color="{{item.color || 'neutral'}}" size="{{item.size || 'xl'}}" icon="{{item.icon}}" loading="{{item.loading}}" disabled="{{item.disabled}}" openType="{{item.openType || ''}}" className="{{item.className || ''}}" catch:tap="handleActionTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+              {{item.label}}
+            </c-button>
+          </view>
+        </block>
+      </view>
     </block>
-    <slot wx:else name="cancel" />
+    <slot wx:else name="actions" />
   </view>
 </view>

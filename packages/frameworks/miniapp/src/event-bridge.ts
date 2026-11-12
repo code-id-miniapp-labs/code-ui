@@ -2,19 +2,36 @@ import { isPromise } from "@code-ui/utils";
 
 type AnyFn = (...args: any[]) => any;
 
-function resolveOwner(component: any): any {
-  if (!component) return undefined;
+export function resolveOwners(component: any): any[] {
+  if (!component) return [];
+  const owners: any[] = [];
+  const seen = new Set<any>();
+
   try {
-    const owner = component.selectOwnerComponent?.();
-    if (owner) return owner;
+    let current = component.selectOwnerComponent?.();
+    while (current && !seen.has(current)) {
+      seen.add(current);
+      owners.push(current);
+      current = current.selectOwnerComponent?.();
+    }
+  } catch {
+    // ignore
+  }
+
+  try {
     const pages =
       (typeof getCurrentPages === "function"
         ? getCurrentPages()
         : (globalThis as any)?.getCurrentPages?.()) ?? [];
-    return pages.length > 0 ? pages[pages.length - 1] : undefined;
+    const activePage = pages.length > 0 ? pages[pages.length - 1] : undefined;
+    if (activePage && !seen.has(activePage)) {
+      owners.push(activePage);
+    }
   } catch {
-    return undefined;
+    // ignore
   }
+
+  return owners;
 }
 
 interface OwnerPatchState {
@@ -140,7 +157,7 @@ export function interceptOwnerPromises(
  * returns the handler's promise (if any) so async-aware machines can await it.
  */
 export function createEventBridge(component: any, eventName: string) {
-  const isAction = eventName === "tap" || eventName === "click";
+  const isAction = ["tap", "click", "action"].includes(eventName);
 
   return (
     detail?: any,
@@ -174,11 +191,14 @@ export function createEventBridge(component: any, eventName: string) {
       }
     }
 
-    const owner = canCaptureAsync ? resolveOwner(component) : undefined;
-    const restore =
-      owner && typeof owner === "object"
-        ? interceptOwnerPromises(owner, capture)
-        : undefined;
+    const owners = canCaptureAsync ? resolveOwners(component) : [];
+    const cleanups: VoidFunction[] = [];
+    for (let i = 0; i < owners.length; i++) {
+      const owner = owners[i];
+      if (owner && typeof owner === "object") {
+        cleanups.push(interceptOwnerPromises(owner, capture));
+      }
+    }
 
     try {
       const ret =
@@ -187,7 +207,9 @@ export function createEventBridge(component: any, eventName: string) {
           : component?.triggerEvent?.(eventName, detail);
       if (isPromise(ret)) return ret;
     } finally {
-      restore?.();
+      for (let i = cleanups.length - 1; i >= 0; i--) {
+        cleanups[i]?.();
+      }
     }
 
     return asyncPromise;

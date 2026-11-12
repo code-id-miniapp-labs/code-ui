@@ -5,6 +5,7 @@ export { defaultActionSheetProps } from "./action-sheet.props";
 export * as actionSheetDom from "./action-sheet.dom";
 export type {
   ActionSheetAction,
+  ActionSheetActionDetails,
   ActionSheetAnatomyPart,
   ActionSheetApi,
   ActionSheetComputed,

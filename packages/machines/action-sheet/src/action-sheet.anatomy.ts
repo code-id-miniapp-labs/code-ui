@@ -11,13 +11,14 @@ export const anatomy = /* @__PURE__ */ (() =>
     "closeTrigger",
     "body",
     "item",
+    "itemText",
+    "itemTitle",
     "itemLabel",
     "itemDescription",
     "itemIcon",
     "gap",
-    "cancel",
-    "cancelText",
-    "cancelIcon",
+    "actions",
+    "action",
   ))();
 
 export const parts = /* @__PURE__ */ (() => anatomy.build())();

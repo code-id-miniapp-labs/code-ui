@@ -38,12 +38,25 @@ export const actionSheetMachine: ActionSheetMachine =
       return isOpen ? "open" : "closed";
     },
 
-    context: () => ({}),
+    context: ({ bindable }) => ({
+      loadingActionIndex: bindable<number | null>(() => ({
+        defaultValue: null,
+      })),
+    }),
 
     computed: {
       isOpen: ({ state }) => state.hasTag("open"),
       isVisible: ({ state }) =>
         state.hasTag("open") || state.hasTag("closing"),
+    },
+
+    on: {
+      ACTION_LOADING: {
+        actions: ["setActionLoadingContext"],
+      },
+      ACTION_SETTLED: {
+        actions: ["clearActionLoadingContext"],
+      },
     },
 
     watch: ({ prop, state, send }) => {
@@ -84,10 +97,6 @@ export const actionSheetMachine: ActionSheetMachine =
             guard: "closeOnBackdropClick",
             actions: ["invokeOnClose"],
           },
-          "CANCEL.TAP": {
-            target: "closing",
-            actions: ["invokeOnCancel", "invokeOnClose"],
-          },
           "CLOSE_TRIGGER.TAP": {
             target: "closing",
             actions: ["invokeOnClose"],
@@ -95,12 +104,22 @@ export const actionSheetMachine: ActionSheetMachine =
           SELECT: [
             {
               target: "closing",
-              guard: "shouldCloseOnAction",
+              guard: "shouldCloseOnItem",
               actions: ["invokeOnSelect", "invokeOnClose"],
             },
             {
-              guard: "canSelectAction",
+              guard: "canSelectItem",
               actions: ["invokeOnSelect"],
+            },
+          ],
+          ACTION: [
+            {
+              target: "closing",
+              guard: "shouldCloseOnAction",
+              actions: ["invokeOnAction", "invokeOnClose"],
+            },
+            {
+              actions: ["invokeOnAction"],
             },
           ],
         },
@@ -121,19 +140,23 @@ export const actionSheetMachine: ActionSheetMachine =
     implementations: {
       guards: {
         closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick"),
-        canSelectAction: ({ prop, event }) => {
+        canSelectItem: ({ prop, event }) => {
           if (event.type !== "SELECT") return false;
-          const actions = prop("actions");
-          const item = actions[event.index];
+          const items = prop("items");
+          const item = items[event.index];
           if (!item) return false;
           return !item.disabled && !item.loading;
         },
-        shouldCloseOnAction: ({ prop, event }) => {
+        shouldCloseOnItem: ({ prop, event }) => {
           if (event.type !== "SELECT") return false;
-          const actions = prop("actions");
-          const item = actions[event.index];
+          const items = prop("items");
+          const item = items[event.index];
           if (!item || item.disabled || item.loading) return false;
-          return prop("closeOnAction");
+          return prop("closeOnItem");
+        },
+        shouldCloseOnAction: ({ event }) => {
+          if (event.type !== "ACTION") return false;
+          return event.action.closeOnClick !== false;
         },
       },
 
@@ -141,20 +164,32 @@ export const actionSheetMachine: ActionSheetMachine =
         invokeOnOpen: ({ prop }) => {
           prop("onOpenChange")?.({ open: true });
         },
-        invokeOnClose: ({ prop }) => {
+        invokeOnClose: ({ prop, context }) => {
+          context.set("loadingActionIndex", null);
           prop("onOpenChange")?.({ open: false });
           prop("onClose")?.();
         },
-        invokeOnCancel: ({ prop }) => {
-          prop("onCancel")?.();
+        setActionLoadingContext: ({ context, event }) => {
+          if (event.type === "ACTION_LOADING") {
+            context.set("loadingActionIndex", event.index);
+          }
+        },
+        clearActionLoadingContext: ({ context }) => {
+          context.set("loadingActionIndex", null);
         },
         invokeOnSelect: ({ prop, event }) => {
           if (event.type !== "SELECT") return;
-          const actions = prop("actions");
-          const item = actions[event.index];
+          const items = prop("items");
+          const item = items[event.index];
           if (item && !item.disabled && !item.loading) {
             prop("onSelect")?.({ item, index: event.index });
           }
+        },
+        invokeOnAction: ({ prop, event }) => {
+          if (event.type !== "ACTION") return;
+          if ("handled" in event && event.handled) return;
+          event.action.onClick?.();
+          prop("onAction")?.({ action: event.action, index: event.index });
         },
       },
 

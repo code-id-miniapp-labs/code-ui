@@ -1,0 +1,65 @@
+@keyframes cui-action-sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@-webkit-keyframes cui-action-sheet-slide-up {
+  from {
+    -webkit-transform: translateY(100%);
+    transform: translateY(100%);
+  }
+  to {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes cui-action-sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes cui-action-sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cui-action-sheet-content-enter {
+  -webkit-animation: cui-action-sheet-slide-up 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: cui-action-sheet-slide-up 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.cui-action-sheet-backdrop-enter {
+  -webkit-animation: cui-action-sheet-fade-in 300ms ease-out;
+  animation: cui-action-sheet-fade-in 300ms ease-out;
+}
+
+button[data-part="item"] {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: normal;
+  line-height: normal;
+  background-color: transparent;
+  color: inherit;
+  text-align: center;
+}
+
+button[data-part="item"]::after {
+  display: none;
+  border: none;
+}
+

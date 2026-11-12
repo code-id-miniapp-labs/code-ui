@@ -99,6 +99,76 @@ describe("MiniappMachine Event & Promise Interception", () => {
     machine.stop();
   });
 
+  it("captures the promise from page handler when component is wrapped in container components (e.g. c-app)", async () => {
+    let resolveAction!: () => void;
+    const pending = new Promise<void>((res) => {
+      resolveAction = res;
+    });
+
+    const page: Record<string, any> = {
+      onFooterAction: vi.fn(() => pending),
+    };
+    (globalThis as any).getCurrentPages = () => [page];
+
+    const cAppInstance = {
+      selectOwnerComponent: () => null,
+      data: {},
+    };
+
+    const component = {
+      selectOwnerComponent: () => cAppInstance,
+      triggerEvent: vi.fn(() => {
+        // Page receives the event
+        page.onFooterAction();
+      }),
+    };
+
+    const machine = new MiniappMachine(createSchema(), { component });
+    machine.start();
+
+    const result = (machine.prop as any)("onAction")({
+      action: { label: "Async Save" },
+      index: 0,
+    }) as Promise<void>;
+    expect(result).toBe(pending);
+
+    resolveAction();
+    await result;
+    machine.stop();
+  });
+
+  it("captures the promise returned by a page handler for onAction event", async () => {
+    let resolveAction!: () => void;
+    const pending = new Promise<void>((res) => {
+      resolveAction = res;
+    });
+
+    const page: Record<string, any> = {
+      onAction: vi.fn(() => pending),
+    };
+    (globalThis as any).getCurrentPages = () => [page];
+
+    const component = {
+      selectOwnerComponent: () => null,
+      triggerEvent: vi.fn(() => {
+        page.onAction();
+      }),
+    };
+
+    const machine = new MiniappMachine(createSchema(), { component });
+    machine.start();
+
+    const result = (machine.prop as any)("onAction")({
+      action: { label: "Save" },
+      index: 0,
+    }) as Promise<void>;
+    expect(result).toBe(pending);
+
+    resolveAction();
+    await result;
+    machine.stop();
+  });
+
   it("captures a custom event handler promise when detail exposes setPromise", async () => {
     let resolveRefresh!: () => void;
     const pending = new Promise<void>((res) => {

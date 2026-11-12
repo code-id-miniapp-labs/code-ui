@@ -39,6 +39,9 @@ importers:
       '@code-ui/accordion-item':
         specifier: workspace:*
         version: link:../../packages/machines/accordion-item
+      '@code-ui/action-sheet':
+        specifier: workspace:*
+        version: link:../../packages/machines/action-sheet
       '@code-ui/banner':
         specifier: workspace:*
         version: link:../../packages/machines/banner

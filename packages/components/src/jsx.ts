@@ -8,6 +8,8 @@ import type {
 } from "@code-ui/accordion-item";
 import type { BannerBadgeProps, BannerProps } from "@code-ui/banner";
 import type {
+  ActionSheetAction,
+  ActionSheetActionDetails,
   ActionSheetItem,
   ActionSheetProps,
   ActionSheetSelectDetails,
@@ -752,14 +754,12 @@ export interface CuiActionSheetElementProps extends CuiCommonElementProps {
   defaultOpen?: boolean;
   title?: string;
   description?: string;
-  actions?: ActionSheetItem[];
-  cancelText?: string;
-  showCancel?: boolean;
-  cancelIcon?: string;
+  items?: ActionSheetItem[];
+  actions?: ActionSheetAction[];
   loadingIcon?: string;
   close?: boolean;
   closeIcon?: string;
-  closeOnAction?: boolean;
+  closeOnItem?: boolean;
   closeOnBackdropClick?: boolean;
   duration?: number;
   onOpenChange?: (
@@ -768,7 +768,9 @@ export interface CuiActionSheetElementProps extends CuiCommonElementProps {
   onSelect?: (
     event: WechatMiniprogram.CustomEvent<ActionSheetSelectDetails>,
   ) => void;
-  onCancel?: (event: WechatMiniprogram.CustomEvent) => void;
+  onAction?: (
+    event: WechatMiniprogram.CustomEvent<ActionSheetActionDetails>,
+  ) => void;
   onClose?: (event: WechatMiniprogram.CustomEvent) => void;
   onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
   onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
