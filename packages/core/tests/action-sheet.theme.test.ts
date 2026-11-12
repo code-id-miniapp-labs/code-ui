@@ -38,7 +38,9 @@ describe("actionSheetTheme (@code-ui/core)", () => {
     const openCompound = theme.compoundVariants?.find((cv) => cv.open === true);
     expect(openCompound?.class?.content).toContain("translate-y-0");
 
-    const closedCompound = theme.compoundVariants?.find((cv) => cv.open === false);
+    const closedCompound = theme.compoundVariants?.find(
+      (cv) => cv.open === false,
+    );
     expect(closedCompound?.class?.content).toContain("translate-y-full");
   });
 });

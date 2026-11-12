@@ -46,8 +46,7 @@ export const actionSheetMachine: ActionSheetMachine =
 
     computed: {
       isOpen: ({ state }) => state.hasTag("open"),
-      isVisible: ({ state }) =>
-        state.hasTag("open") || state.hasTag("closing"),
+      isVisible: ({ state }) => state.hasTag("open") || state.hasTag("closing"),
     },
 
     on: {

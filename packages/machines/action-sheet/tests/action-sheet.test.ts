@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { actionSheetMachine } from "../src/action-sheet.machine";
 import { connectActionSheet } from "../src/action-sheet.connect";
-import type { ActionSheetAction, ActionSheetItem } from "../src/action-sheet.types";
+import type {
+  ActionSheetAction,
+  ActionSheetItem,
+} from "../src/action-sheet.types";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
@@ -436,9 +439,7 @@ describe("ActionSheet Machine", () => {
     it("integrates with c-button component bridge for end-to-end autoLoading", async () => {
       vi.useRealTimers();
 
-      const { buttonMachine, connectButton } = await import(
-        "@code-ui/button"
-      );
+      const { buttonMachine, connectButton } = await import("@code-ui/button");
 
       const page: Record<string, any> = {
         async onFooterAction() {

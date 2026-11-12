@@ -1,9 +1,6 @@
 <view wx:if="{{actionSheet.visible}}" id="{{actionSheet.rootProps.id}}" class="{{classes.root}}" data-scope="action-sheet" data-part="root" data-state="{{actionSheet.state}}" catchtouchmove="noop">
-  <!-- Backdrop -->
   <view id="{{actionSheet.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="action-sheet" data-part="backdrop" data-state="{{actionSheet.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleBackdropTap" />
-  <!-- Content sheet -->
   <view id="{{actionSheet.contentProps.id}}" class="{{classes.content}}" data-scope="action-sheet" data-part="content" data-state="{{actionSheet.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!actionSheet.open}}">
-    <!-- Header (Title / Description / Optional Close Button) -->
     <view wx:if="{{title || description || close}}" class="{{classes.header}}" data-scope="action-sheet" data-part="header">
       <view wx:if="{{close}}" id="{{actionSheet.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="action-sheet" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTriggerTap">
         <c-icon name="{{closeIcon}}" className="w-4 h-4" />
@@ -35,10 +32,8 @@
           </view>
         </button>
       </block>
-      <!-- Declarative default slot (for custom items or content) -->
       <slot wx:else />
     </view>
-    <!-- Footer Actions (powered by c-button) -->
     <block wx:if="{{actionSheet.actions && actionSheet.actions.length > 0}}">
       <view class="{{classes.gap}}" data-scope="action-sheet" data-part="gap" />
       <view id="{{actionSheet.actionsProps.id}}" class="{{classes.actions}}" data-scope="action-sheet" data-part="actions">

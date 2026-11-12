@@ -20,8 +20,7 @@ export default function actionSheetTheme(_options: ThemeOptions = {}) {
       item: "relative flex items-center justify-center w-full min-h-14 px-6 py-3.5 bg-white dark:bg-neutral-800 border-t border-neutral-100 dark:border-neutral-700/60 first:border-t-0 text-base cursor-pointer select-none box-border outline-none disabled:opacity-40 active:bg-neutral-50 dark:active:bg-neutral-700/50 transition-colors",
       itemText:
         "flex flex-col items-center justify-center text-center flex-1 w-full min-w-0 pointer-events-none",
-      itemTitle:
-        "flex items-center justify-center gap-2 w-full",
+      itemTitle: "flex items-center justify-center gap-2 w-full",
       itemLabel:
         "text-base font-normal text-neutral-900 dark:text-neutral-100 text-center leading-snug",
       itemDescription:
