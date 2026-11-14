@@ -11,7 +11,7 @@ import type {
   FormValidateOn,
 } from "@code-ui/form";
 import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox.anatomy";
 
 export type CheckboxState = "checked" | "unchecked" | "indeterminate";
@@ -29,12 +29,14 @@ export type CheckboxColor =
 
 export type CheckboxSize = "xs" | "sm" | "md" | "lg" | "xl";
 
+export type CheckboxVariant = "outline" | "card";
+
 export type CheckboxAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type CheckboxUI = ComponentUI<typeof anatomy>;
 export type CheckboxResolvedUI = ResolvedUI<typeof anatomy>;
 
 export interface CheckboxCheckedChangeDetails {
-  value?: any;
+  value: string;
   checked: boolean;
 }
 
@@ -67,6 +69,8 @@ export interface CheckboxProps {
   color?: CheckboxColor | undefined;
   /** Size variant */
   size?: CheckboxSize | undefined;
+  /** Visual variant (outline or card) */
+  variant?: CheckboxVariant | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
   /** Form field wrapper size override */
@@ -97,6 +101,28 @@ export interface CheckboxProps {
   onChange?: ((details: CheckboxCheckedChangeDetails) => void) | undefined;
 }
 
+export interface CheckboxResolvedProps extends CheckboxProps {
+  checked: boolean | null;
+  defaultChecked: boolean;
+  indeterminate: boolean | null;
+  defaultIndeterminate: boolean;
+  disabled: boolean;
+  readOnly: boolean;
+  required: boolean;
+  invalid: boolean | null;
+  color: CheckboxColor;
+  size: CheckboxSize;
+  variant: CheckboxVariant;
+  value: string;
+  name: string;
+  form: string;
+  label: string;
+  description: string;
+  icon: string;
+  indeterminateIcon: string;
+  ui: CheckboxUI;
+}
+
 export type CheckboxEvent =
   | { type: "TOGGLE" }
   | { type: "SET_CHECKED"; checked: boolean }
@@ -121,6 +147,7 @@ export interface CheckboxComputed {
   isReadOnly: boolean;
   effectiveSize: CheckboxSize;
   effectiveColor: CheckboxColor;
+  effectiveVariant: CheckboxVariant;
 }
 
 export interface CheckboxRefs {
@@ -134,7 +161,7 @@ export interface CheckboxSchema extends MachineSchema {
   state: CheckboxState;
   tag: "checked" | "unchecked" | "indeterminate" | "disabled";
   event: CheckboxEvent;
-  props: CheckboxProps;
+  props: CheckboxResolvedProps;
   context: CheckboxContext;
   computed: CheckboxComputed;
   refs: CheckboxRefs;
@@ -152,34 +179,20 @@ export interface CheckboxApi {
   state: CheckboxState;
   /** Current checked boolean */
   checked: boolean;
-  /** Alias for checked */
-  isChecked: boolean;
   /** Whether the checkbox is indeterminate */
   indeterminate: boolean;
-  /** Alias for indeterminate */
-  isIndeterminate: boolean;
-  /** Whether the checkbox can be interacted with */
-  isInteractive: boolean;
   /** Whether the field is disabled */
   disabled: boolean;
   /** Whether the field is read-only */
   readOnly: boolean;
   /** Whether the field is invalid */
   invalid: boolean;
-  /** Whether the field is required */
-  required: boolean;
   /** Effective size */
   size: CheckboxSize;
-  /** Visual color */
+  /** Effective color */
   color: CheckboxColor;
-  /** Label text */
-  label: string;
-  /** Description text */
-  description: string;
-  /** Checked icon */
-  icon: string;
-  /** Indeterminate icon */
-  indeterminateIcon: string;
+  /** Effective visual variant */
+  variant: CheckboxVariant;
   /** Set checked state programmatically */
   setChecked(checked: boolean): void;
   /** Set indeterminate state programmatically */
@@ -189,7 +202,7 @@ export interface CheckboxApi {
   /** Reset to initial checked state */
   resetChecked(): void;
   /** Tap event handler for miniapp */
-  handleTap(e?: any): void;
+  handleTap(e?: MiniAppBaseEventLike): void;
   /** Props for root container */
   rootProps: Record<string, any>;
   /** Props for checkbox base box */
@@ -198,8 +211,4 @@ export interface CheckboxApi {
   indicatorProps: Record<string, any>;
   /** Props for label */
   labelProps: Record<string, any>;
-  /** Props for description */
-  descriptionProps: Record<string, any>;
-  /** Props for hidden input */
-  hiddenInputProps: Record<string, any>;
 }

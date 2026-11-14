@@ -1,23 +1,14 @@
 import {
   getContentId,
-  getDescriptionId,
-  getIndicatorId,
   getItemId,
   getListId,
   getRootId,
-  getSeparatorId,
-  getTitleId,
-  getTriggerId,
 } from "./stepper.dom";
 import type {
   StepItemComputed,
   StepperApi,
-  StepperColor,
-  StepperOrientation,
   StepperService,
-  StepperSize,
   StepperStatus,
-  StepperVariant,
 } from "./stepper.types";
 
 export function connectStepper(service: StepperService): StepperApi {
@@ -31,22 +22,38 @@ export function connectStepper(service: StepperService): StepperApi {
   const isFirst = computed("isFirst");
   const isLast = computed("isLast");
   const isCompleted = computed("isCompleted");
-  const linear = Boolean(prop("linear"));
-  const orientation = (prop("orientation") || "horizontal") as StepperOrientation;
-  const color = (prop("color") || "primary") as StepperColor;
-  const size = (prop("size") || "md") as StepperSize;
-  const variant = (prop("variant") || "subtle") as StepperVariant;
-  const disabled = Boolean(prop("disabled"));
-  const hasContent = Boolean(prop("hasContent"));
-  const rawItems = context.get("items") ?? [];
+  const linear = prop("linear");
+  const orientation = prop("orientation");
+  const disabled = prop("disabled");
+  const fallbackUi = prop("ui");
+  const rawItems = context.get("items");
   const scrollTargetIndex = computed("scrollTargetIndex");
-  const scrollIntoViewId = getItemId(scope, scrollTargetIndex);
-  const scrollLeft = context.get("scrollLeft") ?? 0;
+  const scrollIntoViewId = computed("scrollIntoViewId");
 
-  const stepMetas = Array.isArray(rawItems)
+  const getRootProps = (): Record<string, any> => ({
+    id: getRootId(scope),
+  });
+
+  const getListProps = (): Record<string, any> => ({
+    id: getListId(scope),
+    "enable-flex": true,
+    "scroll-x": orientation === "horizontal",
+    "scroll-into-view": scrollIntoViewId,
+    enhanced: true,
+    "show-scrollbar": false,
+    "scroll-with-animation": true,
+  });
+
+  const getContentProps = (
+    _props?: { index?: number | undefined } | undefined,
+  ): Record<string, any> => ({
+    id: getContentId(scope),
+  });
+
+  const steps: StepItemComputed[] = Array.isArray(rawItems)
     ? rawItems.map((item, index) => {
         const isDisabled =
-          disabled || Boolean(item?.disabled) || (linear && index > step + 1);
+          disabled || Boolean(item.disabled) || (linear && index > step + 1);
         const isComplete =
           index < step || (totalCount > 0 && step >= totalCount);
         const isCurrent =
@@ -60,106 +67,30 @@ export function connectStepper(service: StepperService): StepperApi {
             : isCurrent
               ? "current"
               : "upcoming";
-        return { item, status, isDisabled, isComplete, isCurrent, isUpcoming };
+
+        return {
+          index,
+          value: item.value !== undefined ? item.value : index,
+          title: item.title ?? "",
+          description: item.description ?? "",
+          icon: item.icon ?? "",
+          completedIcon: item.completedIcon ?? "",
+          status,
+          isCurrent,
+          isCompleted: isComplete,
+          isUpcoming,
+          isDisabled,
+          isFirst: index === 0,
+          isLast: index === rawItems.length - 1,
+          ui: item.ui ?? fallbackUi,
+          itemProps: { id: getItemId(scope, index), "data-index": index },
+        };
       })
     : [];
-
-  const getRootProps = (): Record<string, any> => ({
-    id: getRootId(scope),
-  });
-
-  const getListProps = (): Record<string, any> => ({
-    id: getListId(scope),
-    "enable-flex": true,
-    "scroll-x": orientation === "horizontal",
-    "scroll-into-view": scrollIntoViewId,
-    "scroll-left": scrollLeft,
-    enhanced: true,
-    "show-scrollbar": false,
-    "scroll-with-animation": true,
-  });
-
-  const getContentProps = (
-    _props?: { index?: number | undefined } | undefined,
-  ): Record<string, any> => ({
-    id: getContentId(scope),
-  });
-
-  const getItemProps = (props: { index: number }): Record<string, any> => ({
-    id: getItemId(scope, props.index),
-    "data-index": props.index,
-  });
-
-  const getTriggerProps = (props: { index: number }): Record<string, any> => ({
-    id: getTriggerId(scope, props.index),
-    "data-index": props.index,
-  });
-
-  const getIndicatorProps = (props: { index: number }): Record<string, any> => {
-    const id = getIndicatorId(scope, props.index);
-    return id ? { id, "data-index": props.index } : { "data-index": props.index };
-  };
-
-  const getSeparatorProps = (props: { index: number }): Record<string, any> => {
-    const id = getSeparatorId(scope, props.index);
-    return id ? { id, "data-index": props.index } : { "data-index": props.index };
-  };
-
-  const getTitleProps = (props: { index: number }): Record<string, any> => {
-    const id = getTitleId(scope, props.index);
-    return id ? { id, "data-index": props.index } : { "data-index": props.index };
-  };
-
-  const getDescriptionProps = (props: {
-    index: number;
-  }): Record<string, any> => {
-    const id = getDescriptionId(scope, props.index);
-    return id ? { id, "data-index": props.index } : { "data-index": props.index };
-  };
-
-  const steps: StepItemComputed[] = stepMetas.map((m, index) => {
-    const item = m.item;
-    return {
-      index,
-      value: item?.value !== undefined ? item.value : index,
-      title: item?.title ?? "",
-      description: item?.description ?? "",
-      icon: item?.icon ?? "",
-      completedIcon: item?.completedIcon ?? "",
-      status: m.status,
-      isCurrent: m.isCurrent,
-      isCompleted: m.isComplete,
-      isUpcoming: m.isUpcoming,
-      isDisabled: m.isDisabled,
-      isFirst: index === 0,
-      isLast: index === stepMetas.length - 1,
-      ...(item?.ui ? { ui: item.ui } : {}),
-      itemProps: getItemProps({ index }),
-      triggerProps: getTriggerProps({ index }),
-      indicatorProps: getIndicatorProps({ index }),
-      separatorProps: getSeparatorProps({ index }),
-      titleProps: getTitleProps({ index }),
-      descriptionProps: getDescriptionProps({ index }),
-      contentProps: hasContent ? getContentProps({ index }) : undefined,
-    };
-  });
 
   const currentItem = Array.isArray(rawItems) ? rawItems[step] : undefined;
   const currentValue =
     currentItem?.value !== undefined ? currentItem.value : step;
-
-  const setStep = (index: number) => {
-    if (index !== undefined && index !== null) {
-      send({ type: "STEP.SET", step: Number(index) });
-    }
-  };
-
-  const nextStep = () => send({ type: "STEP.NEXT" });
-  const prevStep = () => send({ type: "STEP.PREV" });
-  const resetStep = () => send({ type: "STEP.RESET" });
-  const completeStep = () => setStep(totalCount);
-  const scrollTo = (index: number) =>
-    send({ type: "STEP.SCROLL_TO", index: Number(index) });
 
   return {
     state: state.get(),
@@ -172,38 +103,20 @@ export function connectStepper(service: StepperService): StepperApi {
     isFirst,
     isLast,
     isCompleted,
-    linear,
-    orientation,
-    color,
-    size,
-    variant,
-    disabled,
-    hasContent,
     steps,
     scrollTargetIndex,
     scrollIntoViewId,
-    scrollLeft,
-    setStep,
-    goToStep: setStep,
-    nextStep,
-    prevStep,
-    resetStep,
-    completeStep,
-    complete: completeStep,
-    scrollTo,
-    scrollToStep: scrollTo,
-    clear: resetStep,
-    reset: resetStep,
+    setStep: (index: number) => send({ type: "STEP.SET", step: index }),
+    nextStep: () => send({ type: "STEP.NEXT" }),
+    prevStep: () => send({ type: "STEP.PREV" }),
+    resetStep: () => send({ type: "STEP.RESET" }),
+    completeStep: () => send({ type: "STEP.COMPLETE" }),
+    scrollTo: (index: number) => send({ type: "STEP.SCROLL_TO", index }),
     rootProps: getRootProps(),
     listProps: getListProps(),
     contentProps: getContentProps(),
     getRootProps,
     getListProps,
     getContentProps,
-    getTriggerProps,
-    getIndicatorProps,
-    getSeparatorProps,
-    getTitleProps,
-    getDescriptionProps,
   };
 }

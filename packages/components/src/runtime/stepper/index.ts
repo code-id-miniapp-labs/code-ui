@@ -1,6 +1,7 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withStepper } from "@code-ui/miniapp/behaviors/stepper";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
   stepperMachine,
@@ -38,51 +39,44 @@ Component(
       },
 
       classes() {
-        const api = this.data.stepper;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const orientation = api?.orientation ?? this.data.orientation;
-        const ui = this.data.ui;
+        const { orientation, disabled, ui, className } = this.data;
 
         const themeFns = stepperTheme({
           orientation,
           disabled,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, ui, className);
       },
     },
 
     methods: {
-      handleItemTap(e: WechatMiniprogram.CustomEvent) {
-        const index = e.detail?.index ?? e.currentTarget?.dataset?.index;
-        getApi(this, "stepper")?.goToStep?.(index);
-      },
-      handleItemClick(e: WechatMiniprogram.CustomEvent) {
-        this.handleItemTap(e);
+      handleItemTap(e: MiniAppEventLike<{ index: number }>) {
+        getApi(this, "stepper")?.setStep(e.detail.index);
       },
       setStep(index: number) {
-        return getApi(this, "stepper")?.setStep?.(index);
+        return getApi(this, "stepper")?.setStep(index);
       },
       goToStep(index: number) {
-        return getApi(this, "stepper")?.goToStep?.(index);
+        return getApi(this, "stepper")?.setStep(index);
       },
       nextStep() {
-        return getApi(this, "stepper")?.nextStep?.();
+        return getApi(this, "stepper")?.nextStep();
       },
       prevStep() {
-        return getApi(this, "stepper")?.prevStep?.();
+        return getApi(this, "stepper")?.prevStep();
       },
       resetStep() {
-        return getApi(this, "stepper")?.resetStep?.();
+        return getApi(this, "stepper")?.resetStep();
       },
       completeStep() {
-        return getApi(this, "stepper")?.completeStep?.();
+        return getApi(this, "stepper")?.completeStep();
       },
       scrollTo(index: number) {
-        return getApi(this, "stepper")?.scrollTo?.(index);
+        return getApi(this, "stepper")?.scrollTo(index);
       },
       scrollToStep(index: number) {
-        return getApi(this, "stepper")?.scrollToStep?.(index);
+        return getApi(this, "stepper")?.scrollTo(index);
       },
     },
   }),

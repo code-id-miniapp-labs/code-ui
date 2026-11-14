@@ -15,7 +15,7 @@ import type {
 } from "@code-ui/stepper";
 import type { anatomy } from "./stepper-item.anatomy";
 
-export type StepperItemState = "idle";
+export type StepperItemState = StepperStatus;
 
 export type StepperItemAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type StepperItemUI = ComponentUI<typeof anatomy>;
@@ -52,6 +52,31 @@ export interface StepperItemProps {
     | undefined;
 }
 
+export type StepperItemDefaultedKey =
+  | "stepperId"
+  | "index"
+  | "isLast"
+  | "title"
+  | "description"
+  | "icon"
+  | "completedIcon"
+  | "disabled"
+  | "completed"
+  | "status"
+  | "value"
+  | "orientation"
+  | "color"
+  | "size"
+  | "variant"
+  | "ui";
+
+export type StepperItemResolvedProps = Omit<
+  StepperItemProps,
+  StepperItemDefaultedKey
+> & {
+  [K in StepperItemDefaultedKey]-?: Exclude<StepperItemProps[K], undefined>;
+};
+
 export interface StepperItemContext {}
 
 export type StepperItemEvent = { type: "TAP" };
@@ -72,9 +97,9 @@ export interface StepperItemComputed {
 
 export interface StepperItemSchema extends MachineSchema {
   state: StepperItemState;
-  tag: "idle";
+  tag: StepperStatus;
   event: StepperItemEvent;
-  props: StepperItemProps;
+  props: StepperItemResolvedProps;
   context: StepperItemContext;
   computed: StepperItemComputed;
   action: string;
@@ -87,30 +112,20 @@ export type StepperItemMachine = Machine<StepperItemSchema>;
 export type StepperItemParams = Params<StepperItemSchema>;
 
 export interface StepperItemApi {
-  stepperId: string;
+  state: StepperItemState;
   index: number;
-  resolvedIndex: number;
-  resolvedIsLast: boolean;
-  title: string;
-  description: string;
-  icon: string;
-  completedIcon: string;
+  isLast: boolean;
   value: string | number;
   status: StepperStatus;
   isCompleted: boolean;
   isCurrent: boolean;
   isUpcoming: boolean;
   isDisabled: boolean;
-  disabled: boolean;
   orientation: StepperOrientation;
   color: StepperColor;
   size: StepperSize;
   variant: StepperVariant;
-  handleTap: (e?: any) => void;
+  handleTap: () => void;
   itemProps: Record<string, any>;
   triggerProps: Record<string, any>;
-  indicatorProps: Record<string, any>;
-  separatorProps: Record<string, any>;
-  titleProps: Record<string, any>;
-  descriptionProps: Record<string, any>;
 }

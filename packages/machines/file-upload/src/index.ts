@@ -8,7 +8,6 @@ export {
   isAudioFile,
   isImageFile,
   isVideoFile,
-  stopActiveAudio,
 } from "./file-upload.connect";
 export {
   cleanExtensions,
@@ -21,6 +20,7 @@ export {
   isDocumentFile,
   isValidFileSize,
   isValidFileType,
+  resolveFileThumb,
   validateFiles,
 } from "./file-upload.utils";
 export type {
@@ -29,7 +29,7 @@ export type {
   ValidateFilesResult,
 } from "./file-upload.utils";
 export * as fileUploadDom from "./file-upload.dom";
-export { fileUploadMachine } from "./file-upload.machine";
+export { fileUploadMachine, stopActiveAudio } from "./file-upload.machine";
 export { defaultFileUploadProps } from "./file-upload.props";
 export type {
   FileUploadAction,
@@ -39,6 +39,7 @@ export type {
   FileUploadColor,
   FileUploadComputed,
   FileUploadContext,
+  FileUploadEffect,
   FileUploadEvent,
   FileUploadFile,
   FileUploadGuard,
@@ -53,6 +54,7 @@ export type {
   FileUploadRefs,
   FileUploadRejectReason,
   FileUploadRejectedFile,
+  FileUploadResolvedProps,
   FileUploadResolvedUI,
   FileUploadSchema,
   FileUploadService,

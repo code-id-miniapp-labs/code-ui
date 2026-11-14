@@ -19,7 +19,7 @@ export default function tabsTheme(_options: ThemeOptions = {}) {
       orientation: {
         horizontal: {
           root: "flex-col",
-          list: "flex-row items-center min-w-full inline-flex",
+          list: "flex-row items-center min-w-full shrink-0",
           content: "w-full",
         },
         vertical: {

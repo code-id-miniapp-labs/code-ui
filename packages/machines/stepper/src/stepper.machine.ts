@@ -4,15 +4,10 @@ import type {
   StepperGroupContext,
   StepperItem,
   StepperMachine,
-  StepperOrientation,
   StepperSchema,
 } from "./stepper.types";
 import { defaultStepperProps } from "./stepper.props";
-import {
-  clampValue,
-  performScrollUpdate,
-  resolveControlledStep,
-} from "./stepper.utils";
+import { clampValue, resolveControlledStep } from "./stepper.utils";
 
 export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   props: ({ props }) => ({
@@ -23,20 +18,18 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   initialState: () => "idle",
 
   refs: ({ prop, context, computed, send }) => {
-    const initial =
-      resolveControlledStep(prop) ?? Number(prop("defaultStep") ?? 0);
+    const initial = resolveControlledStep(prop) ?? prop("defaultStep");
     return {
       initialStep: initial,
       groupContext: {
         step: () => context.get("step"),
         count: () => computed("totalCount"),
-        linear: () => Boolean(prop("linear")),
-        orientation: () =>
-          (prop("orientation") ?? "horizontal") as StepperOrientation,
-        color: () => prop("color") ?? "primary",
-        size: () => prop("size") ?? "md",
-        variant: () => prop("variant") ?? "subtle",
-        disabled: () => Boolean(prop("disabled")),
+        linear: () => prop("linear"),
+        orientation: () => prop("orientation"),
+        color: () => prop("color"),
+        size: () => prop("size"),
+        variant: () => prop("variant"),
+        disabled: () => prop("disabled"),
         setStep: (step) => send({ type: "STEP.SET", step }),
         next: () => send({ type: "STEP.NEXT" }),
         previous: () => send({ type: "STEP.PREV" }),
@@ -46,15 +39,14 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   },
 
   context: ({ prop, bindable, getComputed }) => {
-    const initial =
-      resolveControlledStep(prop) ?? Number(prop("defaultStep") ?? 0);
+    const initial = resolveControlledStep(prop) ?? prop("defaultStep");
 
     return {
       step: bindable<number>(() => ({
         value: resolveControlledStep(prop),
         defaultValue: initial,
         onChange: (nextStep, prevStep) => {
-          const items = prop("items") ?? [];
+          const items = prop("items");
           const itemObj = Array.isArray(items) ? items[nextStep] : undefined;
           const resolvedVal =
             itemObj?.value !== undefined ? itemObj.value : nextStep;
@@ -83,7 +75,6 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         defaultValue: [],
       })),
       focusedIndex: bindable<number | null>(() => ({ defaultValue: null })),
-      scrollLeft: bindable<number>(() => ({ defaultValue: 0 })),
       scrollTargetIndex: bindable<number | null>(() => ({
         defaultValue: null,
       })),
@@ -96,11 +87,11 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       if (Array.isArray(items) && items.length > 0) {
         return items.length;
       }
-      const linked = Number(prop("linkedCount") ?? 0);
+      const linked = prop("linkedCount");
       if (linked > 0) {
         return linked;
       }
-      return Math.max(0, Number(context.get("count") ?? 0));
+      return Math.max(0, Number(context.get("count")));
     },
 
     percent: ({ context, computed }) => {
@@ -133,7 +124,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
 
     scrollTargetIndex: ({ context, computed }) => {
       const explicit = context.get("scrollTargetIndex");
-      if (explicit !== undefined && explicit !== null) {
+      if (explicit !== null) {
         return explicit;
       }
       const step = context.get("step");
@@ -153,18 +144,22 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   on: {
     "STEP.SET": {
       guard: "canNavigateStep",
-      actions: ["setStep", "updateScroll"],
+      actions: ["setStep", "clearScrollTarget"],
     },
     "STEP.NEXT": {
       guard: "canNextStep",
-      actions: ["nextStep", "updateScroll"],
+      actions: ["nextStep", "clearScrollTarget"],
     },
     "STEP.PREV": {
       guard: "canPrevStep",
-      actions: ["prevStep", "updateScroll"],
+      actions: ["prevStep", "clearScrollTarget"],
     },
     "STEP.RESET": {
-      actions: ["resetStep", "updateScroll"],
+      actions: ["resetStep", "clearScrollTarget"],
+    },
+    "STEP.COMPLETE": {
+      guard: "isInteractive",
+      actions: ["completeStep", "clearScrollTarget"],
     },
     "STEP.SCROLL_TO": {
       actions: ["scrollTo"],
@@ -206,7 +201,14 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       isInteractive: ({ computed }) => computed("isInteractive"),
 
       canNavigateStep: ({ context, computed, prop, event }) => {
-        if (!computed("isInteractive") || !("step" in event)) return false;
+        if (
+          !computed("isInteractive") ||
+          event.type !== "STEP.SET" ||
+          event.step === null ||
+          event.step === undefined
+        ) {
+          return false;
+        }
         const target = Number(event.step);
         if (Number.isNaN(target) || target < 0) return false;
         const total = computed("totalCount");
@@ -238,7 +240,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
 
     actions: {
       setStep: ({ context, event }) => {
-        if ("step" in event) {
+        if (event.type === "STEP.SET") {
           context.set("step", Number(event.step));
         }
       },
@@ -254,43 +256,48 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       },
 
       resetStep: ({ context, refs, prop }) => {
-        context.set(
-          "step",
-          refs.get("initialStep") ?? Number(prop("defaultStep") ?? 0),
-        );
+        context.set("step", refs.get("initialStep") ?? prop("defaultStep"));
       },
 
-      updateScroll: ({ context, computed, prop, scope }) => {
-        performScrollUpdate(context, computed, prop, scope);
+      completeStep: ({ context, computed }) => {
+        context.set("step", computed("totalCount"));
       },
 
-      scrollTo: ({ context, computed, prop, scope, event }) => {
-        if ("index" in event && event.index !== undefined) {
-          performScrollUpdate(
-            context,
-            computed,
-            prop,
-            scope,
-            context.get("step"),
-            Number(event.index),
-          );
+      clearScrollTarget: ({ context }) => {
+        context.set("scrollTargetIndex", null);
+      },
+
+      scrollTo: ({ context, computed, event }) => {
+        if (
+          event.type === "STEP.SCROLL_TO" &&
+          event.index !== null &&
+          event.index !== undefined
+        ) {
+          const total = computed("totalCount");
+          const raw = Number(event.index);
+          if (!Number.isNaN(raw)) {
+            context.set(
+              "scrollTargetIndex",
+              clampValue(raw, 0, total > 0 ? total - 1 : Math.max(0, raw)),
+            );
+          }
         }
       },
 
       setCount: ({ context, event }) => {
-        if ("count" in event) {
+        if (event.type === "COUNT.SET") {
           context.set("count", Math.max(0, Number(event.count)));
         }
       },
 
       setItems: ({ context, event }) => {
-        if ("items" in event && Array.isArray(event.items)) {
+        if (event.type === "ITEMS.SET" && Array.isArray(event.items)) {
           context.set("items", event.items);
         }
       },
 
       setFocusedIndex: ({ context, event }) => {
-        if ("index" in event && event.index !== undefined) {
+        if (event.type === "FOCUS" && event.index !== undefined) {
           context.set("focusedIndex", Number(event.index));
         }
       },
@@ -301,7 +308,7 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
     },
 
     effects: {
-      trackControlledStep: ({ prop, context, computed, scope, track }) => {
+      trackControlledStep: ({ prop, context, track }) => {
         let initial = true;
         track(
           [() => resolveControlledStep(prop)],
@@ -310,15 +317,8 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
               initial = false;
               return;
             }
-            const nextControlled = resolveControlledStep(prop);
-            if (nextControlled !== undefined) {
-              performScrollUpdate(
-                context,
-                computed,
-                prop,
-                scope,
-                nextControlled,
-              );
+            if (resolveControlledStep(prop) !== undefined) {
+              context.set("scrollTargetIndex", null);
             }
           },
         );

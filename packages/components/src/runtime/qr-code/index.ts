@@ -37,17 +37,12 @@ Component(
 
     computed: {
       classes() {
-        const api = this.data.qrCode;
-        const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const ui = this.data.ui;
-
         const themeFns = qrCodeTheme({
-          size,
-          color,
+          size: this.data.size,
+          color: this.data.color,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 

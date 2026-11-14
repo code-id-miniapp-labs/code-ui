@@ -17,7 +17,6 @@ describe("AccordionItem Machine", () => {
 
     let api = connectAccordionItem(machine.service);
     expect(api.resolvedValue).toBe("item-1");
-    expect(api.label).toBe("Title 1");
     expect(api.isOpen).toBe(false);
 
     api.toggle();

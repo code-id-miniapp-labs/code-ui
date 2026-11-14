@@ -22,6 +22,7 @@ export type {
   BannerParams,
   BannerPlacement,
   BannerProps,
+  BannerResolvedProps,
   BannerRefs,
   BannerSchema,
   BannerService,

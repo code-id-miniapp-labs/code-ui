@@ -31,9 +31,6 @@ describe("Drawer Machine", () => {
       expect(api.open).toBe(false);
       expect(api.visible).toBe(false);
       expect(api.state).toBe("closed");
-      expect(api.placement).toBe("bottom");
-      expect(api.threshold).toBe(80);
-      expect(api.duration).toBe(300);
 
       machine.stop();
     });
@@ -71,7 +68,7 @@ describe("Drawer Machine", () => {
 
       expect(machine.computed("placement")).toBe("top");
       const api = connectDrawer(machine.service);
-      expect(api.placement).toBe("top");
+      expect(api.rootProps["data-placement"]).toBe("top");
 
       machine.stop();
     });
@@ -516,9 +513,6 @@ describe("Drawer Machine", () => {
       expect(api.open).toBe(false);
       expect(api.visible).toBe(false);
       expect(api.state).toBe("closed");
-      expect(api.placement).toBe("bottom");
-      expect(api.threshold).toBe(100);
-      expect(api.duration).toBe(400);
 
       expect(api.rootProps.id).toBe("dr-payment-sheet-r");
       expect(api.rootProps["data-state"]).toBe("closed");
@@ -538,7 +532,6 @@ describe("Drawer Machine", () => {
       expect(api.contentProps.hidden).toBe(true);
       expect(api.contentProps["data-keyboard-height"]).toBe(0);
 
-      expect(api.grabberProps.id).toBeUndefined();
       expect(api.closeTriggerProps.id).toBeUndefined();
       expect(api.closeTriggerProps["aria-label"]).toBe("Close");
 

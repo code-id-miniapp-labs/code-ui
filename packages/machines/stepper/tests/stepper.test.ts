@@ -30,13 +30,15 @@ describe("Stepper Machine", () => {
       expect(api.isLast).toBe(true);
       expect(api.hasNext).toBe(false);
       expect(api.hasPrev).toBe(false);
-      expect(api.linear).toBe(false);
-      expect(api.orientation).toBe("horizontal");
-      expect(api.color).toBe("primary");
-      expect(api.size).toBe("md");
-      expect(api.variant).toBe("subtle");
-      expect(api.disabled).toBe(false);
       expect(api.steps).toEqual([]);
+
+      const group = machine.service.refs.get("groupContext");
+      expect(group.linear()).toBe(false);
+      expect(group.orientation()).toBe("horizontal");
+      expect(group.color()).toBe("primary");
+      expect(group.size()).toBe("md");
+      expect(group.variant()).toBe("subtle");
+      expect(group.disabled()).toBe(false);
 
       machine.stop();
     });
@@ -159,13 +161,13 @@ describe("Stepper Machine", () => {
       expect(api.steps[2]?.isDisabled).toBe(true);
 
       // Attempting to skip from 0 -> 2 is blocked by linear guard
-      api.goToStep(2);
+      api.setStep(2);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(0);
 
       // Advancing from 0 -> 1 is allowed
-      api.goToStep(1);
+      api.setStep(1);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(1);
@@ -173,13 +175,13 @@ describe("Stepper Machine", () => {
       expect(api.steps[2]?.isDisabled).toBe(false);
 
       // Advancing from 1 -> 2 is now allowed
-      api.goToStep(2);
+      api.setStep(2);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(2);
 
       // Returning to completed step 0 is always allowed
-      api.goToStep(0);
+      api.setStep(0);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(0);
@@ -195,11 +197,11 @@ describe("Stepper Machine", () => {
       machine.start();
 
       let api = connectStepper(machine.service);
-      expect(api.linear).toBe(true);
+      expect(machine.service.refs.get("groupContext").linear()).toBe(true);
       expect(api.steps[2]?.status).toBe("disabled");
 
       // While linear is true, jumping 0 -> 2 is blocked
-      api.goToStep(2);
+      api.setStep(2);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(0);
@@ -208,12 +210,12 @@ describe("Stepper Machine", () => {
       machine.updateProps({ linear: false });
       await flush();
       api = connectStepper(machine.service);
-      expect(api.linear).toBe(false);
+      expect(machine.service.refs.get("groupContext").linear()).toBe(false);
       expect(api.steps[2]?.status).toBe("upcoming");
       expect(api.steps[2]?.isDisabled).toBe(false);
 
       // Now jumping 0 -> 2 is permitted
-      api.goToStep(2);
+      api.setStep(2);
       await flush();
       api = connectStepper(machine.service);
       expect(api.step).toBe(2);
@@ -222,7 +224,7 @@ describe("Stepper Machine", () => {
       machine.updateProps({ linear: true });
       await flush();
       api = connectStepper(machine.service);
-      expect(api.linear).toBe(true);
+      expect(machine.service.refs.get("groupContext").linear()).toBe(true);
 
       machine.stop();
     });
@@ -288,7 +290,7 @@ describe("Stepper Machine", () => {
       expect(connectStepperItem(item0.service).status).toBe("current");
       expect(connectStepperItem(item1.service).status).toBe("upcoming");
       expect(connectStepperItem(item2.service).status).toBe("disabled");
-      expect(connectStepperItem(item2.service).resolvedIsLast).toBe(true);
+      expect(connectStepperItem(item2.service).isLast).toBe(true);
 
       // Tap item 2 (should be ignored because it's disabled in linear mode when step is 0)
       connectStepperItem(item2.service).handleTap();
@@ -338,7 +340,7 @@ describe("Stepper Machine", () => {
   });
 
   describe("Scroll Management & Auto-Slide Navigation", () => {
-    it("computes scrollTargetIndex, scrollIntoViewId, and scrollLeft on step navigation", async () => {
+    it("computes scrollTargetIndex and declarative scrollIntoViewId on step navigation", async () => {
       const machine = new MiniappMachine(stepperMachine, {
         id: "demo",
         items: [
@@ -355,11 +357,9 @@ describe("Stepper Machine", () => {
       expect(api.step).toBe(0);
       expect(api.scrollTargetIndex).toBe(0);
       expect(api.scrollIntoViewId).toBe("st-demo-i-0");
-      expect(api.scrollLeft).toBe(0);
       expect(api.listProps["enable-flex"]).toBe(true);
       expect(api.listProps["scroll-x"]).toBe(true);
       expect(api.listProps["scroll-into-view"]).toBe("st-demo-i-0");
-      expect(api.listProps["scroll-left"]).toBe(0);
 
       // Advance to step 1 -> scrollTargetIndex becomes 2 to reveal next upcoming step
       api.nextStep();
@@ -369,7 +369,6 @@ describe("Stepper Machine", () => {
       expect(api.step).toBe(1);
       expect(api.scrollTargetIndex).toBe(2);
       expect(api.scrollIntoViewId).toBe("st-demo-i-2");
-      expect(api.scrollLeft).toBeGreaterThan(0);
       expect(api.listProps["scroll-into-view"]).toBe("st-demo-i-2");
 
       // Advance to step 2 -> scrollTargetIndex becomes 3
@@ -386,6 +385,7 @@ describe("Stepper Machine", () => {
       await flush();
       api = connectStepper(machine.service);
       expect(api.scrollTargetIndex).toBe(1);
+      expect(api.scrollIntoViewId).toBe("st-demo-i-1");
 
       machine.stop();
     });
@@ -446,7 +446,6 @@ describe("Stepper Machine", () => {
       expect(connectStepper(parentMachine.service).steps[2]?.status).toBe("upcoming");
       expect(connectStepperItem(item2.service).status).toBe("upcoming");
       expect(connectStepper(parentMachine.service).scrollTargetIndex).toBe(2);
-      expect(connectStepper(parentMachine.service).scrollLeft).toBeGreaterThan(0);
 
       // 3. Navigate via external Reset button (updates value=0, step remains null)
       parentMachine.updateProps({ step: null, value: 0 });
@@ -457,7 +456,6 @@ describe("Stepper Machine", () => {
       expect(connectStepper(parentMachine.service).steps[0]?.status).toBe("current");
       expect(connectStepperItem(item2.service).status).toBe("upcoming");
       expect(connectStepper(parentMachine.service).scrollTargetIndex).toBe(0);
-      expect(connectStepper(parentMachine.service).scrollLeft).toBe(0);
 
       item2.stop();
       parentMachine.stop();
@@ -506,61 +504,6 @@ describe("Stepper Machine", () => {
 
       itemDone.stop();
       parentMachine.stop();
-    });
-
-    it("measures DOM elements via scope.dom and calculates scroll offset", async () => {
-      const childItem0 = {
-        createSelectorQuery: () => ({
-          select: () => ({
-            boundingClientRect: (cb: any) => {
-              cb({ left: 10, right: 110, width: 100 });
-              return { exec: () => {} };
-            },
-          }),
-        }),
-      };
-      const childItem1 = {
-        createSelectorQuery: () => ({
-          select: () => ({
-            boundingClientRect: (cb: any) => {
-              cb({ left: 120, right: 220, width: 100 });
-              return { exec: () => {} };
-            },
-          }),
-        }),
-      };
-
-      const mockComponent = {
-        createSelectorQuery: () => ({
-          select: () => ({
-            fields: (_: any, cb: any) => {
-              cb({ left: 0, width: 200, scrollLeft: 0 });
-              return { exec: () => {} };
-            },
-          }),
-        }),
-        getRelationNodes: () => [childItem0, childItem1],
-        setData: vi.fn(),
-        triggerEvent: vi.fn(),
-      };
-
-      const machine = new MiniappMachine(stepperMachine, {
-        component: mockComponent,
-        count: 2,
-        defaultStep: 0,
-      });
-      machine.start();
-
-      expect(machine.context.get("scrollLeft")).toBe(0);
-
-      // Navigate to step 1
-      machine.send({ type: "STEP.NEXT" });
-      await flush();
-      await flush();
-
-      // Based on: targetOffsetRight (220) - listWidth (200) + 16 = 36
-      expect(machine.context.get("scrollLeft")).toBe(36);
-      machine.stop();
     });
   });
 });

@@ -74,7 +74,9 @@ export function resolveColor(color: unknown): string {
       }
       targetColor = trimmedMatched.toLowerCase();
     }
-  } catch {}
+  } catch {
+    /* Ignore dynamic color lookup failures outside MiniProgram runtime. */
+  }
 
   return "#000000";
 }
@@ -94,7 +96,7 @@ function normalizeBorder(border: unknown): number {
   return Number.isFinite(num) && num >= 0 ? Math.floor(num) : 0;
 }
 
-export function normalizePixelSize(pixelSize: unknown): number {
+function normalizePixelSize(pixelSize: unknown): number {
   const num = Number(pixelSize);
   return Number.isFinite(num) && num > 0 ? num : 10;
 }
@@ -115,69 +117,61 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
 
   initialState: () => "idle",
 
-  context: ({ prop, bindable }) => {
-    const rawVal = prop("value");
-    const rawDefault = prop("defaultValue");
-    const initialValue =
-      rawVal !== undefined && rawVal !== null && rawVal !== ""
-        ? String(rawVal)
-        : rawDefault !== undefined && rawDefault !== null
-          ? String(rawDefault)
-          : "";
-
-    return {
-      value: bindable<string>(() => ({
-        value:
-          prop("value") !== undefined && prop("value") !== null
-            ? String(prop("value"))
-            : undefined,
-        defaultValue: initialValue,
+  context: ({ prop, bindable }) => ({
+    value: bindable<string>(() => {
+      const propVal = prop("value");
+      return {
+        value: propVal !== null ? String(propVal) : undefined,
+        defaultValue: prop("defaultValue"),
         onChange: (nextVal) => {
           prop("onChange")?.({ value: nextVal });
         },
-      })),
+      };
+    }),
 
-      ecc: bindable<QrCodeEcc>(() => ({
-        value:
-          prop("ecc") !== undefined ? normalizeEcc(prop("ecc")) : undefined,
-        defaultValue: normalizeEcc(defaultQrCodeProps.ecc),
-      })),
+    ecc: bindable<QrCodeEcc>(() => ({
+      value: normalizeEcc(prop("ecc")),
+      defaultValue: normalizeEcc(defaultQrCodeProps.ecc),
+    })),
 
-      border: bindable<number>(() => ({
-        value:
-          prop("border") !== undefined
-            ? normalizeBorder(prop("border"))
-            : undefined,
-        defaultValue: normalizeBorder(defaultQrCodeProps.border),
-      })),
+    border: bindable<number>(() => ({
+      value: normalizeBorder(prop("border")),
+      defaultValue: normalizeBorder(defaultQrCodeProps.border),
+    })),
 
-      encoding: bindable<QrCodeEncodingOptions>(() => ({
-        value: prop("encoding"),
-        defaultValue: defaultQrCodeProps.encoding ?? {},
-      })),
-    };
-  },
+    encoding: bindable<QrCodeEncodingOptions>(() => ({
+      value: prop("encoding"),
+      defaultValue: defaultQrCodeProps.encoding,
+    })),
+  }),
 
   computed: {
-    resolvedEncoding: ({ context }) => {
-      const enc = context.get("encoding") ?? {};
-      const ecc = normalizeEcc(enc.ecc ?? context.get("ecc"));
-      const border = normalizeBorder(enc.border ?? context.get("border"));
+    ecc: ({ context }) =>
+      normalizeEcc(context.get("encoding").ecc ?? context.get("ecc")),
 
-      return {
-        ...enc,
-        ecc,
-        border,
-      };
-    },
+    border: ({ context }) =>
+      normalizeBorder(context.get("encoding").border ?? context.get("border")),
+
+    resolvedEncoding: ({ context, computed }) => ({
+      ...context.get("encoding"),
+      ecc: computed("ecc"),
+      border: computed("border"),
+    }),
+
+    pixelSize: ({ prop }) => normalizePixelSize(prop("pixelSize")),
+
+    overlaySrc: ({ prop }) => String(prop("overlaySrc")),
+
+    showOverlay: ({ prop, computed }) =>
+      Boolean(prop("showOverlay") || computed("overlaySrc")),
 
     encoded: ({ context, computed }) => {
-      const value = String(context.get("value") ?? "");
+      const value = context.get("value");
       const resolvedEncoding = computed("resolvedEncoding");
 
       const options: QrCodeGenerateOptions = {
-        ecc: normalizeEcc(resolvedEncoding.ecc),
-        border: normalizeBorder(resolvedEncoding.border),
+        ecc: computed("ecc"),
+        border: computed("border"),
       };
       if (resolvedEncoding.maskPattern !== undefined) {
         options.maskPattern = resolvedEncoding.maskPattern;
@@ -202,15 +196,12 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       }
     },
 
-    viewBoxSize: ({ prop, computed }) => {
-      const encoded = computed("encoded");
-      const pixelSize = normalizePixelSize(prop("pixelSize"));
-      return encoded.size * pixelSize;
-    },
+    viewBoxSize: ({ computed }) =>
+      computed("encoded").size * computed("pixelSize"),
 
-    path: ({ prop, computed }) => {
+    path: ({ computed }) => {
       const encoded = computed("encoded");
-      const pixelSize = normalizePixelSize(prop("pixelSize"));
+      const pixelSize = computed("pixelSize");
       const { size, data } = encoded;
       const paths: string[] = [];
 
@@ -233,9 +224,20 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
       const viewBoxSize = computed("viewBoxSize");
       const path = computed("path");
       if (viewBoxSize <= 0) return "";
-      const color = resolveColor(prop("color") ?? "neutral");
+      const color = resolveColor(prop("color"));
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" width="${viewBoxSize}" height="${viewBoxSize}"><path fill="${color}" d="${path}"/></svg>`;
       return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    },
+
+    rootStyle: ({ computed }) => {
+      const pixelSize = computed("pixelSize");
+      const viewBoxSize = computed("viewBoxSize");
+      return `--qrcode-pixel-size: ${pixelSize}px; --qrcode-width: ${viewBoxSize}px; --qrcode-height: ${viewBoxSize}px;`;
+    },
+
+    ariaLabel: ({ context }) => {
+      const value = context.get("value");
+      return value ? `QR code for ${value}` : "QR code";
     },
   },
 
@@ -262,13 +264,12 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
     actions: {
       setValueContext: ({ context, event }) => {
         if ("value" in event) {
-          context.set("value", String(event.value ?? ""));
+          context.set("value", String(event.value));
         }
       },
       setEncodingContext: ({ context, event }) => {
         if ("encoding" in event && event.encoding) {
-          const prev = context.get("encoding") ?? {};
-          const next = { ...prev, ...event.encoding };
+          const next = { ...context.get("encoding"), ...event.encoding };
           context.set("encoding", next);
           if (event.encoding.ecc !== undefined) {
             context.set("ecc", normalizeEcc(event.encoding.ecc));

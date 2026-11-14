@@ -29,7 +29,7 @@
       data-orientation="{{progress.orientation}}"
     >
       <view
-        class="{{classes.range}} {{striped ? 'cui-progress-striped' : ''}} {{animated ? 'cui-progress-animated' : ''}} {{progress.isIndeterminate ? 'cui-progress-indeterminate' : ''}}"
+        class="{{classes.range}}"
         data-scope="progress"
         data-part="range"
         data-state="{{progress.progressState}}"

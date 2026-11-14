@@ -1,19 +1,29 @@
 var dom = require('../../../../utils/src/wxs/dom.wxs');
 
-var startX = 0;
-var startY = 0;
-var startOffset = 0;
-var currentOffset = 0;
-var isDragging = false;
-var direction = '';
-
-var _wrapperEl = null;
-
 var _throttledCallMove = dom.throttle(function(ownerInstance, data) {
   if (ownerInstance) {
     ownerInstance.callMethod('handleTouchMove', data);
   }
 }, 16);
+
+function getState(ownerInstance) {
+  if (ownerInstance && ownerInstance.getState) {
+    return ownerInstance.getState();
+  }
+  return {};
+}
+
+function getWrapperEl(ownerInstance, event, dataset) {
+  if (dataset && dataset.wrapperId && ownerInstance) {
+    var byId = dom.selectEl(ownerInstance, '#' + dataset.wrapperId);
+    if (byId) return byId;
+  }
+  if (event && event.instance) return event.instance;
+  if (ownerInstance) {
+    return dom.selectEl(ownerInstance, '.cui-swipe-cell__wrapper');
+  }
+  return null;
+}
 
 function onTouchStart(event, ownerInstance) {
   var touch = dom.getTouch(event);
@@ -24,25 +34,26 @@ function onTouchStart(event, ownerInstance) {
     return;
   }
 
-  startX = touch.clientX;
-  startY = touch.clientY;
-  startOffset =
+  var state = getState(ownerInstance);
+  state.startX = touch.clientX;
+  state.startY = touch.clientY;
+
+  var parsedOffset =
     dataset.offset !== undefined && dataset.offset !== null && dataset.offset !== ''
       ? Number(dataset.offset)
-      : (currentOffset || 0);
-  if (isNaN(startOffset)) startOffset = currentOffset || 0;
-  currentOffset = startOffset;
-  isDragging = false;
-  direction = '';
+      : NaN;
+  var fallbackOffset = typeof state.currentOffset === 'number' ? state.currentOffset : 0;
+  var startOffset = !isNaN(parsedOffset) ? parsedOffset : fallbackOffset;
+
+  state.startOffset = startOffset;
+  state.currentOffset = startOffset;
+  state.isDragging = false;
+  state.direction = '';
+  state.wrapperEl = getWrapperEl(ownerInstance, event, dataset);
 
   if (_throttledCallMove && _throttledCallMove.reset) {
     _throttledCallMove.reset();
   }
-
-  _wrapperEl =
-    event.instance ||
-    dom.selectEl(ownerInstance, '#' + dataset.wrapperId) ||
-    dom.selectEl(ownerInstance, '.cui-swipe-cell__wrapper');
 }
 
 function onTouchMove(event, ownerInstance) {
@@ -54,35 +65,47 @@ function onTouchMove(event, ownerInstance) {
     return;
   }
 
-  var deltaX = touch.clientX - startX;
-  var deltaY = touch.clientY - startY;
-
-  if (!direction) {
-    var absX = Math.abs(deltaX);
-    var absY = Math.abs(deltaY);
-    if (absX > absY && absX > 5) {
-      direction = 'horizontal';
-    } else if (absY > absX && absY > 5) {
-      direction = 'vertical';
-    }
-  }
-
-  if (direction === 'vertical') {
+  var state = getState(ownerInstance);
+  if (typeof state.startX !== 'number' || typeof state.startY !== 'number') {
     return;
   }
 
-  if (direction === 'horizontal') {
-    if (!isDragging) {
-      isDragging = true;
-      if (_wrapperEl) {
-        _wrapperEl.setStyle('transition: none; transform: translate3d(' + startOffset + 'px, 0, 0);');
-      }
-      ownerInstance.callMethod('handleTouchStart', {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        offset: startOffset
-      });
+  var deltaX = touch.clientX - state.startX;
+  var deltaY = touch.clientY - state.startY;
+
+  if (!state.direction) {
+    var absX = Math.abs(deltaX);
+    var absY = Math.abs(deltaY);
+    if (absX > absY && absX > 5) {
+      state.direction = 'horizontal';
+    } else if (absY > absX && absY > 5) {
+      state.direction = 'vertical';
     }
+  }
+
+  if (state.direction === 'vertical') {
+    return;
+  }
+
+  if (state.direction === 'horizontal') {
+    var wrapperEl = state.wrapperEl || getWrapperEl(ownerInstance, event, dataset);
+    state.wrapperEl = wrapperEl;
+    var startOffset = typeof state.startOffset === 'number' ? state.startOffset : 0;
+
+    if (!state.isDragging) {
+      state.isDragging = true;
+      if (wrapperEl) {
+        wrapperEl.setStyle('transition: none; transform: translate3d(' + startOffset + 'px, 0, 0);');
+      }
+      if (ownerInstance) {
+        ownerInstance.callMethod('handleTouchStart', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          offset: startOffset
+        });
+      }
+    }
+
     var leftWidth = dataset.leftWidth ? Number(dataset.leftWidth) : 0;
     var rightWidth = dataset.rightWidth ? Number(dataset.rightWidth) : 0;
     var newOffset = startOffset + deltaX;
@@ -101,10 +124,10 @@ function onTouchMove(event, ownerInstance) {
       }
     }
 
-    currentOffset = newOffset;
+    state.currentOffset = newOffset;
 
-    if (_wrapperEl) {
-      _wrapperEl.setStyle('transition: none; transform: translate3d(' + newOffset + 'px, 0, 0);');
+    if (wrapperEl) {
+      wrapperEl.setStyle('transition: none; transform: translate3d(' + newOffset + 'px, 0, 0);');
     }
 
     _throttledCallMove(ownerInstance, {
@@ -119,11 +142,11 @@ function onTouchMove(event, ownerInstance) {
 function onTouchEnd(event, ownerInstance) {
   var touch = dom.getChangedTouch(event);
   var dataset = dom.getDataset(event);
+  var state = getState(ownerInstance);
 
-  if (!isDragging || direction !== 'horizontal') {
-    _wrapperEl = null;
-    isDragging = false;
-    direction = '';
+  if (!state.isDragging || state.direction !== 'horizontal') {
+    state.isDragging = false;
+    state.direction = '';
     return;
   }
 
@@ -131,14 +154,15 @@ function onTouchEnd(event, ownerInstance) {
   var rightWidth = dataset.rightWidth ? Number(dataset.rightWidth) : 0;
   var threshold = dataset.threshold ? Number(dataset.threshold) : 30;
   var duration = dataset.duration ? Number(dataset.duration) : 300;
+  var startOffset = typeof state.startOffset === 'number' ? state.startOffset : 0;
 
-  var deltaX = touch ? (touch.clientX - startX) : (currentOffset - startOffset);
+  var deltaX = touch ? (touch.clientX - state.startX) : (state.currentOffset - startOffset);
 
   var target = 0;
   var opened = false;
   var side = null;
 
-  var curOffset = typeof currentOffset === 'number' ? currentOffset : (startOffset + deltaX);
+  var curOffset = typeof state.currentOffset === 'number' ? state.currentOffset : (startOffset + deltaX);
 
   if (startOffset === 0) {
     if (deltaX > threshold && leftWidth > 0) {
@@ -184,39 +208,45 @@ function onTouchEnd(event, ownerInstance) {
     }
   }
 
-  if (_wrapperEl) {
-    _wrapperEl.setStyle(
+  var wrapperEl = state.wrapperEl || getWrapperEl(ownerInstance, event, dataset);
+  state.wrapperEl = wrapperEl;
+  if (wrapperEl) {
+    wrapperEl.setStyle(
       'transition: transform ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1); transform: translate3d(' + target + 'px, 0, 0);'
     );
   }
 
-  _wrapperEl = null;
-  isDragging = false;
-  direction = '';
-  currentOffset = target;
+  state.isDragging = false;
+  state.direction = '';
+  state.currentOffset = target;
 
   if (_throttledCallMove && _throttledCallMove.reset) {
     _throttledCallMove.reset();
   }
 
-  ownerInstance.callMethod('handleTouchEnd', {
-    opened: opened,
-    side: side,
-    offset: target
-  });
+  if (ownerInstance) {
+    ownerInstance.callMethod('handleTouchEnd', {
+      opened: opened,
+      side: side,
+      offset: target
+    });
+  }
 }
 
 function onOffsetChange(newValue, oldValue, ownerInstance, instance) {
   if (newValue === oldValue) return;
-  if (isDragging) return;
+  var state = getState(ownerInstance);
+  if (state.isDragging) return;
 
   var targetEl =
     instance ||
-    _wrapperEl ||
+    state.wrapperEl ||
     (ownerInstance
       ? dom.selectEl(ownerInstance, '.cui-swipe-cell__wrapper')
       : null);
   if (!targetEl) return;
+
+  state.wrapperEl = targetEl;
 
   var offset = typeof newValue === 'number' ? newValue : 0;
   var dataset = targetEl.getDataset ? targetEl.getDataset() : {};
@@ -226,20 +256,23 @@ function onOffsetChange(newValue, oldValue, ownerInstance, instance) {
     if (offset !== 0) {
       targetEl.setStyle('transform: translate3d(' + offset + 'px, 0, 0);');
     }
-    currentOffset = offset;
+    state.currentOffset = offset;
+    return;
+  }
+
+  if (state.currentOffset === offset) {
     return;
   }
 
   targetEl.setStyle(
     'transition: transform ' + duration + 'ms cubic-bezier(0.16, 1, 0.3, 1); transform: translate3d(' + offset + 'px, 0, 0);'
   );
-  currentOffset = offset;
+  state.currentOffset = offset;
 }
 
 module.exports = {
   onTouchStart: onTouchStart,
   onTouchMove: onTouchMove,
   onTouchEnd: onTouchEnd,
-  onOffsetChange: onOffsetChange,
+  onOffsetChange: onOffsetChange
 };
-

@@ -1,27 +1,23 @@
+import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   RadioGroupApi,
   RadioGroupItem,
   RadioGroupItemRaw,
+  RadioGroupItemTapDetail,
   RadioGroupService,
 } from "./radio-group.types";
 import * as dom from "./radio-group.dom";
 
 export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
-  const { send, context, computed, prop, scope, refs } = service;
+  const { send, context, computed, prop, scope } = service;
 
   const currentValue = context.get("value");
-  const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const required = Boolean(prop("required"));
-
   const size = computed("effectiveSize");
-
-  const color = prop("color") ?? "primary";
-  const orientation = prop("orientation") ?? "vertical";
-  const variant = prop("variant") ?? "outline";
-  const legend = prop("legend") ?? "";
+  const defaultColor = prop("color");
+  const defaultVariant = prop("variant");
 
   const getItemProps = (item: {
     value: string;
@@ -71,10 +67,10 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     };
   };
 
-  const rawItems: (string | RadioGroupItemRaw)[] = prop("items") ?? [];
+  const rawItems: (string | RadioGroupItemRaw)[] = prop("items");
   const items: RadioGroupItem[] = rawItems.map((raw) => {
     const item = typeof raw === "string" ? { value: raw, label: raw } : raw;
-    const itemValue = String(item.value ?? "");
+    const itemValue = item.value;
     const itemChecked = currentValue === itemValue;
     const itemDisabled = Boolean(disabled || item.disabled);
     const result: RadioGroupItem = {
@@ -83,6 +79,8 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
       description: String(item.description ?? ""),
       disabled: itemDisabled,
       checked: itemChecked,
+      color: item.color ?? defaultColor,
+      variant: item.variant ?? defaultVariant,
       itemProps: getItemProps({ value: itemValue, disabled: itemDisabled }),
       controlProps: getItemControlProps({
         value: itemValue,
@@ -93,8 +91,6 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
         disabled: itemDisabled,
       }),
     };
-    if (item.color) result.color = item.color;
-    if (item.variant) result.variant = item.variant;
     if (item.ui) result.ui = item.ui;
     return result;
   });
@@ -107,26 +103,16 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     clear: () => {
       send({ type: "CLEAR" });
     },
-    isInteractive,
     disabled,
     readOnly,
-    required,
     invalid,
     size,
-    color,
-    orientation,
-    variant,
-    legend,
     items,
-    handleItemTap: (e?: any) => {
-      const val = e?.currentTarget?.dataset?.value ?? e?.detail?.value;
-      if (val !== undefined && val !== null) {
-        send({ type: "SET_VALUE", value: String(val) });
-      }
+    handleItemTap: (e: MiniAppEventLike<RadioGroupItemTapDetail>) => {
+      send({ type: "SET_VALUE", value: e.detail.value });
     },
     getItemProps,
     getItemControlProps,
     getItemIndicatorProps,
-    formField: refs?.get?.("formField"),
   };
 }

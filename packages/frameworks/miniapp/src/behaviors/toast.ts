@@ -1,4 +1,5 @@
 import { computed, effect, signal } from "alien-signals";
+import type { MiniAppEventLike } from "@code-ui/utils";
 
 export interface ToastAction {
   label: string;
@@ -507,6 +508,7 @@ export function addToast(
     progress: entry.progress ?? mode !== "native",
     progressPosition: entry.progressPosition ?? "bottom",
     variant: entry.variant ?? "outline",
+    closeIcon: entry.closeIcon ?? "close",
   };
 
   withToastHost(owner, (host) => {
@@ -547,6 +549,52 @@ export function updateToast(
 export function getToastManager(owner?: any): ToastManager | undefined {
   const host = findActiveToastHost(owner);
   return host?.manager;
+}
+
+export function createToastHostBehavior() {
+  return Behavior({
+    observers: {
+      maxToasts(this: any, value: number) {
+        if (!this.__cuiToastHostAttached) return;
+        updateToastHostConfig(this, { max: value });
+      },
+    },
+
+    lifetimes: {
+      attached(this: any) {
+        this.__cuiToastHostAttached = true;
+        registerToastHost(
+          this,
+          (toasts: ToastEntry[]) => {
+            this.setData({ toasts });
+          },
+          { max: this.data.maxToasts },
+        );
+        this.toastManager = getToastManager(this);
+      },
+
+      detached(this: any) {
+        this.__cuiToastHostAttached = false;
+        unregisterToastHost(this);
+      },
+    },
+
+    methods: {
+      removeToast(this: any, id: string) {
+        return removeToast(id, this);
+      },
+
+      handleToastDismiss(
+        this: any,
+        event: MiniAppEventLike<{ id?: string }, { id?: string }>,
+      ) {
+        const id = event.detail?.id ?? event.currentTarget?.dataset?.id;
+        if (id) {
+          removeToast(id, this);
+        }
+      },
+    },
+  });
 }
 
 export function __resetToastRegistry(): void {

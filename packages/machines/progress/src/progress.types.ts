@@ -76,6 +76,32 @@ export interface ProgressProps {
   onValueChange?: ((details: ProgressValueChangeDetails) => void) | undefined;
 }
 
+export type ProgressDefaultedKey =
+  | "value"
+  | "defaultValue"
+  | "min"
+  | "max"
+  | "orientation"
+  | "type"
+  | "size"
+  | "color"
+  | "trackColor"
+  | "striped"
+  | "animated"
+  | "animation"
+  | "inverted"
+  | "circleRadius"
+  | "strokeWidth"
+  | "ui"
+  | "indeterminate";
+
+export type ProgressResolvedProps = Omit<
+  ProgressProps,
+  ProgressDefaultedKey
+> & {
+  [K in ProgressDefaultedKey]-?: Exclude<ProgressProps[K], undefined>;
+};
+
 export type ProgressEvent =
   | { type: "SET_VALUE"; value: number | null }
   | { type: "VALUE.SET"; value: number | null }
@@ -87,8 +113,6 @@ export interface ProgressContext {
   value: number | null;
   min: number;
   max: number;
-  orientation: ProgressOrientation;
-  type: ProgressType;
 }
 
 export interface ProgressComputed {
@@ -97,6 +121,7 @@ export interface ProgressComputed {
   isComplete: boolean;
   progressState: ProgressStatus;
   valueAsString: string;
+  rangeStyle: string;
   circleStyle: string;
 }
 
@@ -106,7 +131,7 @@ export interface ProgressSchema extends MachineSchema {
   state: ProgressState;
   tag: "idle";
   event: ProgressEvent;
-  props: ProgressProps;
+  props: ProgressResolvedProps;
   context: ProgressContext;
   computed: ProgressComputed;
   refs: ProgressRefs;
@@ -142,7 +167,5 @@ export interface ProgressApi {
   labelProps: Record<string, any>;
   trackProps: Record<string, any>;
   rangeProps: Record<string, any>;
-  valueTextProps: Record<string, any>;
-  viewProps: Record<string, any>;
   circleProps: Record<string, any>;
 }

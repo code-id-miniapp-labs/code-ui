@@ -10,6 +10,7 @@ import {
   sliderMachine,
   connectSlider,
   defaultSliderProps,
+  type SliderPointerEvent,
 } from "@code-ui/slider";
 import themeConfig from "virtual:cui/theme/slider";
 import { tv } from "../../utils/variants";
@@ -47,7 +48,7 @@ Component(
         const isDragging = Boolean(api?.dragging);
         const orientation = api?.orientation ?? this.data.orientation;
         const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
+        const color = this.data.color;
         const ui = this.data.ui;
         const hasMarkers = Boolean(
           (api?.markers && api.markers.length > 0) || this.data.marks,
@@ -68,17 +69,17 @@ Component(
     },
 
     methods: {
-      handleTouchStart(e: any) {
-        return getApi(this, "slider")?.handleTouchStart?.(e);
+      handleTouchStart(e?: SliderPointerEvent) {
+        getApi(this, "slider")?.handleTouchStart(e);
       },
-      handleTouchMove(e: any) {
-        getApi(this, "slider")?.handleTouchMove?.(e);
+      handleTouchMove(e?: SliderPointerEvent) {
+        getApi(this, "slider")?.handleTouchMove(e);
       },
-      handleTouchEnd(e: any) {
-        getApi(this, "slider")?.handleTouchEnd?.(e);
+      handleTouchEnd(e?: SliderPointerEvent) {
+        getApi(this, "slider")?.handleTouchEnd(e);
       },
-      handleTap(e: any) {
-        return getApi(this, "slider")?.handleTap?.(e);
+      handleTap(e?: SliderPointerEvent) {
+        getApi(this, "slider")?.handleTap(e);
       },
     },
   }),

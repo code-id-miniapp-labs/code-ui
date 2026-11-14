@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import type {
   PinInputApi,
   PinInputCell,
@@ -5,7 +6,7 @@ import type {
   PinInputService,
 } from "./pin-input.types";
 import * as dom from "./pin-input.dom";
-import { isValidCharacter } from "./pin-input.machine";
+import { resolvePinInputCellReturnValue } from "./pin-input.machine";
 
 function shouldShowSeparator(
   index: number,
@@ -20,12 +21,12 @@ function shouldShowSeparator(
   return separator === true && index + 1 === Math.floor(length / 2);
 }
 
-function getEventIndex(event: any, fallback: number): number {
-  return Number(
-    event?.currentTarget?.dataset?.index ??
-      event?.target?.dataset?.index ??
-      fallback,
-  );
+function getEventIndex(
+  event: MiniAppBaseEventLike<{ index: number }> | undefined,
+  fallback: number,
+): number {
+  const raw = event?.currentTarget?.dataset?.index;
+  return raw !== undefined ? Number(raw) : fallback;
 }
 
 export function connectPinInput(service: PinInputService): PinInputApi {
@@ -33,22 +34,19 @@ export function connectPinInput(service: PinInputService): PinInputApi {
 
   const currentState = state.get();
   const isMachineFocused = currentState === "focused";
-  const value = context.get("value") ?? [];
-  const length = context.get("length") ?? 4;
+  const value = context.get("value");
+  const length = context.get("length");
   const focusedIndex = isMachineFocused ? context.get("focusedIndex") : -1;
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const variant = prop("variant") ?? "outline";
-  const color = prop("color") ?? "primary";
-  const highlight = Boolean(prop("highlight"));
-  const mask = Boolean(prop("mask"));
-  const type = prop("type") ?? "numeric";
-  const placeholder = prop("placeholder") ?? "";
-  const separator = prop("separator") ?? false;
-  const separatorChar = prop("separatorChar") ?? "-";
-  const name = prop("name") ?? "";
+  const mask = prop("mask");
+  const type = prop("type");
+  const placeholder = prop("placeholder");
+  const separator = prop("separator");
+  const separatorChar = prop("separatorChar");
+  const name = prop("name");
 
   const isValueComplete = computed("isValueComplete");
   const isEmptyVal = computed("isEmpty");
@@ -99,15 +97,11 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     separatorProps: getSeparatorProps(index),
   }));
 
-  const controlId = dom.getControlId(scope);
   const hiddenId = dom.getHiddenInputId(scope);
 
   return {
     state: currentState,
     value,
-    variant,
-    color,
-    highlight,
     valueAsString,
     isValueComplete,
     isEmpty: isEmptyVal,
@@ -135,39 +129,16 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({ type: "INPUT.FOCUS", index: index ?? 0, force: true });
     },
 
-    handleInput(event: any): string | void {
+    handleInput(
+      event: MiniAppEventLike<{ value: string }, { index: number }>,
+    ): string | void {
       const idx = getEventIndex(event, 0);
-      const val = event?.detail?.value ?? event?.target?.value ?? "";
+      const val = event.detail.value;
       send({ type: "INPUT.CHANGE", index: idx, value: val });
-
-      const cleanVal = (typeof val === "string" ? val : "").replace(
-        /\u200B/g,
-        "",
-      );
-      if (cleanVal === "") return "";
-
-      const currentVal = value[idx] ?? "";
-      if (cleanVal.length === 1) {
-        return isValidCharacter(cleanVal, type) ? cleanVal : currentVal;
-      }
-
-      if (
-        currentVal &&
-        cleanVal.includes(currentVal) &&
-        (cleanVal.length === 2 || idx === length - 1)
-      ) {
-        const newChar =
-          cleanVal.replace(currentVal, "").slice(-1) || cleanVal.slice(-1);
-        return isValidCharacter(newChar, type) ? newChar : currentVal;
-      }
-
-      return (
-        cleanVal.split("").find((c: string) => isValidCharacter(c, type)) ??
-        currentVal
-      );
+      return resolvePinInputCellReturnValue(value, idx, val, length, type);
     },
 
-    handleFocus(event: any) {
+    handleFocus(event?: MiniAppBaseEventLike<{ index: number }>) {
       send({
         type: "INPUT.FOCUS",
         index: getEventIndex(event, 0),
@@ -175,7 +146,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       });
     },
 
-    handleTap(event: any) {
+    handleTap(event?: MiniAppBaseEventLike<{ index: number }>) {
       send({
         type: "INPUT.FOCUS",
         index: getEventIndex(event, 0),
@@ -183,7 +154,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       });
     },
 
-    handleBlur(event?: any) {
+    handleBlur(event?: MiniAppBaseEventLike<{ index: number }>) {
       send({ type: "INPUT.BLUR", index: getEventIndex(event, -1) });
     },
 
@@ -202,12 +173,6 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       "aria-invalid": invalid,
     },
 
-    controlProps: {
-      ...(controlId ? { id: controlId } : {}),
-      "data-disabled": String(disabled),
-      "data-invalid": String(invalid),
-    },
-
     labelProps: {
       id: dom.getLabelId(scope),
     },
@@ -220,7 +185,5 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       disabled: disabled || readOnly,
       "aria-hidden": "true",
     },
-
-    getSeparatorProps,
   };
 }

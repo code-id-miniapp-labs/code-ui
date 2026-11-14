@@ -1,6 +1,6 @@
-import type { CheckboxProps } from "./checkbox.types";
+import type { CheckboxResolvedProps } from "./checkbox.types";
 
-export const defaultCheckboxProps: CheckboxProps = {
+export const defaultCheckboxProps: CheckboxResolvedProps = {
   checked: null,
   defaultChecked: false,
   indeterminate: null,
@@ -11,6 +11,7 @@ export const defaultCheckboxProps: CheckboxProps = {
   invalid: null,
   color: "primary" as const,
   size: "md" as const,
+  variant: "outline" as const,
   formContext: undefined,
   value: "",
   name: "",

@@ -1,6 +1,6 @@
-import type { DrawerProps } from "./drawer.types";
+import type { DrawerResolvedProps } from "./drawer.types";
 
-export const defaultDrawerProps: DrawerProps = {
+export const defaultDrawerProps: DrawerResolvedProps = {
   open: null,
   defaultOpen: false,
   placement: "bottom",

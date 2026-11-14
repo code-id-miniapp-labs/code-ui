@@ -69,7 +69,7 @@ export interface StepItemComputed {
   title: string;
   description: string;
   icon: string;
-  completedIcon?: string | undefined;
+  completedIcon: string;
   status: StepperStatus;
   isCurrent: boolean;
   isCompleted: boolean;
@@ -77,13 +77,8 @@ export interface StepItemComputed {
   isDisabled: boolean;
   isFirst: boolean;
   isLast: boolean;
-  ui?: Record<string, any> | undefined;
+  ui: Record<string, any>;
   itemProps: Record<string, any>;
-  triggerProps: Record<string, any>;
-  indicatorProps: Record<string, any>;
-  separatorProps: Record<string, any>;
-  titleProps: Record<string, any>;
-  descriptionProps: Record<string, any>;
 }
 
 export interface StepperProps {
@@ -131,21 +126,46 @@ export interface StepperProps {
   onUpdateModelValue?: ((value: number) => void) | undefined;
 }
 
+export type StepperDefaultedKey =
+  | "step"
+  | "value"
+  | "modelValue"
+  | "defaultStep"
+  | "count"
+  | "linkedCount"
+  | "linear"
+  | "orientation"
+  | "color"
+  | "size"
+  | "variant"
+  | "disabled"
+  | "hasContent"
+  | "items"
+  | "ui";
+
+export type StepperResolvedProps = Omit<StepperProps, StepperDefaultedKey> & {
+  [K in StepperDefaultedKey]-?: Exclude<StepperProps[K], undefined>;
+};
+
 export interface StepperContext {
   step: number;
   count: number;
   items: StepperItem[];
   focusedIndex: number | null;
-  scrollLeft: number;
   scrollTargetIndex: number | null;
 }
 
 export type StepperEvent =
-  | { type: "STEP.SET"; step: number; value?: string | number | undefined }
+  | {
+      type: "STEP.SET";
+      step: number | null | undefined;
+      value?: string | number | undefined;
+    }
   | { type: "STEP.NEXT" }
   | { type: "STEP.PREV" }
   | { type: "STEP.RESET" }
-  | { type: "STEP.SCROLL_TO"; index: number }
+  | { type: "STEP.COMPLETE" }
+  | { type: "STEP.SCROLL_TO"; index: number | null | undefined }
   | { type: "COUNT.SET"; count: number }
   | { type: "ITEMS.SET"; items: StepperItem[] }
   | { type: "FOCUS"; index?: number | undefined }
@@ -173,7 +193,7 @@ export interface StepperSchema extends MachineSchema {
   state: StepperState;
   tag: "idle" | "focused";
   event: StepperEvent;
-  props: StepperProps;
+  props: StepperResolvedProps;
   context: StepperContext;
   computed: StepperComputed;
   refs: StepperRefs;
@@ -207,32 +227,14 @@ export interface StepperApi {
   isLast: boolean;
   /** Whether all steps are completed */
   isCompleted: boolean;
-  /** Whether linear progression is enforced */
-  linear: boolean;
-  /** Current orientation */
-  orientation: StepperOrientation;
-  /** Current color */
-  color: StepperColor;
-  /** Current size */
-  size: StepperSize;
-  /** Current variant */
-  variant: StepperVariant;
-  /** Global disabled flag */
-  disabled: boolean;
-  /** Whether content panel is shown */
-  hasContent: boolean;
   /** Pre-computed step items for WXML wx:for */
   steps: StepItemComputed[];
   /** Target step index for auto-scrolling */
   scrollTargetIndex: number;
   /** Element ID to scroll into view */
   scrollIntoViewId: string;
-  /** Horizontal scroll position (in px) */
-  scrollLeft: number;
-  /** Navigate directly to step index */
+  /** Navigate directly to step index (enforces linear/disabled/bounds guards) */
   setStep: (index: number) => void;
-  /** Safe navigation respecting linear progression */
-  goToStep: (index: number) => void;
   /** Advance to next step */
   nextStep: () => void;
   /** Return to previous step */
@@ -241,16 +243,8 @@ export interface StepperApi {
   resetStep: () => void;
   /** Mark all steps as complete */
   completeStep: () => void;
-  /** Complete alias */
-  complete: () => void;
   /** Programmatically scroll to step index */
   scrollTo: (index: number) => void;
-  /** Programmatically scroll to step index (alias) */
-  scrollToStep: (index: number) => void;
-  /** Clear/reset alias for useChild compatibility */
-  clear: () => void;
-  /** Reset alias for useChild compatibility */
-  reset: () => void;
   /** Root element props */
   rootProps: Record<string, any>;
   /** List element props */
@@ -265,15 +259,4 @@ export interface StepperApi {
   getContentProps: (props?: {
     index?: number | undefined;
   }) => Record<string, any>;
-  /** Get props for step item */
-  /** Get props for step trigger */
-  getTriggerProps: (props: { index: number }) => Record<string, any>;
-  /** Get props for step indicator */
-  getIndicatorProps: (props: { index: number }) => Record<string, any>;
-  /** Get props for step separator */
-  getSeparatorProps: (props: { index: number }) => Record<string, any>;
-  /** Get props for step title */
-  getTitleProps: (props: { index: number }) => Record<string, any>;
-  /** Get props for step description */
-  getDescriptionProps: (props: { index: number }) => Record<string, any>;
 }

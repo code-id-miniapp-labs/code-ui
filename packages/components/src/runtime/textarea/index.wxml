@@ -4,12 +4,12 @@
     <c-icon wx:if="{{leadingIcon}}" name="{{leadingIcon}}" className="{{classes.leadingIcon}}" />
   </view>
   <textarea id="{{textarea.textareaProps.id}}" name="{{name}}" class="{{classes.base}}" data-scope="textarea" data-part="base" data-state="{{textarea.state}}" data-focused="{{textarea.textareaProps.focus}}" data-disabled="{{textarea.disabled}}" data-readonly="{{textarea.readOnly}}" data-invalid="{{textarea.invalid}}" value="{{textarea.value}}" focus="{{textarea.textareaProps.focus}}" disabled="{{textarea.textareaProps.disabled}}" placeholder="{{placeholder}}" placeholder-class="{{classes.placeholder}}{{placeholderClass ? ' ' + placeholderClass : ''}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" auto-height="{{autoHeight}}" fixed="{{fixed}}" cursor-spacing="{{cursorSpacing}}" cursor="{{cursor}}" show-confirm-bar="{{showConfirmBar}}" selection-start="{{selectionStart}}" selection-end="{{selectionEnd}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" disable-default-padding="{{disableDefaultPadding}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" aria-invalid="{{textarea.invalid}}" aria-multiline="true" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" bindlinechange="handleLineChange" bindkeyboardheightchange="handleKeyboardHeightChange" />
-  <view wx:if="{{trailing || trailingIcon || clearable || loading}}" class="{{classes.trailing}}" data-scope="textarea" data-part="trailing" aria-hidden="true">
+  <view wx:if="{{trailing || trailingIcon || textarea.isClearable || loading}}" class="{{classes.trailing}}" data-scope="textarea" data-part="trailing" aria-hidden="true">
     <view wx:if="{{loading}}" class="{{classes.trailingIcon}}">
-      <c-icon name="loading" class="w-full h-full animate-spin" />
+      <c-icon name="loading" className="w-full h-full animate-spin" />
     </view>
-    <view wx:elif="{{clearable && textarea.isClearable}}" class="{{classes.clear}}" data-scope="textarea" data-part="clear" aria-role="button" aria-label="Clear textarea" catchtap="handleClear">
-      <c-icon name="{{clearIcon || 'close'}}" className="size-3.5" />
+    <view wx:elif="{{textarea.isClearable}}" class="{{classes.clear}}" data-scope="textarea" data-part="clear" aria-role="button" aria-label="Clear textarea" catchtap="handleClear">
+      <c-icon name="{{clearIcon}}" className="size-3.5" />
     </view>
     <c-icon wx:elif="{{trailingIcon}}" name="{{trailingIcon}}" className="{{classes.trailingIcon}}" />
     <slot name="trailing" />

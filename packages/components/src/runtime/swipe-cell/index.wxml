@@ -21,16 +21,16 @@
     data-disabled="{{swipeCell.disabled}}"
     change:offset="{{gesture.onOffsetChange}}"
     offset="{{swipeCell.offset}}"
-    style="{{swipeCell.contentStyle}}"
-    bind:touchstart="{{gesture.onTouchStart}}"
-    catch:touchmove="{{gesture.onTouchMove}}"
-    bind:touchend="{{gesture.onTouchEnd}}"
-    bind:touchcancel="{{gesture.onTouchEnd}}"
+    bindtouchstart="{{gesture.onTouchStart}}"
+    bindtouchmove="{{gesture.onTouchMove}}"
+    bindtouchend="{{gesture.onTouchEnd}}"
+    bindtouchcancel="{{gesture.onTouchEnd}}"
   >
     <view
       class="{{classes.left}} cui-swipe-cell__left"
       data-scope="swipe-cell"
       data-part="left"
+      style="transform: translate3d(-100%, 0, 0);"
       wx:if="{{swipeCell.hasLeftActions}}"
     >
       <block wx:if="{{swipeCell.leftActions.length > 0}}">
@@ -68,6 +68,7 @@
       class="{{classes.right}} cui-swipe-cell__right"
       data-scope="swipe-cell"
       data-part="right"
+      style="transform: translate3d(100%, 0, 0);"
       wx:if="{{swipeCell.hasRightActions}}"
     >
       <block wx:if="{{swipeCell.rightActions.length > 0}}">

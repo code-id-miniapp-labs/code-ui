@@ -1,7 +1,8 @@
-import type { FormProps } from "./form.types";
+import type { FormResolvedProps } from "./form.types";
 
-export const defaultFormProps: FormProps = {
+export const defaultFormProps: FormResolvedProps = {
   name: "",
+  value: null,
   defaultValue: {},
   rules: {},
   validateOn: ["input", "change", "blur"],

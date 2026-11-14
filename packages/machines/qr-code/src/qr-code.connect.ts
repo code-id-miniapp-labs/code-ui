@@ -3,24 +3,20 @@ import type {
   QrCodeEncodingOptions,
   QrCodeService,
 } from "./qr-code.types";
-import { normalizePixelSize } from "./qr-code.machine";
 import * as dom from "./qr-code.dom";
 
 export function connectQrCode(service: QrCodeService): QrCodeApi {
-  const { state, send, context, computed, prop, scope } = service;
+  const { state, send, context, computed, scope } = service;
 
   const currentState = state.get();
   const value = context.get("value");
-  const size = prop("size") ?? "md";
-  const color = prop("color") ?? "neutral";
-  const pixelSize = normalizePixelSize(prop("pixelSize"));
-  const rawOverlaySrc = prop("overlaySrc");
-  const overlaySrc = rawOverlaySrc !== undefined ? String(rawOverlaySrc) : "";
-  const showOverlay = Boolean(prop("showOverlay") || overlaySrc);
+  const pixelSize = computed("pixelSize");
+  const overlaySrc = computed("overlaySrc");
+  const showOverlay = computed("showOverlay");
 
   const resolvedEncoding = computed("resolvedEncoding");
-  const ecc = resolvedEncoding.ecc ?? "M";
-  const border = resolvedEncoding.border ?? 0;
+  const ecc = computed("ecc");
+  const border = computed("border");
   const encoded = computed("encoded");
   const viewBoxSize = computed("viewBoxSize");
   const path = computed("path");
@@ -29,12 +25,10 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
   const rootProps: Record<string, any> = {
     id: dom.getRootId(scope),
     "data-state": currentState,
-    "data-size": size,
-    "data-color": color,
     "data-ecc": ecc,
     "aria-role": "img",
-    "aria-label": value ? `QR code for ${value}` : "QR code",
-    style: `--qrcode-pixel-size: ${pixelSize}px; --qrcode-width: ${viewBoxSize}px; --qrcode-height: ${viewBoxSize}px;`,
+    "aria-label": computed("ariaLabel"),
+    style: computed("rootStyle"),
   };
 
   const frameProps: Record<string, any> = {
@@ -69,8 +63,6 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
     ecc,
     border,
     encoding: resolvedEncoding,
-    size,
-    color,
     overlaySrc,
     showOverlay,
     dataUrl,

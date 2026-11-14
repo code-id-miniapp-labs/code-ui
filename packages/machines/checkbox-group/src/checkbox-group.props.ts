@@ -1,6 +1,6 @@
-import type { CheckboxGroupProps } from "./checkbox-group.types";
+import type { CheckboxGroupResolvedProps } from "./checkbox-group.types";
 
-export const defaultCheckboxGroupProps: CheckboxGroupProps = {
+export const defaultCheckboxGroupProps: CheckboxGroupResolvedProps = {
   formContext: undefined,
   value: null,
   defaultValue: [],

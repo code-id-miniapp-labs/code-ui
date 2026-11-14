@@ -1,6 +1,6 @@
-import type { SwipeCellProps } from "./swipe-cell.types";
+import type { SwipeCellResolvedProps } from "./swipe-cell.types";
 
-export const defaultSwipeCellProps: SwipeCellProps = {
+export const defaultSwipeCellProps: SwipeCellResolvedProps = {
   variant: "plain",
   size: "md",
   disabled: false,

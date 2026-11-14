@@ -36,23 +36,7 @@ describe("SwipeCell Machine", () => {
       expect(api.offset).toBe(0);
       expect(api.duration).toBe(300);
       expect(api.threshold).toBe(30);
-      expect(api.variant).toBe("plain");
-      expect(api.size).toBe("md");
       expect(api.contentStyle).toBe("");
-
-      machine.stop();
-    });
-
-    it("respects custom variant and size props", () => {
-      const machine = new MiniappMachine(swipeCellMachine, {
-        variant: "separated",
-        size: "sm",
-      });
-      machine.start();
-
-      const api = connectSwipeCell(machine.service);
-      expect(api.variant).toBe("separated");
-      expect(api.size).toBe("sm");
 
       machine.stop();
     });
@@ -573,6 +557,78 @@ describe("SwipeCell Machine", () => {
       // measure
       api.measure();
       await flush();
+
+      machine.stop();
+    });
+
+    it("measures left/right action widths on READY and drives controlled openLeft/openRight/close", async () => {
+      let measured = false;
+      const createSelectorQuery = vi.fn(() => {
+        let targetSelector = "";
+        const chain = {
+          in: () => chain,
+          select: (sel: string) => {
+            targetSelector = sel;
+            return chain;
+          },
+          boundingClientRect: (cb: (rect: { width: number } | null) => void) => {
+            if (!measured) {
+              cb(null);
+            } else if (targetSelector === ".cui-swipe-cell__left") {
+              cb({ width: 72 });
+            } else if (targetSelector === ".cui-swipe-cell__right") {
+              cb({ width: 120 });
+            } else {
+              cb(null);
+            }
+            return chain;
+          },
+          exec: () => {},
+        };
+        return chain;
+      });
+
+      const machine = new MiniappMachine(swipeCellMachine, {
+        component: { createSelectorQuery } as any,
+        opened: false,
+        left: [{ text: "Pin" }],
+        right: [{ text: "Archive" }, { text: "Delete" }],
+      });
+      machine.start();
+      await flush();
+
+      // Initial attached query ran before DOM layout
+      expect(machine.context.get("leftWidth")).toBe(0);
+      expect(machine.context.get("rightWidth")).toBe(0);
+      expect(Object.is(machine.computed("offset"), 0)).toBe(true);
+
+      // Layout becomes ready
+      measured = true;
+      machine.send({ type: "READY" });
+      await flush();
+      await Promise.resolve();
+
+      expect(machine.context.get("leftWidth")).toBe(72);
+      expect(machine.context.get("rightWidth")).toBe(120);
+
+      // Controlled openLeft -> openRight -> close
+      machine.updateProps({ opened: "left" });
+      await flush();
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("openedSide")).toBe("left");
+      expect(machine.computed("offset")).toBe(72);
+
+      machine.updateProps({ opened: "right" });
+      await flush();
+      expect(machine.state.get()).toBe("open");
+      expect(machine.computed("openedSide")).toBe("right");
+      expect(machine.computed("offset")).toBe(-120);
+
+      machine.updateProps({ opened: false });
+      await flush();
+      expect(machine.state.get()).toBe("closed");
+      expect(machine.computed("openedSide")).toBeNull();
+      expect(Object.is(machine.computed("offset"), 0)).toBe(true);
 
       machine.stop();
     });

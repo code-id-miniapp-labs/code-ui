@@ -10,7 +10,11 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type {
+  MiniAppBaseEventLike,
+  MiniAppComponent,
+  MiniAppEventLike,
+} from "@code-ui/utils";
 import type { anatomy } from "./pin-input.anatomy";
 
 export type PinInputType = "numeric" | "alphanumeric" | "alphabetic";
@@ -163,11 +167,37 @@ export interface PinInputRefs {
   formField?: BoundFormField | undefined;
 }
 
+type PinInputDefaultedKey =
+  | "value"
+  | "invalid"
+  | "length"
+  | "type"
+  | "variant"
+  | "color"
+  | "size"
+  | "highlight"
+  | "name"
+  | "mask"
+  | "placeholder"
+  | "disabled"
+  | "readOnly"
+  | "otp"
+  | "autoFocus"
+  | "blurOnComplete"
+  | "selectOnFocus"
+  | "separator"
+  | "separatorChar"
+  | "ui";
+
+export type PinInputResolvedProps = Omit<PinInputProps, PinInputDefaultedKey> & {
+  [K in PinInputDefaultedKey]-?: Exclude<PinInputProps[K], undefined>;
+};
+
 export interface PinInputSchema extends MachineSchema {
   state: PinInputState;
   tag: "focused" | "disabled" | "complete" | "idle";
   event: PinInputEvent;
-  props: PinInputProps;
+  props: PinInputResolvedProps;
   context: PinInputContext;
   computed: PinInputComputed;
   refs: PinInputRefs;
@@ -195,12 +225,6 @@ export interface PinInputApi {
   state: PinInputState;
   /** Current array of character values */
   value: string[];
-  /** Visual variant */
-  variant: PinInputVariant;
-  /** Semantic color */
-  color: PinInputColor;
-  /** Whether the input is highlighted */
-  highlight: boolean;
   /** Combined value as string */
   valueAsString: string;
   /** Whether all inputs are filled */
@@ -230,23 +254,21 @@ export interface PinInputApi {
   /** Focus specific input cell */
   focus(index?: number): void;
   /** MiniProgram bindinput handler */
-  handleInput(e: any): string | void;
+  handleInput(
+    e: MiniAppEventLike<{ value: string }, { index: number }>,
+  ): string | void;
   /** MiniProgram bindfocus handler */
-  handleFocus(e: any): void;
+  handleFocus(e?: MiniAppBaseEventLike<{ index: number }>): void;
   /** MiniProgram bindblur handler */
-  handleBlur(e?: any): void;
+  handleBlur(e?: MiniAppBaseEventLike<{ index: number }>): void;
   /** MiniProgram bindtap handler */
-  handleTap?(e: any): void;
+  handleTap?(e?: MiniAppBaseEventLike<{ index: number }>): void;
   /** Get props for indexed input element */
   getInputProps(index: number): Record<string, any>;
   /** Get props for root container */
   rootProps: Record<string, any>;
-  /** Get props for control container */
-  controlProps: Record<string, any>;
   /** Get props for label */
   labelProps: Record<string, any>;
   /** Get props for hidden form input */
   hiddenInputProps: Record<string, any>;
-  /** Get props for separator after index */
-  getSeparatorProps(index: number): Record<string, any>;
 }

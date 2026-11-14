@@ -40,13 +40,13 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
         initialValue: initial,
         formField: undefined,
         groupContext: {
-          value: () => context.get("value") ?? [],
+          value: () => context.get("value"),
           disabled: () => computed("isDisabled"),
           readOnly: () => computed("isReadOnly"),
           invalid: () => computed("isInvalid"),
-          color: () => prop("color") || "primary",
+          color: () => prop("color"),
           size: () => computed("effectiveSize"),
-          variant: () => prop("variant") || "outline",
+          variant: () => prop("variant"),
           setValue: (value) => send({ type: "SET_VALUE", value }),
           toggleValue: (value, checked) =>
             send({ type: "TOGGLE_VALUE", value, checked }),
@@ -121,7 +121,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
         actions: ["setValue"],
       },
       TOGGLE_VALUE: {
-        guard: "isInteractive",
+        guard: "canToggleValue",
         actions: ["toggleValue"],
       },
       SELECT_ALL: {
@@ -150,6 +150,11 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
     implementations: {
       guards: {
         isInteractive: ({ computed }) => computed("isInteractive"),
+        canToggleValue: ({ computed, event }) =>
+          computed("isInteractive") &&
+          event.type === "TOGGLE_VALUE" &&
+          typeof event.value === "string" &&
+          event.value !== "",
       },
 
       actions: {
@@ -159,17 +164,15 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           }
         },
         toggleValue: ({ context, prop, event }) => {
-          if (!("value" in event)) return;
-          const current = context.get("value") ?? [];
-          const target = String(event.value);
+          if (event.type !== "TOGGLE_VALUE") return;
+          const current = context.get("value");
+          const target = event.value;
           const isSelected = current.includes(target);
           const min = toBound(prop("min"));
           const max = toBound(prop("max"));
 
           const targetChecked =
-            "checked" in event && typeof event.checked === "boolean"
-              ? event.checked
-              : !isSelected;
+            event.checked !== undefined ? event.checked : !isSelected;
 
           if (targetChecked === isSelected) return;
 
@@ -185,8 +188,7 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           }
         },
         selectAll: ({ context, prop }) => {
-          const rawItems = prop("items") ?? [];
-          const allValues = rawItems.map((raw) =>
+          const allValues = prop("items").map((raw) =>
             typeof raw === "string" ? raw : String(raw.value ?? ""),
           );
           const max = toBound(prop("max"));
@@ -217,8 +219,8 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
               component: prop("component"),
               getHost: () => prop("formContext"),
               id: scope.id ?? "checkbox-group",
-              getFormId: () => prop("form") || "",
-              getName: () => prop("name") || "",
+              getFormId: () => prop("form"),
+              getName: () => prop("name"),
               getValue: () => context.get("value"),
               setValue: (rawVal: unknown) => {
                 context.set("value", Array.isArray(rawVal) ? rawVal : []);

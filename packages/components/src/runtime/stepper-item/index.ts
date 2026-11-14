@@ -42,27 +42,20 @@ Component(
     computed: {
       classes() {
         const api = this.data.cStepperItem;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? (this.data.size || "md");
-        const color = api?.color ?? (this.data.color || "primary");
-        const orientation =
-          api?.orientation ?? (this.data.orientation || "horizontal");
-        const ui = this.data.ui;
-
         const themeFns = stepperItemTheme({
-          color,
-          size,
-          orientation,
-          disabled,
+          color: api ? api.color : this.data.color || "primary",
+          size: api ? api.size : this.data.size || "md",
+          orientation: api ? api.orientation : this.data.orientation || "horizontal",
+          disabled: api ? api.isDisabled : this.data.disabled,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 
     methods: {
-      handleTap(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "cStepperItem")?.handleTap?.(e);
+      handleTap() {
+        getApi(this, "cStepperItem")?.handleTap();
       },
     },
   }),

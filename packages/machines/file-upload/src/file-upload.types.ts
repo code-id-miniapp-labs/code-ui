@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./file-upload.anatomy";
 
 export type FileUploadState = "idle" | "choosing" | "uploading";
@@ -181,6 +181,7 @@ export interface FileUploadProps {
 export interface FileUploadContext {
   files: FileUploadFile[];
   invalid: boolean;
+  failedThumbs: string[];
 }
 
 export interface FileUploadComputed {
@@ -202,38 +203,101 @@ export interface FileUploadComputed {
 export interface FileUploadRefs {
   initialFiles: FileUploadFile[];
   formField?: BoundFormField | undefined;
+  chooseDone?: (() => void) | undefined;
 }
 
 export type FileUploadAction =
   | "setValue"
   | "addFiles"
+  | "ingestPickedFiles"
   | "removeFile"
   | "clearFiles"
+  | "previewFile"
+  | "clickFile"
+  | "markImageError"
   | "setUploading"
+  | "setChooseCallback"
+  | "flushChooseCallback"
+  | "resolveChooseFromEvent"
   | "setupFormField"
-  | "cleanupFormField";
+  | "cleanupFormField"
+  | "cleanupAudio";
 
 export type FileUploadGuard = "isInteractive" | "canChoose" | "canAddFiles";
+export type FileUploadEffect = "pickWeChatFiles";
 
 export type FileUploadEvent =
-  | { type: "CHOOSE" }
+  | { type: "CHOOSE"; onDone?: (() => void) | undefined }
   | { type: "CHOOSE_COMPLETE" }
   | { type: "SET_VALUE"; value: FileUploadFile[] }
   | { type: "ADD_FILES"; files: FileUploadFile[] }
-  | { type: "REMOVE_FILE"; index: number }
+  | { type: "PICKED_RAW"; files: unknown[] }
+  | {
+      type: "REMOVE_FILE";
+      index?: number | undefined;
+      idOrIndex?: string | number | undefined;
+    }
+  | { type: "PREVIEW_FILE"; idOrIndex: string | number }
+  | { type: "FILE_CLICK"; index: number }
+  | { type: "IMAGE_ERROR"; index: number }
   | { type: "CLEAR_FILES" }
   | { type: "SET_UPLOADING"; uploading: boolean };
+
+type FileUploadDefaultedKey =
+  | "value"
+  | "defaultValue"
+  | "name"
+  | "form"
+  | "invalid"
+  | "disabled"
+  | "readOnly"
+  | "multiple"
+  | "maxFiles"
+  | "maxSize"
+  | "minSize"
+  | "accept"
+  | "mode"
+  | "sourceType"
+  | "mediaType"
+  | "sizeType"
+  | "camera"
+  | "maxDuration"
+  | "interactive"
+  | "dropzone"
+  | "layout"
+  | "title"
+  | "description"
+  | "icon"
+  | "loadingIcon"
+  | "deleteIcon"
+  | "fileIcon"
+  | "imageIcon"
+  | "videoIcon"
+  | "audioIcon"
+  | "color"
+  | "size"
+  | "variant"
+  | "uploading"
+  | "progress"
+  | "ui";
+
+export type FileUploadResolvedProps = Omit<
+  FileUploadProps,
+  FileUploadDefaultedKey
+> & {
+  [K in FileUploadDefaultedKey]-?: Exclude<FileUploadProps[K], undefined>;
+};
 
 export interface FileUploadSchema extends MachineSchema {
   state: FileUploadState;
   tag: "idle" | "busy";
-  props: FileUploadProps;
+  props: FileUploadResolvedProps;
   context: FileUploadContext;
   computed: FileUploadComputed;
   refs: FileUploadRefs;
   action: FileUploadAction;
   guard: FileUploadGuard;
-  effect: string;
+  effect: FileUploadEffect;
   event: FileUploadEvent;
 }
 
@@ -247,6 +311,7 @@ export interface FileUploadItemView extends FileUploadFile {
   index: number;
   formattedSize: string;
   fileType: FileUploadItemType;
+  thumbFailed: boolean;
   itemProps: Record<string, any>;
   removeProps: Record<string, any>;
   previewProps: Record<string, any>;
@@ -259,7 +324,7 @@ export interface FileUploadApi {
   hasFiles: boolean;
   isMaxFiles: boolean;
   isUploading: boolean;
-  progress: number | null | undefined;
+  progress: number | null;
   disabled: boolean;
   readOnly: boolean;
   invalid: boolean;
@@ -268,13 +333,14 @@ export interface FileUploadApi {
   dropzoneProps: Record<string, any>;
   fileListProps: Record<string, any>;
   chooseFiles: () => Promise<void>;
-  handleDropzoneTap: (event: any) => Promise<void>;
-  addFiles: (files: any[]) => void;
+  handleDropzoneTap: (event?: MiniAppBaseEventLike) => Promise<void>;
+  addFiles: (files: unknown[]) => void;
   removeFile: (idOrIndex: string | number) => void;
-  handleRemove: (event: any) => void;
+  handleRemove: (event: MiniAppBaseEventLike<{ index: number }>) => void;
   previewFile: (idOrIndex: string | number) => void;
-  handlePreview: (event: any) => void;
-  handleFileClick: (event: any) => void;
+  handlePreview: (event: MiniAppBaseEventLike<{ index: number }>) => void;
+  handleFileClick: (event: MiniAppBaseEventLike<{ index: number }>) => void;
+  handleImageError: (event: MiniAppBaseEventLike<{ index: number }>) => void;
   clearFiles: () => void;
   setFiles: (files: FileUploadFile[]) => void;
 }

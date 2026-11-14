@@ -1,4 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import {
   createMachineBehavior,
   createProperties,
@@ -115,13 +116,9 @@ Component(
         getApi(this, "banner")?.dismiss();
       },
 
-      handleActionTap(this: any, event: any) {
-        const raw =
-          event?.currentTarget?.dataset?.index ?? event?.target?.dataset?.index;
-        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
-        if (!Number.isNaN(index)) {
-          getApi(this, "banner")?.handleAction(index);
-        }
+      handleActionTap(this: any, event: MiniAppBaseEventLike<{ index: number }>) {
+        const index = Number(event.currentTarget?.dataset?.index);
+        getApi(this, "banner")?.handleAction(index);
       },
 
       handleMoreTap(this: any) {

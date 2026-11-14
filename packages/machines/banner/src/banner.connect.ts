@@ -1,6 +1,5 @@
 import type { NormalizeProps, PropTypes } from "@code-ui/core";
 import type {
-  BannerAction,
   BannerApi,
   BannerBadgeProps,
   BannerService,
@@ -18,7 +17,7 @@ export function connectBanner<T extends PropTypes = PropTypes>(
   const isDismissing = computed("isDismissing");
   const currentState = state.get();
 
-  const rawActions = (prop("actions") as BannerAction[] | undefined) ?? [];
+  const rawActions = prop("actions");
   const actions = rawActions.map((action, index) => ({
     label: action.label,
     index,
@@ -32,8 +31,8 @@ export function connectBanner<T extends PropTypes = PropTypes>(
     ui: action.ui,
   }));
 
-  const rawBadge = prop("badge") as string | BannerBadgeProps | undefined;
-  const rawBadgeProps = prop("badgeProps") as BannerBadgeProps | undefined;
+  const rawBadge = prop("badge");
+  const rawBadgeProps = prop("badgeProps");
   const bannerColor = prop("color") as string | undefined;
   const bannerVariant = prop("variant") as string | undefined;
   const bannerSize = prop("size") as string | undefined;
@@ -69,7 +68,7 @@ export function connectBanner<T extends PropTypes = PropTypes>(
     ) {
       badge = {
         label,
-        color: merged.color ?? (bannerColor || "primary"),
+        color: merged.color ?? bannerColor,
         variant:
           merged.variant ??
           (bannerVariant === "solid" ? "outline" : "solid"),
@@ -101,11 +100,7 @@ export function connectBanner<T extends PropTypes = PropTypes>(
     },
 
     handleAction(index: number) {
-      const currentRawActions =
-        (prop("actions") as BannerAction[] | undefined) ?? rawActions;
-      const action = currentRawActions[index];
-      if (!action) return;
-      send({ type: "TRIGGER_ACTION", action, index });
+      send({ type: "TRIGGER_ACTION", index });
     },
 
     handleMore() {

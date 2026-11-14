@@ -130,31 +130,28 @@ export interface ActionSheetProps {
 }
 
 export interface ActionSheetResolvedProps extends ActionSheetProps {
-  duration: number;
+  open: boolean | null;
+  defaultOpen: boolean;
+  title: string;
+  description: string;
   items: ActionSheetItem[];
   actions: ActionSheetAction[];
-  closeIcon: string;
   close: boolean;
+  closeIcon: string;
   closeOnItem: boolean;
   closeOnBackdropClick: boolean;
+  duration: number;
+  ui: ActionSheetUI;
 }
 
 export type ActionSheetEvent =
   | { type: "OPEN" }
   | { type: "CLOSE" }
   | { type: "TOGGLE" }
-  | { type: "CONTROLLED.OPEN" }
-  | { type: "CONTROLLED.CLOSE" }
   | { type: "BACKDROP.TAP" }
   | { type: "CLOSE_TRIGGER.TAP" }
   | { type: "SELECT"; index: number }
-  | {
-      type: "ACTION";
-      action: ActionSheetAction;
-      index: number;
-      handled?: boolean | undefined;
-    }
-  | { type: "ACTION_LOADING"; index: number }
+  | { type: "ACTION"; index: number }
   | { type: "ACTION_SETTLED"; index: number }
   | { type: "ANIMATION_END" };
 
@@ -172,13 +169,13 @@ export type ActionSheetMachineAction =
   | "invokeOnClose"
   | "invokeOnSelect"
   | "invokeOnAction"
-  | "setActionLoadingContext"
   | "clearActionLoadingContext";
 
 export type ActionSheetGuard =
   | "closeOnBackdropClick"
   | "canSelectItem"
   | "shouldCloseOnItem"
+  | "canHandleAction"
   | "shouldCloseOnAction";
 
 export type ActionSheetEffect = "waitForCloseAnimation";
@@ -206,16 +203,10 @@ export interface ActionSheetApi {
   visible: boolean;
   /** Current machine state ('open' | 'closed' | 'closing') */
   state: ActionSheetState;
-  /** Close animation duration in ms */
-  duration: number;
   /** Pre-computed items list safe for WXML wx:for */
   items: ActionSheetItem[];
   /** Pre-computed footer actions list safe for WXML wx:for */
   actions: ActionSheetAction[];
-  /** Configured close icon name */
-  closeIcon: string;
-  /** Whether close button is enabled */
-  showClose: boolean;
   /** Open or close the action sheet */
   setOpen(open: boolean): void;
   /** Open the action sheet */
@@ -233,12 +224,8 @@ export interface ActionSheetApi {
   backdropProps: Record<string, any>;
   /** WXML data & attributes for Content sheet */
   contentProps: Record<string, any>;
-  /** Header slot props */
-  headerProps: Record<string, any>;
   /** Close trigger props */
   closeTriggerProps: Record<string, any>;
-  /** Body slot props */
-  bodyProps: Record<string, any>;
   /** Footer actions props */
   actionsProps: Record<string, any>;
 }

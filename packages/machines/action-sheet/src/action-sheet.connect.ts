@@ -4,7 +4,6 @@ import type {
   ActionSheetItem,
   ActionSheetService,
 } from "./action-sheet.types";
-import { isPromise } from "@code-ui/utils";
 import * as dom from "./action-sheet.dom";
 
 export function connectActionSheet(
@@ -15,11 +14,8 @@ export function connectActionSheet(
   const open = computed("isOpen");
   const visible = computed("isVisible");
   const currentState = state.get();
-  const duration = prop("duration");
-  const rawItems = (prop("items") as ActionSheetItem[] | undefined) ?? [];
-  const rawActions = (prop("actions") as ActionSheetAction[] | undefined) ?? [];
-  const closeIcon = prop("closeIcon");
-  const showClose = Boolean(prop("close"));
+  const rawItems = prop("items");
+  const rawActions = prop("actions");
   const loadingActionIndex = context.get("loadingActionIndex");
 
   const items: ActionSheetItem[] = rawItems.map((item, index) => ({
@@ -32,9 +28,9 @@ export function connectActionSheet(
     destructive: Boolean(item.destructive),
     disabled: Boolean(item.disabled),
     loading: Boolean(item.loading),
-    openType: item.openType,
-    className: item.className,
-    style: item.style,
+    openType: item.openType ?? "",
+    className: item.className ?? "",
+    style: item.style ?? "",
   }));
 
   const actions: ActionSheetAction[] = rawActions.map((action, index) => ({
@@ -49,8 +45,8 @@ export function connectActionSheet(
     size: action.size || "xl",
     closeOnClick: action.closeOnClick !== false,
     disabled: Boolean(action.disabled),
-    openType: action.openType,
-    className: action.className,
+    openType: action.openType ?? "",
+    className: action.className ?? "",
     ui: action.ui,
   }));
 
@@ -58,14 +54,10 @@ export function connectActionSheet(
     open,
     visible,
     state: currentState,
-    duration,
     items,
     actions,
-    closeIcon,
-    showClose,
 
     setOpen(nextOpen: boolean) {
-      if (computed("isOpen") === nextOpen) return;
       send({ type: nextOpen ? "OPEN" : "CLOSE" });
     },
 
@@ -82,18 +74,7 @@ export function connectActionSheet(
     },
 
     handleAction(index: number) {
-      const action = actions[index];
-      if (!action || action.disabled || action.loading) return;
-      const result =
-        action.onClick?.() ?? prop("onAction")?.({ action, index });
-      send({ type: "ACTION", action, index, handled: true });
-      if (isPromise(result) && action.loadingAuto !== false) {
-        send({ type: "ACTION_LOADING", index });
-        Promise.resolve(result).finally(() => {
-          send({ type: "ACTION_SETTLED", index });
-        });
-      }
-      return result;
+      send({ type: "ACTION", index });
     },
 
     rootProps: {
@@ -118,18 +99,10 @@ export function connectActionSheet(
       hidden: !visible,
     },
 
-    headerProps: {
-      id: dom.getHeaderId(scope),
-    },
-
     closeTriggerProps: {
       id: dom.getCloseTriggerId(scope),
       "aria-role": "button",
       "aria-label": "Close",
-    },
-
-    bodyProps: {
-      id: dom.getBodyId(scope),
     },
 
     actionsProps: {

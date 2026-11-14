@@ -1,7 +1,25 @@
 import { createMachine } from "@code-ui/core";
-import type { TabsGroupContext } from "@code-ui/tabs";
+import type { PropFn } from "@code-ui/core";
 import { defaultTabsItemProps } from "./tabs-item.props";
 import type { TabsItemMachine, TabsItemSchema } from "./tabs-item.types";
+
+function resolveTabsItemValue(prop: PropFn<TabsItemSchema>): string | number {
+  const v = prop("value");
+  if (v !== "") return v;
+  const idx = prop("groupIndex") ?? prop("index");
+  return idx !== null ? idx : "";
+}
+
+function resolveTabsItemSelected(prop: PropFn<TabsItemSchema>): boolean {
+  const direct = prop("selected");
+  if (direct !== null) {
+    return Boolean(direct);
+  }
+  const group = prop("groupContext");
+  if (!group) return false;
+  const selfVal = resolveTabsItemValue(prop);
+  return selfVal !== "" && selfVal === group.value();
+}
 
 export const tabsItemMachine: TabsItemMachine = createMachine<TabsItemSchema>({
   props: ({ props }) => ({
@@ -9,76 +27,59 @@ export const tabsItemMachine: TabsItemMachine = createMachine<TabsItemSchema>({
     ...props,
   }),
 
-  initialState: () => "idle",
+  initialState: ({ prop }) =>
+    resolveTabsItemSelected(prop) ? "active" : "inactive",
 
   computed: {
-    resolvedValue: ({ prop }) => {
-      const v = prop("value");
-      if (v !== undefined && v !== null && v !== "") return v;
-      const idx = prop("groupIndex") ?? prop("index");
-      return idx !== undefined ? idx : "";
-    },
-    isSelected: ({ computed, prop }) => {
-      const direct = prop("selected");
-      if (direct !== undefined && direct !== null) {
-        return Boolean(direct);
-      }
-      const group = prop("groupContext");
-      if (!group) return false;
-      const selfVal = computed("resolvedValue");
-      return selfVal !== "" && selfVal === group.value();
-    },
+    resolvedValue: ({ prop }) => resolveTabsItemValue(prop),
+    isSelected: ({ prop }) => resolveTabsItemSelected(prop),
     isDisabled: ({ prop }) => {
       const group = prop("groupContext");
       return Boolean(prop("disabled") || group?.disabled());
     },
-    color: ({ prop }) => {
-      const group = prop("groupContext");
-      return group?.color() ?? prop("color") ?? "primary";
-    },
-    fitted: ({ prop }) => {
-      const group = prop("groupContext");
-
-      return Boolean(group?.fitted() ?? prop("groupIndex") ?? false);
-    },
-    orientation: ({ prop }) => {
-      const group = prop("groupContext");
-
-      return group?.orientation() ?? prop("orientation") ?? "horizontal";
-    },
-    index: ({ prop }) => {
-      return prop("index") ?? prop("groupIndex") ?? 0;
-    },
-    size: ({ prop }) => {
-      const group = prop("groupContext");
-
-      return group?.size() ?? prop("size") ?? "md";
-    },
-    variant: ({ prop }) => {
-      const group = prop("groupContext");
-
-      return group?.variant() ?? prop("variant") ?? "pill";
-    },
+    color: ({ prop }) => prop("groupContext")?.color() ?? prop("color"),
+    fitted: ({ prop }) => prop("groupContext")?.fitted() ?? prop("fitted"),
+    orientation: ({ prop }) =>
+      prop("groupContext")?.orientation() ?? prop("orientation"),
+    index: ({ prop }) => prop("index") ?? prop("groupIndex") ?? 0,
+    size: ({ prop }) => prop("groupContext")?.size() ?? prop("size"),
+    variant: ({ prop }) => prop("groupContext")?.variant() ?? prop("variant"),
   },
 
-  on: {
-    SELECT: {
-      actions: ["selectTab"],
-    },
+  watch({ track, computed, state }) {
+    track([() => computed("isSelected")], () => {
+      state.set(computed("isSelected") ? "active" : "inactive");
+    });
   },
 
   states: {
-    idle: {
-      tags: ["idle"],
+    active: {
+      tags: ["active"],
+    },
+    inactive: {
+      tags: ["inactive"],
+      on: {
+        SELECT: {
+          guard: "isInteractive",
+          actions: ["selectTab"],
+        },
+      },
     },
   },
 
   implementations: {
+    guards: {
+      isInteractive: ({ computed }) => !computed("isDisabled"),
+    },
     actions: {
       selectTab: ({ computed, prop }) => {
-        if (computed("isDisabled")) return;
-        const group = prop("groupContext") as TabsGroupContext | undefined;
-        group?.select(computed("resolvedValue"));
+        const value = computed("resolvedValue");
+        const group = prop("groupContext");
+        if (group) {
+          group.select(value);
+          return;
+        }
+        prop("onSelect")?.({ value });
       },
     },
   },

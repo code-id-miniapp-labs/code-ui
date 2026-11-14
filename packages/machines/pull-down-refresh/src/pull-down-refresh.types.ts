@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
 import type { anatomy } from "./pull-down-refresh.anatomy";
 
 export type PullDownRefreshState =
@@ -123,9 +123,7 @@ export type PullDownRefreshEvent =
   | { type: "REFRESH" }
   | { type: "CLOSE" }
   | { type: "TIMEOUT" }
-  | { type: "SUCCESS_TIMEOUT" }
-  | { type: "CONTROLLED.REFRESH" }
-  | { type: "CONTROLLED.CLOSE" };
+  | { type: "SUCCESS_TIMEOUT" };
 
 export interface PullDownRefreshContext {
   offset: number;
@@ -175,11 +173,40 @@ export interface PullDownRefreshRefs {
   refreshTask: Promise<unknown> | undefined;
 }
 
+type PullDownRefreshDefaultedKey =
+  | "disabled"
+  | "value"
+  | "defaultValue"
+  | "threshold"
+  | "maxPullDistance"
+  | "refreshTimeout"
+  | "successDuration"
+  | "loadingTexts"
+  | "duration"
+  | "showScrollbar"
+  | "enableBackToTop"
+  | "scrollIntoView"
+  | "upperThreshold"
+  | "lowerThreshold"
+  | "scrollWithAnimation"
+  | "loadingIcon"
+  | "ui";
+
+export type PullDownRefreshResolvedProps = Omit<
+  PullDownRefreshProps,
+  PullDownRefreshDefaultedKey
+> & {
+  [K in PullDownRefreshDefaultedKey]-?: Exclude<
+    PullDownRefreshProps[K],
+    undefined
+  >;
+};
+
 export interface PullDownRefreshSchema extends MachineSchema {
   state: PullDownRefreshState;
   tag: PullDownRefreshTag;
   event: PullDownRefreshEvent;
-  props: PullDownRefreshProps;
+  props: PullDownRefreshResolvedProps;
   context: PullDownRefreshContext;
   computed: PullDownRefreshComputed;
   action: PullDownRefreshAction;
@@ -232,7 +259,9 @@ export interface PullDownRefreshApi {
   /** Finish refreshing and show the success message before collapsing */
   close(): void;
   /** Handle scroll events from the scroll-view */
-  handleScroll(event: any): void;
+  handleScroll(
+    event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
+  ): void;
   /** Handle the scroll-view reaching the top */
   handleScrollToUpper(): void;
   /** Handle the scroll-view reaching the bottom */
@@ -245,16 +274,8 @@ export interface PullDownRefreshApi {
   handleTouchEnd(data?: { offset?: number }): void;
   /** Props for the scroll-view root */
   rootProps: Record<string, any>;
-  /** Props for the optional header area */
-  headerProps: Record<string, any>;
   /** Props for the displaced track */
   trackProps: Record<string, any>;
   /** Props for the tips area */
   tipsProps: Record<string, any>;
-  /** Props for the loading indicator */
-  indicatorProps: Record<string, any>;
-  /** Props for the tips text */
-  textProps: Record<string, any>;
-  /** Props for the content area */
-  contentProps: Record<string, any>;
 }

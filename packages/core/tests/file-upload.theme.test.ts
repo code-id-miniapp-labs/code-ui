@@ -13,6 +13,7 @@ describe("fileUploadTheme (@code-ui/core)", () => {
     expect(theme.slots).toHaveProperty("fileList");
     expect(theme.slots).toHaveProperty("file");
     expect(theme.slots).toHaveProperty("fileLeading");
+    expect(theme.slots).toHaveProperty("fileImage");
     expect(theme.slots).toHaveProperty("fileContent");
     expect(theme.slots).toHaveProperty("fileName");
     expect(theme.slots).toHaveProperty("fileSize");

@@ -1,4 +1,5 @@
 import { createMachine } from "@code-ui/core";
+import type { BindableRefs, PropFn } from "@code-ui/core";
 import {
   cleanupFormFieldSync,
   createFormFieldComputed,
@@ -13,12 +14,26 @@ import type {
 } from "./switch.types";
 import { defaultSwitchProps } from "./switch.props";
 
-const resolveInitialChecked = (prop: any): boolean => {
+function resolveInitialChecked(prop: PropFn<SwitchSchema>): boolean {
   const rawChecked = prop("checked");
   return isNotNull(rawChecked)
     ? Boolean(rawChecked)
     : Boolean(prop("defaultChecked"));
-};
+}
+
+function emitSwitchChange(
+  prop: PropFn<SwitchSchema>,
+  refs: BindableRefs<SwitchSchema>,
+  nextVal: boolean,
+): void {
+  prop("onChange")?.({ checked: nextVal });
+
+  const formField = refs.get("formField");
+  if (formField) {
+    formField.emitInput(nextVal);
+    formField.emitChange(nextVal);
+  }
+}
 
 export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
   props: ({ props }) => ({
@@ -65,18 +80,20 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
     effectiveSize: ({ prop, computed }) => {
       const rawSize = prop("size");
       const fieldSize = computed("fieldSize");
-      return rawSize && rawSize !== "md"
+      return rawSize !== "md"
         ? rawSize
-        : ((fieldSize || rawSize || "md") as SwitchSize);
+        : ((fieldSize || rawSize) as SwitchSize);
     },
   },
 
-  watch: ({ prop, state }) => {
-    const controlledChecked = prop("checked");
-    if (isNotNull(controlledChecked)) {
-      const targetState = controlledChecked ? "checked" : "unchecked";
-      if (!state.matches(targetState)) state.set(targetState);
-    }
+  watch: ({ prop, state, track }) => {
+    track([() => prop("checked")], () => {
+      const controlledChecked = prop("checked");
+      if (isNotNull(controlledChecked)) {
+        const targetState = controlledChecked ? "checked" : "unchecked";
+        if (!state.matches(targetState)) state.set(targetState);
+      }
+    });
   },
 
   entry: ["setupFormField"],
@@ -109,22 +126,34 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
     unchecked: {
       tags: ["unchecked"],
       on: {
-        TOGGLE: {
-          guard: "isInteractive",
-          target: "checked",
-          actions: ["emitSwitchChange"],
-        },
+        TOGGLE: [
+          {
+            guard: "isControlled",
+            actions: ["emitControlledToggle"],
+          },
+          {
+            guard: "isInteractive",
+            target: "checked",
+            actions: ["emitSwitchChange"],
+          },
+        ],
       },
     },
 
     checked: {
       tags: ["checked"],
       on: {
-        TOGGLE: {
-          guard: "isInteractive",
-          target: "unchecked",
-          actions: ["emitSwitchChange"],
-        },
+        TOGGLE: [
+          {
+            guard: "isControlled",
+            actions: ["emitControlledToggle"],
+          },
+          {
+            guard: "isInteractive",
+            target: "unchecked",
+            actions: ["emitSwitchChange"],
+          },
+        ],
       },
     },
   },
@@ -132,6 +161,8 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
   implementations: {
     guards: {
       isInteractive: ({ computed }) => computed("isInteractive"),
+      isControlled: ({ prop, computed }) =>
+        computed("isInteractive") && isNotNull(prop("checked")),
       isEventChecked: ({ event }) =>
         "checked" in event && Boolean(event.checked),
       isInitialChecked: ({ refs }) => Boolean(refs.get("initialChecked")),
@@ -139,14 +170,10 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
 
     actions: {
       emitSwitchChange: ({ prop, refs, state }) => {
-        const nextVal = state.matches("checked");
-        prop("onChange")?.({ checked: nextVal });
-
-        const formField = refs.get("formField");
-        if (formField) {
-          formField.emitInput(nextVal);
-          formField.emitChange(nextVal);
-        }
+        emitSwitchChange(prop, refs, state.matches("checked"));
+      },
+      emitControlledToggle: ({ prop, refs, state }) => {
+        emitSwitchChange(prop, refs, !state.matches("checked"));
       },
       resetInvalid: ({ context }) => {
         context.set("invalid", false);
@@ -157,8 +184,8 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "switch",
-            getFormId: () => prop("form") || "",
-            getName: () => prop("name") || "",
+            getFormId: () => prop("form"),
+            getName: () => prop("name"),
             getValue: () => computed("isChecked"),
             setValue: (rawVal: unknown) => {
               state.set(rawVal ? "checked" : "unchecked");

@@ -1,7 +1,6 @@
-import type { InputProps } from "./input.types";
+import type { InputResolvedProps } from "./input.types";
 
-export const defaultInputProps: InputProps = {
-  formContext: undefined,
+export const defaultInputProps: InputResolvedProps = {
   value: null,
   invalid: null,
   type: "text",

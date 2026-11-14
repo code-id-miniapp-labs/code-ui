@@ -1,6 +1,6 @@
-import type { StepperItemProps } from "./stepper-item.types";
+import type { StepperItemResolvedProps } from "./stepper-item.types";
 
-export const defaultStepperItemProps: StepperItemProps = {
+export const defaultStepperItemProps: StepperItemResolvedProps = {
   stepperId: "",
   index: null,
   isLast: null,

@@ -39,10 +39,9 @@ describe("CheckboxGroup Machine", () => {
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
       expect(api.size).toBe("md");
-      expect(api.color).toBe("primary");
-      expect(api.orientation).toBe("vertical");
-      expect(api.variant).toBe("outline");
       expect(api.items).toHaveLength(3);
+      expect(api.items[0]?.color).toBe("primary");
+      expect(api.items[0]?.variant).toBe("outline");
       expect(api.items[0]?.checked).toBe(false);
       expect(api.items[0]?.controlProps["aria-checked"]).toBe(false);
 
@@ -101,22 +100,13 @@ describe("CheckboxGroup Machine", () => {
       machine.start();
 
       const api = connectCheckboxGroup(machine.service);
-      api.handleItemTap({ currentTarget: { dataset: { value: "cherry" } } });
+      api.handleItemTap({ detail: { value: "cherry" } });
       await flush();
 
       expect(connectCheckboxGroup(machine.service).value).toEqual(["cherry"]);
 
-      // Also support custom event from child c-checkbox (e.detail.value)
+      // Also support explicit checked flag from child c-checkbox (e.detail.checked)
       api.handleItemTap({ detail: { value: "banana", checked: true } });
-      await flush();
-
-      expect(connectCheckboxGroup(machine.service).value).toEqual([
-        "cherry",
-        "banana",
-      ]);
-
-      // Ignore boolean e.detail.value (should not add "true")
-      api.handleItemTap({ detail: { value: true, checked: true } });
       await flush();
 
       expect(connectCheckboxGroup(machine.service).value).toEqual([
@@ -296,7 +286,7 @@ describe("CheckboxGroup Machine", () => {
       disabledMachine.start();
 
       const disabledApi = connectCheckboxGroup(disabledMachine.service);
-      expect(disabledApi.isInteractive).toBe(false);
+      expect(disabledApi.disabled).toBe(true);
       disabledApi.toggleValue("banana");
       await flush();
       expect(connectCheckboxGroup(disabledMachine.service).value).toEqual([
@@ -312,7 +302,7 @@ describe("CheckboxGroup Machine", () => {
       readOnlyMachine.start();
 
       const readOnlyApi = connectCheckboxGroup(readOnlyMachine.service);
-      expect(readOnlyApi.isInteractive).toBe(false);
+      expect(readOnlyApi.readOnly).toBe(true);
       readOnlyApi.toggleValue("banana");
       await flush();
       expect(connectCheckboxGroup(readOnlyMachine.service).value).toEqual([

@@ -1,6 +1,6 @@
-import type { RadioProps } from "./radio.types";
+import type { RadioResolvedProps } from "./radio.types";
 
-export const defaultRadioProps: RadioProps = {
+export const defaultRadioProps: RadioResolvedProps = {
   value: "",
   label: "",
   description: "",
@@ -9,8 +9,8 @@ export const defaultRadioProps: RadioProps = {
   disabled: false,
   readOnly: false,
   invalid: null,
-  color: "",
-  size: undefined,
+  color: "primary" as const,
+  size: "md" as const,
   variant: "outline" as const,
   customIndicator: false,
   ui: {},

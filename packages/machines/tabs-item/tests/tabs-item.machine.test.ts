@@ -33,16 +33,17 @@ describe("TabsItem Machine", () => {
   it("initializes with default props", () => {
     const machine = new MiniappMachine(tabsItemMachine, {
       value: "account",
-      label: "Account",
+      groupIndex: 2,
     });
     machine.start();
 
+    expect(machine.state.get()).toBe("inactive");
     const api = connectTabsItem(machine.service);
+    expect(api.state).toBe("inactive");
     expect(api.value).toBe("account");
-    expect(api.label).toBe("Account");
     expect(api.isSelected).toBe(false);
     expect(api.isDisabled).toBe(false);
-    expect(api.lazy).toBe(true);
+    expect(api.fitted).toBe(false);
 
     machine.stop();
   });
@@ -54,6 +55,7 @@ describe("TabsItem Machine", () => {
     });
     machine.start();
 
+    expect(machine.state.get()).toBe("active");
     const api = connectTabsItem(machine.service);
     expect(api.isSelected).toBe(true);
 
@@ -163,16 +165,33 @@ describe("TabsItem Machine", () => {
     machine.stop();
   });
 
-  it("exposes icon and trailingIcon", () => {
-    const m = new MiniappMachine(tabsItemMachine, {
-      value: "account",
-      icon: "i-lucide-user",
-      trailingIcon: "i-lucide-chevron-right",
+  it("dispatches only groupContext.select when linked, or onSelect when unlinked", async () => {
+    const onSelect = vi.fn();
+    const unlinked = new MiniappMachine(tabsItemMachine, {
+      value: "profile",
+      onSelect,
     });
-    m.start();
-    const api = connectTabsItem(m.service);
-    expect(api.icon).toBe("i-lucide-user");
-    expect(api.trailingIcon).toBe("i-lucide-chevron-right");
-    m.stop();
+    unlinked.start();
+
+    connectTabsItem(unlinked.service).select();
+    await flush();
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith({ value: "profile" });
+    unlinked.stop();
+
+    onSelect.mockClear();
+    const groupSelect = vi.fn();
+    const linked = new MiniappMachine(tabsItemMachine, {
+      value: "profile",
+      onSelect,
+      groupContext: makeGroupContext({ select: groupSelect }),
+    });
+    linked.start();
+
+    connectTabsItem(linked.service).select();
+    await flush();
+    expect(groupSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
+    linked.stop();
   });
 });

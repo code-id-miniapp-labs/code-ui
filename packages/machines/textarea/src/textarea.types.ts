@@ -10,7 +10,11 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type {
+  MiniAppBaseEventLike,
+  MiniAppComponent,
+  MiniAppEventLike,
+} from "@code-ui/utils";
 import type { anatomy } from "./textarea.anatomy";
 
 export type TextareaState = "idle" | "focused";
@@ -156,7 +160,10 @@ export type TextareaEvent =
   | { type: "TEXTAREA.FOCUS" }
   | { type: "TEXTAREA.BLUR" }
   | { type: "TEXTAREA.CONFIRM"; value?: string | undefined }
-  | { type: "TEXTAREA.LINE_CHANGE"; details: TextareaLineChangeDetails }
+  | {
+      type: "TEXTAREA.LINE_CHANGE";
+      detail: Partial<TextareaLineChangeDetails>;
+    }
   | { type: "TEXTAREA.CLEAR" }
   | { type: "SET_VALUE"; value: string | number }
   | { type: "CLEAR_VALUE" }
@@ -189,11 +196,56 @@ export interface TextareaRefs {
   formField?: BoundFormField | undefined;
 }
 
+type TextareaDefaultedKey =
+  | "value"
+  | "invalid"
+  | "variant"
+  | "color"
+  | "size"
+  | "highlight"
+  | "defaultValue"
+  | "name"
+  | "placeholder"
+  | "placeholderClass"
+  | "placeholderStyle"
+  | "disabled"
+  | "readOnly"
+  | "clearable"
+  | "clearIcon"
+  | "loading"
+  | "leading"
+  | "trailing"
+  | "leadingIcon"
+  | "trailingIcon"
+  | "autoFocus"
+  | "autoHeight"
+  | "fixed"
+  | "maxlength"
+  | "showConfirmBar"
+  | "cursorSpacing"
+  | "confirmType"
+  | "confirmHold"
+  | "cursor"
+  | "selectionStart"
+  | "selectionEnd"
+  | "adjustPosition"
+  | "holdKeyboard"
+  | "disableDefaultPadding"
+  | "count"
+  | "ui";
+
+export type TextareaResolvedProps = Omit<
+  TextareaProps,
+  TextareaDefaultedKey
+> & {
+  [K in TextareaDefaultedKey]-?: Exclude<TextareaProps[K], undefined>;
+};
+
 export interface TextareaSchema extends MachineSchema {
   state: TextareaState;
   tag: "focused" | "disabled" | "idle";
   event: TextareaEvent;
-  props: TextareaProps;
+  props: TextareaResolvedProps;
   context: TextareaContext;
   computed: TextareaComputed;
   refs: TextareaRefs;
@@ -211,12 +263,6 @@ export interface TextareaApi {
   state: TextareaState;
   /** Current string value */
   value: string;
-  /** Visual variant */
-  variant: TextareaVariant;
-  /** Semantic color */
-  color: TextareaColor;
-  /** Whether the textarea is highlighted */
-  highlight: boolean;
   /** Whether textarea value is empty */
   isEmpty: boolean;
   /** Whether textarea has a non-empty value */
@@ -233,8 +279,6 @@ export interface TextareaApi {
   readOnly: boolean;
   /** Effective size variant */
   size: TextareaSize;
-  /** Whether auto-height dynamic sizing is enabled */
-  autoHeight: boolean;
   /** Set value programmatically */
   setValue(value: string | number): void;
   /** Clear value */
@@ -246,31 +290,25 @@ export interface TextareaApi {
   /** Blur textarea */
   blur(): void;
   /** MiniProgram bindinput handler */
-  handleInput(e: any): string | void;
+  handleInput(
+    e: MiniAppEventLike<{ value: string; cursor?: number }>,
+  ): string | void;
   /** MiniProgram bindfocus handler */
-  handleFocus(e: any): void;
+  handleFocus(e?: MiniAppBaseEventLike): void;
   /** MiniProgram bindblur handler */
-  handleBlur(e?: any): void;
+  handleBlur(e?: MiniAppBaseEventLike): void;
   /** MiniProgram bindconfirm handler */
-  handleConfirm(e?: any): void;
+  handleConfirm(e?: MiniAppEventLike<{ value?: string }>): void;
   /** MiniProgram bindlinechange handler */
-  handleLineChange(e?: any): void;
+  handleLineChange(e: MiniAppEventLike<Partial<TextareaLineChangeDetails>>): void;
   /** Tap handler for clear button */
-  handleClear(e?: any): void;
+  handleClear(e?: MiniAppBaseEventLike): void;
   /** Get props for root container */
   rootProps: Record<string, any>;
   /** Get props for textarea element */
   textareaProps: Record<string, any>;
   /** Alias for textareaProps for polymorphic form compatibility */
   inputProps: Record<string, any>;
-  /** Get props for leading container */
-  leadingProps: Record<string, any>;
-  /** Get props for trailing container */
-  trailingProps: Record<string, any>;
-  /** Get props for clear button */
-  clearButtonProps: Record<string, any>;
-  /** Get props for character counter */
-  countProps: Record<string, any>;
   /** Get props for hidden form input */
   hiddenInputProps: Record<string, any>;
 }

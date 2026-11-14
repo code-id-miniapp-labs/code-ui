@@ -1,7 +1,6 @@
-import type { PinInputProps } from "./pin-input.types";
+import type { PinInputResolvedProps } from "./pin-input.types";
 
-export const defaultPinInputProps: PinInputProps = {
-  formContext: undefined,
+export const defaultPinInputProps: PinInputResolvedProps = {
   value: null,
   invalid: null,
   length: 4,

@@ -7,6 +7,7 @@ import {
 } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
+  TextareaLineChangeDetails,
   TextareaMachine,
   TextareaSchema,
   TextareaSize,
@@ -68,7 +69,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       ),
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
-    characterCount: ({ context }) => (context.get("value") ?? "").length,
+    characterCount: ({ context }) => context.get("value").length,
     isDisabled: ({ prop, computed }) =>
       Boolean(
         prop("disabled") ||
@@ -86,9 +87,9 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
     effectiveSize: ({ prop, computed }) => {
       const rawSize = prop("size");
       const fieldSize = computed("fieldSize");
-      return rawSize && rawSize !== "md"
+      return rawSize !== "md"
         ? rawSize
-        : ((fieldSize || rawSize || "md") as TextareaSize);
+        : ((fieldSize || rawSize) as TextareaSize);
     },
   },
 
@@ -158,7 +159,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
             getHost: () => prop("formContext"),
             id: scope.id ?? "textarea",
             getFormId: () => prop("form") || "",
-            getName: () => prop("name") || "",
+            getName: () => prop("name"),
             getValue: () => context.get("value"),
             setValue: (rawVal: unknown) => {
               context.set("value", toStringValue(rawVal) ?? "");
@@ -204,12 +205,33 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
         prop("onConfirm")?.({ value: context.get("value") });
       },
 
-      handleLineChange: ({ prop, event }) => {
-        prop("onLineChange")?.((event as any).details);
+      handleLineChange: ({ context, prop, event }) => {
+        if (event.type !== "TEXTAREA.LINE_CHANGE") return;
+        const raw = event.detail;
+        const height = typeof raw.height === "number" ? raw.height : 0;
+        const lineHeight =
+          typeof raw.lineHeight === "number" ? raw.lineHeight : 0;
+        const val = context.get("value");
+        let lineCount = typeof raw.lineCount === "number" ? raw.lineCount : 1;
+        if (!val || val.length === 0) {
+          lineCount = 1;
+        } else if (lineHeight > 0 && height > 0) {
+          lineCount = Math.max(1, Math.round(height / lineHeight));
+        }
+
+        const details: TextareaLineChangeDetails = {
+          ...raw,
+          height,
+          lineHeight,
+          lineCount,
+        };
+        prop("onLineChange")?.(details);
       },
 
       setValue: ({ context, event }) => {
-        context.set("value", toStringValue((event as any).value) ?? "");
+        if (event.type !== "TEXTAREA.CHANGE" && event.type !== "SET_VALUE")
+          return;
+        context.set("value", toStringValue(event.value) ?? "");
       },
 
       clearValue: ({ context, prop }) => {

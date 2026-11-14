@@ -11,6 +11,7 @@ export const anatomy = /* @__PURE__ */ (() =>
     "fileList",
     "file",
     "fileLeading",
+    "fileImage",
     "fileContent",
     "fileName",
     "fileSize",

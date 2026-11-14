@@ -1,4 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import {
   createMachineBehavior,
   createProperties,
@@ -88,7 +89,7 @@ Component(
       },
 
       progressStyle() {
-        const duration = Number(this.data.duration || 4000);
+        const duration = Number(this.data.duration);
         if (duration <= 0) return "display: none;";
         const isPaused = Boolean(this.data.toast?.paused);
         const playState = isPaused ? "paused" : "running";
@@ -107,7 +108,7 @@ Component(
             return customColor;
           }
         }
-        const rawColor = this.data.color || "neutral";
+        const rawColor = this.data.color;
         return rawColor === "error" ? "danger" : rawColor;
       },
 
@@ -120,8 +121,8 @@ Component(
       },
 
       rootStyle() {
-        const index = Number(this.data.index || 0);
-        const offset = Number(this.data.offset || 0);
+        const index = Number(this.data.index);
+        const offset = Number(this.data.offset);
         const placement = this.data.placement;
 
         if (placement === "center") {
@@ -145,8 +146,11 @@ Component(
         getApi(this, "toast")?.dismiss();
       },
 
-      handleActionTap(this: any, event: any) {
-        const index = Number(event.currentTarget.dataset.index);
+      handleActionTap(
+        this: any,
+        event: MiniAppBaseEventLike<{ index: number }>,
+      ) {
+        const index = Number(event.currentTarget?.dataset?.index);
         getApi(this, "toast")?.handleAction(index);
       },
 

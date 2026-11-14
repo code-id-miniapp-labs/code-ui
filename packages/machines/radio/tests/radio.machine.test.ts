@@ -39,7 +39,8 @@ describe("Radio Machine", () => {
 
       const api = connectRadio(machine.service);
       expect(api.checked).toBe(false);
-      expect(api.value).toBe("apple");
+      expect(api.size).toBe("md");
+      expect(api.color).toBe("primary");
       expect(api.variant).toBe("outline");
 
       machine.stop();

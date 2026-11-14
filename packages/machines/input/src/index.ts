@@ -13,6 +13,7 @@ export type {
   InputMachine,
   InputParams,
   InputProps,
+  InputResolvedProps,
   InputResolvedUI,
   InputSchema,
   InputService,

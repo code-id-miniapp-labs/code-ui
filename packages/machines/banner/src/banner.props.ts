@@ -1,8 +1,7 @@
-import type { BannerProps } from "./banner.types";
+import type { BannerResolvedProps } from "./banner.types";
 
-export const defaultBannerProps: BannerProps = {
-  id: undefined,
-  open: null as any,
+export const defaultBannerProps: BannerResolvedProps = {
+  open: null,
   defaultOpen: true,
   color: "primary",
   variant: "solid",
@@ -12,8 +11,8 @@ export const defaultBannerProps: BannerProps = {
   title: "",
   description: "",
   caption: "",
-  badge: null as any,
-  badgeProps: undefined,
+  badge: null,
+  badgeProps: null,
   icon: "",
   image: "",
   imagePosition: "left",
@@ -23,11 +22,11 @@ export const defaultBannerProps: BannerProps = {
   closable: true,
   closeIcon: "close",
   more: false,
-  moreIcon: "more",
+  moreIcon: "chevronRight",
   actions: [],
   hoverClass: "none",
-  topOffset: undefined,
-  bottomOffset: undefined,
+  topOffset: null,
+  bottomOffset: null,
   autoInset: true,
   ui: {},
 };

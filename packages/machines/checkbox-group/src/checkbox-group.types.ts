@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
 import type { anatomy } from "./checkbox-group.anatomy";
 
 export type CheckboxGroupState = "idle";
@@ -52,8 +52,8 @@ export interface CheckboxGroupItem {
   description: string;
   disabled: boolean;
   checked: boolean;
-  color?: CheckboxGroupColor | undefined;
-  variant?: CheckboxGroupVariant | undefined;
+  color: CheckboxGroupColor;
+  variant: CheckboxGroupVariant;
   ui?: Record<string, any> | undefined;
   itemProps: Record<string, any>;
   controlProps: Record<string, any>;
@@ -115,6 +115,26 @@ export interface CheckboxGroupProps {
   onChange?: ((details: CheckboxGroupValueChangeDetails) => void) | undefined;
 }
 
+export interface CheckboxGroupResolvedProps extends CheckboxGroupProps {
+  value: string[] | null;
+  defaultValue: string[] | null;
+  disabled: boolean;
+  readOnly: boolean;
+  required: boolean;
+  invalid: boolean | null;
+  color: CheckboxGroupColor;
+  size: CheckboxGroupSize;
+  orientation: CheckboxGroupOrientation;
+  variant: CheckboxGroupVariant;
+  name: string;
+  form: string;
+  legend: string;
+  min: number | null;
+  max: number | null;
+  items: (string | CheckboxGroupItemRaw)[];
+  ui: CheckboxGroupUI;
+}
+
 export interface CheckboxGroupContext {
   readonly value: () => string[];
   readonly disabled: () => boolean;
@@ -164,7 +184,7 @@ export interface CheckboxGroupSchema extends MachineSchema {
   state: CheckboxGroupState;
   tag: "idle";
   event: CheckboxGroupEvent;
-  props: CheckboxGroupProps;
+  props: CheckboxGroupResolvedProps;
   context: CheckboxGroupMachineContext;
   computed: CheckboxGroupComputed;
   refs: CheckboxGroupRefs;
@@ -177,6 +197,11 @@ export type CheckboxGroupService = Service<CheckboxGroupSchema>;
 export type CheckboxGroupMachine = Machine<CheckboxGroupSchema>;
 export type CheckboxGroupParams = Params<CheckboxGroupSchema>;
 
+export interface CheckboxGroupItemTapDetail {
+  value: string;
+  checked?: boolean | undefined;
+}
+
 export interface CheckboxGroupApi {
   /** The currently selected values */
   value: string[];
@@ -188,30 +213,18 @@ export interface CheckboxGroupApi {
   selectAll: () => void;
   /** Clear all selections */
   clear: () => void;
-  /** Whether the group is interactive */
-  isInteractive: boolean;
   /** Whether the group is disabled */
   disabled: boolean;
   /** Whether the group is read-only */
   readOnly: boolean;
-  /** Whether the group is required */
-  required: boolean;
   /** Whether the group is invalid */
   invalid: boolean;
-  /** Current size */
+  /** Effective size */
   size: CheckboxGroupSize;
-  /** Current color */
-  color: CheckboxGroupColor;
-  /** Current orientation */
-  orientation: CheckboxGroupOrientation;
-  /** Current variant */
-  variant: CheckboxGroupVariant;
-  /** Legend title */
-  legend: string;
   /** Pre-computed items with state and props for WXML wx:for rendering */
   items: CheckboxGroupItem[];
-  /** Tap handler for precomputed wx:for items */
-  handleItemTap: (e?: any) => void;
+  /** Change event handler for precomputed wx:for items */
+  handleItemTap: (e: MiniAppEventLike<CheckboxGroupItemTapDetail>) => void;
   /** Get accessible props for an item container */
   getItemProps: (item: {
     value: string;
@@ -227,6 +240,4 @@ export interface CheckboxGroupApi {
     value: string;
     disabled?: boolean | undefined;
   }) => Record<string, any>;
-  /** Underlying bound FormField if registered with `<c-form>` */
-  formField?: BoundFormField | undefined;
 }

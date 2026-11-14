@@ -1,14 +1,20 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
 import { withFormParent } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   formMachine,
   connectForm,
   defaultFormProps,
+  type FormApi,
   type FormErrorBag,
   type FormFieldError,
 } from "@code-ui/form";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import themeConfig from "virtual:cui/theme/form";
 import { tv } from "../../utils/variants";
 
@@ -22,10 +28,6 @@ const formBehavior = createMachineBehavior({
   exportApi: true,
 });
 
-function getApi(ctx: any) {
-  return ctx.__codeUiApi ?? ctx.data.form;
-}
-
 Component(
   createComponentOptions({
     behaviors: [formBehavior, computedBehavior],
@@ -34,7 +36,7 @@ Component(
       validateOn: {
         type: Array,
         optionalTypes: [String],
-        value: ["input", "change", "blur"],
+        value: defaultFormProps.validateOn,
       },
       className: {
         type: String,
@@ -44,39 +46,35 @@ Component(
 
     computed: {
       classes() {
-        const api = this.data.form;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const ui = this.data.ui;
-
         const themeFns = formTheme({
-          disabled,
+          disabled: this.data.disabled,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 
     methods: {
-      handleSubmit(e?: WechatMiniprogram.CustomEvent) {
-        return getApi(this)?.handleSubmit?.(e);
+      handleSubmit(e?: MiniAppEventLike<{ value?: Record<string, any> }>) {
+        return getApi<FormApi>(this, "form")?.handleSubmit(e);
       },
-      handleReset(e?: WechatMiniprogram.CustomEvent) {
-        getApi(this)?.handleReset?.(e);
+      handleReset(e?: MiniAppEventLike<Record<string, any>>) {
+        getApi<FormApi>(this, "form")?.handleReset(e);
       },
       validate(name?: string | string[]) {
-        return getApi(this)?.validate?.(name);
+        return getApi<FormApi>(this, "form")?.validate(name);
       },
       submit() {
-        return getApi(this)?.submit?.();
+        return getApi<FormApi>(this, "form")?.submit();
       },
       reset(name?: string | string[]) {
-        getApi(this)?.reset?.(name);
+        getApi<FormApi>(this, "form")?.reset(name);
       },
       resetValidation(name?: string | string[]) {
-        getApi(this)?.resetValidation?.(name);
+        getApi<FormApi>(this, "form")?.resetValidation(name);
       },
       clearErrors(name?: string | string[]) {
-        getApi(this)?.clearErrors?.(name);
+        getApi<FormApi>(this, "form")?.clearErrors(name);
       },
       setErrors(
         errors:
@@ -84,32 +82,35 @@ Component(
           | Record<string, string | string[]>
           | FormFieldError[],
       ) {
-        getApi(this)?.setErrors?.(errors);
+        getApi<FormApi>(this, "form")?.setErrors(errors);
       },
       getErrors(name?: string) {
-        return getApi(this)?.getErrors?.(name) ?? [];
+        return getApi<FormApi>(this, "form")?.getErrors(name) ?? [];
       },
       getValues() {
-        return getApi(this)?.getValues?.() ?? {};
+        return getApi<FormApi>(this, "form")?.getValues() ?? {};
       },
       getFieldValue(name: string) {
-        return getApi(this)?.getFieldValue?.(name);
+        return getApi<FormApi>(this, "form")?.getFieldValue(name);
       },
       setValues(values: Record<string, any>, options?: { validate?: boolean }) {
-        getApi(this)?.setValues?.(values, options);
+        getApi<FormApi>(this, "form")?.setValues(values, options);
       },
       setFieldValue(
         name: string,
         value: any,
         options?: { validate?: boolean },
       ) {
-        getApi(this)?.setFieldValue?.(name, value, options);
+        getApi<FormApi>(this, "form")?.setFieldValue(name, value, options);
       },
       focusFirstError() {
-        return getApi(this)?.focusFirstError?.() ?? false;
+        return getApi<FormApi>(this, "form")?.focusFirstError() ?? false;
       },
       scrollToFirstError() {
-        return getApi(this)?.scrollToFirstError?.() ?? Promise.resolve(false);
+        return (
+          getApi<FormApi>(this, "form")?.scrollToFirstError() ??
+          Promise.resolve(false)
+        );
       },
     },
   }),

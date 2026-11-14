@@ -65,7 +65,7 @@
       aria-disabled="{{slider.disabled}}"
     />
 
-    <view wx:if="{{slider.markers && slider.markers.length > 0}}" class="{{classes.markerGroup}}" data-part="marker-group">
+    <view wx:if="{{slider.markers.length > 0}}" class="{{classes.markerGroup}}" data-part="marker-group">
       <view
         wx:for="{{slider.markers}}"
         wx:key="value"

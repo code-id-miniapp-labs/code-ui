@@ -1,18 +1,23 @@
 import { createMachine } from "@code-ui/core";
 import { isNotNull } from "@code-ui/utils";
 import type {
-  ToastAction,
   ToastMachine,
+  ToastParams,
   ToastSchema,
 } from "./toast.types";
 import { defaultToastProps } from "./toast.props";
 
 const DISMISS_ANIMATION_DURATION = 200;
 
+function clearAutoDismissTimer(refs: ToastParams["refs"]): void {
+  const timer = refs.get("timer");
+  if (timer !== undefined) {
+    clearTimeout(timer);
+    refs.set("timer", undefined);
+  }
+}
+
 const activeToastTransitions = {
-  "CONTROLLED.CLOSE": {
-    target: "dismissing" as const,
-  },
   DISMISS: {
     target: "dismissing" as const,
     actions: ["invokeOnClose" as const],
@@ -39,7 +44,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     const rawOpen = prop("open");
     const isOpen = isNotNull(rawOpen)
       ? Boolean(rawOpen)
-      : Boolean(prop("defaultOpen") ?? true);
+      : prop("defaultOpen");
     return isOpen ? "open" : "closed";
   },
 
@@ -60,15 +65,21 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     isDismissing: ({ state }) => state.hasTag("dismissing"),
   },
 
-  watch: ({ prop, state, send }) => {
-    const controlledOpen = prop("open");
-    if (!isNotNull(controlledOpen)) return;
+  watch: ({ prop, state, track }) => {
+    track([() => prop("open")], () => {
+      const controlledOpen = prop("open");
+      if (!isNotNull(controlledOpen)) return;
 
-    if (controlledOpen && state.matches("closed")) {
-      send({ type: "CONTROLLED.OPEN" });
-    } else if (!controlledOpen && state.hasTag("open")) {
-      send({ type: "CONTROLLED.CLOSE" });
-    }
+      if (controlledOpen && (state.matches("closed") || state.matches("dismissing"))) {
+        prop("onOpenChange")?.({
+          open: true,
+          id: prop("id"),
+        });
+        state.set("open");
+      } else if (!controlledOpen && state.hasTag("open")) {
+        state.set("dismissing");
+      }
+    });
   },
 
   exit: ["cleanup"],
@@ -77,12 +88,6 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     closed: {
       tags: ["closed"],
       entry: ["resetTimers"],
-      on: {
-        "CONTROLLED.OPEN": {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
-      },
     },
 
     open: {
@@ -111,10 +116,6 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
       tags: ["dismissing"],
       effects: ["waitForDismissAnimation"],
       on: {
-        "CONTROLLED.OPEN": {
-          target: "open",
-          actions: ["invokeOnOpen"],
-        },
         ANIMATION_END: {
           target: "closed",
           actions: ["invokeOnDismiss"],
@@ -125,15 +126,12 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
 
   implementations: {
     guards: {
-      shouldCloseOnAction: ({ event }) =>
+      shouldCloseOnAction: ({ prop, event }) =>
         event.type === "TRIGGER_ACTION" &&
-        Boolean((event.action as ToastAction)?.closeOnClick),
+        Boolean(prop("actions")[event.index]?.closeOnClick),
     },
 
     actions: {
-      invokeOnOpen: ({ prop }) => {
-        prop("onOpenChange")?.({ open: true, id: prop("id") });
-      },
       invokeOnClose: ({ prop }) => {
         prop("onOpenChange")?.({ open: false, id: prop("id") });
       },
@@ -142,41 +140,29 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
         prop("onDismiss")?.({ id });
       },
       invokeOnAction: ({ prop, event }) => {
-        if (event.type === "TRIGGER_ACTION") {
-          const action = event.action as ToastAction;
-          action.onClick?.();
-          prop("onAction")?.({ action, index: event.index, id: prop("id") });
-        }
+        if (event.type !== "TRIGGER_ACTION") return;
+        const action = prop("actions")[event.index];
+        if (!action) return;
+        action.onClick?.();
+        prop("onAction")?.({ action, index: event.index, id: prop("id") });
       },
       pauseTimer: ({ refs, prop }) => {
-        const duration = prop("duration") ?? defaultToastProps.duration ?? 4000;
+        const duration = prop("duration");
         const startedAt = refs.get("startedAt");
         if (startedAt !== undefined) {
           const elapsed = Date.now() - startedAt;
           const currentRemaining = refs.get("remainingTime") ?? duration;
           refs.set("remainingTime", Math.max(0, currentRemaining - elapsed));
         }
-        const timer = refs.get("timer");
-        if (timer !== undefined) {
-          clearTimeout(timer);
-          refs.set("timer", undefined);
-        }
+        clearAutoDismissTimer(refs);
       },
       resetTimers: ({ refs }) => {
-        const timer = refs.get("timer");
-        if (timer !== undefined) {
-          clearTimeout(timer);
-          refs.set("timer", undefined);
-        }
+        clearAutoDismissTimer(refs);
         refs.set("remainingTime", undefined);
         refs.set("startedAt", undefined);
       },
       cleanup: ({ refs }) => {
-        const timer = refs.get("timer");
-        if (timer !== undefined) {
-          clearTimeout(timer);
-          refs.set("timer", undefined);
-        }
+        clearAutoDismissTimer(refs);
         const dismissTimer = refs.get("dismissTimer");
         if (dismissTimer !== undefined) {
           clearTimeout(dismissTimer);
@@ -189,7 +175,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
 
     effects: {
       manageDismissTimer: ({ send, prop, refs }) => {
-        const duration = prop("duration") ?? defaultToastProps.duration ?? 4000;
+        const duration = prop("duration");
         if (duration <= 0) return () => {};
 
         const remaining = refs.get("remainingTime") ?? duration;
@@ -202,11 +188,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
         refs.set("timer", timer);
 
         return () => {
-          const t = refs.get("timer");
-          if (t !== undefined) {
-            clearTimeout(t);
-            refs.set("timer", undefined);
-          }
+          clearAutoDismissTimer(refs);
         };
       },
 

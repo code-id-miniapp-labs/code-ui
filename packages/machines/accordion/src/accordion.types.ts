@@ -75,11 +75,6 @@ export interface AccordionItemSnapshot {
   isDisabled: boolean;
   ui?: Record<string, any> | undefined;
   itemProps: Record<string, any>;
-  triggerProps: Record<string, any>;
-  contentProps: Record<string, any>;
-  labelProps: Record<string, any>;
-  trailingIconProps: Record<string, any>;
-  leadingIconProps: Record<string, any>;
 }
 
 export interface AccordionProps {
@@ -117,6 +112,20 @@ export interface AccordionProps {
   onUpdateModelValue?: ((value: string | string[]) => void) | undefined;
 }
 
+export interface AccordionResolvedProps extends AccordionProps {
+  ui: AccordionUI;
+  value: string | number | (string | number)[] | null;
+  defaultValue: string | number | (string | number)[] | null;
+  modelValue: string | number | (string | number)[] | null;
+  multiple: boolean;
+  collapsible: boolean;
+  disabled: boolean;
+  size: AccordionSize;
+  variant: AccordionVariant;
+  items: AccordionItemData[];
+  linkedCount: number;
+}
+
 export interface AccordionContext {
   value: string[];
 }
@@ -127,6 +136,8 @@ export interface AccordionRefs {
 
 export type AccordionEvent =
   | { type: "VALUE.SET"; value: string | number | (string | number)[] }
+  | { type: "VALUE.EXPAND"; value: string | number | (string | number)[] }
+  | { type: "VALUE.COLLAPSE"; value: string | number | (string | number)[] }
   | { type: "VALUE.TOGGLE"; value: string }
   | { type: "ITEM.SET_OPEN"; value: string; open: boolean }
   | { type: "EXPAND_ALL" }
@@ -142,7 +153,7 @@ export interface AccordionComputed {
 
 export interface AccordionSchema extends MachineSchema {
   state: AccordionState;
-  props: AccordionProps;
+  props: AccordionResolvedProps;
   context: AccordionContext;
   refs: AccordionRefs;
   computed: AccordionComputed;
@@ -156,18 +167,8 @@ export type AccordionParams = Params<AccordionSchema>;
 export interface AccordionApi {
   /** The currently expanded value(s) */
   value: string[];
-  /** Whether multiple items can be expanded */
-  multiple: boolean;
-  /** Whether the accordion is collapsible */
-  collapsible: boolean;
   /** Whether the accordion is disabled */
   disabled: boolean;
-  /** Size variant */
-  size: AccordionSize;
-  /** Visual variant */
-  variant: AccordionVariant;
-  /** Whether there are programmatic items */
-  hasItems: boolean;
   /** Pre-computed array of items for WXML loop */
   items: AccordionItemSnapshot[];
   /** Set the active value(s) */

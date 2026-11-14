@@ -20,7 +20,8 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
       fileList: "flex flex-col gap-2 w-full",
       file: "relative flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white shadow-xs transition-colors",
       fileLeading:
-        "flex items-center justify-center shrink-0 rounded-lg overflow-hidden bg-neutral-100",
+        "relative flex items-center justify-center shrink-0 rounded-lg overflow-hidden bg-neutral-100",
+      fileImage: "absolute inset-0 w-full h-full rounded-lg object-cover block",
       fileContent: "flex flex-col min-w-0 flex-1 text-left",
       fileName: "font-medium text-neutral-900 truncate",
       fileSize: "text-neutral-500 shrink-0",

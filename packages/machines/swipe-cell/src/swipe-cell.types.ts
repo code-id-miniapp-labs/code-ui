@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./swipe-cell.anatomy";
 
 export type SwipeSide = "left" | "right";
@@ -124,9 +124,14 @@ export interface SwipeCellProps {
   onContentTap?: (() => void) | undefined;
 }
 
+export type SwipeCellActionTapEvent =
+  | { side: SwipeSide; index: number }
+  | MiniAppBaseEventLike<{
+      side?: SwipeSide | undefined;
+      index?: number | string | undefined;
+    }>;
+
 export type SwipeCellEvent =
-  | { type: "CONTROLLED.OPEN"; side?: SwipeSide | undefined }
-  | { type: "CONTROLLED.CLOSE" }
   | { type: "DRAG_START"; data?: Record<string, unknown> | undefined }
   | { type: "DRAG_MOVE"; offset: number }
   | { type: "DRAG_END"; opened: boolean; side: SwipeSide | null; offset: number }
@@ -135,11 +140,12 @@ export type SwipeCellEvent =
   | { type: "TOGGLE"; side?: SwipeSide | undefined }
   | {
       type: "ACTION_CLICK";
-      action: SwipeActionItem;
       side: SwipeSide;
       index: number;
+      action?: SwipeActionItem | undefined;
     }
   | { type: "CONTENT_TAP" }
+  | { type: "READY" }
   | { type: "MEASURE" }
   | {
       type: "SET_WIDTHS";
@@ -178,6 +184,7 @@ export type SwipeCellAction =
   | "clearOpenedSide"
   | "setWidths"
   | "measureWidths"
+  | "measureWidthsOnReady"
   | "setOffsetFromEvent";
 
 export type SwipeCellGuard =
@@ -189,11 +196,34 @@ export type SwipeCellGuard =
 
 export interface SwipeCellRefs {}
 
+type SwipeCellDefaultedKey =
+  | "variant"
+  | "size"
+  | "disabled"
+  | "opened"
+  | "defaultOpened"
+  | "left"
+  | "right"
+  | "leftWidth"
+  | "rightWidth"
+  | "threshold"
+  | "duration"
+  | "closeOnActionClick"
+  | "closeOnContentClick"
+  | "ui";
+
+export type SwipeCellResolvedProps = Omit<
+  SwipeCellProps,
+  SwipeCellDefaultedKey
+> & {
+  [K in SwipeCellDefaultedKey]-?: Exclude<SwipeCellProps[K], undefined>;
+};
+
 export interface SwipeCellSchema extends MachineSchema {
   state: SwipeCellState;
   tag: SwipeCellTag;
   event: SwipeCellEvent;
-  props: SwipeCellProps;
+  props: SwipeCellResolvedProps;
   context: SwipeCellContext;
   computed: SwipeCellComputed;
   action: SwipeCellAction;
@@ -214,10 +244,6 @@ export interface SwipeCellApi {
   openedSide: SwipeSide | null;
   /** Current sliding offset in px */
   offset: number;
-  /** Visual style variant */
-  variant: SwipeCellVariant;
-  /** Size of swipe cell actions */
-  size: SwipeCellSize;
   /** Whether the cell is disabled */
   disabled: boolean;
   /** Transition duration in ms */
@@ -257,26 +283,11 @@ export interface SwipeCellApi {
   /** Handle cell content tap */
   handleContentTap: () => void;
   /** Handle action button tap */
-  handleActionTap: (
-    e:
-      | { side: SwipeSide; index: number }
-      | {
-          currentTarget?: {
-            dataset?: { side?: SwipeSide; index?: number | string };
-          };
-        }
-      | any,
-  ) => void;
+  handleActionTap: (e: SwipeCellActionTapEvent) => void;
   /** Props for root container */
   rootProps: Record<string, unknown>;
   /** Props for sliding wrapper */
   wrapperProps: Record<string, unknown>;
-  /** Props for left action container */
-  leftProps: Record<string, unknown>;
-  /** Props for main content container */
-  contentProps: Record<string, unknown>;
-  /** Props for right action container */
-  rightProps: Record<string, unknown>;
   /** Precomputed inline transform style */
   contentStyle: string;
 }

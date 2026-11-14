@@ -10,7 +10,11 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type {
+  MiniAppBaseEventLike,
+  MiniAppComponent,
+  MiniAppEventLike,
+} from "@code-ui/utils";
 import type { anatomy } from "./input.anatomy";
 
 export type InputState = "idle" | "focused";
@@ -99,7 +103,7 @@ export interface InputProps {
   /** Whether leading slot/icon is shown */
   leading?: boolean | undefined;
   /** custom loading Icon */
-  loadingIcon?: string;
+  loadingIcon?: string | undefined;
   /** Whether trailing slot/icon is shown */
   trailing?: boolean | undefined;
   /** Leading icon class */
@@ -186,11 +190,51 @@ export type InputAction =
 
 export type InputGuard = "isInteractive";
 
+type InputDefaultedKey =
+  | "value"
+  | "invalid"
+  | "type"
+  | "variant"
+  | "color"
+  | "size"
+  | "highlight"
+  | "defaultValue"
+  | "name"
+  | "password"
+  | "placeholder"
+  | "placeholderClass"
+  | "placeholderStyle"
+  | "disabled"
+  | "readOnly"
+  | "clearable"
+  | "clearIcon"
+  | "loading"
+  | "loadingIcon"
+  | "leading"
+  | "trailing"
+  | "leadingIcon"
+  | "trailingIcon"
+  | "autoFocus"
+  | "maxlength"
+  | "cursorSpacing"
+  | "confirmType"
+  | "confirmHold"
+  | "cursor"
+  | "selectionStart"
+  | "selectionEnd"
+  | "adjustPosition"
+  | "holdKeyboard"
+  | "ui";
+
+export type InputResolvedProps = Omit<InputProps, InputDefaultedKey> & {
+  [K in InputDefaultedKey]-?: Exclude<InputProps[K], undefined>;
+};
+
 export interface InputSchema extends MachineSchema {
   state: InputState;
   tag: "focused" | "disabled" | "idle";
   event: InputEvent;
-  props: InputProps;
+  props: InputResolvedProps;
   context: InputContext;
   computed: InputComputed;
   refs: InputRefs;
@@ -208,12 +252,6 @@ export interface InputApi {
   state: InputState;
   /** Current string value */
   value: string;
-  /** Visual variant */
-  variant: InputVariant;
-  /** Semantic color */
-  color: InputColor;
-  /** Whether the input is highlighted */
-  highlight: boolean;
   /** Whether input value is empty */
   isEmpty: boolean;
   /** Whether input has a non-empty value */
@@ -239,25 +277,19 @@ export interface InputApi {
   /** Blur input */
   blur(): void;
   /** MiniProgram bindinput handler */
-  handleInput(e: any): string | void;
+  handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>): string | void;
   /** MiniProgram bindfocus handler */
-  handleFocus(e: any): void;
+  handleFocus(e?: MiniAppBaseEventLike): void;
   /** MiniProgram bindblur handler */
-  handleBlur(e?: any): void;
+  handleBlur(e?: MiniAppBaseEventLike): void;
   /** MiniProgram bindconfirm handler */
-  handleConfirm(e?: any): void;
+  handleConfirm(e?: MiniAppEventLike<{ value?: string }>): void;
   /** Tap handler for clear button */
-  handleClear(e?: any): void;
+  handleClear(e?: MiniAppBaseEventLike): void;
   /** Get props for root container */
   rootProps: Record<string, any>;
   /** Get props for input element */
   inputProps: Record<string, any>;
-  /** Get props for leading container */
-  leadingProps: Record<string, any>;
-  /** Get props for trailing container */
-  trailingProps: Record<string, any>;
-  /** Get props for clear button */
-  clearButtonProps: Record<string, any>;
   /** Get props for hidden form input */
   hiddenInputProps: Record<string, any>;
 }

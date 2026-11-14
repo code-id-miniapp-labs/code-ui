@@ -1,7 +1,6 @@
 import {
   getContentId,
   getItemId,
-  getLabelId,
   getRootId,
   getTriggerId,
 } from "./accordion.dom";
@@ -9,21 +8,15 @@ import type {
   AccordionApi,
   AccordionItemSnapshot,
   AccordionService,
-  AccordionSize,
-  AccordionVariant,
 } from "./accordion.types";
 
 export function connectAccordion(service: AccordionService): AccordionApi {
-  const { context, prop, send, scope } = service;
+  const { context, computed, prop, send, scope } = service;
 
-  const value = context.get("value") ?? [];
-  const multiple = Boolean(prop("multiple"));
-  const collapsible = prop("collapsible") !== false;
-  const disabled = Boolean(prop("disabled"));
-  const size = (prop("size") || "md") as AccordionSize;
-  const variant = (prop("variant") || "outline") as AccordionVariant;
-  const rawItems = prop("items") ?? [];
-  const hasItems = Array.isArray(rawItems) && rawItems.length > 0;
+  const value = context.get("value");
+  const disabled = computed("isDisabled");
+  const rawItems = prop("items");
+  const hasItems = rawItems.length > 0;
 
   const isOpen = (val: string | number): boolean => value.includes(String(val));
 
@@ -104,8 +97,6 @@ export function connectAccordion(service: AccordionService): AccordionApi {
         const valStr = String(item.value ?? index);
         const open = isOpen(valStr);
         const isItemDisabled = disabled || Boolean(item.disabled);
-        const stateStr = open ? "open" : "closed";
-        const lbId = getLabelId(scope, valStr);
 
         return {
           index,
@@ -114,48 +105,25 @@ export function connectAccordion(service: AccordionService): AccordionApi {
           description: item.description ?? "",
           content: item.content ?? "",
           icon: item.icon ?? "",
-          trailingIcon: item.trailingIcon ?? "",
+          trailingIcon: item.trailingIcon ?? "chevronDown",
           isOpen: open,
           isDisabled: isItemDisabled,
           ui: item.ui,
           itemProps: buildItemProps(valStr, open, isItemDisabled),
-          triggerProps: buildTriggerProps(valStr, open, isItemDisabled),
-          contentProps: buildContentProps(valStr, open),
-          labelProps: lbId ? { id: lbId } : {},
-          trailingIconProps: { "data-state": stateStr },
-          leadingIconProps: {},
         };
       })
     : [];
 
   return {
     value,
-    multiple,
-    collapsible,
     disabled,
-    size,
-    variant,
-    hasItems,
     items: computedItems,
     setValue: (val) => send({ type: "VALUE.SET", value: val }),
     toggle: (val) => send({ type: "VALUE.TOGGLE", value: String(val) }),
-    expand: (val) => {
-      const targets = Array.isArray(val) ? val.map(String) : [String(val)];
-      const next = multiple
-        ? Array.from(new Set([...value, ...targets]))
-        : [targets[0] ?? ""];
-      send({ type: "VALUE.SET", value: next });
-    },
-    collapse: (val) => {
-      const targets = Array.isArray(val) ? val.map(String) : [String(val)];
-      const next = value.filter((v) => !targets.includes(v));
-      if (!collapsible && next.length === 0) return;
-      send({ type: "VALUE.SET", value: next });
-    },
+    expand: (val) => send({ type: "VALUE.EXPAND", value: val }),
+    collapse: (val) => send({ type: "VALUE.COLLAPSE", value: val }),
     expandAll: () => send({ type: "EXPAND_ALL" }),
-    collapseAll: () => {
-      if (collapsible) send({ type: "COLLAPSE_ALL" });
-    },
+    collapseAll: () => send({ type: "COLLAPSE_ALL" }),
     isOpen,
     getItemState,
     rootProps,

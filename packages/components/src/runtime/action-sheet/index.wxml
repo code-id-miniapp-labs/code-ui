@@ -16,8 +16,8 @@
     </view>
     <slot wx:else name="header" />
     <view class="{{classes.body}}" data-scope="action-sheet" data-part="body">
-      <block wx:if="{{actionSheet.items && actionSheet.items.length > 0}}">
-        <button wx:for="{{actionSheet.items}}" wx:key="key" class="{{classes.item}} {{item.className || ''}}" style="{{item.style || ''}}" data-scope="action-sheet" data-part="item" data-index="{{index}}" aria-role="button" aria-disabled="{{item.disabled ? 'true' : 'false'}}" aria-busy="{{item.loading ? 'true' : 'false'}}" disabled="{{item.disabled}}" open-type="{{item.openType || ''}}" hover-class="opacity-70" catchtap="handleItemTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+      <block wx:if="{{actionSheet.items.length > 0}}">
+        <button wx:for="{{actionSheet.items}}" wx:key="key" class="{{classes.item}} {{item.className}}" style="{{item.style}}" data-scope="action-sheet" data-part="item" data-index="{{index}}" aria-role="button" aria-disabled="{{item.disabled ? 'true' : 'false'}}" aria-busy="{{item.loading ? 'true' : 'false'}}" disabled="{{item.disabled}}" open-type="{{item.openType}}" hover-class="opacity-70" catchtap="handleItemTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
           <view class="{{classes.itemText}}" data-scope="action-sheet" data-part="item-text">
             <view class="{{classes.itemTitle}}" data-scope="action-sheet" data-part="item-title">
               <c-icon wx:if="{{item.loading}}" name="{{item.loadingIcon}}" className="{{classes.itemIcon}} animate-spin text-primary" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
@@ -34,12 +34,13 @@
       </block>
       <slot wx:else />
     </view>
-    <block wx:if="{{actionSheet.actions && actionSheet.actions.length > 0}}">
+    <block wx:if="{{actionSheet.actions.length > 0}}">
       <view class="{{classes.gap}}" data-scope="action-sheet" data-part="gap" />
       <view id="{{actionSheet.actionsProps.id}}" class="{{classes.actions}}" data-scope="action-sheet" data-part="actions">
         <block wx:for="{{actionSheet.actions}}" wx:key="index">
           <view class="{{classes.action}}" data-scope="action-sheet" data-part="action" data-index="{{index}}">
-            <c-button data-index="{{index}}" block="{{true}}" ui="{{item.ui}}" variant="{{item.variant || 'ghost'}}" color="{{item.color || 'neutral'}}" size="{{item.size || 'xl'}}" icon="{{item.icon}}" loading="{{item.loading}}" disabled="{{item.disabled}}" openType="{{item.openType || ''}}" className="{{item.className || ''}}" catch:tap="handleActionTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+            <c-button data-index="{{index}}" block="{{true}}" ui="{{item.ui}}" variant="{{item.variant}}" color="{{item.color}}" size="{{item.size}}" loading="{{item.loading}}" disabled="{{item.disabled}}" openType="{{item.openType}}" className="{{item.className}}" catch:tap="handleActionTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+              <c-icon wx:if="{{item.icon}}" slot="icon" name="{{item.icon}}" className="w-4 h-4" />
               {{item.label}}
             </c-button>
           </view>

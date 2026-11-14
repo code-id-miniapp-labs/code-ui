@@ -1,6 +1,6 @@
 import type { AnatomyPartName, ComponentUI } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppTouchEventLike } from "@code-ui/utils";
 import type { anatomy } from "./button.anatomy";
 export type ButtonVariant =
   | "solid"
@@ -25,35 +25,47 @@ export type ButtonUI = ComponentUI<typeof anatomy>;
 
 export interface ButtonProps {
   /** The unique id of the component */
-  id?: string;
+  id?: string | undefined;
   /** Sub-element ids */
-  ids?: Record<string, string>;
+  ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
-  component?: MiniAppComponent;
+  component?: MiniAppComponent | undefined;
   /** Custom UI slot classes for button anatomy parts */
-  ui?: ButtonUI;
+  ui?: ButtonUI | undefined;
   /** Whether the button is disabled */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Whether the button is in a loading state */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Visual variant of the button */
-  variant?: ButtonVariant;
+  variant?: ButtonVariant | undefined;
   /** Color theme of the button */
-  color?: ButtonColor;
+  color?: ButtonColor | undefined;
   /** Size variant of the button */
-  size?: ButtonSize;
+  size?: ButtonSize | undefined;
   /** Whether the button spans full container width */
-  block?: boolean;
+  block?: boolean | undefined;
   /** Whether to automatically handle async promise loading */
-  loadingAuto?: boolean;
+  loadingAuto?: boolean | undefined;
   /** Duration in ms to auto-reset from success or error back to idle */
-  autoResetDuration?: number;
+  autoResetDuration?: number | undefined;
   /** Callback fired on button tap */
-  onTap?: (event?: any) => void | Promise<any>;
+  onTap?: ((event?: MiniAppTouchEventLike) => void | Promise<any>) | undefined;
+}
+
+export interface ButtonResolvedProps extends ButtonProps {
+  disabled: boolean;
+  loading: boolean;
+  variant: ButtonVariant;
+  color: ButtonColor;
+  size: ButtonSize;
+  block: boolean;
+  loadingAuto: boolean;
+  autoResetDuration: number;
+  ui: ButtonUI;
 }
 
 export type ButtonEvent =
-  | { type: "TAP"; event?: any }
+  | { type: "TAP"; event?: MiniAppTouchEventLike | undefined }
   | { type: "SET_LOADING"; loading: boolean }
   | { type: "SET_DISABLED"; disabled: boolean }
   | { type: "RESOLVE" }
@@ -78,7 +90,7 @@ export interface ButtonSchema extends MachineSchema {
   state: ButtonState;
   tag: "loading" | "disabled";
   event: ButtonEvent;
-  props: ButtonProps;
+  props: ButtonResolvedProps;
   context: ButtonContext;
   computed: ButtonComputed;
   refs: ButtonRefs;
@@ -96,32 +108,16 @@ export interface ButtonApi {
   state: ButtonState;
   /** Whether the button is loading */
   loading: boolean;
-  /** Internal auto-loading state */
-  internalLoading: boolean;
   /** Whether the button is disabled */
   disabled: boolean;
-  /** Visual variant */
-  variant: ButtonVariant;
-  /** Color theme */
-  color: ButtonColor;
-  /** Size */
-  size: ButtonSize;
-  /** Whether the button spans full width */
-  block: boolean;
   /** Set loading state manually */
   setLoading(loading: boolean): void;
 
   /** Set disabled state manually */
   setDisabled(disabled: boolean): void;
   /** Dispatch tap event */
-  handleTap(event?: any): void;
+  handleTap(event?: MiniAppTouchEventLike): void;
 
   /** WXML data & attributes for Root <button> */
   rootProps: Record<string, any>;
-  /** WXML data & attributes for Spinner */
-  spinnerProps: Record<string, any>;
-  /** WXML data & attributes for Label text */
-  labelProps: Record<string, any>;
-  /** WXML data & attributes for Icon */
-  iconProps: Record<string, any>;
 }

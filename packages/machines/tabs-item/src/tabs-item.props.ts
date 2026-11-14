@@ -1,6 +1,7 @@
-import type { TabsItemProps } from "./tabs-item.types";
+import type { TabsItemResolvedProps } from "./tabs-item.types";
 
-export const defaultTabsItemProps: TabsItemProps = {
+export const defaultTabsItemProps: TabsItemResolvedProps = {
+  ui: {},
   mode: "auto",
   value: "",
   label: "",
@@ -15,4 +16,5 @@ export const defaultTabsItemProps: TabsItemProps = {
   color: "primary",
   size: "md",
   fitted: false,
+  index: null,
 };

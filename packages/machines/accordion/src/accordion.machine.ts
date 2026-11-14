@@ -30,12 +30,12 @@ export const accordionMachine: AccordionMachine =
 
     refs: ({ prop, context, send }) => ({
       groupContext: {
-        value: () => context.get("value") ?? [],
-        multiple: () => Boolean(prop("multiple")),
-        collapsible: () => prop("collapsible") !== false,
-        disabled: () => Boolean(prop("disabled")),
-        size: () => prop("size") ?? "md",
-        variant: () => prop("variant") ?? "outline",
+        value: () => context.get("value"),
+        multiple: () => prop("multiple"),
+        collapsible: () => prop("collapsible"),
+        disabled: () => prop("disabled"),
+        size: () => prop("size"),
+        variant: () => prop("variant"),
         toggleItem: (value) => send({ type: "VALUE.TOGGLE", value }),
         setItemOpen: (value, open) =>
           send({ type: "ITEM.SET_OPEN", value, open }),
@@ -63,20 +63,20 @@ export const accordionMachine: AccordionMachine =
     }),
 
     computed: {
-      expandedValues: ({ context }) => context.get("value") ?? [],
-      isMultiple: ({ prop }) => Boolean(prop("multiple")),
-      isCollapsible: ({ prop }) => prop("collapsible") !== false,
-      isDisabled: ({ prop }) => Boolean(prop("disabled")),
+      expandedValues: ({ context }) => context.get("value"),
+      isMultiple: ({ prop }) => prop("multiple"),
+      isCollapsible: ({ prop }) => prop("collapsible"),
+      isDisabled: ({ prop }) => prop("disabled"),
       totalCount: ({ prop }) => {
-        const items = prop("items") ?? [];
-        return Array.isArray(items) && items.length > 0
-          ? items.length
-          : Number(prop("linkedCount") ?? 0);
+        const items = prop("items");
+        return items.length > 0 ? items.length : Number(prop("linkedCount"));
       },
     },
 
     on: {
       "VALUE.SET": { actions: ["setValueAction"] },
+      "VALUE.EXPAND": { actions: ["expandValueAction"] },
+      "VALUE.COLLAPSE": { actions: ["collapseValueAction"] },
       "VALUE.TOGGLE": { actions: ["toggleValueAction"] },
       "ITEM.SET_OPEN": { actions: ["setItemOpenAction"] },
       EXPAND_ALL: { actions: ["expandAllAction"] },
@@ -95,17 +95,41 @@ export const accordionMachine: AccordionMachine =
           if (
             !computed("isCollapsible") &&
             normalized.length === 0 &&
-            (context.get("value") ?? []).length > 0
+            context.get("value").length > 0
           ) {
             return;
           }
           context.set("value", normalized);
         },
 
+        expandValueAction: ({ event, context, computed }) => {
+          if (event.type !== "VALUE.EXPAND" || computed("isDisabled")) return;
+          const targets = Array.isArray(event.value)
+            ? event.value.map(String)
+            : [String(event.value)];
+          const current = context.get("value");
+          const next = computed("isMultiple")
+            ? Array.from(new Set([...current, ...targets]))
+            : targets[0]
+              ? [targets[0]]
+              : [];
+          context.set("value", next);
+        },
+
+        collapseValueAction: ({ event, context, computed }) => {
+          if (event.type !== "VALUE.COLLAPSE" || computed("isDisabled")) return;
+          const targets = Array.isArray(event.value)
+            ? event.value.map(String)
+            : [String(event.value)];
+          const next = context.get("value").filter((v) => !targets.includes(v));
+          if (!computed("isCollapsible") && next.length === 0) return;
+          context.set("value", next);
+        },
+
         toggleValueAction: ({ event, context, computed }) => {
           if (event.type !== "VALUE.TOGGLE" || computed("isDisabled")) return;
           const target = String(event.value);
-          const current = context.get("value") ?? [];
+          const current = context.get("value");
           if (current.includes(target)) {
             if (!computed("isCollapsible") && current.length <= 1) return;
             context.set(
@@ -123,7 +147,7 @@ export const accordionMachine: AccordionMachine =
         setItemOpenAction: ({ event, context, computed }) => {
           if (event.type !== "ITEM.SET_OPEN" || computed("isDisabled")) return;
           const target = String(event.value);
-          const current = context.get("value") ?? [];
+          const current = context.get("value");
           if (current.includes(target) === event.open) return;
 
           if (event.open) {
@@ -142,7 +166,7 @@ export const accordionMachine: AccordionMachine =
 
         expandAllAction: ({ context, computed, prop }) => {
           if (computed("isDisabled")) return;
-          const items = prop("items") ?? [];
+          const items = prop("items");
           context.set(
             "value",
             items.map((item, idx) => String(item.value ?? idx)),

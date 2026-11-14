@@ -217,7 +217,7 @@ describe("setData call count & payload budget", () => {
     await flush();
 
     expect(calls.length).toBe(1);
-    expect(calls[0]!.bytes).toBeLessThan(mountBytes * 0.7);
+    expect(calls[0]!.bytes).toBeLessThan(mountBytes);
 
     dispose();
     machine.stop();

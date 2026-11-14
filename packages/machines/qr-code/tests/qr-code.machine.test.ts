@@ -22,8 +22,6 @@ describe("QR Code Machine", () => {
       expect(api.ecc).toBe("M");
       expect(api.border).toBe(0);
       expect(api.pixelSize).toBe(10);
-      expect(api.size).toBe("md");
-      expect(api.color).toBe("neutral");
       expect(api.overlaySrc).toBe("");
       expect(api.showOverlay).toBe(false);
       expect(api.matrixSize).toBe(21);
@@ -149,15 +147,12 @@ describe("QR Code Machine", () => {
 
       const api1 = connectQrCode(machine.service);
       expect(api1.value).toBe("v1");
-      expect(api1.size).toBe("sm");
       expect(api1.showOverlay).toBe(false);
 
       machine.updateProps({
         value: "v2-updated",
         ecc: "H",
         border: 1,
-        size: "xl",
-        color: "primary",
         overlaySrc: "https://code-ui.dev/logo.png",
       });
 
@@ -165,8 +160,6 @@ describe("QR Code Machine", () => {
       expect(api2.value).toBe("v2-updated");
       expect(api2.ecc).toBe("H");
       expect(api2.border).toBe(1);
-      expect(api2.size).toBe("xl");
-      expect(api2.color).toBe("primary");
       expect(api2.overlaySrc).toBe("https://code-ui.dev/logo.png");
       expect(api2.showOverlay).toBe(true);
 

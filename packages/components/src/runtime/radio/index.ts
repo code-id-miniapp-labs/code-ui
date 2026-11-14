@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withRadioItem } from "@code-ui/miniapp/behaviors/radio";
@@ -52,7 +53,7 @@ Component(
     },
 
     methods: {
-      handleTap(e: WechatMiniprogram.CustomEvent) {
+      handleTap(e: MiniAppBaseEventLike) {
         return getApi(this, "cRadio")?.handleTap?.(e);
       },
     },

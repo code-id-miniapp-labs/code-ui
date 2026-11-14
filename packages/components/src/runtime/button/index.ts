@@ -43,8 +43,8 @@ Component(
           size: this.data.size,
           color: this.data.color,
           block: this.data.block,
-          disabled: Boolean(api?.disabled ?? this.data.disabled),
-          loading: Boolean(api?.loading ?? this.data.loading),
+          disabled: Boolean(api?.disabled),
+          loading: Boolean(api?.loading),
         });
 
         return resolveSlots(themeFns, this.data.ui, this.data.className);

@@ -1,6 +1,6 @@
 <view id="{{fileUpload.rootProps.id}}" class="{{classes.root}}" data-scope="file-upload" data-part="root" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled}}" data-readonly="{{fileUpload.readOnly}}" data-invalid="{{fileUpload.invalid}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="group" aria-disabled="{{fileUpload.disabled}}" aria-invalid="{{fileUpload.invalid}}">
   <!-- Dropzone Area -->
-  <view wx:if="{{dropzone && !fileUpload.isMaxFiles}}" id="{{fileUpload.dropzoneProps.id}}" class="{{classes.dropzone}}" data-scope="file-upload" data-part="dropzone" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" data-readonly="{{fileUpload.readOnly}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="button" aria-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" aria-busy="{{fileUpload.isUploading}}" aria-label="{{dropzoneAriaLabel}}" bindtap="handleDropzoneTap">
+  <view wx:if="{{dropzone && !fileUpload.isMaxFiles}}" id="{{fileUpload.dropzoneProps.id}}" class="{{classes.dropzone}}" data-scope="file-upload" data-part="dropzone" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" data-readonly="{{fileUpload.readOnly}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="button" aria-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" aria-busy="{{fileUpload.isUploading}}" aria-label="{{fileUpload.dropzoneProps['aria-label']}}" bindtap="handleDropzoneTap">
     <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:if="{{fileUpload.isUploading && loadingIcon}}">
       <c-icon name="{{loadingIcon}}" className="w-full h-full animate-spin" />
     </view>
@@ -21,12 +21,12 @@
     <slot />
   </view>
   <!-- File List Area -->
-  <view wx:if="{{fileUpload.hasFiles}}" id="{{fileUpload.fileListProps.id}}" class="{{classes.fileList}}" data-scope="file-upload" data-part="file-list" data-layout="{{layout || 'list'}}" aria-role="list" aria-label="Uploaded files">
+  <view wx:if="{{fileUpload.hasFiles}}" id="{{fileUpload.fileListProps.id}}" class="{{classes.fileList}}" data-scope="file-upload" data-part="file-list" data-layout="{{layout}}" aria-role="list" aria-label="Uploaded files">
     <block wx:for="{{fileUpload.files}}" wx:key="id">
       <view id="{{item.itemProps.id}}" class="{{classes.file}}" data-scope="file-upload" data-part="file" data-index="{{index}}" data-status="{{item.status}}" aria-role="listitem" bindtap="handleFileClick">
         <!-- File Leading: Image Thumbnail or Icon -->
         <view class="{{classes.fileLeading}}" data-scope="file-upload" data-part="file-leading" data-index="{{index}}" bindtap="handlePreview" aria-role="button" aria-label="Preview {{item.name}}">
-          <image wx:if="{{item.fileType === 'image' && item.thumb}}" src="{{item.thumb}}" mode="aspectFill" class="w-full h-full rounded-lg object-cover" />
+          <image wx:if="{{item.fileType === 'image' && item.thumb && !item.thumbFailed}}" src="{{item.thumb}}" mode="aspectFill" class="{{classes.fileImage}}" data-index="{{index}}" binderror="handleImageError" />
           <c-icon wx:elif="{{item.fileType === 'image' && imageIcon}}" name="{{imageIcon}}" className="{{classes.fileIcon}}" />
           <c-icon wx:elif="{{item.fileType === 'video' && videoIcon}}" name="{{videoIcon}}" className="{{classes.fileIcon}}" />
           <c-icon wx:elif="{{item.fileType === 'audio' && audioIcon}}" name="{{audioIcon}}" className="{{classes.fileIcon}}" />
@@ -40,8 +40,8 @@
           <view class="{{classes.fileSize}}" data-scope="file-upload" data-part="file-size">
             {{item.formattedSize}}
           </view>
-          <view wx:if="{{(fileUpload.isUploading || (item.progress !== null && item.progress !== undefined))}}" class="{{classes.fileProgress}}" data-scope="file-upload" data-part="file-progress">
-            <c-progress value="{{item.progress != null ? item.progress : progress}}" size="2xs" color="{{color}}" />
+          <view wx:if="{{fileUpload.isUploading || item.progress !== null}}" class="{{classes.fileProgress}}" data-scope="file-upload" data-part="file-progress">
+            <c-progress value="{{item.progress}}" size="2xs" color="{{color}}" />
           </view>
         </view>
         <view wx:if="{{!fileUpload.disabled && !fileUpload.readOnly}}" class="{{classes.fileTrailing}}" data-scope="file-upload" data-part="file-trailing">

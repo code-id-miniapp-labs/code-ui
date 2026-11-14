@@ -1,3 +1,4 @@
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -50,54 +51,52 @@ Component(
     },
 
     methods: {
-      handleTouchStart(this: any, data?: Record<string, unknown>) {
-        return getApi<PullDownRefreshApi>(
+      handleTouchStart(data?: Record<string, unknown>) {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.handleTouchStart(
+          data,
+        );
+      },
+
+      handleTouchMove(data?: { offset?: number }) {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.handleTouchMove(
+          data,
+        );
+      },
+
+      handleTouchEnd(data?: { offset?: number }) {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.handleTouchEnd(
+          data,
+        );
+      },
+
+      handleScroll(
+        event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
+      ) {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.handleScroll(
+          event,
+        );
+      },
+
+      handleScrollToUpper() {
+        getApi<PullDownRefreshApi>(
           this,
           "pullDownRefresh",
-        )?.handleTouchStart?.(data);
+        )?.handleScrollToUpper();
       },
 
-      handleTouchMove(this: any, data?: { offset?: number }) {
-        return getApi<PullDownRefreshApi>(
+      handleScrollToLower() {
+        getApi<PullDownRefreshApi>(
           this,
           "pullDownRefresh",
-        )?.handleTouchMove?.(data);
+        )?.handleScrollToLower();
       },
 
-      handleTouchEnd(this: any, data?: { offset?: number }) {
-        return getApi<PullDownRefreshApi>(
-          this,
-          "pullDownRefresh",
-        )?.handleTouchEnd?.(data);
+      refresh() {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.refresh();
       },
 
-      handleScroll(this: any, event: WechatMiniprogram.ScrollViewScroll) {
-        return getApi<PullDownRefreshApi>(
-          this,
-          "pullDownRefresh",
-        )?.handleScroll?.(event);
-      },
-
-      handleScrollToUpper(this: any) {
-        return getApi<PullDownRefreshApi>(
-          this,
-          "pullDownRefresh",
-        )?.handleScrollToUpper?.();
-      },
-
-      handleScrollToLower(this: any) {
-        return getApi<PullDownRefreshApi>(
-          this,
-          "pullDownRefresh",
-        )?.handleScrollToLower?.();
-      },
-
-      refresh(this: any) {
-        return getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.refresh?.();
-      },
-
-      close(this: any) {
-        return getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.close?.();
+      close() {
+        getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.close();
       },
     },
   }),

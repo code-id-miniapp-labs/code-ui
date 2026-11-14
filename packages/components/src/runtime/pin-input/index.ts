@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
@@ -46,9 +47,9 @@ Component(
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
         const size = api?.size ?? this.data.size;
-        const variant = api?.variant ?? this.data.variant;
-        const color = api?.color ?? this.data.color;
-        const highlight = Boolean(api?.highlight ?? this.data.highlight);
+        const variant = this.data.variant;
+        const color = this.data.color;
+        const highlight = Boolean(this.data.highlight);
         const ui = this.data.ui;
 
         const themeFns = pinInputTheme({
@@ -65,19 +66,21 @@ Component(
     },
 
     methods: {
-      handleInput(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "pinInput")?.handleInput?.(e);
+      handleInput(
+        e: MiniAppEventLike<{ value: string }, { index: number }>,
+      ) {
+        return getApi(this, "pinInput")?.handleInput(e);
       },
 
-      handleFocus(e: WechatMiniprogram.CustomEvent) {
-        getApi(this, "pinInput")?.handleFocus?.(e);
+      handleFocus(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "pinInput")?.handleFocus(e);
       },
 
-      handleBlur(e: WechatMiniprogram.CustomEvent) {
-        getApi(this, "pinInput")?.handleBlur?.(e);
+      handleBlur(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "pinInput")?.handleBlur(e);
       },
 
-      handleTap(e: WechatMiniprogram.CustomEvent) {
+      handleTap(e: MiniAppBaseEventLike<{ index: number }>) {
         getApi(this, "pinInput")?.handleTap?.(e);
       },
     },

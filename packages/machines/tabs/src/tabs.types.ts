@@ -115,6 +115,24 @@ export interface TabsProps {
   onChange?: ((details: TabsValueChangeDetails) => void) | undefined;
 }
 
+export type TabsDefaultedKey =
+  | "value"
+  | "defaultValue"
+  | "orientation"
+  | "variant"
+  | "color"
+  | "size"
+  | "disabled"
+  | "fitted"
+  | "loopFocus"
+  | "activationMode"
+  | "items"
+  | "ui";
+
+export type TabsResolvedProps = Omit<TabsProps, TabsDefaultedKey> & {
+  [K in TabsDefaultedKey]-?: Exclude<TabsProps[K], undefined>;
+};
+
 export interface NormalizedTabItem extends TabsItem {
   value: string | number;
   label: string;
@@ -124,17 +142,12 @@ export interface NormalizedTabItem extends TabsItem {
 export interface TabsContext {
   value: string | number;
   focusedValue: string | number | null;
-  scrollLeft: number;
-  canScrollLeft: boolean;
-  canScrollRight: boolean;
 }
 
 export interface TabsComputed {
   selectedValue: string | number;
   selectedIndex: number;
-  totalCount: number;
   isDisabled: boolean;
-  selectedItem: NormalizedTabItem | undefined;
   normalizedItems: NormalizedTabItem[];
 }
 
@@ -156,7 +169,7 @@ export interface TabsSchema extends MachineSchema {
   state: TabsState;
   tag: "idle" | "focused";
   event: TabsEvent;
-  props: TabsProps;
+  props: TabsResolvedProps;
   context: TabsContext;
   computed: TabsComputed;
   refs: TabsRefs;
@@ -176,36 +189,12 @@ export interface TabsApi {
   selectedIndex: number;
   /** Currently focused tab value */
   focusedValue: string | number | null;
-  /** Component orientation */
-  orientation: TabsOrientation;
-  /** Visual variant */
-  variant: TabsVariant;
-  /** Visual color */
-  color: TabsColor;
-  /** Size variant */
-  size: TabsSize;
   /** Whether tabs are disabled */
   disabled: boolean;
   /** Precomputed tab items snapshot */
   items: TabItemComputed[];
-  /** Currently selected item descriptor */
-  selectedItem?: TabsItem | undefined;
   /** Active trigger element id for scroll-into-view */
-  activeTriggerId?: string | undefined;
-  /** Horizontal scroll offset for automatic tablist scrolling */
-  scrollLeft: number;
-  /** Whether the tablist can scroll left */
-  canScrollLeft: boolean;
-  /** Whether the tablist can scroll right */
-  canScrollRight: boolean;
-  /** Dynamic CSS edge-fade mask style to prevent sharp text clipping */
-  scrollMaskStyle?: string | undefined;
-  /** Whether tabs are in fitted mode */
-  fitted?: boolean | undefined;
-  /** Total count of tabs */
-  totalCount: number;
-  /** Declarative sliding indicator style */
-  indicatorStyle?: string | undefined;
+  activeTriggerId: string;
 
   /** Set active tab by value */
   setValue(value: string | number): void;
@@ -238,13 +227,9 @@ export interface TabsApi {
     value: string | number;
     index?: number | undefined;
   }): Record<string, any>;
-  /** Get active tab indicator element props */
-  getIndicatorProps(): Record<string, any>;
 
   /** Precomputed root props */
   rootProps: Record<string, any>;
   /** Precomputed list props */
   listProps: Record<string, any>;
-  /** Precomputed indicator props */
-  indicatorProps: Record<string, any>;
 }

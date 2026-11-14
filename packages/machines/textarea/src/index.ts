@@ -17,6 +17,7 @@ export type {
   TextareaMachine,
   TextareaParams,
   TextareaProps,
+  TextareaResolvedProps,
   TextareaResolvedUI,
   TextareaSchema,
   TextareaService,

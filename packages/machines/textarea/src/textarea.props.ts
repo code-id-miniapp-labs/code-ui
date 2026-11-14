@@ -1,7 +1,6 @@
-import type { TextareaProps } from "./textarea.types";
+import type { TextareaResolvedProps } from "./textarea.types";
 
-export const defaultTextareaProps: TextareaProps = {
-  formContext: undefined,
+export const defaultTextareaProps: TextareaResolvedProps = {
   value: null,
   invalid: null,
   variant: "outline" as const,
@@ -16,7 +15,7 @@ export const defaultTextareaProps: TextareaProps = {
   disabled: false,
   readOnly: false,
   clearable: false,
-  clearIcon: "",
+  clearIcon: "close",
   loading: false,
   leading: false,
   trailing: false,

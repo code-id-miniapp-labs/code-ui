@@ -1,6 +1,6 @@
-import type { RadioGroupProps } from "./radio-group.types";
+import type { RadioGroupResolvedProps } from "./radio-group.types";
 
-export const defaultRadioGroupProps: RadioGroupProps = {
+export const defaultRadioGroupProps: RadioGroupResolvedProps = {
   formContext: undefined,
   value: null,
   defaultValue: null,

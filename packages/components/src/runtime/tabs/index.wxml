@@ -1,12 +1,13 @@
-<view id="{{tabs.rootProps.id}}" class="{{classes.root}}" data-scope="tabs" data-part="root" data-orientation="{{tabs.orientation}}" data-disabled="{{tabs.disabled}}">
+<view id="{{tabs.rootProps.id}}" class="{{classes.root}}" data-scope="tabs" data-part="root" data-orientation="{{orientation}}" data-disabled="{{tabs.disabled}}">
   <!-- Horizontal Orientation: Scrollable Tablist -->
   <scroll-view
-    wx:if="{{tabs.orientation !== 'vertical'}}"
-    class="cui-tabs-scroll w-full overflow-x-auto"
-    style="{{tabs.scrollMaskStyle}}"
+    wx:if="{{orientation !== 'vertical'}}"
+    class="cui-tabs-scroll w-full shrink-0 flex flex-row"
     scroll-x="{{true}}"
+    scroll-y="{{false}}"
+    enable-flex="{{true}}"
     scroll-with-animation="{{true}}"
-    scroll-left="{{tabs.scrollLeft}}"
+    scroll-into-view="{{tabs.activeTriggerId}}"
     enhanced="{{true}}"
     show-scrollbar="{{false}}"
   >
@@ -19,29 +20,33 @@
       data-part="list"
       data-orientation="horizontal"
     >
-      <c-tabs-item
+      <view
         wx:for="{{tabs.items}}"
         wx:key="value"
-        mode="trigger"
-        triggerId="{{item.triggerProps.id}}"
-        value="{{item.value}}"
-        label="{{item.label}}"
-        icon="{{item.icon}}"
-        trailingIcon="{{item.trailingIcon}}"
-        disabled="{{item.disabled}}"
-        selected="{{item.isSelected}}"
-        orientation="{{tabs.orientation}}"
-        variant="{{tabs.variant}}"
-        color="{{tabs.color}}"
-        size="{{tabs.size}}"
-        fitted="{{tabs.fitted}}"
-        index="{{index}}"
-        ui="{{item.ui || ui}}"
-        bind:select="handleItemSelect"
+        id="{{item.triggerProps.id}}"
+        class="flex flex-row {{fitted ? 'flex-1 min-w-0' : 'shrink-0'}}"
       >
-        <slot name="leading-{{item.value}}" slot="leading" />
-        <slot name="trailing-{{item.value}}" slot="trailing" />
-      </c-tabs-item>
+        <c-tabs-item
+          mode="trigger"
+          value="{{item.value}}"
+          label="{{item.label}}"
+          icon="{{item.icon}}"
+          trailingIcon="{{item.trailingIcon}}"
+          disabled="{{item.disabled}}"
+          selected="{{item.isSelected}}"
+          orientation="{{orientation}}"
+          variant="{{variant}}"
+          color="{{color}}"
+          size="{{size}}"
+          fitted="{{fitted}}"
+          index="{{index}}"
+          ui="{{item.ui}}"
+          bind:select="handleItemSelect"
+        >
+          <slot name="leading-{{item.value}}" slot="leading" />
+          <slot name="trailing-{{item.value}}" slot="trailing" />
+        </c-tabs-item>
+      </view>
       <slot name="list-trailing" />
     </view>
   </scroll-view>
@@ -68,13 +73,13 @@
       trailingIcon="{{item.trailingIcon}}"
       disabled="{{item.disabled}}"
       selected="{{item.isSelected}}"
-      orientation="{{tabs.orientation}}"
-      variant="{{tabs.variant}}"
-      color="{{tabs.color}}"
-      size="{{tabs.size}}"
-      fitted="{{tabs.fitted}}"
+      orientation="{{orientation}}"
+      variant="{{variant}}"
+      color="{{color}}"
+      size="{{size}}"
+      fitted="{{fitted}}"
       index="{{index}}"
-      ui="{{item.ui || ui}}"
+      ui="{{item.ui}}"
       bind:select="handleItemSelect"
     >
       <slot name="leading-{{item.value}}" slot="leading" />
@@ -97,13 +102,13 @@
         trailingIcon="{{item.trailingIcon}}"
         disabled="{{item.disabled}}"
         selected="{{item.isSelected}}"
-        orientation="{{tabs.orientation}}"
-        variant="{{tabs.variant}}"
-        color="{{tabs.color}}"
-        size="{{tabs.size}}"
-        fitted="{{tabs.fitted}}"
+        orientation="{{orientation}}"
+        variant="{{variant}}"
+        color="{{color}}"
+        size="{{size}}"
+        fitted="{{fitted}}"
         index="{{index}}"
-        ui="{{item.ui || ui}}"
+        ui="{{item.ui}}"
       >
         <text wx:if="{{item.content}}">{{item.content}}</text>
         <slot wx:else name="{{item.value}}" />

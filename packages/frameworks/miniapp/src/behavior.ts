@@ -203,6 +203,7 @@ export function createMachineBehavior<
         for (const plugin of plugins) {
           plugin.onReady?.(this);
         }
+        this.__codeUiMachine?.send({ type: "READY" });
       },
 
       detached(this: any) {

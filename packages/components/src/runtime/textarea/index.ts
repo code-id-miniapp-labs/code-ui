@@ -1,4 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
+import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
@@ -36,20 +37,19 @@ Component(
         const api = this.data.textarea;
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size ?? "md";
-        const variant = api?.variant ?? this.data.variant;
-        const color = api?.color ?? this.data.color;
-        const highlight = Boolean(api?.highlight ?? this.data.highlight);
+        const size = api?.size ?? this.data.size;
+        const variant = this.data.variant;
+        const color = this.data.color;
+        const highlight = Boolean(this.data.highlight);
         const hasLeading = Boolean(this.data.leading || this.data.leadingIcon);
         const hasTrailing = Boolean(
           this.data.trailing ||
           this.data.trailingIcon ||
           api?.isClearable ||
-          this.data.clearable ||
           this.data.loading,
         );
         const hasCount = Boolean(this.data.count);
-        const isAutoHeight = Boolean(api?.autoHeight ?? this.data.autoHeight);
+        const isAutoHeight = Boolean(this.data.autoHeight);
         const ui = this.data.ui;
 
         const themeFns = textareaTheme({
@@ -74,31 +74,31 @@ Component(
         getApi(this, "textarea")?.focus?.();
       },
 
-      handleInput(e: WechatMiniprogram.CustomEvent) {
+      handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>) {
         return getApi(this, "textarea")?.handleInput?.(e);
       },
 
-      handleFocus(e: WechatMiniprogram.CustomEvent) {
+      handleFocus(e: MiniAppBaseEventLike) {
         getApi(this, "textarea")?.handleFocus?.(e);
       },
 
-      handleBlur(e: WechatMiniprogram.CustomEvent) {
+      handleBlur(e: MiniAppBaseEventLike) {
         getApi(this, "textarea")?.handleBlur?.(e);
       },
 
-      handleConfirm(e: WechatMiniprogram.CustomEvent) {
+      handleConfirm(e: MiniAppEventLike<{ value?: string }>) {
         getApi(this, "textarea")?.handleConfirm?.(e);
       },
 
-      handleLineChange(e: WechatMiniprogram.CustomEvent) {
+      handleLineChange(e: MiniAppEventLike<Record<string, any>>) {
         getApi(this, "textarea")?.handleLineChange?.(e);
       },
 
-      handleClear(e: WechatMiniprogram.CustomEvent) {
+      handleClear(e: MiniAppBaseEventLike) {
         getApi(this, "textarea")?.handleClear?.(e);
       },
 
-      handleKeyboardHeightChange(e: WechatMiniprogram.CustomEvent) {
+      handleKeyboardHeightChange(e: MiniAppEventLike<Record<string, any>>) {
         this.triggerEvent("keyboardheightchange", e.detail);
       },
     },

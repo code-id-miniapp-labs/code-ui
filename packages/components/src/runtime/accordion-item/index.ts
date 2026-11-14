@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -61,28 +62,11 @@ Component(
       },
     },
 
-    lifetimes: {
-      ready(this: any) {
-        this.measure();
-      },
-    },
-
-    observers: {
-      "cAccordionItem.isOpen": function (this: any, isOpen: boolean) {
-        if (isOpen) {
-          this.measure();
-        }
-      },
-      content: function (this: any) {
-        this.measure();
-      },
-    },
-
     methods: {
       measure(this: any) {
         return getApi(this, "cAccordionItem")?.measure?.();
       },
-      handleTap(this: any, e: WechatMiniprogram.CustomEvent) {
+      handleTap(this: any, e: MiniAppBaseEventLike) {
         return getApi(this, "cAccordionItem")?.handleTap?.(e);
       },
       toggle(this: any) {

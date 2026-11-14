@@ -110,6 +110,9 @@ export {
   notifyScaleGestureStart,
   notifyScaleGestureProgress,
   notifyScaleGestureEnd,
+  notifyScaleGestureDragStart,
+  notifyScaleGestureDragMove,
+  notifyScaleGestureDragEnd,
 } from "./behaviors/app";
 export type {
   AppSignal,

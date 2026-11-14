@@ -32,9 +32,9 @@ export const radioGroupMachine: RadioGroupMachine =
         disabled: () => computed("isDisabled"),
         readOnly: () => computed("isReadOnly"),
         invalid: () => computed("isInvalid"),
-        color: () => prop("color") || "primary",
+        color: () => prop("color"),
         size: () => computed("effectiveSize"),
-        variant: () => prop("variant") || "outline",
+        variant: () => prop("variant"),
         select: (value) => send({ type: "SET_VALUE", value }),
         setValue: (value) =>
           value === null
@@ -71,9 +71,9 @@ export const radioGroupMachine: RadioGroupMachine =
       ...createFormFieldComputed("radio-group"),
       effectiveSize: ({ prop, computed }) => {
         const size = prop("size");
-        return size && size !== "md"
+        return size !== "md"
           ? size
-          : ((computed("fieldSize") || size || "md") as RadioGroupSize);
+          : ((computed("fieldSize") || size) as RadioGroupSize);
       },
       isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
@@ -97,7 +97,7 @@ export const radioGroupMachine: RadioGroupMachine =
 
     on: {
       SET_VALUE: {
-        guard: "isInteractive",
+        guard: "canSetValue",
         actions: ["setValue"],
       },
       CLEAR: {
@@ -122,6 +122,11 @@ export const radioGroupMachine: RadioGroupMachine =
     implementations: {
       guards: {
         isInteractive: ({ computed }) => computed("isInteractive"),
+        canSetValue: ({ computed, event }) =>
+          computed("isInteractive") &&
+          "value" in event &&
+          isNotNull(event.value) &&
+          event.value !== "",
       },
 
       actions: {
@@ -149,8 +154,8 @@ export const radioGroupMachine: RadioGroupMachine =
               component: prop("component"),
               getHost: () => prop("formContext"),
               id: scope.id ?? "radio-group",
-              getFormId: () => prop("form") || "",
-              getName: () => prop("name") || "",
+              getFormId: () => prop("form"),
+              getName: () => prop("name"),
               getValue: () => context.get("value"),
               setValue: (rawVal: unknown) => {
                 context.set("value", isNotNull(rawVal) ? String(rawVal) : null);

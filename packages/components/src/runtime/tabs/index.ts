@@ -5,6 +5,7 @@ import {
   getApi,
 } from "../_shared/machine";
 import { withTabs } from "@code-ui/miniapp/behaviors/tabs";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
   tabsMachine,
@@ -42,14 +43,16 @@ Component(
       },
 
       classes() {
-        const api = this.data.tabs;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const orientation = api?.orientation ?? this.data.orientation;
-        const variant = api?.variant ?? this.data.variant;
-        const color = api?.color ?? this.data.color;
-        const size = api?.size ?? this.data.size;
-        const fitted = Boolean(api?.fitted ?? this.data.fitted);
-        const ui = this.data.ui;
+        const {
+          orientation,
+          variant,
+          color,
+          size,
+          disabled,
+          fitted,
+          ui,
+          className,
+        } = this.data;
 
         const themeFns = tabsTheme({
           orientation,
@@ -60,22 +63,14 @@ Component(
           fitted,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, ui, className);
       },
     },
 
     methods: {
-      handleItemSelect(e: WechatMiniprogram.CustomEvent) {
-        const value = e.detail?.value;
-        if (value !== undefined) {
-          getApi(this, "tabs")?.select?.(value);
-        }
-      },
-
-      handleTriggerTap(e: WechatMiniprogram.CustomEvent) {
-        const value = e.currentTarget?.dataset?.value;
-        if (value !== undefined) {
-          getApi(this, "tabs")?.select?.(value);
+      handleItemSelect(e: MiniAppEventLike<{ value?: string | number }>) {
+        if (e.detail.value !== undefined) {
+          getApi(this, "tabs")?.select(e.detail.value);
         }
       },
 

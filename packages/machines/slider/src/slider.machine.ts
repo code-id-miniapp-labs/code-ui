@@ -6,11 +6,11 @@ import {
   hasFormFieldErrors,
   setupFormFieldSync,
 } from "@code-ui/form/context";
-import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
-import type { MiniAppRect } from "@code-ui/utils";
+import { isEqual, isNotEmpty, isNotNull, queryRect } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppRect } from "@code-ui/utils";
+import * as dom from "./slider.dom";
 import type {
   SliderMachine,
-  SliderOrientation,
   SliderParams,
   SliderPoint,
   SliderSchema,
@@ -25,15 +25,45 @@ import {
   normalizeValues,
 } from "./slider.utils";
 
+function canQueryRect(
+  comp: MiniAppComponent | undefined,
+): comp is MiniAppComponent {
+  return (
+    Boolean(comp) &&
+    (Boolean((globalThis as Record<string, unknown>).wx) ||
+      typeof comp?.createSelectorQuery === "function")
+  );
+}
+
 function getSliderConfig(prop: PropFn<SliderSchema>) {
   return {
-    min: Number(prop("min") ?? 0),
-    max: Number(prop("max") ?? 100),
-    step: Number(prop("step") ?? 1),
-    orientation: (prop("orientation") ?? "horizontal") as SliderOrientation,
-    inverted: Boolean(prop("inverted")),
-    minSteps: Number(prop("minStepsBetweenThumbs") ?? 0),
+    min: Number(prop("min")),
+    max: Number(prop("max")),
+    step: Number(prop("step")),
+    orientation: prop("orientation"),
+    inverted: prop("inverted"),
+    minSteps: Number(prop("minStepsBetweenThumbs")),
   };
+}
+
+function resolveThumbIndexForPoint(
+  currentVals: number[],
+  prop: PropFn<SliderSchema>,
+  rect: MiniAppRect | null,
+  point: SliderPoint,
+  explicitIndex?: number,
+): number {
+  if (explicitIndex !== undefined && explicitIndex >= 0) {
+    return explicitIndex;
+  }
+  if (!rect) return 0;
+
+  const { min, max, orientation, inverted } = getSliderConfig(prop);
+  const percent = getPercentFromPoint(point, rect, orientation, inverted);
+  return getClosestThumbIndex(
+    currentVals,
+    min + (percent / 100) * (max - min),
+  );
 }
 
 function updateThumbFromPoint(
@@ -145,6 +175,10 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       defaultValue: -1,
     })),
 
+    rect: bindable<MiniAppRect | null>(() => ({
+      defaultValue: null,
+    })),
+
     value: bindable<number[]>(() => {
       const propVal = prop("value");
       const defaultVal = prop("defaultValue");
@@ -191,12 +225,12 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       const fieldSize = computed("fieldSize");
       return rawSize && rawSize !== "md"
         ? rawSize
-        : ((fieldSize || rawSize || "md") as SliderSize);
+        : ((fieldSize || rawSize) as SliderSize);
     },
     values: ({ context }) => context.get("value"),
     value: ({ context, prop, computed }) => {
       const vals = context.get("value");
-      return computed("isRange") ? vals : (vals[0] ?? Number(prop("min") ?? 0));
+      return computed("isRange") ? vals : (vals[0] ?? Number(prop("min")));
     },
     valueAsPercent: ({ context, prop }) => {
       const { min, max } = getSliderConfig(prop);
@@ -206,8 +240,12 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
 
   entry: ["setupFormField"],
   exit: ["cleanupFormField"],
+  effects: ["measureControlRect"],
 
   on: {
+    "RECT.RESOLVED": {
+      actions: ["setRect"],
+    },
     SET_VALUE: {
       guard: "isInteractive",
       actions: ["setValue", "emitChange", "emitChangeEnd"],
@@ -234,6 +272,15 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
           target: "dragging",
           actions: ["setPointerDown", "emitChange"],
         },
+        TAP: {
+          guard: "isInteractive",
+          actions: [
+            "setPointerDown",
+            "emitChange",
+            "emitChangeEnd",
+            "clearActiveThumb",
+          ],
+        },
       },
     },
     dragging: {
@@ -241,6 +288,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       exit: ["clearActiveThumb"],
       on: {
         POINTER_MOVE: {
+          guard: "isInteractive",
           actions: ["updateValueFromPoint", "emitChange"],
         },
         POINTER_UP: {
@@ -256,47 +304,100 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       isInteractive: ({ computed }) => computed("isInteractive"),
     },
 
-    actions: {
-      setPointerDown: ({ context, prop, event, refs }) => {
-        const e = event as any;
-        if (e.rect) refs.set("rect", e.rect);
-        const rect = refs.get("rect");
-        const currentVals = context.get("value");
-        const { min, max, orientation, inverted } = getSliderConfig(prop);
-
-        let targetIndex = e.index ?? -1;
-        if (targetIndex < 0 && rect) {
-          const percent = getPercentFromPoint(
-            e.point,
-            rect,
-            orientation,
-            inverted,
-          );
-          targetIndex = getClosestThumbIndex(
-            currentVals,
-            min + (percent / 100) * (max - min),
-          );
-        } else if (targetIndex < 0) {
-          targetIndex = 0;
+    effects: {
+      measureControlRect: ({ prop, scope, send, refs, context }) => {
+        const comp = prop("component");
+        if (!canQueryRect(comp) || context.get("rect") || refs.get("rect")) {
+          return;
         }
+        let cancelled = false;
+        queryRect(`#${dom.getControlId(scope)}`, comp).then((queried) => {
+          if (!cancelled && queried) {
+            send({ type: "RECT.RESOLVED", rect: queried });
+          }
+        });
+        return () => {
+          cancelled = true;
+        };
+      },
+    },
+
+    actions: {
+      setRect: ({ context, refs, event, prop, computed }) => {
+        if (event.type !== "RECT.RESOLVED") return;
+        refs.set("rect", event.rect);
+        context.set("rect", event.rect);
+        if (event.point && computed("isInteractive")) {
+          const targetIndex = resolveThumbIndexForPoint(
+            context.get("value"),
+            prop,
+            event.rect,
+            event.point,
+            event.index,
+          );
+          context.set("activeThumbIndex", targetIndex);
+          updateThumbFromPoint(
+            context,
+            prop,
+            event.rect,
+            event.point,
+            targetIndex,
+          );
+          notifyChange(
+            { prop, refs, computed, context },
+            Boolean(event.commit),
+          );
+          if (event.commit) {
+            context.set("activeThumbIndex", -1);
+          }
+        }
+      },
+
+      setPointerDown: ({ context, prop, event, refs, scope, send }) => {
+        if (event.type !== "POINTER_DOWN" && event.type !== "TAP") return;
+
+        if (event.rect) {
+          refs.set("rect", event.rect);
+          context.set("rect", event.rect);
+        }
+        const rect = context.get("rect") ?? refs.get("rect");
+        const targetIndex = resolveThumbIndexForPoint(
+          context.get("value"),
+          prop,
+          rect,
+          event.point,
+          event.index,
+        );
 
         context.set("activeThumbIndex", targetIndex);
         if (rect) {
-          updateThumbFromPoint(context, prop, rect, e.point, targetIndex);
+          updateThumbFromPoint(context, prop, rect, event.point, targetIndex);
+        }
+
+        const comp = prop("component");
+        if (canQueryRect(comp)) {
+          const pendingPoint = rect ? undefined : event.point;
+          const isTap = event.type === "TAP";
+          queryRect(`#${dom.getControlId(scope)}`, comp).then((queried) => {
+            if (queried) {
+              send({
+                type: "RECT.RESOLVED",
+                rect: queried,
+                point: pendingPoint,
+                index: targetIndex,
+                commit: pendingPoint ? isTap : undefined,
+              });
+            }
+          });
         }
       },
 
       updateValueFromPoint: ({ context, prop, event, refs }) => {
-        const rect = refs.get("rect");
+        if (event.type !== "POINTER_MOVE") return;
+        const rect = context.get("rect") ?? refs.get("rect");
         const activeIndex = context.get("activeThumbIndex");
         if (rect && activeIndex >= 0) {
-          updateThumbFromPoint(
-            context,
-            prop,
-            rect,
-            (event as any).point,
-            activeIndex,
-          );
+          updateThumbFromPoint(context, prop, rect, event.point, activeIndex);
         }
       },
 
@@ -305,15 +406,15 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       },
 
       setValue: ({ context, prop, event }) => {
-        const e = event as any;
+        if (event.type !== "SET_VALUE") return;
         const { min, max, step, minSteps } = getSliderConfig(prop);
 
-        if (e.index !== undefined) {
+        if (event.index !== undefined) {
           const currentVals = [...context.get("value")];
-          currentVals[e.index] = clampThumbValue(
+          currentVals[event.index] = clampThumbValue(
             currentVals,
-            e.index,
-            Number(e.value),
+            event.index,
+            Number(event.value),
             min,
             max,
             step,
@@ -321,18 +422,18 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
           );
           context.set("value", currentVals);
         } else {
-          context.set("value", normalizeValues(e.value, min, max, step));
+          context.set("value", normalizeValues(event.value, min, max, step));
         }
       },
 
       stepUp: ({ context, prop, event }) => {
-        const e = event as any;
-        stepThumb(context, prop, e.index ?? 0, 1, e.step);
+        if (event.type !== "STEP_UP") return;
+        stepThumb(context, prop, event.index ?? 0, 1, event.step);
       },
 
       stepDown: ({ context, prop, event }) => {
-        const e = event as any;
-        stepThumb(context, prop, e.index ?? 0, -1, e.step);
+        if (event.type !== "STEP_DOWN") return;
+        stepThumb(context, prop, event.index ?? 0, -1, event.step);
       },
 
       resetValue: ({ context, refs }) => {
@@ -354,8 +455,8 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "slider",
-            getFormId: () => prop("form") ?? "",
-            getName: () => prop("name") ?? "",
+            getFormId: () => prop("form"),
+            getName: () => prop("name"),
             getValue: () => computed("value"),
             setValue: (rawVal: unknown) => {
               const { min, max, step } = getSliderConfig(prop);

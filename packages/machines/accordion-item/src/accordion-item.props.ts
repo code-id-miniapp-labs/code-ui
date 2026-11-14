@@ -1,26 +1,18 @@
-import type { AccordionItemProps } from "./accordion-item.types";
+import type { AccordionItemResolvedProps } from "./accordion-item.types";
 
-export const defaultAccordionItemProps: AccordionItemProps = {
-  id: undefined,
-  ids: undefined,
-  component: undefined,
+export const defaultAccordionItemProps: AccordionItemResolvedProps = {
   ui: {},
   value: "",
   label: "",
   description: "",
   content: "",
   icon: "",
-  trailingIcon: "",
+  trailingIcon: "chevronDown",
   disabled: false,
   open: null,
   defaultOpen: false,
   size: "",
   variant: "",
   collapsible: true,
-  contentHeight: undefined,
-  accordionId: undefined,
-  groupContext: undefined,
-  groupIndex: undefined,
-  onTap: undefined,
-  onOpenChange: undefined,
+  contentHeight: null,
 };

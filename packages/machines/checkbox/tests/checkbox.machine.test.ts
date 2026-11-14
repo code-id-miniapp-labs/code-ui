@@ -22,21 +22,15 @@ describe("Checkbox Machine", () => {
       const api = connectCheckbox(machine.service);
       expect(api.state).toBe("unchecked");
       expect(api.checked).toBe(false);
-      expect(api.isChecked).toBe(false);
       expect(api.indeterminate).toBe(false);
-      expect(api.isIndeterminate).toBe(false);
-      expect(api.isInteractive).toBe(true);
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
       expect(api.size).toBe("md");
-      expect(api.color).toBe("primary");
-      expect(api.icon).toBe("check");
-      expect(api.indeterminateIcon).toBe("minus");
+      expect(api.variant).toBe("outline");
       expect(api.rootProps["data-state"]).toBe("unchecked");
       expect(api.rootProps["data-checked"]).toBe("false");
       expect(api.baseProps["aria-checked"]).toBe(false);
-      expect(api.hiddenInputProps.checked).toBe(false);
 
       machine.stop();
     });
@@ -279,7 +273,7 @@ describe("Checkbox Machine", () => {
       machine.start();
 
       const api = connectCheckbox(machine.service);
-      expect(api.isInteractive).toBe(false);
+      expect(api.disabled).toBe(true);
 
       api.toggle();
       await flush();
@@ -295,7 +289,7 @@ describe("Checkbox Machine", () => {
       machine.start();
 
       const api = connectCheckbox(machine.service);
-      expect(api.isInteractive).toBe(false);
+      expect(api.readOnly).toBe(true);
 
       api.toggle();
       await flush();
@@ -318,7 +312,7 @@ describe("Checkbox Machine", () => {
       api.toggle();
       await flush();
 
-      expect(onChange).toHaveBeenCalledWith({ value: true, checked: true });
+      expect(onChange).toHaveBeenCalledWith({ value: "", checked: true });
 
       machine.stop();
     });

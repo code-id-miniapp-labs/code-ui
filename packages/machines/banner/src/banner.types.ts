@@ -90,7 +90,7 @@ export interface BannerProps {
   /** Custom UI slot classes for banner anatomy parts */
   ui?: BannerUI | undefined;
   /** Controlled open state */
-  open?: boolean | undefined;
+  open?: boolean | null | undefined;
   /** Default open state (uncontrolled) */
   defaultOpen?: boolean | undefined;
   /** Color variant of the banner */
@@ -110,9 +110,9 @@ export interface BannerProps {
   /** Small caption displayed above the title */
   caption?: string | undefined;
   /** Badge / label displayed above the title, or badge config matching c-badge */
-  badge?: string | BannerBadgeProps | undefined;
+  badge?: string | BannerBadgeProps | null | undefined;
   /** Explicit badge props matching c-badge */
-  badgeProps?: BannerBadgeProps | undefined;
+  badgeProps?: BannerBadgeProps | null | undefined;
   /** Custom icon name or path */
   icon?: string | undefined;
   /** Custom icon name for info color */
@@ -146,9 +146,9 @@ export interface BannerProps {
   /** Native WeChat hover class applied to the root */
   hoverClass?: string | undefined;
   /** Manual top offset in px (overrides auto layout offset) */
-  topOffset?: number | undefined;
+  topOffset?: number | null | undefined;
   /** Manual bottom offset in px (overrides auto layout offset) */
-  bottomOffset?: number | undefined;
+  bottomOffset?: number | null | undefined;
   /** Whether to automatically coordinate with app layout insets */
   autoInset?: boolean | undefined;
   /** Callback fired when the banner is tapped */
@@ -176,7 +176,41 @@ export type BannerEvent =
   | { type: "ANIMATION_END" }
   | { type: "MORE" }
   | { type: "TAP" }
-  | { type: "TRIGGER_ACTION"; action: BannerAction; index: number };
+  | { type: "TRIGGER_ACTION"; index: number };
+
+type BannerDefaultedKey =
+  | "open"
+  | "defaultOpen"
+  | "color"
+  | "variant"
+  | "size"
+  | "placement"
+  | "mode"
+  | "title"
+  | "description"
+  | "caption"
+  | "badge"
+  | "badgeProps"
+  | "icon"
+  | "image"
+  | "imagePosition"
+  | "imageShape"
+  | "imageMode"
+  | "close"
+  | "closable"
+  | "closeIcon"
+  | "more"
+  | "moreIcon"
+  | "actions"
+  | "hoverClass"
+  | "topOffset"
+  | "bottomOffset"
+  | "autoInset"
+  | "ui";
+
+export type BannerResolvedProps = Omit<BannerProps, BannerDefaultedKey> & {
+  [K in BannerDefaultedKey]-?: Exclude<BannerProps[K], undefined>;
+};
 
 export interface BannerContext {}
 
@@ -192,7 +226,7 @@ export interface BannerSchema extends MachineSchema {
   state: BannerState;
   tag: "open" | "dismissing" | "closed";
   event: BannerEvent;
-  props: BannerProps;
+  props: BannerResolvedProps;
   context: BannerContext;
   computed: BannerComputed;
   refs: BannerRefs;

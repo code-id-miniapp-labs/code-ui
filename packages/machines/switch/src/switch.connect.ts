@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type { SwitchApi, SwitchService } from "./switch.types";
 import * as dom from "./switch.dom";
 
@@ -6,16 +7,11 @@ export function connectSwitch(service: SwitchService): SwitchApi {
 
   const currentState = state.get();
   const checked = computed("isChecked");
-  const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
-  const loading = Boolean(prop("loading"));
+  const loading = prop("loading");
   const invalid = computed("isInvalid");
-  const required = Boolean(prop("required"));
   const size = computed("effectiveSize");
-  const color = prop("color") ?? "primary";
-  const name = prop("name") ?? "";
-  const value = prop("value") ?? "on";
 
   const sharedData = {
     "data-state": currentState,
@@ -25,10 +21,8 @@ export function connectSwitch(service: SwitchService): SwitchApi {
     "data-loading": String(loading),
     "data-invalid": String(invalid),
   };
-  const containerId = dom.getContainerId(scope);
   const thumbId = dom.getThumbId(scope);
   const descId = dom.getDescriptionId(scope);
-  const hiddenId = dom.getHiddenInputId(scope);
 
   const baseProps = {
     id: dom.getBaseId(scope),
@@ -42,15 +36,10 @@ export function connectSwitch(service: SwitchService): SwitchApi {
   return {
     state: currentState,
     checked,
-    isChecked: checked,
-    isInteractive,
     disabled,
     readOnly,
-    loading,
     invalid,
-    required,
     size,
-    color,
 
     setChecked(nextChecked: boolean) {
       send({ type: "SET_CHECKED", checked: nextChecked });
@@ -64,7 +53,7 @@ export function connectSwitch(service: SwitchService): SwitchApi {
       send({ type: "RESET_VALUE" });
     },
 
-    handleTap(_event?: any) {
+    handleTap(_e?: MiniAppBaseEventLike) {
       send({ type: "TOGGLE" });
     },
 
@@ -76,14 +65,7 @@ export function connectSwitch(service: SwitchService): SwitchApi {
       "aria-invalid": invalid,
     },
 
-    containerProps: {
-      ...(containerId ? { id: containerId } : {}),
-      "data-state": currentState,
-      "data-disabled": String(disabled),
-    },
-
     baseProps,
-    controlProps: baseProps,
 
     thumbProps: {
       ...(thumbId ? { id: thumbId } : {}),
@@ -102,17 +84,6 @@ export function connectSwitch(service: SwitchService): SwitchApi {
     descriptionProps: {
       ...(descId ? { id: descId } : {}),
       "data-disabled": String(disabled),
-    },
-
-    hiddenInputProps: {
-      ...(hiddenId ? { id: hiddenId } : {}),
-      type: "checkbox",
-      name: name || undefined,
-      value,
-      checked,
-      disabled: disabled || readOnly,
-      required,
-      "aria-hidden": "true",
     },
   };
 }

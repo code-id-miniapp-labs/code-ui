@@ -1,13 +1,12 @@
-import type { ToastProps } from "./toast.types";
+import type { ToastResolvedProps } from "./toast.types";
 
-export const defaultToastProps: ToastProps = {
-  id: undefined,
-  open: null as any,
+export const defaultToastProps: ToastResolvedProps = {
+  open: null,
   defaultOpen: true,
   mode: "default",
   color: "neutral",
   variant: "outline",
-  orientation: "horizontal",
+  orientation: "vertical",
   placement: "top",
   title: "",
   description: "",

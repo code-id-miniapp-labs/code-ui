@@ -1,4 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
+import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import {
   createMachineBehavior,
   createProperties,
@@ -35,10 +36,10 @@ Component(
       classes() {
         const api = this.data.input;
         const themeFns = inputTheme({
-          variant: api?.variant ?? this.data.variant,
-          color: api?.color ?? this.data.color,
+          variant: this.data.variant,
+          color: this.data.color,
           size: api?.size ?? (this.data.size || "md"),
-          highlight: Boolean(api?.highlight ?? this.data.highlight),
+          highlight: Boolean(this.data.highlight),
           invalid: Boolean(api?.invalid ?? this.data.invalid),
           disabled: Boolean(api?.disabled ?? this.data.disabled),
           leading: Boolean(this.data.leading || this.data.leadingIcon),
@@ -54,27 +55,27 @@ Component(
     },
 
     methods: {
-      handleInput(e: WechatMiniprogram.CustomEvent) {
+      handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>) {
         return getApi(this, "input")?.handleInput?.(e);
       },
 
-      handleFocus(e: WechatMiniprogram.CustomEvent) {
+      handleFocus(e: MiniAppBaseEventLike) {
         getApi(this, "input")?.handleFocus?.(e);
       },
 
-      handleBlur(e: WechatMiniprogram.CustomEvent) {
+      handleBlur(e: MiniAppBaseEventLike) {
         getApi(this, "input")?.handleBlur?.(e);
       },
 
-      handleConfirm(e: WechatMiniprogram.CustomEvent) {
+      handleConfirm(e: MiniAppEventLike<{ value?: string }>) {
         getApi(this, "input")?.handleConfirm?.(e);
       },
 
-      handleClear(e: WechatMiniprogram.CustomEvent) {
+      handleClear(e: MiniAppBaseEventLike) {
         getApi(this, "input")?.handleClear?.(e);
       },
 
-      handleKeyboardHeightChange(e: WechatMiniprogram.CustomEvent) {
+      handleKeyboardHeightChange(e: MiniAppEventLike<Record<string, any>>) {
         this.triggerEvent("keyboardheightchange", e.detail);
       },
     },

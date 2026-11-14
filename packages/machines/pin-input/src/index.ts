@@ -1,6 +1,10 @@
 export { anatomy as pinInputAnatomy, parts as pinInputParts } from "./pin-input.anatomy";
 export { connectPinInput } from "./pin-input.connect";
-export { pinInputMachine, isValidCharacter } from "./pin-input.machine";
+export {
+  pinInputMachine,
+  isValidCharacter,
+  resolvePinInputCellReturnValue,
+} from "./pin-input.machine";
 export { defaultPinInputProps } from "./pin-input.props";
 export * as pinInputDom from "./pin-input.dom";
 export type {
@@ -13,6 +17,7 @@ export type {
   PinInputMachine,
   PinInputParams,
   PinInputProps,
+  PinInputResolvedProps,
   PinInputResolvedUI,
   PinInputSchema,
   PinInputSeparator,

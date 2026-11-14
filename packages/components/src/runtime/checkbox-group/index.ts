@@ -1,3 +1,5 @@
+import type { CheckboxGroupItemTapDetail } from "@code-ui/checkbox-group";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withCheckboxGroup } from "@code-ui/miniapp/behaviors/checkbox";
@@ -38,10 +40,10 @@ Component(
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
         const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const orientation = api?.orientation ?? this.data.orientation;
-        const variant = api?.variant ?? this.data.variant;
-        const required = Boolean(api?.required ?? this.data.required);
+        const color = this.data.color;
+        const orientation = this.data.orientation;
+        const variant = this.data.variant;
+        const required = Boolean(this.data.required);
         const ui = this.data.ui;
 
         const themeFns = checkboxGroupTheme({
@@ -59,7 +61,7 @@ Component(
     },
 
     methods: {
-      handleItemTap(e: WechatMiniprogram.CustomEvent) {
+      handleItemTap(e: MiniAppEventLike<CheckboxGroupItemTapDetail>) {
         return getApi(this, "cCheckboxGroup")?.handleItemTap?.(e);
       },
     },

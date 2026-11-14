@@ -4,6 +4,7 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
 
@@ -30,7 +31,7 @@ Component(
     computed: {
       classes() {
         const api = this.data.actionSheet;
-        const isOpen = Boolean(api?.open ?? this.data.open);
+        const isOpen = Boolean(api?.open);
         const ui = this.data.ui;
 
         const themeFns = actionSheetTheme({
@@ -61,25 +62,25 @@ Component(
         this.triggerEvent("closeTriggerTap", ev);
       },
 
-      handleItemTap(this: any, ev: any) {
-        const raw =
-          ev?.currentTarget?.dataset?.index ?? ev?.target?.dataset?.index;
-        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
+      handleItemTap(
+        this: any,
+        ev: MiniAppBaseEventLike<{ index?: number | string }>,
+      ) {
+        const raw = ev.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : NaN;
         if (!Number.isNaN(index)) {
-          const api = getApi(this, "actionSheet");
-          api?.select?.(index);
+          getApi(this, "actionSheet")?.select(index);
         }
       },
 
-      handleActionTap(this: any, event: any) {
-        const raw =
-          event?.currentTarget?.dataset?.index ??
-          event?.target?.dataset?.index ??
-          event?.detail?.index;
-        const index = raw !== undefined && raw !== null ? Number(raw) : NaN;
+      handleActionTap(
+        this: any,
+        event: MiniAppBaseEventLike<{ index?: number | string }>,
+      ) {
+        const raw = event.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : NaN;
         if (!Number.isNaN(index)) {
-          const api = getApi(this, "actionSheet");
-          return api?.handleAction?.(index);
+          getApi(this, "actionSheet")?.handleAction(index);
         }
       },
 

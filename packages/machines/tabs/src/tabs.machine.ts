@@ -1,16 +1,12 @@
 import { createMachine } from "@code-ui/core";
+import type { PropFn } from "@code-ui/core";
 import { defaultTabsProps } from "./tabs.props";
-import { performTabsScrollUpdate } from "./tabs.utils";
 import type {
   NormalizedTabItem,
-  TabsColor,
   TabsGroupContext,
   TabsItem,
   TabsMachine,
-  TabsOrientation,
   TabsSchema,
-  TabsSize,
-  TabsVariant,
 } from "./tabs.types";
 
 export function normalizeItems(
@@ -29,9 +25,9 @@ export function normalizeItems(
   );
 }
 
-const rawItemsOf = (prop: (k: any) => any) => {
+const rawItemsOf = (prop: PropFn<TabsSchema>) => {
   const items = prop("items");
-  return items?.length ? items : prop("childItems");
+  return items.length ? items : prop("childItems");
 };
 
 const stepTab = (
@@ -61,12 +57,12 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   refs: ({ prop, computed, send }) => ({
     groupContext: {
       value: () => computed("selectedValue"),
-      orientation: () => (prop("orientation") ?? "horizontal") as TabsOrientation,
-      variant: () => (prop("variant") ?? "pill") as TabsVariant,
-      color: () => (prop("color") ?? "primary") as TabsColor,
-      size: () => (prop("size") ?? "md") as TabsSize,
-      disabled: () => Boolean(prop("disabled")),
-      fitted: () => Boolean(prop("fitted")),
+      orientation: () => prop("orientation"),
+      variant: () => prop("variant"),
+      color: () => prop("color"),
+      size: () => prop("size"),
+      disabled: () => prop("disabled"),
+      fitted: () => prop("fitted"),
       select: (value) => send({ type: "SELECT", value }),
       setValue: (value) => send({ type: "SET_VALUE", value }),
       next: () => send({ type: "NEXT" }),
@@ -79,11 +75,10 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   context: ({ prop, bindable }) => ({
     value: bindable<string | number>(() => {
       const rawVal = prop("value");
-      const controlledVal =
-        rawVal !== null && rawVal !== undefined ? rawVal : undefined;
+      const controlledVal = rawVal !== null ? rawVal : undefined;
       const normalized = normalizeItems(rawItemsOf(prop));
       let defaultVal = prop("defaultValue");
-      if (defaultVal === null || defaultVal === undefined) {
+      if (defaultVal === null) {
         const firstEnabled =
           normalized.find((it) => !it.disabled) ?? normalized[0];
         defaultVal = firstEnabled ? firstEnabled.value : "";
@@ -101,16 +96,13 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
     focusedValue: bindable<string | number | null>(() => ({
       defaultValue: null,
     })),
-    scrollLeft: bindable<number>(() => ({ defaultValue: 0 })),
-    canScrollLeft: bindable<boolean>(() => ({ defaultValue: false })),
-    canScrollRight: bindable<boolean>(() => ({ defaultValue: false })),
   }),
 
   computed: {
     normalizedItems: ({ prop }) => normalizeItems(rawItemsOf(prop)),
     selectedValue: ({ context, computed }) => {
       const current = context.get("value");
-      if (current !== undefined && current !== null && current !== "") {
+      if (current !== "") {
         return current;
       }
       const items = computed("normalizedItems");
@@ -123,40 +115,33 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
         (it) => it.value === selected,
       );
     },
-    totalCount: ({ computed }) => computed("normalizedItems").length,
-    isDisabled: ({ prop }) => Boolean(prop("disabled")),
-    selectedItem: ({ computed }) => {
-      const selected = computed("selectedValue");
-      return computed("normalizedItems").find((it) => it.value === selected);
-    },
+    isDisabled: ({ prop }) => prop("disabled"),
   },
-
-  effects: ["trackControlledValue"],
 
   on: {
     SELECT: {
       guard: "canSelect",
-      actions: ["selectTab", "updateScroll"],
+      actions: ["selectTab"],
     },
     SET_VALUE: {
       guard: "isInteractive",
-      actions: ["selectTab", "updateScroll"],
+      actions: ["selectTab"],
     },
     NEXT: {
       guard: "isInteractive",
-      actions: ["selectNextTab", "updateScroll"],
+      actions: ["selectNextTab"],
     },
     PREV: {
       guard: "isInteractive",
-      actions: ["selectPrevTab", "updateScroll"],
+      actions: ["selectPrevTab"],
     },
     FIRST: {
       guard: "isInteractive",
-      actions: ["selectFirstTab", "updateScroll"],
+      actions: ["selectFirstTab"],
     },
     LAST: {
       guard: "isInteractive",
-      actions: ["selectLastTab", "updateScroll"],
+      actions: ["selectLastTab"],
     },
   },
 
@@ -167,7 +152,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
         FOCUS: {
           guard: "isInteractive",
           target: "focused",
-          actions: ["setFocusedValue", "autoSelectOnFocus", "updateScroll"],
+          actions: ["setFocusedValue", "autoSelectOnFocus"],
         },
       },
     },
@@ -180,7 +165,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
         },
         FOCUS: {
           guard: "isInteractive",
-          actions: ["setFocusedValue", "autoSelectOnFocus", "updateScroll"],
+          actions: ["setFocusedValue", "autoSelectOnFocus"],
         },
       },
     },
@@ -210,10 +195,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
         context.set("focusedValue", null);
       },
       autoSelectOnFocus: ({ context, prop, event }) => {
-        if (
-          event.type === "FOCUS" &&
-          (prop("activationMode") ?? "automatic") === "automatic"
-        ) {
+        if (event.type === "FOCUS" && prop("activationMode") === "automatic") {
           context.set("value", event.value);
         }
       },
@@ -222,7 +204,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
           computed("normalizedItems"),
           computed("selectedIndex"),
           1,
-          prop("loopFocus") ?? true,
+          prop("loopFocus"),
         );
         if (next !== undefined) context.set("value", next);
       },
@@ -231,7 +213,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
           computed("normalizedItems"),
           computed("selectedIndex"),
           -1,
-          prop("loopFocus") ?? true,
+          prop("loopFocus"),
         );
         if (prev !== undefined) context.set("value", prev);
       },
@@ -248,34 +230,6 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
             return;
           }
         }
-      },
-      updateScroll: ({ context, computed, prop, scope }) => {
-        performTabsScrollUpdate(context, computed, prop, scope);
-      },
-    },
-    effects: {
-      trackControlledValue: ({ prop, context, computed, scope, track }) => {
-        let initial = true;
-        track(
-          [
-            () => prop("value"),
-            () => prop("orientation"),
-            () => prop("variant"),
-            () => prop("color"),
-            () => prop("size"),
-            () => prop("disabled"),
-          ],
-          () => {
-            if (initial) {
-              initial = false;
-              if (computed("selectedIndex") > 0) {
-                performTabsScrollUpdate(context, computed, prop, scope);
-              }
-              return;
-            }
-            performTabsScrollUpdate(context, computed, prop, scope);
-          },
-        );
       },
     },
   },

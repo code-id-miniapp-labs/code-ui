@@ -1,3 +1,4 @@
+import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   PullDownRefreshApi,
   PullDownRefreshService,
@@ -21,9 +22,9 @@ export function connectPullDownRefresh(
   const refreshing = computed("isRefreshing");
   const atTop = computed("isAtTop");
   const canPull = computed("canPull");
-  const threshold = prop("threshold") ?? 50;
-  const maxPullDistance = prop("maxPullDistance") ?? 80;
-  const duration = prop("duration") ?? 300;
+  const threshold = prop("threshold");
+  const maxPullDistance = prop("maxPullDistance");
+  const duration = prop("duration");
   const offset = context.get("offset");
 
   return {
@@ -57,10 +58,14 @@ export function connectPullDownRefresh(
       send({ type: "CLOSE" });
     },
 
-    handleScroll(event: any) {
-      const scrollTop = Number(event?.detail?.scrollTop ?? 0);
-      const scrollLeft = Number(event?.detail?.scrollLeft ?? 0);
-      send({ type: "SCROLL", scrollTop, scrollLeft });
+    handleScroll(
+      event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
+    ) {
+      send({
+        type: "SCROLL",
+        scrollTop: Number(event.detail.scrollTop),
+        scrollLeft: Number(event.detail.scrollLeft),
+      });
     },
 
     handleScrollToUpper() {
@@ -91,16 +96,12 @@ export function connectPullDownRefresh(
       ...(atTop ? { "data-at-top": "true" } : {}),
     },
 
-    headerProps: {
-      id: dom.getHeaderId(scope),
-    },
-
     trackProps: {
       id: dom.getTrackId(scope),
       "data-state": currentState,
       ...(pulling ? { "data-pulling": "true" } : {}),
       ...(armed ? { "data-armed": "true" } : {}),
-      ...(offset !== undefined ? { "data-offset": offset } : {}),
+      "data-offset": offset,
     },
 
     tipsProps: {
@@ -108,16 +109,6 @@ export function connectPullDownRefresh(
       "data-state": currentState,
       "aria-role": "status",
       "aria-live": "polite",
-    },
-
-    indicatorProps: {
-      "aria-hidden": true,
-    },
-
-    textProps: {},
-
-    contentProps: {
-      id: dom.getContentId(scope),
     },
   };
 }

@@ -1,23 +1,6 @@
 import { createMachine } from "@code-ui/core";
-import type {
-  ProgressContext,
-  ProgressMachine,
-  ProgressOrientation,
-  ProgressProps,
-  ProgressSchema,
-  ProgressType,
-} from "./progress.types";
+import type { ProgressMachine, ProgressSchema } from "./progress.types";
 import { defaultProgressProps } from "./progress.props";
-
-const STROKE_WIDTHS: Record<string, number> = {
-  "2xs": 2,
-  xs: 2.5,
-  sm: 3,
-  md: 4,
-  lg: 5,
-  xl: 6,
-  "2xl": 7,
-};
 
 export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
   props: ({ props }) => ({
@@ -27,32 +10,20 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
 
   initialState: () => "idle",
 
-  context: ({ prop, bindable }) => {
-    const propBindable = <
-      K extends keyof ProgressContext & keyof ProgressProps,
-    >(
-      key: K,
-      defaultValue: ProgressContext[K],
-    ) =>
-      bindable<ProgressContext[K]>(() => ({
-        value: prop(key) as ProgressContext[K] | undefined,
-        defaultValue,
-      }));
-
-    return {
-      value: propBindable(
-        "value",
-        (prop("defaultValue") as number | null) ?? null,
-      ),
-      min: propBindable("min", 0),
-      max: propBindable("max", 100),
-      orientation: propBindable(
-        "orientation",
-        "horizontal" as ProgressOrientation,
-      ),
-      type: propBindable("type", "linear" as ProgressType),
-    };
-  },
+  context: ({ prop, bindable }) => ({
+    value: bindable<number | null>(() => ({
+      value: prop("value"),
+      defaultValue: prop("defaultValue"),
+    })),
+    min: bindable<number>(() => ({
+      value: prop("min"),
+      defaultValue: defaultProgressProps.min,
+    })),
+    max: bindable<number>(() => ({
+      value: prop("max"),
+      defaultValue: defaultProgressProps.max,
+    })),
+  }),
 
   computed: {
     isIndeterminate: ({ prop, context }) => {
@@ -64,8 +35,8 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       if (computed("isIndeterminate")) return -1;
       const value = context.get("value");
       if (value === null || value === undefined) return -1;
-      const min = context.get("min") ?? 0;
-      const max = context.get("max") ?? 100;
+      const min = context.get("min");
+      const max = context.get("max");
       if (max <= min) return 0;
       const clamped = Math.min(Math.max(value, min), max);
       return Math.round(((clamped - min) / (max - min)) * 100);
@@ -86,11 +57,16 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       if (fmt) {
         return fmt({
           value: context.get("value"),
-          max: context.get("max") ?? 100,
+          max: context.get("max"),
           percent,
         });
       }
       return computed("isIndeterminate") ? "" : `${percent}%`;
+    },
+
+    rangeStyle: ({ prop, computed }) => {
+      if (computed("isIndeterminate")) return "";
+      return `${prop("orientation") === "horizontal" ? "width" : "height"}: ${computed("percent")}%;`;
     },
 
     circleStyle: ({ computed, prop }) => {
@@ -98,8 +74,7 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
         ? 25
         : Math.max(0, Math.min(100, computed("percent")));
       const color = prop("color");
-      const strokeWidth =
-        prop("strokeWidth") ?? STROKE_WIDTHS[prop("size") ?? "md"] ?? 4;
+      const strokeWidth = prop("strokeWidth");
       const trackColor = prop("trackColor");
       let style = `--cui-progress-percent: ${percent}%; --cui-progress-stroke-width: ${strokeWidth}px;`;
       if (trackColor) style += ` --cui-progress-track-color: ${trackColor};`;
@@ -143,7 +118,7 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
         if (event.type === "SET_MAX") context.set("max", event.max);
       },
       resetValue: ({ context, prop, computed }) => {
-        const defaultVal = (prop("defaultValue") as number | null) ?? null;
+        const defaultVal = prop("defaultValue");
         context.set("value", defaultVal);
         prop("onValueChange")?.({
           value: defaultVal,

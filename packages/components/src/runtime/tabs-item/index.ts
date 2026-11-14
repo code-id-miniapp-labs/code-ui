@@ -38,40 +38,26 @@ Component(
     computed: {
       classes() {
         const api = this.data.tabsItem;
-        const disabled = Boolean(api?.isDisabled ?? this.data.disabled);
-        const orientation =
-          api?.orientation ?? this.data.orientation ?? "horizontal";
-        const variant = api?.variant ?? this.data.variant ?? "pill";
-        const color = api?.color ?? this.data.color ?? "primary";
-        const size = api?.size ?? this.data.size ?? "md";
-        const selected = Boolean(api?.isSelected ?? this.data.selected);
-        const fitted = Boolean(api?.fitted ?? this.data.fitted);
-        const ui = this.data.ui;
-
         const themeFns = tabsItemTheme({
-          orientation,
-          variant,
-          color,
-          size,
-          disabled,
-          selected,
-          fitted,
+          orientation: api ? api.orientation : this.data.orientation,
+          variant: api ? api.variant : this.data.variant,
+          color: api ? api.color : this.data.color,
+          size: api ? api.size : this.data.size,
+          disabled: api ? api.isDisabled : this.data.disabled,
+          selected: api ? api.isSelected : Boolean(this.data.selected),
+          fitted: api ? api.fitted : this.data.fitted,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
 
     methods: {
       handleTap() {
-        const api = getApi(this, "tabsItem");
-        if (api && !api.isDisabled) {
-          api.select();
-          this.triggerEvent("select", { value: api.value });
-        }
+        getApi(this, "tabsItem")?.select();
       },
       select() {
-        return getApi(this, "tabsItem")?.select?.();
+        return getApi(this, "tabsItem")?.select();
       },
     },
   }),

@@ -1,4 +1,4 @@
-import type { PullDownRefreshProps } from "./pull-down-refresh.types";
+import type { PullDownRefreshResolvedProps } from "./pull-down-refresh.types";
 
 export const DEFAULT_LOADING_TEXTS = [
   "Pull to refresh",
@@ -7,7 +7,7 @@ export const DEFAULT_LOADING_TEXTS = [
   "Refresh complete",
 ];
 
-export const defaultPullDownRefreshProps: PullDownRefreshProps = {
+export const defaultPullDownRefreshProps: PullDownRefreshResolvedProps = {
   disabled: false,
   value: null,
   defaultValue: false,

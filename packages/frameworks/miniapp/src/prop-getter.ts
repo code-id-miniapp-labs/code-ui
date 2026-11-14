@@ -76,18 +76,10 @@ export function createMachinePropGetter(
           }
 
           if (bridge) {
-            const detail =
-              normalized.detail &&
-              typeof normalized.detail === "object" &&
-              "checked" in normalized.detail &&
-              normalized.detail.value === undefined
-                ? { value: normalized.detail.checked, ...normalized.detail }
-                : normalized.detail;
-
-            const bRet = bridge(detail, options);
+            const bRet = bridge(normalized.detail, options);
             if (ret === undefined) ret = bRet;
             if (camelBridge) {
-              camelBridge(detail, options);
+              camelBridge(normalized.detail, options);
             }
           }
 

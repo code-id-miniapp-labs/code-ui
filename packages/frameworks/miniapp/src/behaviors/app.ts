@@ -545,6 +545,47 @@ export function notifyScaleGestureEnd(owner: any, passed: boolean): void {
   }
 }
 
+export function notifyScaleGestureDragStart(owner: any): void {
+  owner.__cuiScaleDragging = true;
+  if (owner.data?.shouldScaleBackground) {
+    notifyScaleGestureStart(owner);
+  }
+}
+
+export function notifyScaleGestureDragMove(owner: any, offset: number): void {
+  if (!owner.data?.shouldScaleBackground || !owner.__cuiScaleDragging) return;
+  owner.__cuiScaleDragOffset = offset;
+
+  if (!owner.__cuiScaleDragRafPending) {
+    owner.__cuiScaleDragRafPending = true;
+    const schedule =
+      typeof wx !== "undefined" && typeof wx.nextTick === "function"
+        ? wx.nextTick
+        : (fn: () => void) => fn();
+
+    schedule(() => {
+      owner.__cuiScaleDragRafPending = false;
+      if (owner.__cuiScaleDragging) {
+        const threshold = owner.data?.threshold || 80;
+        const maxDistance = Math.max(threshold * 1.5, 120);
+        const progress = Math.min(
+          1,
+          Math.max(0, (owner.__cuiScaleDragOffset ?? 0) / maxDistance),
+        );
+        notifyScaleGestureProgress(owner, progress);
+      }
+    });
+  }
+}
+
+export function notifyScaleGestureDragEnd(owner: any, passed: boolean): void {
+  owner.__cuiScaleDragging = false;
+  owner.__cuiScaleDragRafPending = false;
+  if (owner.data?.shouldScaleBackground) {
+    notifyScaleGestureEnd(owner, passed);
+  }
+}
+
 export function registerInset(owner: any, entry: AppInsetEntry): void {
   withHost(owner, (host) => {
     const prev = host.insets.get(entry.id);
@@ -643,6 +684,13 @@ export function withAppScale(
       }
     },
     onDetached(instance) {
+      if (instance.__cuiScaleDragging) {
+        instance.__cuiScaleDragging = false;
+        instance.__cuiScaleDragRafPending = false;
+        if (instance.data?.shouldScaleBackground) {
+          notifyScaleGestureEnd(instance, false);
+        }
+      }
       instance.__cuiScaleUnsub?.();
       if (instance.__cuiScaled) {
         releaseAppScale(instance, instance.__cuiScaleId);
@@ -1031,6 +1079,185 @@ export function getAppMetrics(forceRefresh = false): AppMetrics {
 
 export function refreshAppMetrics(): AppMetrics {
   return getAppMetrics(true);
+}
+
+export interface AppHostBehaviorOptions {
+  detectBars: (
+    appInstance: any,
+    cb: (result: { topRect: any; bottomRect: any }) => void,
+  ) => void;
+  extractTopBarHeight: (rect?: any) => number;
+  extractBottomBarHeight: (rect?: any) => number;
+}
+
+function attachPageAppRef(instance: any): void {
+  if (typeof getCurrentPages !== "function") return;
+  try {
+    const pages = getCurrentPages();
+    const topPage = pages && pages[pages.length - 1];
+    if (topPage) {
+      topPage.__cuiApp = instance;
+    }
+  } catch {
+    /* ignore page lookup errors outside runtime */
+  }
+}
+
+export function createAppHostBehavior(options: AppHostBehaviorOptions) {
+  const { detectBars, extractTopBarHeight, extractBottomBarHeight } = options;
+
+  return Behavior({
+    lifetimes: {
+      attached(this: any) {
+        this.__cuiAppAttached = true;
+        registerAppHost(this, {
+          onChange: (state: AppHostState) => this.applyHostState(state),
+        });
+        attachPageAppRef(this);
+      },
+
+      detached(this: any) {
+        this.__cuiAppAttached = false;
+        unregisterAppHost(this);
+      },
+
+      ready(this: any) {
+        this.detectCustomBars();
+        if (typeof wx !== "undefined" && typeof wx.nextTick === "function") {
+          wx.nextTick(() => {
+            if (this.__cuiAppAttached) {
+              this.detectCustomBars();
+            }
+          });
+        }
+      },
+    },
+
+    pageLifetimes: {
+      show(this: any) {
+        attachPageAppRef(this);
+        setAppHostVisible(this, true);
+        this.detectCustomBars();
+      },
+      hide(this: any) {
+        setAppHostVisible(this, false);
+      },
+      resize(this: any) {
+        refreshAppMetrics();
+        this.detectCustomBars();
+      },
+    },
+
+    methods: {
+      noop() {},
+
+      detectCustomBars(this: any) {
+        if (!this.data.autoDetectBars) return;
+        if (
+          typeof wx === "undefined" ||
+          typeof wx.createSelectorQuery !== "function"
+        ) {
+          return;
+        }
+        try {
+          const applyRects = (topRect: any, bottomRect: any) => {
+            if (!this.__cuiAppAttached) return;
+            const patch: Record<string, any> = {};
+
+            if (topRect && typeof topRect.height === "number") {
+              const topHeight = extractTopBarHeight(topRect);
+              if (topHeight !== this.data.detectedTopBarHeight) {
+                patch.detectedTopBarHeight = topHeight;
+              }
+            }
+
+            if (bottomRect && typeof bottomRect.height === "number") {
+              const bottomHeight = extractBottomBarHeight(bottomRect);
+              if (bottomHeight !== this.data.detectedBottomBarHeight) {
+                patch.detectedBottomBarHeight = bottomHeight;
+              }
+            }
+
+            if (Object.keys(patch).length > 0) {
+              this.setData(patch);
+            }
+          };
+
+          detectBars(this, ({ topRect, bottomRect }) => {
+            applyRects(topRect, bottomRect);
+          });
+        } catch {
+          /* ignore selector query errors */
+        }
+      },
+
+      startScaleGesture(this: any) {
+        this._lastScaleProgress = undefined;
+      },
+
+      applyScaleProgress(this: any, progress: number) {
+        const lastP = this._lastScaleProgress ?? -1;
+        if (
+          Math.abs(progress - lastP) < 0.008 &&
+          progress > 0 &&
+          progress < 1
+        ) {
+          return;
+        }
+        this._lastScaleProgress = progress;
+
+        const factor = this.data.hostScaleFactor || this.data.scaleFactor;
+        const currentScale = factor + (1 - factor) * progress;
+        const currentRadius = Math.round(16 * (1 - progress));
+        const currentTopFactor = Math.max(0, 1 - progress);
+
+        this.setData({
+          gestureScaleStyle:
+            `transform: scale(${Math.round(currentScale * 1000) / 1000}) translateY(calc(var(--cui-top-offset) * ${Math.round(currentTopFactor * 1000) / 1000})); ` +
+            `border-radius: ${currentRadius}px; ` +
+            `transition: none !important;`,
+        });
+      },
+
+      endScaleGesture(this: any, passed: boolean) {
+        this._lastScaleProgress = undefined;
+        const patch: Record<string, any> = { gestureScaleStyle: "" };
+        if (passed) {
+          patch.scaled = false;
+        }
+        this.setData(patch);
+      },
+
+      applyHostState(this: any, state: AppHostState) {
+        const patch: Record<string, any> = {};
+        if (state.scale) {
+          const wantScaled = Boolean(state.scale.scaled);
+          if (wantScaled !== Boolean(this.data.scaled)) {
+            patch.scaled = wantScaled;
+          }
+          if (state.scale.factor !== this.data.hostScaleFactor) {
+            patch.hostScaleFactor = state.scale.factor;
+          }
+          if (state.scale.background !== this.data.hostScaleBackground) {
+            patch.hostScaleBackground = state.scale.background ?? "";
+          }
+        }
+        if (
+          state.insets.top !== this.data.topInset ||
+          state.insets.bottom !== this.data.bottomInset
+        ) {
+          patch.topInset = state.insets.top;
+          patch.bottomInset = state.insets.bottom;
+        }
+        if (Object.keys(patch).length > 0) {
+          this.setData(patch);
+        }
+        if (this.data.autoDetectBars && this.data.detectedTopBarHeight === 0) {
+          this.detectCustomBars();
+        }
+      },
+    },
+  });
 }
 
 export function __resetAppRegistry(): void {

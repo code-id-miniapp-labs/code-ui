@@ -1,6 +1,7 @@
 import type {
   SwipeActionItem,
   SwipeCellActionSnapshot,
+  SwipeCellActionTapEvent,
   SwipeCellApi,
   SwipeCellService,
   SwipeSide,
@@ -33,20 +34,15 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
   const openedSide = computed("openedSide");
   const offset = computed("offset");
   const disabled = computed("isDisabled");
-  const variant = prop("variant") ?? "plain";
-  const size = prop("size") ?? "md";
-  const duration = prop("duration") ?? 300;
-  const threshold = prop("threshold") ?? 30;
+  const duration = prop("duration");
+  const threshold = prop("threshold");
   const leftWidth = context.get("leftWidth");
   const rightWidth = context.get("rightWidth");
   const hasLeftActions = computed("hasLeftActions");
   const hasRightActions = computed("hasRightActions");
 
-  const rawLeft: SwipeActionItem[] = prop("left") ?? [];
-  const rawRight: SwipeActionItem[] = prop("right") ?? [];
-
-  const leftActions = mapActions(rawLeft, "left");
-  const rightActions = mapActions(rawRight, "right");
+  const leftActions = mapActions(prop("left"), "left");
+  const rightActions = mapActions(prop("right"), "right");
 
   const contentStyle =
     offset !== 0 ? `transform: translate3d(${offset}px, 0, 0);` : "";
@@ -56,8 +52,6 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
     state: currentState,
     openedSide,
     offset,
-    variant,
-    size,
     disabled,
     duration,
     threshold,
@@ -112,34 +106,20 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
       send({ type: "CONTENT_TAP" });
     },
 
-    handleActionTap(
-      ev:
-        | { side: SwipeSide; index: number }
-        | {
-            currentTarget?: {
-              dataset?: { side?: SwipeSide; index?: number | string };
-            };
-          }
-        | any,
-    ) {
+    handleActionTap(ev: SwipeCellActionTapEvent) {
       let side: SwipeSide | undefined;
       let index: number | undefined;
 
       if ("currentTarget" in ev && ev.currentTarget?.dataset) {
-        side = ev.currentTarget.dataset.side as SwipeSide | undefined;
+        side = ev.currentTarget.dataset.side;
         index = Number(ev.currentTarget.dataset.index);
       } else if ("side" in ev && "index" in ev) {
         side = ev.side;
         index = ev.index;
       }
 
-      if (!side || index === undefined || isNaN(index)) return;
-
-      const list = side === "left" ? rawLeft : rawRight;
-      const action = list[index];
-      if (action) {
-        send({ type: "ACTION_CLICK", action, side, index });
-      }
+      if (!side || index === undefined || Number.isNaN(index)) return;
+      send({ type: "ACTION_CLICK", side, index });
     },
 
     rootProps: {
@@ -154,23 +134,6 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
       id: dom.getWrapperId(scope),
       "data-state": currentState,
       ...(disabled ? { "data-disabled": "true" } : {}),
-    },
-
-    leftProps: {
-      id: dom.getLeftId(scope),
-      "data-state": currentState,
-      hidden: !hasLeftActions,
-    },
-
-    contentProps: {
-      id: dom.getContentId(scope),
-      "data-state": currentState,
-    },
-
-    rightProps: {
-      id: dom.getRightId(scope),
-      "data-state": currentState,
-      hidden: !hasRightActions,
     },
 
     contentStyle,

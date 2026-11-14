@@ -1,9 +1,10 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties } from "../_shared/machine";
 import {
-  notifyScaleGestureEnd,
-  notifyScaleGestureProgress,
-  notifyScaleGestureStart,
+  notifyScaleGestureDragEnd,
+  notifyScaleGestureDragMove,
+  notifyScaleGestureDragStart,
   withAppScale,
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
@@ -42,8 +43,8 @@ Component(
     computed: {
       classes() {
         const api = this.data.drawer;
-        const placement = api?.placement ?? this.data.placement;
-        const isOpen = Boolean(api?.open ?? this.data.open);
+        const placement = this.data.placement;
+        const isOpen = Boolean(api?.open);
         const ui = this.data.ui;
 
         const themeFns = drawerTheme({
@@ -52,36 +53,6 @@ Component(
         });
 
         return resolveSlots(themeFns, ui, this.data.className);
-      },
-    },
-
-    lifetimes: {
-      attached() {
-        const handler: WechatMiniprogram.OnKeyboardHeightChangeCallback = (
-          res,
-        ) => {
-          this.send({ type: "KEYBOARD_CHANGE", height: res.height });
-        };
-        this._kbHandler = handler;
-        if (typeof wx !== "undefined" && wx.onKeyboardHeightChange) {
-          wx.onKeyboardHeightChange(handler);
-        }
-      },
-      detached(this: any) {
-        if (this._isDragging) {
-          this._isDragging = false;
-          if (this.data.shouldScaleBackground) {
-            notifyScaleGestureEnd(this, false);
-          }
-        }
-        const handler = this._kbHandler;
-        if (
-          handler &&
-          typeof wx !== "undefined" &&
-          wx.offKeyboardHeightChange
-        ) {
-          wx.offKeyboardHeightChange(handler);
-        }
       },
     },
 
@@ -95,63 +66,35 @@ Component(
     methods: {
       noop() {},
 
-      handleBackdropTap(ev: WechatMiniprogram.CustomEvent) {
+      handleBackdropTap(ev: MiniAppBaseEventLike) {
         this.send({ type: "BACKDROP.TAP" });
         this.triggerEvent("backdropTap", ev);
         this.triggerEvent("close", { reason: "backdrop" });
       },
 
-      handleCloseTap(ev: WechatMiniprogram.CustomEvent) {
+      handleCloseTap(ev: MiniAppBaseEventLike) {
         this.send({ type: "CLOSE_TRIGGER.TAP" });
         this.triggerEvent("closeTriggerTap", ev);
         this.triggerEvent("close", { reason: "close-trigger" });
       },
 
-      handleTouchStart(this: any, value?: any) {
-        this._isDragging = true;
-        if (this.data.shouldScaleBackground) {
-          notifyScaleGestureStart(this);
-        }
+      handleTouchStart(value?: { offset?: number }) {
+        notifyScaleGestureDragStart(this);
         this.send({ type: "DRAG_START" });
         this.triggerEvent("dragstart", value || {});
       },
 
-      handleTouchMove(this: any, value?: any) {
+      handleTouchMove(value?: { offset?: number }) {
         this.triggerEvent("drag", value || {});
-        if (!this.data.shouldScaleBackground || !this._isDragging) return;
-
-        const offset = typeof value?.offset === "number" ? value.offset : 0;
-        this._latestDragOffset = offset;
-
-        if (!this._dragRafPending) {
-          this._dragRafPending = true;
-          const schedule =
-            typeof wx !== "undefined" && typeof wx.nextTick === "function"
-              ? wx.nextTick
-              : (fn: () => void) => fn();
-
-          schedule(() => {
-            this._dragRafPending = false;
-            if (this._isDragging) {
-              const threshold = this.data.threshold || 80;
-              const maxDistance = Math.max(threshold * 1.5, 120);
-              const progress = Math.min(
-                1,
-                Math.max(0, this._latestDragOffset / maxDistance),
-              );
-              notifyScaleGestureProgress(this, progress);
-            }
-          });
-        }
+        notifyScaleGestureDragMove(
+          this,
+          typeof value?.offset === "number" ? value.offset : 0,
+        );
       },
 
-      handleTouchEnd(this: any, value?: { passed: boolean; offset?: number }) {
+      handleTouchEnd(value?: { passed: boolean; offset?: number }) {
         const passed = value ? value.passed : false;
-        this._isDragging = false;
-        this._dragRafPending = false;
-        if (this.data.shouldScaleBackground) {
-          notifyScaleGestureEnd(this, passed);
-        }
+        notifyScaleGestureDragEnd(this, passed);
         this.send({ type: "DRAG_END", passed });
         this.triggerEvent("dragend", value || { passed: false });
       },

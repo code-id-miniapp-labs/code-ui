@@ -6,30 +6,6 @@ function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
 }
 
-function makeMockTriggerChild(index: number) {
-  return {
-    data: { mode: "trigger", index },
-    createSelectorQuery: () => ({
-      in() {
-        return this;
-      },
-      select() {
-        return {
-          boundingClientRect(cb?: (res: any) => void) {
-            const rect = {
-              left: index * 100,
-              right: (index + 1) * 100,
-              width: 100,
-            };
-            cb?.(rect);
-            return { exec: () => {} };
-          },
-        };
-      },
-    }),
-  };
-}
-
 describe("Tabs Machine", () => {
   describe("Initialization & Default Props", () => {
     it("initializes with default props", () => {
@@ -41,11 +17,8 @@ describe("Tabs Machine", () => {
 
       expect(api.value).toBe("");
       expect(api.selectedIndex).toBe(-1);
-      expect(api.orientation).toBe("horizontal");
-      expect(api.variant).toBe("pill");
-      expect(api.color).toBe("primary");
-      expect(api.size).toBe("md");
       expect(api.disabled).toBe(false);
+      expect(api.activeTriggerId).toBe("");
       expect(api.items).toEqual([]);
 
       machine.stop();
@@ -440,56 +413,31 @@ describe("Tabs Machine", () => {
       machine.stop();
     });
 
-    it("automatically scrolls to reveal the next two tabs when tapping the 3rd visible tab", async () => {
-      // 6 tabs, each 100px wide (0..600), inside a 300px viewport (showing 3 tabs)
-      const triggerChildren = [0, 1, 2, 3, 4, 5].map(makeMockTriggerChild);
-      const mockComponent: any = {
-        __codeUiTabsChildren: triggerChildren,
-        createSelectorQuery: () => ({
-          in() {
-            return this;
-          },
-          select() {
-            return {
-              fields(_opts: any, cb?: (res: any) => void) {
-                const res = { left: 0, width: 300, scrollLeft: 0 };
-                cb?.(res);
-                return { exec: () => {} };
-              },
-            };
-          },
-        }),
-      };
-
+    it("updates activeTriggerId and scroll-into-view when selecting tabs", async () => {
       const machine = new MiniappMachine(tabsMachine, {
-        component: mockComponent,
-        items: ["Tab 1", "Tab 2", "Tab 3", "Tab 4", "Tab 5", "Tab 6"],
+        id: "demo",
+        items: ["Tab 1", "Tab 2", "Tab 3", "Tab 4"],
       });
       machine.start();
 
       let api = connectTabs(machine.service);
-      expect(api.scrollLeft).toBe(0);
+      expect(api.activeTriggerId).toBe("tb-demo-tr-Tab 1");
+      expect(api.listProps["scroll-into-view"]).toBe("tb-demo-tr-Tab 1");
 
-      // User taps the 3rd tab ("Tab 3", index 2)
       api.select("Tab 3");
-      await new Promise((r) => setTimeout(r, 10));
+      await flush();
 
       api = connectTabs(machine.service);
       expect(api.selectedIndex).toBe(2);
-      // Centers Tab 3 in the 300px viewport: 250 - 150 = 100px
-      expect(api.scrollLeft).toBe(100);
-      expect(api.canScrollLeft).toBe(true);
-      expect(api.canScrollRight).toBe(true);
-      expect(api.scrollMaskStyle).toContain("linear-gradient(to right, transparent 0%, #000 24px");
+      expect(api.activeTriggerId).toBe("tb-demo-tr-Tab 3");
+      expect(api.listProps["scroll-into-view"]).toBe("tb-demo-tr-Tab 3");
 
-      // User taps the 1st tab ("Tab 1", index 0) -> resets to 0
       api.select("Tab 1");
-      await new Promise((r) => setTimeout(r, 10));
+      await flush();
 
       api = connectTabs(machine.service);
-      expect(api.scrollLeft).toBe(0);
-      expect(api.canScrollLeft).toBe(false);
-      expect(api.canScrollRight).toBe(true);
+      expect(api.activeTriggerId).toBe("tb-demo-tr-Tab 1");
+      expect(api.listProps["scroll-into-view"]).toBe("tb-demo-tr-Tab 1");
 
       machine.stop();
     });

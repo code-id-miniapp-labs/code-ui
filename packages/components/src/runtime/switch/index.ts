@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
@@ -36,11 +37,11 @@ Component(
         const api = this.data.cSwitch;
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const loading = Boolean(api?.loading ?? this.data.loading);
+        const loading = Boolean(this.data.loading);
         const checked = Boolean(api?.checked ?? this.data.checked);
         const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const required = Boolean(api?.required ?? this.data.required);
+        const color = this.data.color;
+        const required = Boolean(this.data.required);
         const ui = this.data.ui;
 
         const themeFns = switchTheme({
@@ -58,7 +59,7 @@ Component(
     },
 
     methods: {
-      handleTap(e: WechatMiniprogram.CustomEvent) {
+      handleTap(e: MiniAppBaseEventLike) {
         return getApi(this, "cSwitch")?.handleTap?.(e);
       },
     },

@@ -36,22 +36,18 @@ Component(
     computed: {
       classes() {
         const api = this.data.progress;
-        const indeterminate = Boolean(
-          api
-            ? api.isIndeterminate
-            : this.data.indeterminate ||
-                this.data.value === null ||
-                this.data.value === undefined,
-        );
+        const indeterminate = api
+          ? api.isIndeterminate
+          : this.data.indeterminate || this.data.value === null;
 
         const themeFns = progressTheme({
           color: this.data.color,
           size: this.data.size,
-          type: api?.type ?? this.data.type,
-          orientation: api?.orientation ?? this.data.orientation,
-          striped: Boolean(this.data.striped),
-          animated: Boolean(this.data.animated),
-          inverted: Boolean(this.data.inverted),
+          type: this.data.type,
+          orientation: this.data.orientation,
+          striped: this.data.striped,
+          animated: this.data.animated,
+          inverted: this.data.inverted,
           indeterminate,
         });
 

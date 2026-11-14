@@ -1,6 +1,6 @@
-import type { SwitchProps } from "./switch.types";
+import type { SwitchResolvedProps } from "./switch.types";
 
-export const defaultSwitchProps: SwitchProps = {
+export const defaultSwitchProps: SwitchResolvedProps = {
   checked: null,
   defaultChecked: false,
   disabled: false,
@@ -18,6 +18,6 @@ export const defaultSwitchProps: SwitchProps = {
   description: "",
   checkedIcon: "",
   uncheckedIcon: "",
-  loadingIcon: "",
+  loadingIcon: "loading",
   ui: {},
 };

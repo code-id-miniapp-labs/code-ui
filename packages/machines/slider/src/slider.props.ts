@@ -1,6 +1,6 @@
-import type { SliderProps } from "./slider.types";
+import type { SliderResolvedProps } from "./slider.types";
 
-export const defaultSliderProps: SliderProps = {
+export const defaultSliderProps: SliderResolvedProps = {
   formContext: undefined,
   value: null,
   defaultValue: null,

@@ -20,13 +20,10 @@ describe("RadioGroup Machine", () => {
 
       const api = connectRadioGroup(machine.service);
       expect(api.value).toBe(null);
-      expect(api.isInteractive).toBe(true);
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
       expect(api.size).toBe("md");
-      expect(api.color).toBe("primary");
-      expect(api.orientation).toBe("vertical");
       expect(api.items).toEqual([]);
 
       machine.stop();
@@ -215,8 +212,8 @@ describe("RadioGroup Machine", () => {
       expect(api.items[0]?.checked).toBe(true);
       expect(api.items[1]?.checked).toBe(false);
 
-      // Tap on banana via dataset
-      api.handleItemTap({ currentTarget: { dataset: { value: "banana" } } });
+      // Tap on banana via detail.value
+      api.handleItemTap({ detail: { value: "banana" } });
       await flush();
 
       api = connectRadioGroup(machine.service);

@@ -15,7 +15,7 @@ Read this before adding `watch`, new context fields, or new state transitions.
 8. **Actions run after the target state is applied.** Read `state.matches(...)` for the new value; do not duplicate what the transition target already does.
 9. **Refs own handles and stable facades.** Form bindings, parent group/form facades, disposers, and previous-value snapshots belong in `refs`. Dispose machine-lifetime handles in `exit`; state-scoped effects own their own timer cleanup.
 10. **`connect` is a read-only adapter.** No writes, no machine logic. Precompute WXML arrays there.
-11. **Zero prop-echoing in `connect` (Do not re-export component props on `Api`).** Component props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible in WXML templates directly as `{{title}}`, `{{color}}`, etc. `connect()` must never return static/component props on `Api`. Return only FSM state, state-derived booleans, dynamic prop getters, dynamic arrays (e.g. `actions`), and imperative methods.
+11. **Zero non-inherited prop-echoing in `connect` (Do not re-export pass-through props on `Api`).** Standalone props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible directly in runtime `classes()` and WXML (`{{title}}`, `{{color}}`, `this.data.variant`). Do **not** expose non-mutating, non-inherited visual props (`variant`, `color`, `highlight`, standalone `size`, `autoHeight`, etc.) on `Api` or as unused `data-*` attributes on `rootProps`, and do not write `api?.variant ?? this.data.variant` fallbacks in runtime `classes()`. Keep styling props on `connect()` **only** when they are resolved/inherited from a parent or machine (`computed("effectiveSize")`, `effectiveColor`, `effectiveVariant`, `orientation` for geometry calculations) or synthesized into child item descriptors (e.g. group `items`, banner `badge`).
 
 12. **Keep snapshots stable.** `connect()` runs in a reactive effect and its output goes through `diffSnapshot` → `setData`. Return plain data only, reuse unchanged slices, and keep per-frame values out of context when WXS can own them (see [Performance and snapshot hygiene](#performance-and-snapshot-hygiene)).
 13. **The machine is the only place for logic.** Runtime `index.ts` stays a thin adapter (no timers, DOM measurement, or custom `observers`). Timers live in state-scoped `effects`; measurement is declarative or done in WXS (see `AGENTS.md`, rule 6).
@@ -53,10 +53,21 @@ watch: props/computed ──▶ FSM state (or narrowly necessary external subscr
 | Data owned by a parent group/form | Live facade getters read in `computed` | Parent remains the writer; do not copy its state into child bindables |
 | Derived flags (`isOpen`, `isChecked`, `isDisabled`) | `computed` | Cheap, pure reads |
 | Mutually exclusive modes (`idle`/`focused`, `checked`/`unchecked`) | FSM `state` | Used by guards/transitions/tags |
-| Presentational / component props (`size`, `variant`, `color`, `title`, `description`, `mode`, `ui`, `items`) | Component `properties` (`this.data`) | Do NOT copy into machine context, and do NOT re-export in `connect` `Api` |
+| Non-inherited visual/pass-through props (`variant`, `color`, `highlight`, standalone `size`, `block`, `title`, `description`, `mode`, `ui`, `autoHeight`) | Component `properties` (`this.data`) | Do NOT copy into context, do NOT expose on `connect` `Api` or unused `rootProps["data-*"]`. Read `this.data.*` directly in runtime `classes()` and `{{prop}}` in WXML |
+| Parent-inherited or geometry-driving visual props (`effectiveSize` from `form-field`/parent; `color`/`variant`/`orientation`/`fitted` on child items; `orientation` when computing styles) | `computed("effective*")` (or internal `connect` read) | Expose resolved value on `Api` (`api.size`) and consume in runtime `classes()` via `api?.size ?? this.data.size`; use internal `prop()` only to compute derived styles/SVG/item descriptors |
 | Handles, disposers, timers, previous snapshot | `refs` | Cleanup in `exit` |
 
 Displayed API fields should be derived (computed or `.matches()`), not stored again.
+
+### `connect()` vs Runtime `this.data` Boundary
+
+Use this rule when deciding whether a prop belongs in `<name>.connect.ts` or directly in `runtime/<name>/index.ts` / `index.wxml`:
+
+- **Runtime `this.data.*` / WXML directly** when the machine never mutates or inherits it:
+  - Examples: `variant`, `color`, `highlight` on `input` / `textarea` / `pin-input`; `autoHeight` on `textarea`; `color` on `slider`; `variant` and `size` on `swipe-cell`; `size`, `color` in `qr-code.connect.ts` / `button.connect.ts` (even if `qr-code.machine.ts` still reads `prop("color")` internally to render its SVG `dataUrl`).
+  - Runtime `classes()` reads `this.data.variant`, `this.data.color`, `Boolean(this.data.highlight)`, etc. directly, and WXML binds `{{size}}` / `{{color}}` without going through `connect()`.
+- **`connect()` / `Api` (`computed("effective*")`)** when the effective value can be inherited or derived:
+  - Examples: `size` (`effectiveSize` from `form-field` on `input`, `textarea`, `pin-input`, `slider`, `switch`, `checkbox-group`, `radio-group`), `size`/`color`/`variant`/`orientation`/`fitted` on compound child items (`checkbox`, `radio`, `accordion-item`, `tabs-item`, `stepper-item`), or `orientation`/`inverted`/`type` when `connect()` calculates inline positions, transforms, or SVG geometry (`slider`, `progress`).
 
 ## `watch` policy
 
@@ -345,7 +356,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 1. **Inventory writers.** `grep -n "context.set\|state.set\|refs.set" <machine>.ts`.
 2. **Classify each value.** Assign one owner using the table above. Mark duplicates.
 3. **Delete mirrored context keys and their setters.**
-4. **Convert derivations to `computed`.** Update `connect` to read them.
+4. **Convert derivations to `computed` and slim `connect`.** Update `connect` to read `computed` fields (`effectiveSize`, `isInvalid`, etc.). Remove non-inherited visual pass-through props (`variant`, `color`, `highlight`, standalone `size`, etc.) and unused `rootProps["data-*"]` visual attributes from `<name>.connect.ts` and `*Api`; update `runtime/<name>/index.ts` `classes()` and `index.wxml` to read `this.data.*` directly while keeping `api?.size` (and other `effective*` values) for parent-inherited props.
 5. **Reduce `watch`** to genuine prop/computed → FSM state sync + narrowly necessary external subscriptions. Delete `syncingFromProps`/`prev*` guards that only protect mirroring, and manual form registration/rebind bookkeeping. Use live facade getters and the form helper instead.
 6. **Dedupe transitions and actions.** Remove unreachable events; share branches; collapse constant-only actions.
 7. **Centralize user notification payloads.** One path, no emit in `watch`, no initial emit unless required by the contract. Remove parent snapshot broadcasts; let reactive getters propagate state.
@@ -357,7 +368,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
-| Prop-echoing in `connect` `Api` | `title`, `description`, `color`, `variant` re-exported in `Api` | See rule 11. Read props directly from component data in WXML and runtime. |
+| Prop-echoing in `connect` `Api` | Standalone `variant`, `color`, `highlight`, `size`, `title`, or unused `data-variant`/`data-size` re-exported in `Api` / `rootProps`, with `api?.variant ?? this.data.variant` fallbacks in runtime | See rule 11. Read non-inherited props directly from `this.data` in runtime `classes()` and `{{prop}}` in WXML; keep only parent-inherited `effective*` values (e.g. `api.size`) on `Api`. |
 | Unstable `connect` output | New objects or closures for unchanged slices; per-frame values in context | See rule 12. Reuse slices, return data-only snapshots, move drag values to WXS. |
 | Omitted controlled prop in `defaultProps` | MiniProgram `createProperties` creates no observer; parent `setData({ value })` fails to reach machine | Include every controlled prop in `defaultProps` (`value: null as any`) |
 | Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
@@ -371,7 +382,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 | Manual form registration/rebinding in `watch` | `currentName`, `currentFormContext`, repeated helper setup, or `rebind` calls | Setup once with reactive `getHost`/name/form getters; let the helper manage discovery and registration |
 | Duplicate tri-state | state + `checked` + `indeterminate` kept in sync | One owner; derive the rest |
 | Emit from multiple places | `onChange` + `watch` + `entry` all emit | Single `emitChange` |
-| Presentational props in context | `size`, `variant`, `ui`, `items` bindables | Read via `prop()` in `connect` |
+| Presentational props in context | Standalone `size`, `variant`, `color`, `ui` mirrored as bindables | Keep in `this.data` and read in runtime `classes()`/WXML; read `prop()` in `connect` only when deriving child item descriptors or geometry, or expose `computed("effective*")` when parent-inherited |
 | Dead events | `CHECK`/`UNCHECK` typed but never sent | Delete event + transitions |
 | Constant-only actions | `emitTrue` / `emitFalse` clones | One parameterized action |
 | Derivation in `watch` | `context.set("isOpen", ...)` | `computed` |
@@ -463,6 +474,7 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
 - [ ] Group children read facade getters; facade methods send parent intents. No mirrored group state or snapshot broadcasts.
 - [ ] Machine-lifetime bindings have exit cleanup; external subscriptions also clean up on identity change/unlink; state-scoped effects return cleanup.
 - [ ] `connect` only reads and precomputes; no writes.
+- [ ] `connect`, `*Api`, and `rootProps` do not echo non-inherited visual props (runtime `classes()` and WXML read `this.data.*` directly, consuming `api.*` only for machine-derived or parent-inherited `effective*` values).
 - [ ] Tests cover: initial/default, controlled `updateProps`, user events + guards, programmatic API, reactive group/form facades, `stop()` cleanup.
 
 ## Testing pattern

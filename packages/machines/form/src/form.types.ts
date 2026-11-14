@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
 import type { anatomy } from "./form.anatomy";
 
 export type FormState =
@@ -164,7 +164,7 @@ export interface FormProps {
   /** Custom UI slot classes */
   ui?: FormUI | undefined;
   /** Initial / controlled form values map */
-  value?: Record<string, any> | undefined;
+  value?: Record<string, any> | null | undefined;
   /** Default form values map */
   defaultValue?: Record<string, any> | undefined;
   /** Form-level validation rules keyed by field name (merged with field-level `rules` prop) */
@@ -286,7 +286,27 @@ export interface FormContext {
   submitCount: number;
 }
 
+export type FormDefaultedKey =
+  | "name"
+  | "value"
+  | "defaultValue"
+  | "rules"
+  | "validateOn"
+  | "validateLazy"
+  | "focusOnError"
+  | "scrollToError"
+  | "scrollOffset"
+  | "disabled"
+  | "readOnly"
+  | "showErrors"
+  | "ui";
+
+export type FormResolvedProps = Omit<FormProps, FormDefaultedKey> & {
+  [K in FormDefaultedKey]-?: Exclude<FormProps[K], undefined>;
+};
+
 export interface FormComputed {
+  errorItems: FormErrorItemProps[];
   isValid: boolean;
   hasErrors: boolean;
   errorCount: number;
@@ -307,7 +327,7 @@ export interface FormSchema extends MachineSchema {
   state: FormState;
   tag: "idle" | "validating" | "submitting" | "submitted" | "error";
   event: FormEvent;
-  props: FormProps;
+  props: FormResolvedProps;
   context: FormContext;
   computed: FormComputed;
   refs: FormRefs;
@@ -398,13 +418,11 @@ export interface FormApi {
   /** Scroll the viewport to the first field that currently has a validation error */
   scrollToFirstError(): Promise<boolean>;
   /** Native MiniApp bindsubmit handler */
-  handleSubmit(e?: any): Promise<FormValidationResult>;
+  handleSubmit(
+    e?: MiniAppEventLike<{ value?: Record<string, any> }>,
+  ): Promise<FormValidationResult>;
   /** Native MiniApp bindreset handler */
-  handleReset(e?: any): void;
+  handleReset(e?: MiniAppEventLike<Record<string, any>>): void;
   /** Root container props */
   rootProps: Record<string, any>;
-  /** Errors list container props */
-  errorsProps: Record<string, any>;
-  /** Individual field error props */
-  getErrorProps(name: string): Record<string, any>;
 }

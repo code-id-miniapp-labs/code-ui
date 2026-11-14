@@ -16,7 +16,7 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
       root: "w-full focus:outline-none",
       content: "w-full",
       trigger:
-        "relative inline-flex items-center justify-center font-medium transition-colors duration-200 select-none shrink-0 whitespace-nowrap z-[1] cursor-pointer focus:outline-none data-[disabled=true]:opacity-40 data-[disabled=true]:pointer-events-none",
+        "relative flex flex-row items-center justify-center font-medium transition-colors duration-200 select-none shrink-0 whitespace-nowrap z-[1] cursor-pointer focus:outline-none data-[disabled=true]:opacity-40 data-[disabled=true]:pointer-events-none",
       leading: "relative z-10 shrink-0",
       label: "relative z-10 truncate",
       trailing: "relative z-10 shrink-0",
@@ -94,7 +94,7 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
       },
       fitted: {
         true: {
-          trigger: "flex-1 min-w-0",
+          trigger: "w-full flex-1 min-w-0",
         },
         false: {},
       },

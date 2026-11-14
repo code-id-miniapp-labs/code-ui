@@ -1,5 +1,5 @@
 import { createMachine } from "@code-ui/core";
-import { isMiniApp, queryRect } from "@code-ui/utils";
+import { isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
 import type {
   AccordionGroupContext,
   AccordionSize,
@@ -11,6 +11,18 @@ import type {
   AccordionItemSchema,
 } from "./accordion-item.types";
 import { defaultAccordionItemProps } from "./accordion-item.props";
+
+function resolveItemValue(prop: AccordionItemParams["prop"]): string {
+  const explicitVal = prop("value");
+  if (explicitVal !== "") {
+    return String(explicitVal);
+  }
+  const gIdx = prop("groupIndex");
+  if (isNotNull(gIdx)) {
+    return String(gIdx);
+  }
+  return prop("id") || "0";
+}
 
 function measureBodyHeight(
   scope: AccordionItemParams["scope"] | undefined,
@@ -38,28 +50,16 @@ function measureBodyHeight(
     .catch(() => {});
 }
 
-function setItemOpen(
-  {
-    context,
-    computed,
-    prop,
-  }: Pick<AccordionItemParams, "context" | "computed" | "prop">,
+function emitStandaloneChange(
+  { computed, prop }: Pick<AccordionItemParams, "computed" | "prop">,
   nextOpen: boolean,
   isTap = false,
 ): void {
   const val = computed("resolvedValue");
   const details = { value: val, open: nextOpen };
   if (isTap) prop("onTap")?.(details);
-
-  const group = prop("groupContext") as AccordionGroupContext | undefined;
-  if (group) {
-    if (isTap) group.toggleItem(val);
-    else group.setItemOpen(val, nextOpen);
-    return;
-  }
-
-  context.set("open", nextOpen);
   prop("onOpenChange")?.(details);
+  prop("onChange")?.(details);
 }
 
 export const accordionItemMachine: AccordionItemMachine =
@@ -69,48 +69,38 @@ export const accordionItemMachine: AccordionItemMachine =
       ...props,
     }),
 
-    initialState: () => "idle",
+    initialState: ({ prop }) => {
+      const group = prop("groupContext") as AccordionGroupContext | undefined;
+      if (group) {
+        return group.value().includes(resolveItemValue(prop))
+          ? "open"
+          : "closed";
+      }
+      const rawOpen = prop("open");
+      const initialOpen = isNotNull(rawOpen)
+        ? Boolean(rawOpen)
+        : prop("defaultOpen");
+      return initialOpen ? "open" : "closed";
+    },
 
     context: ({ prop, bindable }) => ({
-      open: bindable<boolean>(() => {
-        const rawOpen = prop("open");
-        const controlledOpen =
-          rawOpen !== null && rawOpen !== undefined
-            ? Boolean(rawOpen)
-            : undefined;
+      contentHeight: bindable<number>(() => {
+        const rawHeight = prop("contentHeight");
         return {
-          value: controlledOpen,
-          defaultValue: controlledOpen ?? Boolean(prop("defaultOpen")),
+          value: isNotNull(rawHeight) ? rawHeight : undefined,
+          defaultValue: 0,
         };
       }),
-      contentHeight: bindable<number>(() => ({
-        value: prop("contentHeight"),
-        defaultValue: 0,
-      })),
     }),
 
     computed: {
-      resolvedValue: ({ prop }) => {
-        const explicitVal = prop("value");
-        if (
-          explicitVal !== null &&
-          explicitVal !== undefined &&
-          explicitVal !== ""
-        ) {
-          return String(explicitVal);
-        }
-        const gIdx = prop("groupIndex");
-        if (gIdx !== null && gIdx !== undefined) {
-          return String(gIdx);
-        }
-        return prop("id") || "0";
-      },
+      resolvedValue: ({ prop }) => resolveItemValue(prop),
 
-      isOpen: ({ context, computed, prop }) => {
+      isOpen: ({ state, computed, prop }) => {
         const group = prop("groupContext") as AccordionGroupContext | undefined;
         return group
           ? group.value().includes(computed("resolvedValue"))
-          : Boolean(context.get("open"));
+          : state.matches("open");
       },
 
       isDisabled: ({ prop }) => {
@@ -118,9 +108,11 @@ export const accordionItemMachine: AccordionItemMachine =
         return Boolean(prop("disabled") || group?.disabled());
       },
 
+      isInteractive: ({ computed }) => !computed("isDisabled"),
+
       isCollapsible: ({ prop }) => {
         const group = prop("groupContext") as AccordionGroupContext | undefined;
-        return group ? group.collapsible() : prop("collapsible") !== false;
+        return group ? group.collapsible() : prop("collapsible");
       },
 
       effectiveSize: ({ prop }): AccordionSize => {
@@ -136,30 +128,153 @@ export const accordionItemMachine: AccordionItemMachine =
       },
     },
 
+    watch: ({ prop, computed, state, scope, context, track }) => {
+      track(
+        [
+          () => {
+            const group = prop("groupContext") as
+              | AccordionGroupContext
+              | undefined;
+            return group
+              ? group.value().includes(computed("resolvedValue"))
+              : prop("open");
+          },
+        ],
+        () => {
+          const group = prop("groupContext") as
+            | AccordionGroupContext
+            | undefined;
+          if (group) {
+            const target = group.value().includes(computed("resolvedValue"))
+              ? "open"
+              : "closed";
+            if (!state.matches(target)) state.set(target);
+            return;
+          }
+          const controlledOpen = prop("open");
+          if (isNotNull(controlledOpen)) {
+            const target = controlledOpen ? "open" : "closed";
+            if (!state.matches(target)) state.set(target);
+          }
+        },
+      );
+
+      track([() => prop("content")], () => {
+        measureBodyHeight(scope, context);
+      });
+    },
+
+    effects: ["measureOnMount"],
+
     on: {
       MEASURE: { actions: ["measureHeightAction"] },
       "CONTENT_HEIGHT.SET": { actions: ["setContentHeightAction"] },
-      TOGGLE: {
-        guard: "canInteract",
-        actions: ["measureHeightAction", "handleTapAction"],
-      },
-      OPEN: {
-        guard: "canInteract",
-        actions: ["measureHeightAction", "openAction"],
-      },
-      CLOSE: {
-        guard: "canInteract",
-        actions: ["closeAction"],
-      },
     },
 
     states: {
-      idle: { tags: ["idle"] },
+      closed: {
+        tags: ["closed"],
+        on: {
+          TOGGLE: [
+            {
+              guard: "hasGroupContext",
+              actions: ["toggleGroupAction"],
+            },
+            {
+              guard: "isControlled",
+              actions: ["emitControlledOpen"],
+            },
+            {
+              guard: "canInteract",
+              target: "open",
+              actions: ["emitTapOpen"],
+            },
+          ],
+          OPEN: [
+            {
+              guard: "hasGroupContext",
+              actions: ["openGroupAction"],
+            },
+            {
+              guard: "isControlled",
+              actions: ["emitControlledOpen"],
+            },
+            {
+              guard: "canInteract",
+              target: "open",
+              actions: ["emitOpenChangeTrue"],
+            },
+          ],
+        },
+      },
+
+      open: {
+        tags: ["open"],
+        entry: ["measureHeightAction"],
+        on: {
+          TOGGLE: [
+            {
+              guard: "hasGroupContext",
+              actions: ["toggleGroupAction"],
+            },
+            {
+              guard: "isControlledCollapse",
+              actions: ["emitControlledClose"],
+            },
+            {
+              guard: "canCollapse",
+              target: "closed",
+              actions: ["emitTapClose"],
+            },
+          ],
+          CLOSE: [
+            {
+              guard: "hasGroupContext",
+              actions: ["closeGroupAction"],
+            },
+            {
+              guard: "isControlledCollapse",
+              actions: ["emitControlledClose"],
+            },
+            {
+              guard: "canCollapse",
+              target: "closed",
+              actions: ["emitOpenChangeFalse"],
+            },
+          ],
+        },
+      },
     },
 
     implementations: {
       guards: {
-        canInteract: ({ computed }) => !computed("isDisabled"),
+        canInteract: ({ computed }) => computed("isInteractive"),
+        canCollapse: ({ computed }) =>
+          computed("isInteractive") && computed("isCollapsible"),
+        hasGroupContext: ({ prop, computed }) =>
+          computed("isInteractive") && Boolean(prop("groupContext")),
+        isControlled: ({ prop, computed }) =>
+          computed("isInteractive") && isNotNull(prop("open")),
+        isControlledCollapse: ({ prop, computed }) =>
+          computed("isInteractive") &&
+          computed("isCollapsible") &&
+          isNotNull(prop("open")),
+      },
+
+      effects: {
+        measureOnMount: ({ scope, context }) => {
+          let cancelled = false;
+          const schedule =
+            typeof Promise !== "undefined"
+              ? (fn: () => void) => Promise.resolve().then(fn)
+              : (fn: () => void) => fn();
+          schedule(() => {
+            if (!cancelled) measureBodyHeight(scope, context);
+          });
+          return () => {
+            cancelled = true;
+          };
+        },
       },
 
       actions: {
@@ -176,26 +291,54 @@ export const accordionItemMachine: AccordionItemMachine =
           }
         },
 
-        handleTapAction: (params) => {
-          const isOpen = params.computed("isOpen");
-          if (
-            !params.prop("groupContext") &&
-            isOpen &&
-            !params.computed("isCollapsible")
-          ) {
-            return;
-          }
-          setItemOpen(params, !isOpen, true);
+        toggleGroupAction: ({ prop, computed }) => {
+          const val = computed("resolvedValue");
+          const nextOpen = !computed("isOpen");
+          prop("onTap")?.({ value: val, open: nextOpen });
+          const group = prop("groupContext") as
+            | AccordionGroupContext
+            | undefined;
+          group?.toggleItem(val);
         },
 
-        openAction: (params) => {
-          if (!params.computed("isOpen")) setItemOpen(params, true);
+        openGroupAction: ({ prop, computed }) => {
+          const val = computed("resolvedValue");
+          const group = prop("groupContext") as
+            | AccordionGroupContext
+            | undefined;
+          group?.setItemOpen(val, true);
         },
 
-        closeAction: (params) => {
-          if (params.computed("isOpen") && params.computed("isCollapsible")) {
-            setItemOpen(params, false);
-          }
+        closeGroupAction: ({ prop, computed }) => {
+          const val = computed("resolvedValue");
+          const group = prop("groupContext") as
+            | AccordionGroupContext
+            | undefined;
+          group?.setItemOpen(val, false);
+        },
+
+        emitTapOpen: (params) => {
+          emitStandaloneChange(params, true, true);
+        },
+
+        emitTapClose: (params) => {
+          emitStandaloneChange(params, false, true);
+        },
+
+        emitControlledOpen: (params) => {
+          emitStandaloneChange(params, true, true);
+        },
+
+        emitControlledClose: (params) => {
+          emitStandaloneChange(params, false, true);
+        },
+
+        emitOpenChangeTrue: (params) => {
+          emitStandaloneChange(params, true, false);
+        },
+
+        emitOpenChangeFalse: (params) => {
+          emitStandaloneChange(params, false, false);
         },
       },
     },

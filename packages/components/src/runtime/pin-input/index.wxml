@@ -8,7 +8,7 @@
         data-scope="pin-input"
         data-part="input"
         data-index="{{item.index}}"
-        data-state="{{item.isFocused ? 'focused' : 'idle'}}"
+        data-state="{{item.inputProps['data-state']}}"
         data-focused="{{item.isFocused}}"
         data-disabled="{{pinInput.disabled}}"
         data-readonly="{{pinInput.readOnly}}"

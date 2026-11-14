@@ -54,6 +54,20 @@ export interface DrawerProps {
   scaleBackground?: string;
 }
 
+export interface DrawerResolvedProps extends DrawerProps {
+  open: boolean | null;
+  defaultOpen: boolean;
+  placement: Placement;
+  closeOnBackdropClick: boolean;
+  dismissible: boolean;
+  threshold: number;
+  duration: number;
+  shouldScaleBackground: boolean;
+  scaleFactor: number;
+  scaleBackground: string;
+  ui: DrawerUI;
+}
+
 export type DrawerEvent =
   | { type: "OPEN" }
   | { type: "CLOSE" }
@@ -63,9 +77,7 @@ export type DrawerEvent =
   | { type: "DRAG_START" }
   | { type: "DRAG_END"; passed: boolean }
   | { type: "ANIMATION_END" }
-  | { type: "KEYBOARD_CHANGE"; height: number }
-  | { type: "CONTROLLED.CLOSE" }
-  | { type: "CONTROLLED.OPEN" };
+  | { type: "KEYBOARD_CHANGE"; height: number };
 
 export interface DrawerContext {
   keyboardHeight: number;
@@ -88,13 +100,13 @@ export type DrawerGuard =
   | "isDismissible"
   | "dragPassed";
 
-export type DrawerEffect = "waitForCloseAnimation";
+export type DrawerEffect = "waitForCloseAnimation" | "listenKeyboardHeight";
 
 export interface DrawerSchema extends MachineSchema {
   state: DrawerState;
   tag: DrawerTag;
   event: DrawerEvent;
-  props: DrawerProps;
+  props: DrawerResolvedProps;
   context: DrawerContext;
   computed: DrawerComputed;
   action: DrawerAction;
@@ -113,18 +125,6 @@ export interface DrawerApi {
   visible: boolean;
   /** Current machine state ('open' | 'closed' | 'closing' | 'dragging') */
   state: DrawerState;
-  /** Placement ('bottom' | 'top' | 'left' | 'right') */
-  placement: Placement;
-  /** Drag distance threshold in px passed to WXS gesture handler */
-  threshold: number;
-  /** Close animation duration in ms — synced to WXS exit animation */
-  duration: number;
-  /** Whether opening this drawer scales down the background */
-  shouldScaleBackground: boolean;
-  /** Scale factor */
-  scaleFactor: number;
-  /** Scale background */
-  scaleBackground: string;
   /** Open or close the drawer */
   setOpen(open: boolean): void;
   /** Open the drawer */
@@ -138,14 +138,6 @@ export interface DrawerApi {
   backdropProps: Record<string, any>;
   /** WXML data & attributes for Content sheet */
   contentProps: Record<string, any>;
-  /** WXML data & attributes for Grabber handle */
-  grabberProps: Record<string, any>;
   /** WXML data & attributes for Close Trigger */
   closeTriggerProps: Record<string, any>;
-  /** WXML data & attributes for Header */
-  headerProps: Record<string, any>;
-  /** WXML data & attributes for Body */
-  bodyProps: Record<string, any>;
-  /** WXML data & attributes for Footer */
-  footerProps: Record<string, any>;
 }

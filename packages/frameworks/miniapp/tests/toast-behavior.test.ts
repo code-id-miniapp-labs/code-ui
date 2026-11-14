@@ -144,5 +144,21 @@ describe("toast behavior", () => {
       "Third at Top",
     ]);
   });
+
+  it("defaults closeIcon to 'close' when omitted on ToastEntry", () => {
+    const host = { __wxWebviewId__: "default-close-icon-host" };
+    registerToastHost(host);
+
+    addToast({ title: "Closable toast" }, host);
+    const [entry] = getToasts(host);
+    expect(entry?.closeIcon).toBe("close");
+
+    addToast(
+      { title: "Custom close icon", closeIcon: "i-tabler-x", placement: "bottom" },
+      host,
+    );
+    const entries = getToasts(host);
+    expect(entries[1]?.closeIcon).toBe("i-tabler-x");
+  });
 });
 

@@ -40,6 +40,28 @@ export interface FormFieldProps {
   component?: MiniAppComponent | undefined;
 }
 
+export type FormFieldDefaultedKey =
+  | "name"
+  | "form"
+  | "label"
+  | "description"
+  | "help"
+  | "helperText"
+  | "hint"
+  | "error"
+  | "required"
+  | "disabled"
+  | "rules"
+  | "size"
+  | "ui";
+
+export type FormFieldResolvedProps = Omit<
+  FormFieldProps,
+  FormFieldDefaultedKey
+> & {
+  [K in FormFieldDefaultedKey]-?: Exclude<FormFieldProps[K], undefined>;
+};
+
 export type FormFieldMachineState = "valid" | "invalid";
 export type FormFieldState = FormFieldMachineState;
 
@@ -73,7 +95,7 @@ export interface FormFieldComputed {
 export interface FormFieldSchema {
   state: FormFieldState;
   tag: "valid" | "invalid";
-  props: FormFieldProps;
+  props: FormFieldResolvedProps;
   context: FormFieldContext;
   refs: FormFieldRefs;
   computed: FormFieldComputed;
@@ -83,7 +105,7 @@ export interface FormFieldSchema {
     | "clearInnerError"
     | "setupHost"
     | "cleanupHost";
-  effect: "trackFieldProps";
+  effect: "trackHostForm" | "trackDisplayErrorState" | "trackFieldProps";
 }
 
 export type FormFieldService = Service<FormFieldSchema>;
@@ -92,26 +114,12 @@ export type FormFieldParams = Params<FormFieldSchema>;
 
 export interface FormFieldApi {
   invalid: boolean;
-  error: string;
   displayError: string;
   displayHelp: string;
   effectiveRules: FormRule[];
-  size: FormFieldSize;
   disabled: boolean;
-  required: boolean;
-  label: string;
-  description: string;
-  hint: string;
-  help: string;
-  helperText: string;
 
   rootProps: Record<string, any>;
-  labelWrapperProps: Record<string, any>;
   labelProps: Record<string, any>;
-  requiredProps: Record<string, any>;
-  hintProps: Record<string, any>;
-  descriptionProps: Record<string, any>;
-  containerProps: Record<string, any>;
-  helpProps: Record<string, any>;
   errorProps: Record<string, any>;
 }

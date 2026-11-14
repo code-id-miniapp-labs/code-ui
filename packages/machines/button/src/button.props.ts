@@ -1,6 +1,6 @@
-import type { ButtonProps } from "./button.types";
+import type { ButtonResolvedProps } from "./button.types";
 
-export const defaultButtonProps: ButtonProps = {
+export const defaultButtonProps: ButtonResolvedProps = {
   disabled: false,
   loading: false,
   variant: "solid" as const,

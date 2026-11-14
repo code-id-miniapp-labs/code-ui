@@ -10,9 +10,6 @@ import {
   defaultPullDownRefreshProps,
 } from "./pull-down-refresh.props";
 
-const DEFAULT_THRESHOLD = 40;
-const DEFAULT_MAX_PULL_DISTANCE = 60;
-
 function resolveNumber(value: unknown, fallback: number, min = 0): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -20,11 +17,19 @@ function resolveNumber(value: unknown, fallback: number, min = 0): number {
 }
 
 function resolveThreshold(prop: PullDownRefreshParams["prop"]): number {
-  return resolveNumber(prop("threshold"), DEFAULT_THRESHOLD, 0);
+  return resolveNumber(
+    prop("threshold"),
+    defaultPullDownRefreshProps.threshold,
+    0,
+  );
 }
 
 function resolveMaxPullDistance(prop: PullDownRefreshParams["prop"]): number {
-  return resolveNumber(prop("maxPullDistance"), DEFAULT_MAX_PULL_DISTANCE, 0);
+  return resolveNumber(
+    prop("maxPullDistance"),
+    defaultPullDownRefreshProps.maxPullDistance,
+    0,
+  );
 }
 
 function clampPullOffset(offset: unknown, maxPullDistance: number): number {
@@ -146,17 +151,19 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
       },
     },
 
-    watch: ({ prop, state, send }) => {
-      const rawValue = prop("value");
-      if (!isNotNull(rawValue)) return;
+    watch: ({ prop, state, track }) => {
+      track([() => prop("value")], () => {
+        const rawValue = prop("value");
+        if (!isNotNull(rawValue)) return;
 
-      if (rawValue) {
-        if (!state.matches("refreshing")) {
-          send({ type: "CONTROLLED.REFRESH" });
+        if (rawValue) {
+          if (!state.matches("refreshing")) {
+            state.set("refreshing");
+          }
+        } else if (state.matches("refreshing")) {
+          state.set("success");
         }
-      } else if (state.matches("refreshing")) {
-        send({ type: "CONTROLLED.CLOSE" });
-      }
+      });
     },
 
     on: {
@@ -173,10 +180,6 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
         guard: "isNotRefreshing",
         target: "refreshing",
         actions: ["emitRefresh"],
-      },
-      "CONTROLLED.REFRESH": {
-        guard: "isNotRefreshing",
-        target: "refreshing",
       },
     },
 
@@ -237,9 +240,7 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
           },
           CLOSE: {
             target: "success",
-          },
-          "CONTROLLED.CLOSE": {
-            target: "success",
+            actions: ["emitChangeFalse"],
           },
         },
       },
@@ -368,7 +369,11 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
             };
           }
 
-          const timeout = resolveNumber(prop("refreshTimeout"), 3000, 0);
+          const timeout = resolveNumber(
+            prop("refreshTimeout"),
+            defaultPullDownRefreshProps.refreshTimeout,
+            0,
+          );
           if (timeout <= 0) return;
           const timer = setTimeout(() => {
             send({ type: "TIMEOUT" });
@@ -379,7 +384,11 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
         },
 
         waitForSuccessDuration: ({ send, prop }) => {
-          const duration = resolveNumber(prop("successDuration"), 500, 0);
+          const duration = resolveNumber(
+            prop("successDuration"),
+            defaultPullDownRefreshProps.successDuration,
+            0,
+          );
           if (duration <= 0) return;
           const timer = setTimeout(() => {
             send({ type: "SUCCESS_TIMEOUT" });

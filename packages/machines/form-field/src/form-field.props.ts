@@ -1,6 +1,7 @@
-import type { FormFieldProps } from "./form-field.types";
+import type { FormFieldResolvedProps } from "./form-field.types";
 
-export const defaultFormFieldProps: FormFieldProps = {
+export const defaultFormFieldProps: FormFieldResolvedProps = {
+  formContext: undefined,
   name: "",
   form: "",
   label: "",
@@ -13,4 +14,5 @@ export const defaultFormFieldProps: FormFieldProps = {
   disabled: false,
   rules: [],
   size: "md",
+  ui: {},
 };

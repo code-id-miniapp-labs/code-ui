@@ -1,6 +1,5 @@
 import {
   getContentId,
-  getIndicatorId,
   getListId,
   getRootId,
   getTriggerId,
@@ -8,11 +7,7 @@ import {
 import type {
   TabItemComputed,
   TabsApi,
-  TabsColor,
-  TabsOrientation,
   TabsService,
-  TabsSize,
-  TabsVariant,
 } from "./tabs.types";
 
 export function connectTabs(service: TabsService): TabsApi {
@@ -20,38 +15,14 @@ export function connectTabs(service: TabsService): TabsApi {
 
   const value = computed("selectedValue");
   const selectedIndex = computed("selectedIndex");
-  const totalCount = computed("totalCount");
   const focusedValue = context.get("focusedValue");
-  const orientation = (prop("orientation") ?? "horizontal") as TabsOrientation;
-  const variant = (prop("variant") ?? "pill") as TabsVariant;
-  const color = (prop("color") ?? "primary") as TabsColor;
-  const size = (prop("size") ?? "md") as TabsSize;
+  const orientation = prop("orientation");
   const disabled = computed("isDisabled");
   const normalizedItems = computed("normalizedItems");
-  const selectedItem = computed("selectedItem");
-  const scrollLeft = context.get("scrollLeft");
-  const canScrollLeft = context.get("canScrollLeft") ?? false;
-  const canScrollRight = context.get("canScrollRight") ?? false;
-  const fitted = Boolean(prop("fitted"));
-
-  let scrollMaskStyle = "";
-  if (!fitted && orientation === "horizontal" && (canScrollLeft || canScrollRight)) {
-    const start = canScrollLeft ? "transparent 0%, #000 24px" : "#000 0%";
-    const end = canScrollRight
-      ? "#000 calc(100% - 24px), transparent 100%"
-      : "#000 100%";
-    const grad = `linear-gradient(to right, ${start}, ${end})`;
-    scrollMaskStyle = `-webkit-mask-image: ${grad}; mask-image: ${grad};`;
-  }
+  const fallbackUi = prop("ui");
 
   const activeTriggerId =
-    value !== undefined && value !== null && value !== ""
-      ? getTriggerId(scope, value)
-      : undefined;
-  const indicatorStyle =
-    orientation === "horizontal" && totalCount > 0 && selectedIndex >= 0
-      ? `width: calc(100% / ${totalCount}); transform: translate3d(calc(100% * ${selectedIndex}), 0, 0);`
-      : "";
+    value !== "" ? getTriggerId(scope, value) : "";
 
   const getRootProps = (): Record<string, any> => ({
     id: getRootId(scope),
@@ -69,15 +40,7 @@ export function connectTabs(service: TabsService): TabsApi {
     enhanced: true,
     "show-scrollbar": false,
     "scroll-into-view": activeTriggerId,
-    "scroll-left": scrollLeft,
   });
-
-  const getIndicatorProps = (): Record<string, any> => {
-    const id = getIndicatorId(scope);
-    return id
-      ? { id, "data-state": "active", "data-orientation": orientation }
-      : {};
-  };
 
   const getTriggerProps = (props: {
     value: string | number;
@@ -120,8 +83,7 @@ export function connectTabs(service: TabsService): TabsApi {
     const isSelected = item.value === value;
     const itemDisabled = disabled || Boolean(item.disabled);
 
-    return {
-      ...item,
+    return Object.assign({}, item, {
       index,
       value: item.value,
       label: item.label,
@@ -131,31 +93,19 @@ export function connectTabs(service: TabsService): TabsApi {
       isSelected,
       content: item.content,
       slot: item.slot,
-      ui: item.ui,
+      ui: item.ui ?? fallbackUi,
       triggerProps: getTriggerProps({ value: item.value, index }),
       contentProps: getContentProps({ value: item.value, index }),
-    };
+    });
   });
 
   return {
     value,
     selectedIndex,
     focusedValue,
-    orientation,
-    variant,
-    color,
-    size,
     disabled,
     items,
-    selectedItem,
     activeTriggerId,
-    scrollLeft,
-    canScrollLeft,
-    canScrollRight,
-    scrollMaskStyle,
-    fitted,
-    totalCount,
-    indicatorStyle,
 
     setValue: (val) => send({ type: "SET_VALUE", value: val }),
     select: (val) => send({ type: "SELECT", value: val }),
@@ -170,10 +120,8 @@ export function connectTabs(service: TabsService): TabsApi {
     getListProps,
     getTriggerProps,
     getContentProps,
-    getIndicatorProps,
 
     rootProps: getRootProps(),
     listProps: getListProps(),
-    indicatorProps: getIndicatorProps(),
   };
 }

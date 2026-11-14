@@ -1,38 +1,22 @@
-import type { NormalizeProps, PropTypes } from "@code-ui/core";
-import type {
-  ProgressApi,
-  ProgressOrientation,
-  ProgressService,
-  ProgressType,
-} from "./progress.types";
+import type { ProgressApi, ProgressService } from "./progress.types";
 import * as dom from "./progress.dom";
 
-export function connectProgress<T extends PropTypes = PropTypes>(
-  service: ProgressService,
-  normalize?: NormalizeProps<T>,
-): ProgressApi {
-  const { state, send, context, computed, scope } = service;
+export function connectProgress(service: ProgressService): ProgressApi {
+  const { state, send, context, computed, prop, scope } = service;
 
   const value = context.get("value");
-  const min = context.get("min") ?? 0;
-  const max = context.get("max") ?? 100;
-  const orientation =
-    (context.get("orientation") as ProgressOrientation | undefined) ??
-    "horizontal";
-  const type = (context.get("type") as ProgressType | undefined) ?? "linear";
+  const min = context.get("min");
+  const max = context.get("max");
+  const orientation = prop("orientation");
+  const type = prop("type");
 
   const isIndeterminate = computed("isIndeterminate");
   const percent = computed("percent");
   const isComplete = computed("isComplete");
   const progressState = computed("progressState");
   const valueAsString = computed("valueAsString");
+  const rangeStyle = computed("rangeStyle");
   const circleStyle = computed("circleStyle");
-
-  const rangeStyle = isIndeterminate
-    ? ""
-    : `${orientation === "horizontal" ? "width" : "height"}: ${percent}%;`;
-
-  const el = normalize ? normalize.element : (v: Record<string, any>) => v;
 
   return {
     state: state.get(),
@@ -61,41 +45,33 @@ export function connectProgress<T extends PropTypes = PropTypes>(
       send({ type: "RESET" });
     },
 
-    rootProps: el({
+    rootProps: {
       id: dom.getRootId(scope),
       "data-state": progressState,
       "data-orientation": orientation,
       "aria-role": "progressbar",
       "aria-valuemin": min,
       "aria-valuemax": max,
-      "aria-valuenow": isIndeterminate ? undefined : (value ?? 0),
+      "aria-valuenow": isIndeterminate || value === null ? undefined : value,
       "aria-valuetext": valueAsString,
-    }),
+    },
 
-    labelProps: el({
+    labelProps: {
       id: dom.getLabelId(scope),
-    }),
+    },
 
-    trackProps: el({
+    trackProps: {
       id: dom.getTrackId(scope),
-    }),
+    },
 
-    rangeProps: el({
+    rangeProps: {
       id: dom.getRangeId(scope),
       style: rangeStyle,
-    }),
+    },
 
-    valueTextProps: el({
-      id: dom.getValueTextId(scope),
-    }),
-
-    viewProps: el({
-      id: dom.getViewId(scope),
-    }),
-
-    circleProps: el({
+    circleProps: {
       id: dom.getCircleId(scope),
       style: circleStyle,
-    }),
+    },
   };
 }

@@ -76,7 +76,7 @@ export interface QrCodeProps {
   /** Custom UI slot classes for qr-code anatomy parts */
   ui?: QrCodeUI | undefined;
   /** The payload string/URL to encode into the QR code */
-  value?: string | undefined;
+  value?: string | null | undefined;
   /** Initial value when uncontrolled */
   defaultValue?: string | undefined;
   /** Error correction level shorthand ("L" | "M" | "Q" | "H") */
@@ -99,6 +99,23 @@ export interface QrCodeProps {
   onChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
 }
 
+export type QrCodeDefaultedKey =
+  | "value"
+  | "defaultValue"
+  | "ecc"
+  | "border"
+  | "encoding"
+  | "pixelSize"
+  | "size"
+  | "color"
+  | "overlaySrc"
+  | "showOverlay"
+  | "ui";
+
+export type QrCodeResolvedProps = Omit<QrCodeProps, QrCodeDefaultedKey> & {
+  [K in QrCodeDefaultedKey]-?: Exclude<QrCodeProps[K], undefined>;
+};
+
 export type QrCodeEvent =
   | { type: "VALUE.SET"; value: string }
   | { type: "SET_VALUE"; value: string }
@@ -113,11 +130,18 @@ export interface QrCodeContext {
 }
 
 export interface QrCodeComputed {
+  ecc: QrCodeEcc;
+  border: number;
   resolvedEncoding: QrCodeEncodingOptions;
+  pixelSize: number;
+  overlaySrc: string;
+  showOverlay: boolean;
   encoded: QrCodeGenerateResult;
   path: string;
   viewBoxSize: number;
   dataUrl: string;
+  rootStyle: string;
+  ariaLabel: string;
 }
 
 export interface QrCodeRefs {}
@@ -126,7 +150,7 @@ export interface QrCodeSchema extends MachineSchema {
   state: QrCodeState;
   tag: never;
   event: QrCodeEvent;
-  props: QrCodeProps;
+  props: QrCodeResolvedProps;
   context: QrCodeContext;
   computed: QrCodeComputed;
   refs: QrCodeRefs;
@@ -160,10 +184,6 @@ export interface QrCodeApi {
   border: number;
   /** Resolved encoding options */
   encoding: QrCodeEncodingOptions;
-  /** Size variant ('xs' | 'sm' | 'md' | 'lg' | 'xl') */
-  size: QrCodeSize;
-  /** Color theme */
-  color: QrCodeColor;
   /** Optional center logo/image source URL */
   overlaySrc: string;
   /** Whether center overlay slot is visible */

@@ -5,14 +5,11 @@ import type {
 } from "./action-sheet.types";
 import { defaultActionSheetProps } from "./action-sheet.props";
 import * as dom from "./action-sheet.dom";
-import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-ui/utils";
+import { isMiniApp, isNotNull, isPromise, queryAnimationDuration } from "@code-ui/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
 const closedTransitions = {
-  "CONTROLLED.OPEN": {
-    target: "open" as const,
-  },
   OPEN: {
     target: "open" as const,
     actions: ["invokeOnOpen" as const],
@@ -50,25 +47,24 @@ export const actionSheetMachine: ActionSheetMachine =
     },
 
     on: {
-      ACTION_LOADING: {
-        actions: ["setActionLoadingContext"],
-      },
       ACTION_SETTLED: {
         actions: ["clearActionLoadingContext"],
       },
     },
 
-    watch: ({ prop, state, send }) => {
-      const rawOpen = prop("open");
-      if (!isNotNull(rawOpen)) return;
+    watch: ({ prop, state, track }) => {
+      track([() => prop("open")], () => {
+        const rawOpen = prop("open");
+        if (!isNotNull(rawOpen)) return;
 
-      const shouldBeOpen = Boolean(rawOpen);
-      const isCurrentlyOpen = state.hasTag("open");
-      if (shouldBeOpen && !isCurrentlyOpen) {
-        send({ type: "CONTROLLED.OPEN" });
-      } else if (!shouldBeOpen && isCurrentlyOpen) {
-        send({ type: "CONTROLLED.CLOSE" });
-      }
+        const shouldBeOpen = Boolean(rawOpen);
+        const isCurrentlyOpen = state.hasTag("open");
+        if (shouldBeOpen && !isCurrentlyOpen) {
+          state.set("open");
+        } else if (!shouldBeOpen && isCurrentlyOpen) {
+          state.set("closing");
+        }
+      });
     },
 
     states: {
@@ -80,9 +76,6 @@ export const actionSheetMachine: ActionSheetMachine =
       open: {
         tags: ["open"],
         on: {
-          "CONTROLLED.CLOSE": {
-            target: "closing",
-          },
           CLOSE: {
             target: "closing",
             actions: ["invokeOnClose"],
@@ -118,6 +111,7 @@ export const actionSheetMachine: ActionSheetMachine =
               actions: ["invokeOnAction", "invokeOnClose"],
             },
             {
+              guard: "canHandleAction",
               actions: ["invokeOnAction"],
             },
           ],
@@ -153,9 +147,24 @@ export const actionSheetMachine: ActionSheetMachine =
           if (!item || item.disabled || item.loading) return false;
           return prop("closeOnItem");
         },
-        shouldCloseOnAction: ({ event }) => {
+        canHandleAction: ({ prop, event, context }) => {
           if (event.type !== "ACTION") return false;
-          return event.action.closeOnClick !== false;
+          const action = prop("actions")[event.index];
+          if (!action) return false;
+          const isLoading = Boolean(
+            action.loading || context.get("loadingActionIndex") === event.index,
+          );
+          return !action.disabled && !isLoading;
+        },
+        shouldCloseOnAction: ({ prop, event, context }) => {
+          if (event.type !== "ACTION") return false;
+          const action = prop("actions")[event.index];
+          if (!action) return false;
+          const isLoading = Boolean(
+            action.loading || context.get("loadingActionIndex") === event.index,
+          );
+          if (action.disabled || isLoading) return false;
+          return action.closeOnClick !== false;
         },
       },
 
@@ -168,27 +177,34 @@ export const actionSheetMachine: ActionSheetMachine =
           prop("onOpenChange")?.({ open: false });
           prop("onClose")?.();
         },
-        setActionLoadingContext: ({ context, event }) => {
-          if (event.type === "ACTION_LOADING") {
-            context.set("loadingActionIndex", event.index);
+        clearActionLoadingContext: ({ context, event }) => {
+          if (
+            event.type === "ACTION_SETTLED" &&
+            context.get("loadingActionIndex") === event.index
+          ) {
+            context.set("loadingActionIndex", null);
           }
-        },
-        clearActionLoadingContext: ({ context }) => {
-          context.set("loadingActionIndex", null);
         },
         invokeOnSelect: ({ prop, event }) => {
           if (event.type !== "SELECT") return;
-          const items = prop("items");
-          const item = items[event.index];
-          if (item && !item.disabled && !item.loading) {
+          const item = prop("items")[event.index];
+          if (item) {
             prop("onSelect")?.({ item, index: event.index });
           }
         },
-        invokeOnAction: ({ prop, event }) => {
+        invokeOnAction: ({ prop, event, send, context }) => {
           if (event.type !== "ACTION") return;
-          if ("handled" in event && event.handled) return;
-          event.action.onClick?.();
-          prop("onAction")?.({ action: event.action, index: event.index });
+          const action = prop("actions")[event.index];
+          if (!action) return;
+          const result =
+            action.onClick?.() ??
+            prop("onAction")?.({ action, index: event.index });
+          if (isPromise(result) && action.loadingAuto !== false) {
+            context.set("loadingActionIndex", event.index);
+            Promise.resolve(result).finally(() => {
+              send({ type: "ACTION_SETTLED", index: event.index });
+            });
+          }
         },
       },
 

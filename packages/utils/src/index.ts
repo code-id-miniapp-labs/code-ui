@@ -28,6 +28,11 @@ export type {
   MiniAppBaseEvent,
   MiniAppCustomEvent,
   MiniAppTouchEvent,
+  MiniAppEventTarget,
+  MiniAppBaseEventLike,
+  MiniAppEventLike,
+  MiniAppTouchPoint,
+  MiniAppTouchEventLike,
   TriggerEventOptions,
   EventTrigger,
 } from "./event";

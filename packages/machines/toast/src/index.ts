@@ -17,6 +17,7 @@ export type {
   ToastParams,
   ToastPlacement,
   ToastProps,
+  ToastResolvedProps,
   ToastRefs,
   ToastSchema,
   ToastService,

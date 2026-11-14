@@ -1,9 +1,6 @@
-import type { AccordionProps } from "./accordion.types";
+import type { AccordionResolvedProps } from "./accordion.types";
 
-export const defaultAccordionProps: AccordionProps = {
-  id: undefined,
-  ids: undefined,
-  component: undefined,
+export const defaultAccordionProps: AccordionResolvedProps = {
   ui: {},
   value: null,
   defaultValue: null,
@@ -15,5 +12,4 @@ export const defaultAccordionProps: AccordionProps = {
   variant: "outline",
   items: [],
   linkedCount: 0,
-  onChange: undefined,
 };

@@ -27,10 +27,13 @@ function resolveInitialSide(
   return null;
 }
 
-function parseBooleanProp(val: unknown, defaultValue = true): boolean {
-  if (val === "" || val === true || val === "true") return true;
-  if (val === false || val === "false") return false;
-  return (val as boolean | undefined) ?? defaultValue;
+function scheduleNextTick(fn: () => void): void {
+  const g = globalThis as { wx?: { nextTick?: (cb: () => void) => void } };
+  if (typeof g.wx?.nextTick === "function") {
+    g.wx.nextTick(fn);
+    return;
+  }
+  fn();
 }
 
 function measureActionWidths(
@@ -177,7 +180,7 @@ export const swipeCellMachine: SwipeCellMachine =
       const rawOpened = prop("opened");
       const isOpened = isNotNull(rawOpened)
         ? Boolean(rawOpened)
-        : Boolean(prop("defaultOpened") ?? false);
+        : Boolean(prop("defaultOpened"));
       return isOpened ? "open" : "closed";
     },
 
@@ -188,12 +191,10 @@ export const swipeCellMachine: SwipeCellMachine =
         defaultValue: resolveInitialSide(prop("opened"), prop("defaultOpened")),
       })),
       leftWidth: bindable<number>(() => ({
-        value: prop("leftWidth"),
-        defaultValue: 0,
+        defaultValue: prop("leftWidth") > 0 ? prop("leftWidth") : 0,
       })),
       rightWidth: bindable<number>(() => ({
-        value: prop("rightWidth"),
-        defaultValue: 0,
+        defaultValue: prop("rightWidth") > 0 ? prop("rightWidth") : 0,
       })),
       currentOffset: bindable<number>(() => ({
         defaultValue: 0,
@@ -214,7 +215,10 @@ export const swipeCellMachine: SwipeCellMachine =
         if (state.matches("open")) {
           const side = context.get("openedSide");
           if (side === "left") return context.get("leftWidth");
-          if (side === "right") return -context.get("rightWidth");
+          if (side === "right") {
+            const rightWidth = context.get("rightWidth");
+            return rightWidth > 0 ? -rightWidth : 0;
+          }
         }
         return 0;
       },
@@ -234,22 +238,59 @@ export const swipeCellMachine: SwipeCellMachine =
       },
     },
 
-    watch: ({ prop, state, send }) => {
-      const rawOpened = prop("opened");
-      if (!isNotNull(rawOpened)) return;
+    watch: ({ prop, state, context, scope, track }) => {
+      track([() => prop("opened")], () => {
+        const rawOpened = prop("opened");
+        if (!isNotNull(rawOpened)) return;
 
-      const shouldBeOpen = Boolean(rawOpened);
-      const isCurrentlyOpen = state.hasTag("open");
+        if (rawOpened) {
+          const side =
+            rawOpened === "left" || rawOpened === "right"
+              ? rawOpened
+              : (context.get("openedSide") ?? "right");
+          context.set("openedSide", side);
+          context.set("currentOffset", 0);
+          if (!state.hasTag("open")) {
+            state.set("open");
+          }
+          const targetWidth =
+            side === "left"
+              ? context.get("leftWidth")
+              : context.get("rightWidth");
+          if (targetWidth <= 0) {
+            scheduleNextTick(() => measureActionWidths(scope, context, prop));
+          }
+        } else if (state.hasTag("open") || state.hasTag("dragging")) {
+          context.set("openedSide", null);
+          context.set("currentOffset", 0);
+          state.set("closed");
+        }
+      });
 
-      if (shouldBeOpen) {
-        const side = resolveSide(rawOpened);
-        send({ type: "CONTROLLED.OPEN", side });
-      } else if (isCurrentlyOpen) {
-        send({ type: "CONTROLLED.CLOSE" });
-      }
+      track(
+        [() => prop("leftWidth"), () => prop("rightWidth")],
+        () => {
+          measureActionWidths(scope, context, prop);
+        },
+      );
+
+      track(
+        [
+          () => JSON.stringify(prop("left")),
+          () => JSON.stringify(prop("right")),
+        ],
+        () => {
+          scheduleNextTick(() => measureActionWidths(scope, context, prop));
+        },
+      );
     },
 
+    effects: ["measureWidthsEffect"],
+
     on: {
+      READY: {
+        actions: ["measureWidthsOnReady"],
+      },
       MEASURE: {
         actions: ["measureWidths"],
       },
@@ -262,10 +303,6 @@ export const swipeCellMachine: SwipeCellMachine =
       closed: {
         tags: ["closed"],
         on: {
-          "CONTROLLED.OPEN": {
-            target: "open",
-            actions: ["setOpenedSide"],
-          },
           DRAG_START: {
             guard: "isInteractive",
             target: "dragging",
@@ -292,14 +329,6 @@ export const swipeCellMachine: SwipeCellMachine =
       dragging: {
         tags: ["dragging"],
         on: {
-          "CONTROLLED.OPEN": {
-            target: "open",
-            actions: ["setOpenedSide"],
-          },
-          "CONTROLLED.CLOSE": {
-            target: "closed",
-            actions: ["clearOpenedSide"],
-          },
           DRAG_MOVE: {
             actions: ["setOffsetFromEvent", "invokeOnDrag"],
           },
@@ -326,16 +355,6 @@ export const swipeCellMachine: SwipeCellMachine =
       open: {
         tags: ["open"],
         on: {
-          "CONTROLLED.OPEN": [
-            {
-              guard: "isDifferentSide",
-              actions: ["setOpenedSide"],
-            },
-          ],
-          "CONTROLLED.CLOSE": {
-            target: "closed",
-            actions: ["clearOpenedSide"],
-          },
           DRAG_START: {
             guard: "isInteractive",
             target: "dragging",
@@ -375,19 +394,21 @@ export const swipeCellMachine: SwipeCellMachine =
     implementations: {
       guards: {
         isInteractive: ({ computed }) => !computed("isDisabled"),
-        closeOnContentClick: ({ prop }) =>
-          parseBooleanProp(prop("closeOnContentClick")),
-        closeOnActionClick: ({ prop }) =>
-          parseBooleanProp(prop("closeOnActionClick")),
+        closeOnContentClick: ({ prop }) => Boolean(prop("closeOnContentClick")),
+        closeOnActionClick: ({ prop }) => Boolean(prop("closeOnActionClick")),
         isDragOpened: ({ event }) =>
           event.type === "DRAG_END" && Boolean(event.opened),
         isDifferentSide: ({ context, event, computed }) => {
           if (computed("isDisabled")) return false;
           const targetSide =
-            event.type === "OPEN" || event.type === "CONTROLLED.OPEN"
-              ? (event.side ?? "right")
-              : event.side;
+            event.type === "OPEN" ? (event.side ?? "right") : event.side;
           return Boolean(targetSide && targetSide !== context.get("openedSide"));
+        },
+      },
+
+      effects: {
+        measureWidthsEffect: ({ scope, context, prop }) => {
+          measureActionWidths(scope, context, prop);
         },
       },
 
@@ -396,8 +417,7 @@ export const swipeCellMachine: SwipeCellMachine =
           if (
             event.type === "OPEN" ||
             event.type === "TOGGLE" ||
-            event.type === "DRAG_END" ||
-            event.type === "CONTROLLED.OPEN"
+            event.type === "DRAG_END"
           ) {
             context.set("openedSide", event.side ?? "right");
             context.set(
@@ -423,6 +443,10 @@ export const swipeCellMachine: SwipeCellMachine =
 
         measureWidths: ({ scope, context, prop }) => {
           measureActionWidths(scope, context, prop);
+        },
+
+        measureWidthsOnReady: ({ scope, context, prop }) => {
+          scheduleNextTick(() => measureActionWidths(scope, context, prop));
         },
 
         setWidths: ({ context, event }) => {
@@ -452,12 +476,15 @@ export const swipeCellMachine: SwipeCellMachine =
 
         invokeOnActionClick: ({ prop, event }) => {
           if (event.type !== "ACTION_CLICK") return;
+          const list = event.side === "left" ? prop("left") : prop("right");
+          const action = event.action ?? list[event.index];
+          if (!action) return;
           const details = {
-            action: event.action,
+            action,
             side: event.side,
             index: event.index,
           };
-          event.action.onClick?.(event.action);
+          action.onClick?.(action);
           prop("onActionClick")?.(details);
           prop("onClick")?.(details);
         },

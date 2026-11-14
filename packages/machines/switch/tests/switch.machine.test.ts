@@ -21,18 +21,13 @@ describe("Switch Machine", () => {
       const api = connectSwitch(machine.service);
       expect(api.state).toBe("unchecked");
       expect(api.checked).toBe(false);
-      expect(api.isChecked).toBe(false);
-      expect(api.isInteractive).toBe(true);
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
-      expect(api.loading).toBe(false);
       expect(api.invalid).toBe(false);
       expect(api.size).toBe("md");
-      expect(api.color).toBe("primary");
       expect(api.rootProps["data-state"]).toBe("unchecked");
       expect(api.rootProps["data-checked"]).toBe("false");
       expect(api.baseProps["aria-checked"]).toBe(false);
-      expect(api.hiddenInputProps.checked).toBe(false);
 
       machine.stop();
     });
@@ -136,7 +131,6 @@ describe("Switch Machine", () => {
 
       expect(onChange).toHaveBeenCalledWith({ checked: true });
       expect(triggerEvent).toHaveBeenCalledWith("change", {
-        value: true,
         checked: true,
       });
 
@@ -178,7 +172,6 @@ describe("Switch Machine", () => {
 
       const api = connectSwitch(machine.service);
       expect(api.disabled).toBe(true);
-      expect(api.isInteractive).toBe(false);
 
       api.toggle();
       await flush();
@@ -197,7 +190,6 @@ describe("Switch Machine", () => {
 
       const api = connectSwitch(machine.service);
       expect(api.readOnly).toBe(true);
-      expect(api.isInteractive).toBe(false);
 
       api.toggle();
       await flush();
@@ -214,8 +206,8 @@ describe("Switch Machine", () => {
       machine.start();
 
       const api = connectSwitch(machine.service);
-      expect(api.loading).toBe(true);
-      expect(api.isInteractive).toBe(false);
+      expect(api.thumbProps["data-loading"]).toBe("true");
+      expect(machine.computed("isInteractive")).toBe(false);
 
       api.toggle();
       await flush();
@@ -235,7 +227,7 @@ describe("Switch Machine", () => {
       const api = connectSwitch(machine.service);
       expect(api.disabled).toBe(true);
       expect(api.size).toBe("lg");
-      expect(api.isInteractive).toBe(false);
+      expect(machine.computed("isInteractive")).toBe(false);
 
       machine.stop();
     });
@@ -360,11 +352,6 @@ describe("Switch Machine", () => {
 
       expect(api.labelProps.id).toBe("sw-my-switch-l");
       expect(api.descriptionProps.id).toBeUndefined();
-
-      expect(api.hiddenInputProps.name).toBe("notifications");
-      expect(api.hiddenInputProps.value).toBe("yes");
-      expect(api.hiddenInputProps.type).toBe("checkbox");
-      expect(api.hiddenInputProps.required).toBe(true);
 
       machine.stop();
     });

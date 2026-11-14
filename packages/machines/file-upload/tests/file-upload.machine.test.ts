@@ -97,6 +97,8 @@ describe("FileUpload Machine", () => {
       expect(api.files[0]?.name).toBe("test.png");
       expect(api.files[0]?.formattedSize).toBe("1 KB");
       expect(api.files[0]?.fileType).toBe("image");
+      expect(api.files[0]?.thumb).toBe("tmp/test.png");
+      expect(api.files[0]?.thumbFailed).toBe(false);
       expect(api.files[0]?.itemProps["aria-role"]).toBe("listitem");
       expect(api.files[0]?.removeProps["aria-role"]).toBe("button");
       expect(api.files[0]?.removeProps["aria-label"]).toBe("Remove test.png");
@@ -309,7 +311,7 @@ describe("FileUpload Machine", () => {
       machine.stop();
     });
 
-    it("handles preview callback and wx API preview", () => {
+    it("handles preview callback and wx API preview", async () => {
       const previewImage = vi.fn();
       (globalThis as any).wx = { previewImage };
 
@@ -330,6 +332,7 @@ describe("FileUpload Machine", () => {
 
       const api = connectFileUpload(machine.service);
       api.previewFile(0);
+      await flush();
 
       expect(onPreview).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -345,7 +348,51 @@ describe("FileUpload Machine", () => {
       machine.stop();
     });
 
-    it("handles video preview via wx.previewMedia", () => {
+    it("tracks broken thumbnail loads via handleImageError and resets on file replacement", async () => {
+      const machine = new MiniappMachine(fileUploadMachine, {
+        defaultValue: [
+          {
+            id: "1",
+            name: "broken.jpg",
+            path: "https://example.com/broken.jpg",
+            thumb: "https://example.com/broken.jpg",
+            type: "image",
+            size: 1024,
+          },
+        ],
+      });
+      machine.start();
+
+      let api = connectFileUpload(machine.service);
+      expect(api.files[0]?.thumbFailed).toBe(false);
+
+      api.handleImageError({
+        currentTarget: { dataset: { index: 0 } },
+      } as any);
+      await flush();
+
+      api = connectFileUpload(machine.service);
+      expect(api.files[0]?.thumbFailed).toBe(true);
+
+      api.setFiles([
+        {
+          id: "1",
+          name: "fixed.jpg",
+          path: "https://example.com/fixed.jpg",
+          thumb: "https://example.com/fixed.jpg",
+          type: "image",
+          size: 2048,
+        },
+      ]);
+      await flush();
+
+      api = connectFileUpload(machine.service);
+      expect(api.files[0]?.thumbFailed).toBe(false);
+
+      machine.stop();
+    });
+
+    it("handles video preview via wx.previewMedia", async () => {
       const previewMedia = vi.fn();
       (globalThis as any).wx = { previewMedia };
 
@@ -367,6 +414,7 @@ describe("FileUpload Machine", () => {
 
       const api = connectFileUpload(machine.service);
       api.previewFile(0);
+      await flush();
 
       expect(onPreview).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -390,7 +438,7 @@ describe("FileUpload Machine", () => {
       machine.stop();
     });
 
-    it("handles audio preview via wx.createInnerAudioContext and toggles playback", () => {
+    it("handles audio preview via wx.createInnerAudioContext and toggles playback", async () => {
       const play = vi.fn();
       const pause = vi.fn();
       const stop = vi.fn();
@@ -431,6 +479,7 @@ describe("FileUpload Machine", () => {
 
       const api = connectFileUpload(machine.service);
       api.previewFile(0);
+      await flush();
 
       expect(createInnerAudioContext).toHaveBeenCalled();
       expect(mockAudioCtx.src).toBe("wxfile://tmp/song.mp3");
@@ -444,6 +493,7 @@ describe("FileUpload Machine", () => {
 
       // Click again while playing -> pause
       api.previewFile(0);
+      await flush();
       expect(pause).toHaveBeenCalled();
       expect(showToast).toHaveBeenCalledWith(
         expect.objectContaining({ title: "Paused song.mp3" }),
@@ -452,6 +502,7 @@ describe("FileUpload Machine", () => {
       // Click again while paused -> play
       mockAudioCtx.paused = true;
       api.previewFile(0);
+      await flush();
       expect(play).toHaveBeenCalledTimes(2);
 
       // stopActiveAudio cleans up

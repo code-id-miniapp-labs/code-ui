@@ -6,10 +6,12 @@ import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-ui/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
+interface WxKeyboardApi {
+  onKeyboardHeightChange?: (cb: (res: { height: number }) => void) => void;
+  offKeyboardHeightChange?: (cb: (res: { height: number }) => void) => void;
+}
+
 const closedTransitions = {
-  "CONTROLLED.OPEN": {
-    target: "open" as const,
-  },
   OPEN: {
     target: "open" as const,
     actions: ["invokeOnOpen" as const],
@@ -30,7 +32,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     const rawOpen = prop("open");
     const isOpen = isNotNull(rawOpen)
       ? Boolean(rawOpen)
-      : Boolean(prop("defaultOpen") ?? false);
+      : prop("defaultOpen");
     return isOpen ? "open" : "closed";
   },
 
@@ -43,20 +45,24 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
   computed: {
     isOpen: ({ state }) => state.hasTag("open"),
     isVisible: ({ state }) => state.hasTag("open") || state.hasTag("closing"),
-    placement: ({ prop }) => prop("placement") ?? "bottom",
+    placement: ({ prop }) => prop("placement"),
   },
 
-  watch: ({ prop, state, send }) => {
-    const rawOpen = prop("open");
-    if (!isNotNull(rawOpen)) return;
+  effects: ["listenKeyboardHeight"],
 
-    const shouldBeOpen = Boolean(rawOpen);
-    const isCurrentlyOpen = state.hasTag("open");
-    if (shouldBeOpen && !isCurrentlyOpen) {
-      send({ type: "CONTROLLED.OPEN" });
-    } else if (!shouldBeOpen && isCurrentlyOpen) {
-      send({ type: "CONTROLLED.CLOSE" });
-    }
+  watch: ({ prop, state, track }) => {
+    track([() => prop("open")], () => {
+      const rawOpen = prop("open");
+      if (!isNotNull(rawOpen)) return;
+
+      const shouldBeOpen = Boolean(rawOpen);
+      const isCurrentlyOpen = state.hasTag("open");
+      if (shouldBeOpen && !isCurrentlyOpen) {
+        state.set("open");
+      } else if (!shouldBeOpen && isCurrentlyOpen) {
+        state.set("closing");
+      }
+    });
   },
 
   states: {
@@ -69,9 +75,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     open: {
       tags: ["open"],
       on: {
-        "CONTROLLED.CLOSE": {
-          target: "closing",
-        },
         CLOSE: {
           target: "closing",
           actions: ["invokeOnClose"],
@@ -102,9 +105,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     dragging: {
       tags: ["open", "dragging"],
       on: {
-        "CONTROLLED.CLOSE": {
-          target: "closing",
-        },
         DRAG_END: [
           {
             target: "closing",
@@ -139,8 +139,8 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
   implementations: {
     guards: {
-      closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick") ?? true,
-      isDismissible: ({ prop }) => prop("dismissible") ?? true,
+      closeOnBackdropClick: ({ prop }) => prop("closeOnBackdropClick"),
+      isDismissible: ({ prop }) => prop("dismissible"),
       dragPassed: ({ event }) =>
         event.type === "DRAG_END" && event.passed === true,
     },
@@ -164,6 +164,19 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     },
 
     effects: {
+      listenKeyboardHeight: ({ send }) => {
+        const wxApi = (globalThis as { wx?: WxKeyboardApi }).wx;
+        if (!wxApi?.onKeyboardHeightChange) return;
+
+        const handler = (res: { height: number }) => {
+          send({ type: "KEYBOARD_CHANGE", height: res.height });
+        };
+        wxApi.onKeyboardHeightChange(handler);
+        return () => {
+          wxApi.offKeyboardHeightChange?.(handler);
+        };
+      },
+
       waitForCloseAnimation: ({ send, scope, prop }) => {
         let timer: ReturnType<typeof setTimeout> | undefined;
         let cancelled = false;

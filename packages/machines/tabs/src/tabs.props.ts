@@ -1,6 +1,6 @@
-import type { TabsProps } from "./tabs.types";
+import type { TabsResolvedProps } from "./tabs.types";
 
-export const defaultTabsProps: TabsProps = {
+export const defaultTabsProps: TabsResolvedProps = {
   value: null,
   defaultValue: null,
   orientation: "horizontal",

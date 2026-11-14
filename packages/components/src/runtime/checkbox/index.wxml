@@ -4,10 +4,10 @@
       <slot name="indicator" />
       <block wx:if="{{!customIndicator}}">
         <block wx:if="{{cCheckbox.indeterminate}}">
-          <c-icon name="{{indeterminateIcon || 'minus'}}" className="{{classes.icon}}" />
+          <c-icon name="{{indeterminateIcon}}" className="{{classes.icon}}" />
         </block>
         <block wx:elif="{{cCheckbox.checked}}">
-          <c-icon name="{{icon || 'check'}}" className="{{classes.icon}}" />
+          <c-icon name="{{icon}}" className="{{classes.icon}}" />
         </block>
       </block>
     </view>

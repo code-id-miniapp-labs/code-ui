@@ -51,22 +51,15 @@ Component(
 
     computed: {
       classes() {
-        const color = this.data.color;
-        const size = this.data.size;
-        const position = this.data.position;
-        const inset = Boolean(this.data.inset);
-        const standalone = Boolean(this.data.standalone);
-        const ui = this.data.ui;
-
         const themeFns = chipTheme({
-          color,
-          size,
-          position,
-          inset,
-          standalone,
+          color: this.data.color,
+          size: this.data.size,
+          position: this.data.position,
+          inset: this.data.inset,
+          standalone: this.data.standalone,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
   }),

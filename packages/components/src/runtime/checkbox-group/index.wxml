@@ -4,8 +4,8 @@
   </view>
   <slot wx:else name="legend" />
   <view class="{{classes.fieldset}}">
-    <block wx:if="{{cCheckboxGroup.items && cCheckboxGroup.items.length > 0}}">
-      <c-checkbox wx:for="{{cCheckboxGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant || variant}}" color="{{item.color || color}}" size="{{cCheckboxGroup.size || size}}" ui="{{item.ui || ui}}" bind:change="handleItemTap" data-value="{{item.value}}" />
+    <block wx:if="{{cCheckboxGroup.items.length > 0}}">
+      <c-checkbox wx:for="{{cCheckboxGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant}}" color="{{item.color}}" size="{{cCheckboxGroup.size}}" ui="{{item.ui || ui}}" bind:change="handleItemTap" />
     </block>
     <slot />
   </view>

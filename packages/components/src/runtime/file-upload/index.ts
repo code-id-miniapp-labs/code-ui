@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -10,7 +11,6 @@ import {
   fileUploadMachine,
   connectFileUpload,
   defaultFileUploadProps,
-  stopActiveAudio,
 } from "@code-ui/file-upload";
 import themeConfig from "virtual:cui/theme/file-upload";
 import { tv } from "../../utils/variants";
@@ -36,12 +36,6 @@ Component(
       },
     }),
 
-    lifetimes: {
-      detached() {
-        stopActiveAudio();
-      },
-    },
-
     computed: {
       classes() {
         const api = this.data.fileUpload;
@@ -49,39 +43,33 @@ Component(
           variant: this.data.variant,
           color: this.data.color,
           size: this.data.size || "md",
-          layout: this.data.layout || "list",
+          layout: this.data.layout,
           invalid: Boolean(api?.invalid ?? this.data.invalid),
           disabled: Boolean(api?.disabled ?? this.data.disabled),
         });
         return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
-
-      dropzoneAriaLabel() {
-        const api = this.data.fileUpload;
-        const maxFiles = this.data.maxFiles ?? 10;
-        const count = api?.fileCount ?? 0;
-        if (api?.isMaxFiles) {
-          return `Maximum ${maxFiles} files uploaded`;
-        }
-        return `Upload files, ${count} of ${maxFiles} files selected`;
-      },
     },
 
     methods: {
-      async handleDropzoneTap(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "fileUpload")?.handleDropzoneTap?.(e);
+      handleDropzoneTap(e: MiniAppBaseEventLike) {
+        return getApi(this, "fileUpload")?.handleDropzoneTap(e);
       },
 
-      handleRemove(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "fileUpload")?.handleRemove?.(e);
+      handleRemove(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "fileUpload")?.handleRemove(e);
       },
 
-      handlePreview(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "fileUpload")?.handlePreview?.(e);
+      handlePreview(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "fileUpload")?.handlePreview(e);
       },
 
-      handleFileClick(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "fileUpload")?.handleFileClick?.(e);
+      handleFileClick(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "fileUpload")?.handleFileClick(e);
+      },
+
+      handleImageError(e: MiniAppBaseEventLike<{ index: number }>) {
+        getApi(this, "fileUpload")?.handleImageError(e);
       },
     },
   }),

@@ -22,17 +22,17 @@
       bind:tap="handleTap"
     >
       <!-- Leading element / icon -->
-      <view wx:if="{{cAccordionItem.icon || hasLeadingSlot}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
+      <view wx:if="{{icon || hasLeadingSlot}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
         <slot name="leading" />
-        <c-icon wx:if="{{cAccordionItem.icon}}" name="{{cAccordionItem.icon}}" className="{{classes.leadingIcon}}" />
+        <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.leadingIcon}}" />
       </view>
 
       <!-- Label / Title -->
       <view class="{{classes.label}}" data-scope="accordion" data-part="label">
-        <view wx:if="{{cAccordionItem.label}}">{{cAccordionItem.label}}</view>
+        <view wx:if="{{label}}">{{label}}</view>
         <slot wx:else name="label" />
-        <view wx:if="{{cAccordionItem.description}}" class="{{classes.description}}" data-scope="accordion" data-part="description">
-          {{cAccordionItem.description}}
+        <view wx:if="{{description}}" class="{{classes.description}}" data-scope="accordion" data-part="description">
+          {{description}}
         </view>
         <slot wx:else name="description" />
       </view>
@@ -42,7 +42,7 @@
         <slot name="trailing" />
         <c-icon
           wx:if="{{!customTrailing}}"
-          name="{{cAccordionItem.trailingIcon || 'chevronDown'}}"
+          name="{{trailingIcon}}"
           className="{{classes.trailingIcon}}"
         />
       </view>
@@ -62,8 +62,8 @@
     data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
   >
     <view class="cui-accordion-body {{classes.body}}" data-scope="accordion" data-part="body">
-      <block wx:if="{{cAccordionItem.content}}">
-        {{cAccordionItem.content}}
+      <block wx:if="{{content}}">
+        {{content}}
       </block>
       <slot wx:else name="content" />
       <slot />

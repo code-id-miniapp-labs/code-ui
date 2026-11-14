@@ -9,13 +9,17 @@ function emitRadioChange(
   prop: PropFn<RadioSchema>,
   nextChecked: boolean,
 ): void {
-  prop("onChange")?.({ value: prop("value") || "", checked: nextChecked });
+  prop("onChange")?.({ value: prop("value"), checked: nextChecked });
 }
 
 const selectToCheckedTransition = [
   {
     guard: "hasGroupContext",
     actions: ["selectGroup"],
+  },
+  {
+    guard: "isControlled",
+    actions: ["emitControlledSelect"],
   },
   {
     guard: "isInteractive",
@@ -56,7 +60,7 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     isChecked: ({ prop, state }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
       if (group) {
-        return group.value() === (prop("value") ?? "");
+        return group.value() === prop("value");
       }
       return state.matches("checked");
     },
@@ -66,8 +70,13 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       return Boolean(group?.disabled() || prop("disabled"));
     },
 
-    isInteractive: ({ computed, prop }) =>
-      !computed("isDisabled") && !prop("readOnly"),
+    isReadOnly: ({ prop }) => {
+      const group = prop("groupContext") as RadioGroupContext | undefined;
+      return Boolean(group?.readOnly() || prop("readOnly"));
+    },
+
+    isInteractive: ({ computed }) =>
+      !computed("isDisabled") && !computed("isReadOnly"),
 
     isInvalid: ({ context, prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
@@ -76,30 +85,35 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
 
     effectiveSize: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.size() || prop("size") || "md";
+      return group?.size() || prop("size");
     },
 
     effectiveColor: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.color() || prop("color") || "primary";
+      return group?.color() || prop("color");
     },
 
     effectiveVariant: ({ prop }) => {
       const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.variant() || prop("variant") || "outline";
+      return group?.variant() || prop("variant");
     },
   },
 
-  watch: ({ prop, state }) => {
-    if (prop("groupContext")) return;
+  watch: ({ prop, state, track }) => {
+    track(
+      [() => Boolean(prop("groupContext")), () => prop("checked")],
+      () => {
+        if (prop("groupContext")) return;
 
-    const controlledChecked = prop("checked");
-    if (isNotNull(controlledChecked)) {
-      const targetState = controlledChecked ? "checked" : "unchecked";
-      if (!state.matches(targetState)) {
-        state.set(targetState);
-      }
-    }
+        const controlledChecked = prop("checked");
+        if (isNotNull(controlledChecked)) {
+          const targetState = controlledChecked ? "checked" : "unchecked";
+          if (!state.matches(targetState)) {
+            state.set(targetState);
+          }
+        }
+      },
+    );
   },
 
   on: {
@@ -135,6 +149,10 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
             actions: ["selectGroup"],
           },
           {
+            guard: "isControlled",
+            actions: ["emitControlledToggle"],
+          },
+          {
             guard: "isInteractive",
             target: "unchecked",
             actions: ["emitRadioChange"],
@@ -147,6 +165,8 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
   implementations: {
     guards: {
       isInteractive: ({ computed }) => computed("isInteractive"),
+      isControlled: ({ prop, computed }) =>
+        computed("isInteractive") && isNotNull(prop("checked")),
       hasGroupContext: ({ prop, computed }) =>
         computed("isInteractive") && Boolean(prop("groupContext")),
       isEventChecked: ({ event }) =>
@@ -156,11 +176,19 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
     actions: {
       selectGroup: ({ prop }) => {
         const group = prop("groupContext") as RadioGroupContext | undefined;
-        group?.select(prop("value") ?? "");
+        group?.select(prop("value"));
       },
 
       emitRadioChange: ({ prop, state }) => {
         emitRadioChange(prop, state.matches("checked"));
+      },
+
+      emitControlledSelect: ({ prop }) => {
+        emitRadioChange(prop, true);
+      },
+
+      emitControlledToggle: ({ prop, state }) => {
+        emitRadioChange(prop, !state.matches("checked"));
       },
     },
   },

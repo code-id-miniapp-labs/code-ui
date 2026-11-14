@@ -48,7 +48,7 @@ Component(
         const size = api?.size ?? this.data.size;
         const color = api?.color ?? this.data.color;
         const variant = api?.variant ?? this.data.variant;
-        const required = Boolean(api?.required ?? this.data.required);
+        const required = Boolean(this.data.required);
         const ui = this.data.ui;
 
         const themeFns = checkboxTheme({

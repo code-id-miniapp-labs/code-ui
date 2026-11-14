@@ -37,4 +37,11 @@ describe("tabsItemTheme (@code-ui/core)", () => {
     expect(theme.variants.selected.true.indicator).toContain("opacity-100");
     expect(theme.variants.selected.false.indicator).toContain("opacity-0");
   });
+
+  it("uses flex row layout compatible with Skyline on triggers", () => {
+    const theme = tabsItemTheme();
+    expect(theme.slots.trigger).toContain("flex-row");
+    expect(theme.slots.trigger).not.toContain("inline-flex");
+    expect(theme.variants.fitted.true.trigger).toContain("w-full");
+  });
 });

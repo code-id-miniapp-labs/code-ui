@@ -9,10 +9,10 @@ import type {
   AccordionVariant,
 } from "@code-ui/accordion";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./accordion-item.anatomy";
 
-export type AccordionItemState = "idle";
+export type AccordionItemState = "open" | "closed";
 
 export type AccordionItemAnatomyPart = AnatomyPartName<typeof anatomy>;
 export type AccordionItemUI = ComponentUI<typeof anatomy>;
@@ -51,7 +51,7 @@ export interface AccordionItemProps {
   /** Default open state when uncontrolled */
   defaultOpen?: boolean | undefined;
   /** Explicit or measured content height in pixels */
-  contentHeight?: number | undefined;
+  contentHeight?: number | null | undefined;
   /** Explicit item size (overrides group) */
   size?: AccordionSize | "" | undefined;
   /** Explicit item variant (overrides group) */
@@ -76,8 +76,24 @@ export interface AccordionItemProps {
     | undefined;
 }
 
+export interface AccordionItemResolvedProps extends AccordionItemProps {
+  ui: AccordionItemUI;
+  value: string | number;
+  label: string;
+  description: string;
+  content: string;
+  icon: string;
+  trailingIcon: string;
+  disabled: boolean;
+  open: boolean | null;
+  defaultOpen: boolean;
+  contentHeight: number | null;
+  size: AccordionSize | "";
+  variant: AccordionVariant | "";
+  collapsible: boolean;
+}
+
 export interface AccordionItemContext {
-  open: boolean;
   contentHeight: number;
 }
 
@@ -94,6 +110,7 @@ export interface AccordionItemComputed {
   resolvedValue: string;
   isOpen: boolean;
   isDisabled: boolean;
+  isInteractive: boolean;
   isCollapsible: boolean;
   effectiveSize: AccordionSize;
   effectiveVariant: AccordionVariant;
@@ -101,7 +118,8 @@ export interface AccordionItemComputed {
 
 export interface AccordionItemSchema extends MachineSchema {
   state: AccordionItemState;
-  props: AccordionItemProps;
+  tag: "open" | "closed";
+  props: AccordionItemResolvedProps;
   context: AccordionItemContext;
   refs: AccordionItemRefs;
   computed: AccordionItemComputed;
@@ -125,16 +143,6 @@ export interface AccordionItemApi {
   size: AccordionSize;
   /** Effective variant */
   variant: AccordionVariant;
-  /** Label */
-  label: string;
-  /** Description */
-  description: string;
-  /** Content */
-  content: string;
-  /** Icon */
-  icon: string;
-  /** Trailing icon */
-  trailingIcon: string;
   /** Measured content height in pixels */
   contentHeight: number;
   /** Inline CSS style for content transition */
@@ -150,17 +158,11 @@ export interface AccordionItemApi {
   /** Collapse item */
   close: () => void;
   /** Handle tap event */
-  handleTap: (e?: any) => void;
+  handleTap: (e?: MiniAppBaseEventLike) => void;
   /** Root container DOM props */
   itemProps: Record<string, any>;
   /** Trigger button DOM props */
   triggerProps: Record<string, any>;
   /** Content panel DOM props */
   contentProps: Record<string, any>;
-  /** Label DOM props */
-  labelProps: Record<string, any>;
-  /** Leading icon DOM props */
-  leadingIconProps: Record<string, any>;
-  /** Trailing icon DOM props */
-  trailingIconProps: Record<string, any>;
 }

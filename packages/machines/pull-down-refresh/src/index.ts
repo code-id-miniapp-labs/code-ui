@@ -20,6 +20,7 @@ export type {
   PullDownRefreshParams,
   PullDownRefreshProps,
   PullDownRefreshRefreshDetails,
+  PullDownRefreshResolvedProps,
   PullDownRefreshResolvedUI,
   PullDownRefreshSchema,
   PullDownRefreshScrollDetails,

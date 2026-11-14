@@ -103,6 +103,20 @@ export function getFileType(file: {
   return "file";
 }
 
+export function resolveFileThumb(
+  file: Pick<FileUploadFile, "type" | "path" | "name" | "thumb">,
+  fileType: FileUploadItemType = getFileType(file),
+): string | undefined {
+  return file.thumb || (fileType === "image" ? file.path : undefined);
+}
+
+export function getFileThumbKey(
+  file: Pick<FileUploadFile, "id">,
+  thumb: string | undefined,
+): string {
+  return thumb ? `${file.id || ""}::${thumb}` : "";
+}
+
 const MIME_MAP: Record<string, string> = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",

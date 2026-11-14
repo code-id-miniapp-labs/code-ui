@@ -1,6 +1,6 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import {
   getContentId,
-  getLabelId,
   getRootId,
   getTriggerId,
 } from "./accordion-item.dom";
@@ -21,20 +21,14 @@ export function connectAccordionItem(
   const size = computed("effectiveSize");
   const variant = computed("effectiveVariant");
 
-  const label = prop("label") ?? "";
-  const description = prop("description") ?? "";
-  const content = prop("content") ?? "";
-  const icon = prop("icon") ?? "";
-  const trailingIcon = prop("trailingIcon") ?? "";
   const accordionId = prop("accordionId") || "";
-  const contentHeight = context.get("contentHeight") ?? 0;
+  const contentHeight = context.get("contentHeight");
 
   const heightVar = contentHeight > 0 ? `${contentHeight}px` : "auto";
   const heightVal = isOpen ? heightVar : "0px";
   const contentStyle = `--cui-accordion-content-height: ${heightVar}; height: ${heightVal}; opacity: ${isOpen ? 1 : 0};`;
   const stateStr = isOpen ? "open" : "closed";
   const triggerId = getTriggerId(scope, resolvedValue, accordionId);
-  const lbId = getLabelId(scope, resolvedValue, accordionId);
 
   const itemProps: Record<string, any> = {
     id: getRootId(scope, resolvedValue, accordionId),
@@ -63,17 +57,7 @@ export function connectAccordionItem(
     "data-state": stateStr,
   };
 
-  const labelProps: Record<string, any> = {
-    ...(lbId ? { id: lbId } : {}),
-    "data-state": stateStr,
-  };
-
-  const trailingIconProps: Record<string, any> = {
-    "data-state": stateStr,
-  };
-  const leadingIconProps: Record<string, any> = {};
-
-  const handleTap = () => send({ type: "TOGGLE" });
+  const handleTap = (_e?: MiniAppBaseEventLike) => send({ type: "TOGGLE" });
 
   return {
     isOpen,
@@ -82,11 +66,6 @@ export function connectAccordionItem(
     resolvedValue,
     size,
     variant,
-    label,
-    description,
-    content,
-    icon,
-    trailingIcon,
     contentHeight,
     contentStyle,
     measure: () => send({ type: "MEASURE" }),
@@ -99,8 +78,5 @@ export function connectAccordionItem(
     itemProps,
     triggerProps,
     contentProps,
-    labelProps,
-    leadingIconProps,
-    trailingIconProps,
   };
 }

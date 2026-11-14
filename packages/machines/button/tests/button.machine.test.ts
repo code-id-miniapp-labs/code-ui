@@ -31,10 +31,6 @@ describe("Button Machine", () => {
       expect(api.state).toBe("idle");
       expect(api.loading).toBe(false);
       expect(api.disabled).toBe(false);
-      expect(api.variant).toBe("solid");
-      expect(api.color).toBe("primary");
-      expect(api.size).toBe("md");
-      expect(api.block).toBe(false);
 
       machine.stop();
     });
@@ -53,28 +49,6 @@ describe("Button Machine", () => {
       expect(api.rootProps["data-state"]).toBe("loading");
       expect(api.rootProps["data-loading"]).toBe("true");
       expect(api.rootProps["aria-busy"]).toBe(true);
-
-      machine.stop();
-    });
-
-    it("initializes with custom variants, size, and block props", () => {
-      const machine = new MiniappMachine(buttonMachine, {
-        variant: "outline",
-        color: "danger",
-        size: "lg",
-        block: true,
-      });
-      machine.start();
-
-      const api = connectButton(machine.service);
-      expect(api.variant).toBe("outline");
-      expect(api.color).toBe("danger");
-      expect(api.size).toBe("lg");
-      expect(api.block).toBe(true);
-      expect(api.rootProps["data-variant"]).toBe("outline");
-      expect(api.rootProps["data-color"]).toBe("danger");
-      expect(api.rootProps["data-size"]).toBe("lg");
-      expect(api.rootProps["data-block"]).toBe("true");
 
       machine.stop();
     });
@@ -413,7 +387,6 @@ describe("Button Machine", () => {
 
       const api = connectButton(machine.service);
       expect(api.loading).toBe(true);
-      expect(api.internalLoading).toBe(true);
       expect(api.rootProps["data-loading"]).toBe("true");
 
       // Resolve the async promise
@@ -511,6 +484,7 @@ describe("Button Machine", () => {
       machine.updateProps({ loading: true });
       await flush();
 
+      expect(machine.state.get()).toBe("loading");
       expect(machine.context.get("loading")).toBe(true);
       expect(machine.computed("isLoading")).toBe(true);
       expect(machine.computed("isInteractive")).toBe(false);
@@ -518,6 +492,7 @@ describe("Button Machine", () => {
       machine.updateProps({ loading: false });
       await flush();
 
+      expect(machine.state.get()).toBe("idle");
       expect(machine.context.get("loading")).toBe(false);
       expect(machine.computed("isLoading")).toBe(false);
       expect(machine.computed("isInteractive")).toBe(true);
@@ -606,19 +581,9 @@ describe("Button Machine", () => {
       expect(api.rootProps.id).toBe("btn-submit-btn-r");
       expect(api.rootProps["aria-role"]).toBe("button");
       expect(api.rootProps["data-state"]).toBe("idle");
-      expect(api.rootProps["data-variant"]).toBe("secondary");
-      expect(api.rootProps["data-color"]).toBe("neutral");
-      expect(api.rootProps["data-size"]).toBe("sm");
       expect(api.rootProps["data-loading"]).toBe("false");
       expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.rootProps.disabled).toBe(false);
-
-      expect(api.spinnerProps.id).toBeUndefined();
-      expect(api.spinnerProps["aria-hidden"]).toBe("true");
-
-      expect(api.labelProps.id).toBeUndefined();
-      expect(api.iconProps.id).toBeUndefined();
-      expect(api.iconProps["aria-hidden"]).toBe("true");
 
       machine.stop();
     });

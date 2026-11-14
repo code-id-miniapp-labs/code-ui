@@ -36,7 +36,6 @@ describe("ActionSheet Machine", () => {
       expect(api.open).toBe(false);
       expect(api.visible).toBe(false);
       expect(api.state).toBe("closed");
-      expect(api.duration).toBe(300);
       expect(api.items).toEqual([]);
       expect(api.actions).toEqual([]);
 
@@ -384,12 +383,15 @@ describe("ActionSheet Machine", () => {
       machine.stop();
     });
 
-    it("returns result of async onClick for c-button autoLoading", () => {
-      const asyncPromise = Promise.resolve();
+    it("tracks loading state when action onClick returns a promise", async () => {
+      let resolvePromise!: () => void;
+      const asyncPromise = new Promise<void>((resolve) => {
+        resolvePromise = resolve;
+      });
       const onClick = vi.fn(() => asyncPromise);
 
       const sampleActions: ActionSheetAction[] = [
-        { label: "Async Action", onClick },
+        { label: "Async Action", onClick, closeOnClick: false },
       ];
 
       const machine = new MiniappMachine(actionSheetMachine, {
@@ -399,16 +401,30 @@ describe("ActionSheet Machine", () => {
       machine.start();
 
       const api = connectActionSheet(machine.service);
-      const ret = api.handleAction(0);
+      api.handleAction(0);
+      await flush();
 
       expect(onClick).toHaveBeenCalled();
-      expect(ret).toBe(asyncPromise);
+      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
+        true,
+      );
+
+      resolvePromise();
+      await asyncPromise;
+      await flush();
+
+      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
+        false,
+      );
 
       machine.stop();
     });
 
-    it("returns result of async onAction when onClick is not provided", () => {
-      const asyncPromise = Promise.resolve();
+    it("invokes async onAction when onClick is not provided", async () => {
+      let resolvePromise!: () => void;
+      const asyncPromise = new Promise<void>((resolve) => {
+        resolvePromise = resolve;
+      });
       const onAction = vi.fn(() => asyncPromise);
 
       const sampleActions: ActionSheetAction[] = [
@@ -423,7 +439,8 @@ describe("ActionSheet Machine", () => {
       machine.start();
 
       const api = connectActionSheet(machine.service);
-      const ret = api.handleAction(0);
+      api.handleAction(0);
+      await flush();
 
       expect(onAction).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -431,82 +448,69 @@ describe("ActionSheet Machine", () => {
           index: 0,
         }),
       );
-      expect(ret).toBe(asyncPromise);
+      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
+        true,
+      );
+
+      resolvePromise();
+      await asyncPromise;
+      await flush();
+
+      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
+        false,
+      );
 
       machine.stop();
     });
 
-    it("integrates with c-button component bridge for end-to-end autoLoading", async () => {
+    it("integrates with c-button loading state via controlled loading prop", async () => {
       vi.useRealTimers();
 
       const { buttonMachine, connectButton } = await import("@code-ui/button");
 
-      const page: Record<string, any> = {
-        async onFooterAction() {
-          await sleep(50);
-        },
-      };
-      (globalThis as any).getCurrentPages = () => [page];
-
-      const cAppInstance = {
-        selectOwnerComponent: () => null,
-      };
-
-      const actionSheetInstance: any = {
-        selectOwnerComponent: () => cAppInstance,
-        triggerEvent: vi.fn((name: string, detail: any) => {
-          if (name === "action") {
-            page.onFooterAction({ detail });
-          }
-        }),
-      };
+      let resolvePromise!: () => void;
+      const asyncPromise = new Promise<void>((resolve) => {
+        resolvePromise = resolve;
+      });
 
       const asMachine = new MiniappMachine(actionSheetMachine, {
-        component: actionSheetInstance,
+        defaultOpen: true,
         actions: [
-          { label: "Async Save", loadingAuto: true, closeOnClick: false },
+          {
+            label: "Async Save",
+            loadingAuto: true,
+            closeOnClick: false,
+            onClick: () => asyncPromise,
+          },
         ],
       });
-      asMachine.start();
-      const asApi = connectActionSheet(asMachine.service);
-
-      actionSheetInstance.handleActionTap = vi.fn((ev: any) => {
-        const idx = ev?.currentTarget?.dataset?.index ?? 0;
-        return asApi.handleAction(idx);
-      });
-
-      const buttonComponent = {
-        selectOwnerComponent: () => actionSheetInstance,
-        triggerEvent: vi.fn((name: string, detail: any) => {
-          if (name === "tap") {
-            actionSheetInstance.handleActionTap({
-              currentTarget: { dataset: { index: 0 } },
-              detail,
-            });
-          }
-        }),
-      };
 
       const btnMachine = new MiniappMachine(buttonMachine, {
-        component: buttonComponent,
-        loadingAuto: true,
+        loading: false,
       });
 
-      const loadingSnapshots: boolean[] = [];
-      btnMachine.subscribe((service) => {
-        loadingSnapshots.push(connectButton(service as any).loading);
+      asMachine.subscribe((service) => {
+        const loading = Boolean(
+          connectActionSheet(service as any).actions[0]?.loading,
+        );
+        btnMachine.updateProps({ loading });
       });
+
+      asMachine.start();
       btnMachine.start();
 
-      const btnApi = connectButton(btnMachine.service);
-      btnApi.handleTap({});
+      connectActionSheet(asMachine.service).handleAction(0);
+      await flush();
 
-      await sleep(10);
       expect(btnMachine.state.get()).toBe("loading");
       expect(btnMachine.computed("isLoading")).toBe(true);
+      expect(connectButton(btnMachine.service).loading).toBe(true);
 
-      await sleep(60);
-      expect(btnMachine.state.get()).not.toBe("loading");
+      resolvePromise();
+      await asyncPromise;
+      await flush();
+
+      expect(btnMachine.state.get()).toBe("idle");
       expect(btnMachine.computed("isLoading")).toBe(false);
 
       btnMachine.stop();
@@ -522,6 +526,7 @@ describe("ActionSheet Machine", () => {
       });
 
       const machine = new MiniappMachine(actionSheetMachine, {
+        defaultOpen: true,
         actions: [
           {
             label: "Save",
@@ -535,13 +540,13 @@ describe("ActionSheet Machine", () => {
       const api = connectActionSheet(machine.service);
       expect(api.actions[0]?.loading).toBe(false);
 
-      const promise = api.handleAction(0);
+      api.handleAction(0);
       await Promise.resolve();
       const loadingApi = connectActionSheet(machine.service);
       expect(loadingApi.actions[0]?.loading).toBe(true);
 
       resolvePromise();
-      await promise;
+      await asyncTask;
       await Promise.resolve();
 
       const settledApi = connectActionSheet(machine.service);

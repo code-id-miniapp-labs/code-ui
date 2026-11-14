@@ -1,3 +1,5 @@
+import type { RadioGroupItemTapDetail } from "@code-ui/radio-group";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withRadioGroup } from "@code-ui/miniapp/behaviors/radio";
@@ -38,10 +40,10 @@ Component(
         const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
         const disabled = Boolean(api?.disabled ?? this.data.disabled);
         const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const orientation = api?.orientation ?? this.data.orientation;
-        const variant = api?.variant ?? this.data.variant;
-        const required = Boolean(api?.required ?? this.data.required);
+        const color = this.data.color;
+        const orientation = this.data.orientation;
+        const variant = this.data.variant;
+        const required = Boolean(this.data.required);
         const ui = this.data.ui;
 
         const themeFns = radioGroupTheme({
@@ -59,7 +61,7 @@ Component(
     },
 
     methods: {
-      handleItemTap(e: WechatMiniprogram.CustomEvent) {
+      handleItemTap(e: MiniAppEventLike<RadioGroupItemTapDetail>) {
         return getApi(this, "cRadioGroup")?.handleItemTap?.(e);
       },
     },

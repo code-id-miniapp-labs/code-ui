@@ -1,6 +1,6 @@
-import type { StepperProps } from "./stepper.types";
+import type { StepperResolvedProps } from "./stepper.types";
 
-export const defaultStepperProps: StepperProps = {
+export const defaultStepperProps: StepperResolvedProps = {
   step: null,
   value: null,
   modelValue: null,

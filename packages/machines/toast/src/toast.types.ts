@@ -74,7 +74,7 @@ export interface ToastProps {
   /** Position of the progress bar in default mode ('top' | 'bottom') */
   progressPosition?: ToastProgressPosition | undefined;
   /** Controlled open state */
-  open?: boolean | undefined;
+  open?: boolean | null | undefined;
   /** Default open state */
   defaultOpen?: boolean | undefined;
   /** Whether to show close button in default mode */
@@ -98,9 +98,30 @@ export type ToastEvent =
   | { type: "PAUSE" }
   | { type: "RESUME" }
   | { type: "ANIMATION_END" }
-  | { type: "CONTROLLED.OPEN" }
-  | { type: "CONTROLLED.CLOSE" }
-  | { type: "TRIGGER_ACTION"; action: ToastAction; index: number };
+  | { type: "TRIGGER_ACTION"; index: number };
+
+type ToastDefaultedKey =
+  | "open"
+  | "defaultOpen"
+  | "mode"
+  | "color"
+  | "variant"
+  | "orientation"
+  | "placement"
+  | "title"
+  | "description"
+  | "icon"
+  | "duration"
+  | "progress"
+  | "progressPosition"
+  | "close"
+  | "closeIcon"
+  | "actions"
+  | "ui";
+
+export type ToastResolvedProps = Omit<ToastProps, ToastDefaultedKey> & {
+  [K in ToastDefaultedKey]-?: Exclude<ToastProps[K], undefined>;
+};
 
 export interface ToastContext {}
 
@@ -122,7 +143,7 @@ export interface ToastSchema extends MachineSchema {
   state: ToastState;
   tag: "open" | "paused" | "dismissing" | "closed";
   event: ToastEvent;
-  props: ToastProps;
+  props: ToastResolvedProps;
   context: ToastContext;
   computed: ToastComputed;
   refs: ToastRefs;
@@ -150,9 +171,8 @@ export interface ToastApi {
   actions: Array<{
     label: string;
     index: number;
-    actionProps: Record<string, any>;
-    color?: string | undefined;
-    variant?: string | undefined;
+    color: string;
+    variant: string;
   }>;
 
   /** Dismisses the toast */
@@ -165,10 +185,4 @@ export interface ToastApi {
   handleAction: (index: number) => void;
 
   rootProps: Record<string, any>;
-  wrapperProps: Record<string, any>;
-  titleProps: Record<string, any>;
-  descriptionProps: Record<string, any>;
-  iconProps: Record<string, any>;
-  closeTriggerProps: Record<string, any>;
-  progressProps: Record<string, any>;
 }

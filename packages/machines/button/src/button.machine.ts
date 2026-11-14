@@ -45,11 +45,11 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     })),
     loading: bindable<boolean>(() => ({
       value: prop("loading"),
-      defaultValue: Boolean(defaultButtonProps.loading),
+      defaultValue: defaultButtonProps.loading,
     })),
     disabled: bindable<boolean>(() => ({
       value: prop("disabled"),
-      defaultValue: Boolean(defaultButtonProps.disabled),
+      defaultValue: defaultButtonProps.disabled,
     })),
   }),
 
@@ -59,6 +59,19 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
     isDisabled: ({ context }) => Boolean(context.get("disabled")),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isLoading"),
+  },
+
+  watch: ({ prop, state, context, track }) => {
+    track([() => prop("loading")], () => {
+      const nextLoading = prop("loading");
+      if (nextLoading) {
+        if (!state.matches("loading")) {
+          state.set("loading");
+        }
+      } else if (state.matches("loading") && !context.get("internalLoading")) {
+        state.set("idle");
+      }
+    });
   },
 
   on: {
@@ -157,17 +170,19 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
         context.set("internalLoading", true);
 
-        let capturedPromise: Promise<any> | undefined =
-          (rawEvent as any)?.promise ?? (rawEvent as any)?.detail?.promise;
-        if (rawEvent && typeof rawEvent === "object") {
-          const detail = (rawEvent as any).detail ?? rawEvent;
-          if (detail && typeof detail === "object") {
-            const origSetPromise = detail.setPromise;
-            detail.setPromise = (p: Promise<any>) => {
-              capturedPromise = p;
-              origSetPromise?.(p);
-            };
-          }
+        const detail = rawEvent?.detail as
+          | {
+              promise?: Promise<any> | undefined;
+              setPromise?: ((promise: Promise<any>) => void) | undefined;
+            }
+          | undefined;
+        let capturedPromise: Promise<any> | undefined = detail?.promise;
+        if (detail && typeof detail === "object") {
+          const origSetPromise = detail.setPromise;
+          detail.setPromise = (p: Promise<any>) => {
+            capturedPromise = p;
+            origSetPromise?.(p);
+          };
         }
 
         const result = prop("onTap")?.(rawEvent);
@@ -189,7 +204,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
     effects: {
       autoResetEffect: ({ prop, send }) => {
-        const duration = prop("autoResetDuration") ?? 1500;
+        const duration = prop("autoResetDuration");
         if (duration <= 0) {
           send({ type: "RESET" });
           return;

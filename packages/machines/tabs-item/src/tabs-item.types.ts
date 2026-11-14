@@ -54,7 +54,9 @@ export interface TabsItemProps {
   /** Size override or from parent */
   size?: TabsSize | undefined;
   /** Index override */
-  index?: number | undefined;
+  index?: number | null | undefined;
+  /** Callback fired when an unlinked item is selected */
+  onSelect?: ((details: { value: string | number }) => void) | undefined;
 
   /** Parent tabs scope ID */
   tabsId?: string | undefined;
@@ -63,6 +65,28 @@ export interface TabsItemProps {
   /** Index among siblings */
   groupIndex?: number | undefined;
 }
+
+export type TabsItemDefaultedKey =
+  | "ui"
+  | "mode"
+  | "value"
+  | "label"
+  | "icon"
+  | "trailingIcon"
+  | "disabled"
+  | "selected"
+  | "triggerId"
+  | "fitted"
+  | "lazy"
+  | "orientation"
+  | "variant"
+  | "color"
+  | "size"
+  | "index";
+
+export type TabsItemResolvedProps = Omit<TabsItemProps, TabsItemDefaultedKey> & {
+  [K in TabsItemDefaultedKey]-?: Exclude<TabsItemProps[K], undefined>;
+};
 
 export interface TabsItemComputed {
   resolvedValue: string | number;
@@ -78,13 +102,13 @@ export interface TabsItemComputed {
 
 export type TabsItemEvent = { type: "SELECT" };
 
-export type TabsItemState = "idle";
+export type TabsItemState = "active" | "inactive";
 
 export interface TabsItemSchema extends MachineSchema {
   state: TabsItemState;
-  tag: "idle";
+  tag: "active" | "inactive";
   event: TabsItemEvent;
-  props: TabsItemProps;
+  props: TabsItemResolvedProps;
   computed: TabsItemComputed;
   action: string;
   effect: string;
@@ -96,14 +120,10 @@ export type TabsItemService = Service<TabsItemSchema>;
 export type TabsItemMachine = Machine<TabsItemSchema>;
 
 export interface TabsItemApi {
+  state: TabsItemState;
   value: string | number;
-  label: string;
-  icon?: string | undefined;
-  trailingIcon?: string | undefined;
   isSelected: boolean;
   isDisabled: boolean;
-  lazy: boolean;
-  mode: "auto" | "trigger" | "panel";
   orientation: TabsOrientation;
   variant: TabsVariant;
   color: TabsColor;
@@ -113,11 +133,9 @@ export interface TabsItemApi {
 
   select(): void;
 
-  getRootProps(): Record<string, any>;
   getContentProps(): Record<string, any>;
   getTriggerProps(): Record<string, any>;
 
-  rootProps: Record<string, any>;
   contentProps: Record<string, any>;
   triggerProps: Record<string, any>;
 }

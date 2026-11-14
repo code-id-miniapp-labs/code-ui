@@ -2,7 +2,7 @@ import type {
   NormalizeProps,
   PropTypes,
 } from "@code-ui/core";
-import type { ToastAction, ToastApi, ToastService } from "./toast.types";
+import type { ToastApi, ToastService } from "./toast.types";
 import * as dom from "./toast.dom";
 
 export function connectToast<T extends PropTypes = PropTypes>(
@@ -16,18 +16,13 @@ export function connectToast<T extends PropTypes = PropTypes>(
   const visible = computed("isVisible");
   const paused = computed("isPaused");
   const dismissing = computed("isDismissing");
-  const rawActions = (prop("actions") ?? []) as ToastAction[];
+  const rawActions = prop("actions");
 
   const actions = rawActions.map((action, index) => ({
     label: action.label,
     index,
-    color: action.color,
-    variant: action.variant,
-    actionProps: {
-      id: dom.getActionId(scope, index),
-      "data-index": index,
-      "aria-role": "button",
-    },
+    color: action.color ?? "neutral",
+    variant: action.variant ?? "outline",
   }));
 
   const rootAttrs = {
@@ -58,40 +53,9 @@ export function connectToast<T extends PropTypes = PropTypes>(
     },
 
     handleAction(index: number) {
-      const action = rawActions[index];
-      if (action) {
-        send({ type: "TRIGGER_ACTION", action, index });
-      }
+      send({ type: "TRIGGER_ACTION", index });
     },
 
     rootProps: normalize ? normalize.element(rootAttrs) : rootAttrs,
-
-    wrapperProps: {
-      id: dom.getWrapperId(scope),
-    },
-
-    titleProps: {
-      id: dom.getTitleId(scope),
-    },
-
-    descriptionProps: {
-      id: dom.getDescriptionId(scope),
-    },
-
-    iconProps: {
-      id: dom.getIconId(scope),
-      "aria-hidden": true,
-    },
-
-    closeTriggerProps: {
-      id: dom.getCloseTriggerId(scope),
-      "aria-role": "button",
-      "aria-label": "Close",
-    },
-
-    progressProps: {
-      id: dom.getProgressId(scope),
-      "aria-hidden": true,
-    },
   };
 }

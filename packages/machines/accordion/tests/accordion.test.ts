@@ -17,12 +17,7 @@ describe("Accordion Machine", () => {
 
       const api = connectAccordion(machine.service);
       expect(api.value).toEqual([]);
-      expect(api.multiple).toBe(false);
-      expect(api.collapsible).toBe(true);
       expect(api.disabled).toBe(false);
-      expect(api.size).toBe("md");
-      expect(api.variant).toBe("outline");
-      expect(api.hasItems).toBe(false);
       expect(api.items).toEqual([]);
 
       machine.stop();
@@ -40,7 +35,6 @@ describe("Accordion Machine", () => {
 
       const api = connectAccordion(machine.service);
       expect(api.value).toEqual(["item-1"]);
-      expect(api.hasItems).toBe(true);
       expect(api.items.length).toBe(2);
       expect(api.items[0]?.isOpen).toBe(true);
       expect(api.items[1]?.isOpen).toBe(false);
@@ -103,12 +97,12 @@ describe("Accordion Machine", () => {
       });
       machine.start();
 
-      expect(connectAccordion(machine.service).collapsible).toBe(true);
+      expect(machine.computed("isCollapsible")).toBe(true);
 
       machine.updateProps({ collapsible: false });
       await flush();
 
-      expect(connectAccordion(machine.service).collapsible).toBe(false);
+      expect(machine.computed("isCollapsible")).toBe(false);
 
       const api = connectAccordion(machine.service);
       api.toggle("1");
@@ -171,7 +165,7 @@ describe("Accordion Machine", () => {
       const api = connectAccordion(machine.service);
       expect(api.value).toEqual(["2"]);
       expect(machine.context.get("value")).toEqual(["2"]);
-      expect(api.multiple).toBe(true);
+      expect(machine.computed("isMultiple")).toBe(true);
 
       machine.stop();
     });

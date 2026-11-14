@@ -3,9 +3,9 @@
   class="cui-accordion {{classes.root}}"
   data-scope="accordion"
   data-part="root"
-  data-disabled="{{accordion.disabled}}"
-  data-size="{{accordion.size}}"
-  data-variant="{{accordion.variant}}"
+  data-disabled="{{disabled}}"
+  data-size="{{size}}"
+  data-variant="{{variant}}"
 >
   <block wx:if="{{hasItems}}">
     <c-accordion-item
@@ -21,8 +21,8 @@
       trailingIcon="{{item.trailingIcon}}"
       disabled="{{item.isDisabled}}"
       open="{{item.isOpen}}"
-      size="{{accordion.size || size}}"
-      variant="{{accordion.variant || variant}}"
+      size="{{size}}"
+      variant="{{variant}}"
       ui="{{item.ui || ui}}"
       data-value="{{item.value}}"
     />

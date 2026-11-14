@@ -25,7 +25,7 @@ function createRequiredRule(message: string): FormRule {
 }
 
 function getEffectiveFieldRules(
-  rules: FormRule[] | undefined,
+  rules: FormRule[],
   required: boolean,
   disabled: boolean,
   labelOrName: string,
@@ -75,7 +75,7 @@ export const formFieldMachine: FormFieldMachine =
     }),
 
     initialState: ({ prop }) =>
-      prop("error")?.trim() ? "invalid" : "valid",
+      prop("error").trim() ? "invalid" : "valid",
 
     refs: () => ({
       injectedHost: signal<FormHostContext | undefined>(undefined),
@@ -99,32 +99,22 @@ export const formFieldMachine: FormFieldMachine =
       isReadOnly: ({ computed }) => computed("host")?.readOnly() ?? false,
       displayError: ({ prop, context, computed }) =>
         prop("error") ||
-        computed("host")?.errors(prop("name") ?? "")[0] ||
+        computed("host")?.errors(prop("name"))[0] ||
         context.get("innerError") ||
         "",
-      displayHelp: ({ prop }) => prop("help") || prop("helperText") || "",
+      displayHelp: ({ prop }) => prop("help") || prop("helperText"),
       invalid: ({ state, computed }) =>
         state.matches("invalid") || Boolean(computed("displayError")),
       effectiveRules: ({ prop, computed }) =>
         getEffectiveFieldRules(
           prop("rules"),
-          Boolean(prop("required")),
+          prop("required"),
           computed("isDisabled"),
-          prop("label") || prop("name") || "",
+          prop("label") || prop("name"),
         ),
     },
 
-    watch: (params) => {
-      if (params.prop("form") !== params.refs.get("injectionForm")) {
-        setupHostInjection(params);
-      }
-      const targetState = params.computed("displayError") ? "invalid" : "valid";
-      if (!params.state.matches(targetState)) {
-        params.state.set(targetState);
-      }
-    },
-
-    effects: ["trackFieldProps"],
+    effects: ["trackHostForm", "trackDisplayErrorState", "trackFieldProps"],
     entry: ["setupHost"],
     exit: ["cleanupHost"],
 
@@ -170,13 +160,30 @@ export const formFieldMachine: FormFieldMachine =
       },
 
       effects: {
+        trackHostForm: (params) => {
+          params.track([() => params.prop("form")], () => {
+            if (params.prop("form") !== params.refs.get("injectionForm")) {
+              setupHostInjection(params);
+            }
+          });
+        },
+        trackDisplayErrorState: (params) => {
+          params.track([() => Boolean(params.computed("displayError"))], () => {
+            const targetState = params.computed("displayError")
+              ? "invalid"
+              : "valid";
+            if (!params.state.matches(targetState)) {
+              params.state.set(targetState);
+            }
+          });
+        },
         trackFieldProps: (params) =>
           effect(() => {
             params.prop("rules");
             params.prop("required");
             params.prop("label");
             const host = params.computed("host");
-            const name = params.prop("name") ?? "";
+            const name = params.prop("name");
             if (
               host !== params.refs.get("publishedHost") ||
               name !== params.refs.get("publishedName")
@@ -188,8 +195,8 @@ export const formFieldMachine: FormFieldMachine =
             params.refs.set("publishedName", name);
             host.setFieldRules(name, () => params.computed("effectiveRules"));
             host.setFieldState(name, {
-              disabled: Boolean(params.prop("disabled")),
-              size: params.prop("size") ?? "md",
+              disabled: params.prop("disabled"),
+              size: params.prop("size"),
             });
           }),
       },

@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./switch.anatomy";
 
 export type SwitchState = "checked" | "unchecked";
@@ -90,6 +90,27 @@ export interface SwitchProps {
   onChange?: ((details: SwitchCheckedChangeDetails) => void) | undefined;
 }
 
+export interface SwitchResolvedProps extends SwitchProps {
+  checked: boolean | null;
+  defaultChecked: boolean;
+  disabled: boolean;
+  readOnly: boolean;
+  required: boolean;
+  invalid: boolean | null;
+  loading: boolean;
+  color: SwitchColor;
+  size: SwitchSize;
+  value: string;
+  name: string;
+  form: string;
+  label: string;
+  description: string;
+  checkedIcon: string;
+  uncheckedIcon: string;
+  loadingIcon: string;
+  ui: SwitchUI;
+}
+
 export type SwitchEvent =
   | { type: "TOGGLE" }
   | { type: "SET_CHECKED"; checked: boolean }
@@ -122,7 +143,7 @@ export interface SwitchSchema extends MachineSchema {
   state: SwitchState;
   tag: "checked" | "unchecked" | "disabled" | "loading";
   event: SwitchEvent;
-  props: SwitchProps;
+  props: SwitchResolvedProps;
   context: SwitchContext;
   computed: SwitchComputed;
   refs: SwitchRefs;
@@ -140,24 +161,14 @@ export interface SwitchApi {
   state: SwitchState;
   /** Current checked boolean */
   checked: boolean;
-  /** Alias for checked */
-  isChecked: boolean;
-  /** Whether the switch can be interacted with */
-  isInteractive: boolean;
   /** Whether the field is disabled */
   disabled: boolean;
   /** Whether the field is read-only */
   readOnly: boolean;
-  /** Whether the switch is in loading state */
-  loading: boolean;
   /** Whether the field is invalid */
   invalid: boolean;
-  /** Whether the field is required */
-  required: boolean;
   /** Effective size */
   size: SwitchSize;
-  /** Visual color */
-  color: SwitchColor;
   /** Set checked state programmatically */
   setChecked(checked: boolean): void;
   /** Toggle checked state */
@@ -165,21 +176,15 @@ export interface SwitchApi {
   /** Reset to initial checked state */
   resetChecked(): void;
   /** Tap event handler for miniapp */
-  handleTap(e?: any): void;
+  handleTap(e?: MiniAppBaseEventLike): void;
   /** Props for root container */
   rootProps: Record<string, any>;
-  /** Props for container slot */
-  containerProps: Record<string, any>;
   /** Props for switch base/track */
   baseProps: Record<string, any>;
-  /** Alias props for control/track */
-  controlProps: Record<string, any>;
   /** Props for sliding thumb */
   thumbProps: Record<string, any>;
   /** Props for label */
   labelProps: Record<string, any>;
   /** Props for description */
   descriptionProps: Record<string, any>;
-  /** Props for hidden input */
-  hiddenInputProps: Record<string, any>;
 }

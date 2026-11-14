@@ -1,8 +1,8 @@
-import type { FileUploadProps } from "./file-upload.types";
+import type { FileUploadResolvedProps } from "./file-upload.types";
 
-export const defaultFileUploadProps: FileUploadProps = {
+export const defaultFileUploadProps: FileUploadResolvedProps = {
   formContext: undefined,
-  value: null as any,
+  value: null,
   defaultValue: [],
   name: "",
   form: "",

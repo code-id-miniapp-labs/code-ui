@@ -24,10 +24,9 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
 
   initialState: ({ prop }) => {
     const rawOpen = prop("open");
-    const isOpen = isNotNull(rawOpen)
-      ? Boolean(rawOpen)
-      : Boolean(prop("defaultOpen") ?? true);
-    return isOpen ? "open" : "closed";
+    return (isNotNull(rawOpen) ? Boolean(rawOpen) : prop("defaultOpen"))
+      ? "open"
+      : "closed";
   },
 
   context: () => ({}),
@@ -39,15 +38,17 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
     isDismissing: ({ state }) => state.hasTag("dismissing"),
   },
 
-  watch: ({ prop, state }) => {
-    const controlledOpen = prop("open");
-    if (!isNotNull(controlledOpen)) return;
+  watch: ({ prop, state, track }) => {
+    track([() => prop("open")], () => {
+      const controlledOpen = prop("open");
+      if (!isNotNull(controlledOpen)) return;
 
-    if (controlledOpen) {
-      if (!state.matches("open")) state.set("open");
-    } else if (state.matches("open")) {
-      state.set("dismissing");
-    }
+      if (controlledOpen) {
+        if (!state.matches("open")) state.set("open");
+      } else if (state.matches("open")) {
+        state.set("dismissing");
+      }
+    });
   },
 
   on: {
@@ -93,8 +94,9 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
 
   implementations: {
     guards: {
-      shouldCloseOnAction: ({ event }) =>
-        event.type === "TRIGGER_ACTION" && Boolean(event.action.closeOnClick),
+      shouldCloseOnAction: ({ prop, event }) =>
+        event.type === "TRIGGER_ACTION" &&
+        Boolean(prop("actions")[event.index]?.closeOnClick),
     },
 
     effects: {
@@ -128,10 +130,12 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
 
       invokeOnAction: ({ prop, scope, event }) => {
         if (event.type !== "TRIGGER_ACTION") return;
+        const action = prop("actions")[event.index];
+        if (!action) return;
         const id = resolveId(prop, scope);
-        event.action.onClick?.();
+        action.onClick?.();
         prop("onAction")?.({
-          action: event.action,
+          action,
           index: event.index,
           id,
         });

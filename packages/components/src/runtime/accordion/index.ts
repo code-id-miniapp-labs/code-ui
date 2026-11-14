@@ -1,3 +1,4 @@
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -42,9 +43,8 @@ Component(
       },
 
       classes() {
-        const api = this.data.accordion;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const variant = api?.variant ?? (this.data.variant || "outline");
+        const disabled = Boolean(this.data.disabled);
+        const variant = this.data.variant;
         const ui = this.data.ui;
 
         const themeFns = accordionTheme({
@@ -57,11 +57,8 @@ Component(
     },
 
     methods: {
-      handleItemClick(e: WechatMiniprogram.CustomEvent) {
-        const val = e.detail?.value ?? e.currentTarget?.dataset?.value;
-        if (val !== undefined) {
-          getApi(this, "accordion")?.toggle?.(val);
-        }
+      handleItemClick(e: MiniAppEventLike<{ value: string | number }>) {
+        getApi(this, "accordion")?.toggle?.(e.detail.value);
       },
       setValue(val: string | number | (string | number)[]) {
         return getApi(this, "accordion")?.setValue?.(val);

@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
 import type { anatomy } from "./radio-group.anatomy";
 
 export type RadioGroupState = "idle";
@@ -45,14 +45,18 @@ export interface RadioGroupItemRaw {
   [key: string]: any;
 }
 
+export interface RadioGroupItemTapDetail {
+  value: string;
+}
+
 export interface RadioGroupItem {
   value: string;
   label: string;
   description: string;
   disabled: boolean;
   checked: boolean;
-  color?: RadioGroupColor | undefined;
-  variant?: RadioGroupVariant | undefined;
+  color: RadioGroupColor;
+  variant: RadioGroupVariant;
   ui?: Record<string, any> | undefined;
   itemProps: Record<string, any>;
   controlProps: Record<string, any>;
@@ -110,6 +114,24 @@ export interface RadioGroupProps {
   onChange?: ((details: RadioGroupValueChangeDetails) => void) | undefined;
 }
 
+export interface RadioGroupResolvedProps extends RadioGroupProps {
+  value: string | null;
+  defaultValue: string | null;
+  disabled: boolean;
+  readOnly: boolean;
+  required: boolean;
+  invalid: boolean | null;
+  color: RadioGroupColor;
+  size: RadioGroupSize;
+  orientation: RadioGroupOrientation;
+  variant: RadioGroupVariant;
+  name: string;
+  form: string;
+  legend: string;
+  items: (string | RadioGroupItemRaw)[];
+  ui: RadioGroupUI;
+}
+
 export interface RadioGroupContext {
   readonly value: () => string | null;
   readonly disabled: () => boolean;
@@ -148,7 +170,7 @@ export interface RadioGroupComputed {
   isReadOnly: boolean;
 }
 
-export type RadioGroupGuard = "isInteractive";
+export type RadioGroupGuard = "isInteractive" | "canSetValue";
 
 export type RadioGroupAction =
   | "setValue"
@@ -168,7 +190,7 @@ export interface RadioGroupSchema extends MachineSchema {
   state: RadioGroupState;
   tag: "idle";
   event: RadioGroupEvent;
-  props: RadioGroupProps;
+  props: RadioGroupResolvedProps;
   context: RadioGroupMachineContext;
   computed: RadioGroupComputed;
   refs: RadioGroupRefs;
@@ -188,30 +210,18 @@ export interface RadioGroupApi {
   setValue: (value: string) => void;
   /** Clear selection */
   clear: () => void;
-  /** Whether the group is interactive */
-  isInteractive: boolean;
   /** Whether the group is disabled */
   disabled: boolean;
   /** Whether the group is read-only */
   readOnly: boolean;
-  /** Whether the group is required */
-  required: boolean;
   /** Whether the group is invalid */
   invalid: boolean;
-  /** Current size */
+  /** Effective size */
   size: RadioGroupSize;
-  /** Current color */
-  color: RadioGroupColor;
-  /** Current orientation */
-  orientation: RadioGroupOrientation;
-  /** Current variant */
-  variant: RadioGroupVariant;
-  /** Legend title */
-  legend: string;
   /** Pre-computed items with state and props for WXML wx:for rendering */
   items: RadioGroupItem[];
-  /** Tap handler for precomputed wx:for items */
-  handleItemTap: (e?: any) => void;
+  /** Change handler for precomputed wx:for items */
+  handleItemTap: (e: MiniAppEventLike<RadioGroupItemTapDetail>) => void;
   /** Get accessible props for an item container */
   getItemProps: (item: {
     value: string;
@@ -227,8 +237,6 @@ export interface RadioGroupApi {
     value: string;
     disabled?: boolean | undefined;
   }) => Record<string, any>;
-  /** Underlying bound FormField if registered with `<c-form>` */
-  formField?: BoundFormField | undefined;
 }
 
 export interface FieldStateSnapshot {

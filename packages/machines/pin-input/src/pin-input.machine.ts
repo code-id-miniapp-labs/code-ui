@@ -21,13 +21,58 @@ export function isValidCharacter(char: string, type: PinInputType): boolean {
   return /^[a-zA-Z0-9]$/.test(char);
 }
 
-function normalizePinValue(raw: string[] | string, length: number): string[] {
-  const chars = Array.isArray(raw) ? raw : String(raw ?? "").split("");
+function normalizePinValue(raw: unknown, length: number): string[] {
+  const chars = Array.isArray(raw) ? raw.map(String) : String(raw ?? "").split("");
   const nextValues = Array(length).fill("");
   for (let i = 0; i < length; i++) {
     nextValues[i] = chars[i] ?? "";
   }
   return nextValues;
+}
+
+function stripZeroWidth(raw: unknown): string {
+  return (typeof raw === "string" ? raw : "").replace(/\u200B/g, "");
+}
+
+function resolveReplacementChar(
+  cleanVal: string,
+  currentVal: string,
+  index: number,
+  length: number,
+): string | null {
+  if (
+    !currentVal ||
+    !cleanVal.includes(currentVal) ||
+    (cleanVal.length !== 2 && index !== length - 1)
+  ) {
+    return null;
+  }
+  return cleanVal.replace(currentVal, "").slice(-1) || cleanVal.slice(-1);
+}
+
+export function resolvePinInputCellReturnValue(
+  value: string[],
+  index: number,
+  rawVal: unknown,
+  length: number,
+  type: PinInputType,
+): string {
+  const cleanVal = stripZeroWidth(rawVal);
+  if (cleanVal === "") return "";
+
+  const currentVal = value[index] ?? "";
+  if (cleanVal.length === 1) {
+    return isValidCharacter(cleanVal, type) ? cleanVal : currentVal;
+  }
+
+  const replacement = resolveReplacementChar(cleanVal, currentVal, index, length);
+  if (replacement !== null) {
+    return isValidCharacter(replacement, type) ? replacement : currentVal;
+  }
+
+  return (
+    cleanVal.split("").find((c) => isValidCharacter(c, type)) ?? currentVal
+  );
 }
 
 function advanceFocusOrBlur(
@@ -57,7 +102,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
   initialState: ({ prop }) => (prop("autoFocus") ? "focused" : "idle"),
 
   refs: ({ prop }) => {
-    const len = prop("length") ?? 4;
+    const len = prop("length");
     const raw = prop("value") ?? prop("defaultValue");
     return {
       initialValue:
@@ -75,7 +120,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
     })),
 
     value: bindable<string[]>(() => {
-      const len = prop("length") ?? 4;
+      const len = prop("length");
       const rawVal = prop("value");
       const isControlled = rawVal !== undefined && rawVal !== null;
       const controlledVal = isControlled
@@ -107,7 +152,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           }
 
           if (
-            nextVal.length === (prop("length") ?? 4) &&
+            nextVal.length === prop("length") &&
             nextVal.every((c) => Boolean(c && c.trim() !== ""))
           ) {
             prop("onComplete")?.({
@@ -181,10 +226,12 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       tags: ["idle"],
       on: {
         "INPUT.FOCUS": {
+          guard: "isInteractive",
           target: "focused",
           actions: ["setFocusedIndex"],
         },
         "INPUT.CHANGE": {
+          guard: "isInteractive",
           target: "focused",
           actions: ["handleInputChange"],
         },
@@ -198,9 +245,11 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       tags: ["focused"],
       on: {
         "INPUT.FOCUS": {
+          guard: "isInteractive",
           actions: ["setFocusedIndex"],
         },
         "INPUT.CHANGE": {
+          guard: "isInteractive",
           actions: ["handleInputChange"],
         },
         "INPUT.BLUR": [
@@ -211,6 +260,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           },
         ],
         "INPUT.CLEAR": {
+          guard: "isInteractive",
           actions: ["clearValue"],
         },
       },
@@ -219,9 +269,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
 
   implementations: {
     guards: {
+      isInteractive: ({ computed }) => computed("isInteractive"),
       isBlurringActiveCell: ({ context, event }) => {
         const currentFocused = context.get("focusedIndex");
-        const blurredIdx = (event as any)?.index;
+        const blurredIdx = event.type === "INPUT.BLUR" ? event.index : undefined;
         return !(
           typeof blurredIdx === "number" &&
           blurredIdx !== -1 &&
@@ -239,9 +290,9 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             getHost: () => prop("formContext"),
             id: scope.id ?? "pin-input",
             getFormId: () => prop("form") || "",
-            getName: () => prop("name") || "",
+            getName: () => prop("name"),
             getValue: () => computed("valueAsString"),
-            setValue: (rawVal: any) => {
+            setValue: (rawVal: unknown) => {
               context.set(
                 "value",
                 normalizePinValue(rawVal, context.get("length")),
@@ -288,10 +339,9 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         computed,
         prop,
       }) => {
-        if (!computed("isInteractive")) return;
         const len = context.get("length");
-        const idx =
-          typeof (event as any).index === "number" ? (event as any).index : 0;
+        const idx = event.type === "INPUT.FOCUS" ? event.index : 0;
+        const force = event.type === "INPUT.FOCUS" && Boolean(event.force);
         const currentValues = context.get("value");
         const firstEmptyIndex = currentValues.findIndex(isEmpty);
         const targetIndex =
@@ -299,7 +349,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             ? firstEmptyIndex
             : Math.max(0, Math.min(len - 1, idx));
 
-        if (idx !== targetIndex || Boolean((event as any)?.force)) {
+        if (idx !== targetIndex || force) {
           context.set("focusedIndex", -1);
           flush(() => {
             state.set("focused");
@@ -329,21 +379,18 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       },
 
       handleInputChange: ({ context, prop, computed, event, refs }) => {
-        if (!computed("isInteractive")) return;
+        if (event.type !== "INPUT.CHANGE") return;
 
-        const { index, value: rawVal } = event as any;
+        const { index, value: rawVal } = event;
         const length = context.get("length");
-        const inputType = prop("type") ?? "numeric";
+        const inputType = prop("type");
         const currentValues = [...context.get("value")];
 
         while (currentValues.length < length) {
           currentValues.push("");
         }
 
-        const cleanVal = (typeof rawVal === "string" ? rawVal : "").replace(
-          /\u200B/g,
-          "",
-        );
+        const cleanVal = stripZeroWidth(rawVal);
 
         if (cleanVal === "") {
           if (currentValues[index] !== "") {
@@ -364,24 +411,22 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
         }
 
         if (cleanVal.length > 1) {
-          const curChar = currentValues[index];
-          if (
-            curChar &&
-            cleanVal.includes(curChar) &&
-            (cleanVal.length === 2 || index === length - 1)
-          ) {
-            const newChar =
-              cleanVal.replace(curChar, "").slice(-1) || cleanVal.slice(-1);
-            if (isValidCharacter(newChar, inputType)) {
-              currentValues[index] = newChar;
-              context.set("value", currentValues);
-              advanceFocusOrBlur(
-                { context, computed, prop, refs },
-                index + 1,
-                length,
-              );
-              return;
-            }
+          const curChar = currentValues[index] ?? "";
+          const replacement = resolveReplacementChar(
+            cleanVal,
+            curChar,
+            index,
+            length,
+          );
+          if (replacement !== null && isValidCharacter(replacement, inputType)) {
+            currentValues[index] = replacement;
+            context.set("value", currentValues);
+            advanceFocusOrBlur(
+              { context, computed, prop, refs },
+              index + 1,
+              length,
+            );
+            return;
           }
 
           const validChars = cleanVal
@@ -417,9 +462,10 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       },
 
       setValue: ({ context, event }) => {
+        if (event.type !== "SET_VALUE") return;
         context.set(
           "value",
-          normalizePinValue((event as any).value, context.get("length")),
+          normalizePinValue(event.value, context.get("length")),
         );
       },
 

@@ -33,10 +33,11 @@ describe("StepperItem Machine", () => {
     const machine = new MiniappMachine(stepperItemMachine, {});
     machine.start();
 
-    expect(machine.state.get()).toBe("idle");
+    expect(machine.state.get()).toBe("current");
     const api = connectStepperItem(machine.service);
-    expect(api.resolvedIndex).toBe(0);
-    expect(api.resolvedIsLast).toBe(false);
+    expect(api.state).toBe("current");
+    expect(api.index).toBe(0);
+    expect(api.isLast).toBe(false);
     expect(api.status).toBe("current");
     expect(api.isCurrent).toBe(true);
     expect(api.isDisabled).toBe(false);
@@ -198,21 +199,34 @@ describe("StepperItem Machine", () => {
     expect(api.color).toBe("danger");
     expect(api.size).toBe("lg");
     expect(api.variant).toBe("outline");
+    expect(item.state.get()).toBe("disabled");
+    expect(api.state).toBe("disabled");
     expect(api.isDisabled).toBe(true);
     expect(api.status).toBe("disabled");
 
     item.stop();
   });
 
-  it("exposes icon and completedIcon in connect api", () => {
+  it("tracks machine state transitions alongside status", async () => {
+    const currentStep = signal(0);
     const item = new MiniappMachine(stepperItemMachine, {
-      index: 0,
-      icon: "i-lucide-user",
+      groupContext: makeGroupContext({
+        step: () => currentStep(),
+        count: () => 2,
+      }),
+      groupIndex: 1,
     });
     item.start();
-    const api = connectStepperItem(item.service);
-    expect(api.icon).toBe("i-lucide-user");
-    expect(api.completedIcon).toBe("check");
+    expect(item.state.get()).toBe("upcoming");
+
+    currentStep(1);
+    await flush();
+    expect(item.state.get()).toBe("current");
+
+    currentStep(2);
+    await flush();
+    expect(item.state.get()).toBe("completed");
+
     item.stop();
   });
 });

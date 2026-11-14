@@ -32,25 +32,18 @@ Component(
     }),
 
     computed: {
-      displayHelp() {
-        return this.data.formField?.displayHelp ?? "";
-      },
-      displayError() {
-        return this.data.formField?.displayError ?? "";
-      },
       classes() {
-        const size = this.data.formField?.size;
-        const disabled = Boolean(this.data.formField?.disabled);
-        const required = Boolean(this.data.formField?.required);
-        const ui = this.data.ui;
+        const disabled = this.data.formField
+          ? this.data.formField.disabled
+          : this.data.disabled;
 
         const themeFns = formFieldTheme({
-          size,
+          size: this.data.size,
           disabled,
-          required,
+          required: this.data.required,
         });
 
-        return resolveSlots(themeFns, ui, this.data.className);
+        return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
     },
   }),

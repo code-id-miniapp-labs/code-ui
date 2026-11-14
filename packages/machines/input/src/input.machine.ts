@@ -145,7 +145,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
             getHost: () => prop("formContext"),
             id: scope.id ?? "input",
             getFormId: () => prop("form") || "",
-            getName: () => prop("name") || "",
+            getName: () => prop("name"),
             getValue: () => context.get("value"),
             setValue: (rawVal: unknown) => {
               context.set("value", toStringValue(rawVal) ?? "");
@@ -192,7 +192,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       },
 
       setValue: ({ context, event }) => {
-        context.set("value", toStringValue((event as any).value) ?? "");
+        if (event.type !== "INPUT.CHANGE" && event.type !== "SET_VALUE") return;
+        context.set("value", toStringValue(event.value) ?? "");
       },
 
       clearValue: ({ context, prop }) => {

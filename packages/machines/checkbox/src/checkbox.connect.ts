@@ -1,26 +1,20 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type { CheckboxApi, CheckboxService } from "./checkbox.types";
 import * as dom from "./checkbox.dom";
 
 export function connectCheckbox(service: CheckboxService): CheckboxApi {
-  const { state, send, computed, prop, scope } = service;
+  const { state, send, computed, scope } = service;
 
   const currentState = state.get();
   const checked = computed("isChecked");
   const indeterminate = computed("isIndeterminate");
-  const isInteractive = computed("isInteractive");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const required = Boolean(prop("required"));
 
   const size = computed("effectiveSize");
   const color = computed("effectiveColor");
-  const name = prop("name") ?? "";
-  const value = prop("value") ?? "";
-  const label = prop("label") ?? "";
-  const description = prop("description") ?? "";
-  const icon = prop("icon") ?? "check";
-  const indeterminateIcon = prop("indeterminateIcon") ?? "minus";
+  const variant = computed("effectiveVariant");
 
   const dataState = indeterminate
     ? "indeterminate"
@@ -37,26 +31,17 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
     "data-invalid": String(invalid),
   };
   const indicatorId = dom.getIndicatorId(scope);
-  const descId = dom.getDescriptionId(scope);
-  const hiddenId = dom.getHiddenInputId(scope);
 
   return {
     state: currentState,
     checked,
-    isChecked: checked,
     indeterminate,
-    isIndeterminate: indeterminate,
-    isInteractive,
     disabled,
     readOnly,
     invalid,
-    required,
     size,
     color,
-    label,
-    description,
-    icon,
-    indeterminateIcon,
+    variant,
 
     setChecked(nextChecked: boolean) {
       send({ type: "SET_CHECKED", checked: nextChecked });
@@ -74,8 +59,7 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
       send({ type: "RESET_VALUE" });
     },
 
-    handleTap(_event?: any) {
-      if (!isInteractive) return;
+    handleTap(_event?: MiniAppBaseEventLike) {
       send({ type: "TOGGLE" });
     },
 
@@ -107,22 +91,6 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
     labelProps: {
       id: dom.getLabelId(scope),
       "data-disabled": String(disabled),
-    },
-
-    descriptionProps: {
-      ...(descId ? { id: descId } : {}),
-      "data-disabled": String(disabled),
-    },
-
-    hiddenInputProps: {
-      ...(hiddenId ? { id: hiddenId } : {}),
-      type: "checkbox",
-      name: name || undefined,
-      value,
-      checked,
-      disabled: disabled || readOnly,
-      required,
-      "aria-hidden": "true",
     },
   };
 }

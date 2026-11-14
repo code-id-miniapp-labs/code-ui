@@ -1,14 +1,14 @@
-import type { QrCodeProps } from "./qr-code.types";
+import type { QrCodeResolvedProps } from "./qr-code.types";
 
-export const defaultQrCodeProps: QrCodeProps = {
-  value: "",
+export const defaultQrCodeProps: QrCodeResolvedProps = {
+  value: null,
   defaultValue: "",
-  ecc: "M" as const,
+  ecc: "M",
   border: 0,
   encoding: {},
   pixelSize: 10,
-  size: "md" as const,
-  color: "neutral" as const,
+  size: "md",
+  color: "neutral",
   overlaySrc: "",
   showOverlay: false,
   ui: {},

@@ -19,6 +19,6 @@
 
   <slot name="error" />
   <slot name="help" />
-  <text wx:if="{{formField.displayError || displayError}}" class="{{classes.error}}" id="{{formField.errorProps.id}}" data-scope="form-field" data-part="error" aria-role="alert" aria-live="polite">{{formField.displayError || displayError}}</text>
-  <text wx:elif="{{formField.displayHelp || displayHelp}}" class="{{classes.help}}" data-scope="form-field" data-part="help">{{formField.displayHelp || displayHelp}}</text>
+  <text wx:if="{{formField.displayError}}" class="{{classes.error}}" id="{{formField.errorProps.id}}" data-scope="form-field" data-part="error" aria-role="alert" aria-live="polite">{{formField.displayError}}</text>
+  <text wx:elif="{{formField.displayHelp}}" class="{{classes.help}}" data-scope="form-field" data-part="help">{{formField.displayHelp}}</text>
 </view>

@@ -10,7 +10,12 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent, MiniAppRect } from "@code-ui/utils";
+import type {
+  MiniAppComponent,
+  MiniAppEventLike,
+  MiniAppRect,
+  MiniAppTouchEventLike,
+} from "@code-ui/utils";
 import type { anatomy } from "./slider.anatomy";
 
 export type SliderOrientation = "horizontal" | "vertical";
@@ -69,10 +74,17 @@ export interface SliderProps {
   onBlur?: ((details: { index: number; value: number }) => void) | undefined;
 }
 
+export type SliderPointerEvent =
+  | SliderPoint
+  | { clientX: number; clientY: number }
+  | MiniAppEventLike<{ x?: number | undefined; y?: number | undefined }>
+  | MiniAppTouchEventLike;
+
 export interface SliderContext {
   invalid: boolean;
   value: number[];
   activeThumbIndex: number;
+  rect: MiniAppRect | null;
 }
 
 export type SliderState = "idle" | "dragging";
@@ -85,11 +97,24 @@ export type SliderEvent =
       index?: number | undefined;
     }
   | {
+      type: "TAP";
+      point: SliderPoint;
+      rect?: MiniAppRect | undefined;
+      index?: number | undefined;
+    }
+  | {
       type: "POINTER_MOVE";
       point: SliderPoint;
     }
   | {
       type: "POINTER_UP";
+    }
+  | {
+      type: "RECT.RESOLVED";
+      rect: MiniAppRect;
+      point?: SliderPoint | undefined;
+      index?: number | undefined;
+      commit?: boolean | undefined;
     }
   | {
       type: "SET_VALUE";
@@ -140,7 +165,6 @@ export interface SliderThumbSnapshot {
   percent: number;
   id: string;
   style: string;
-  thumbProps: Record<string, any>;
 }
 
 export interface SliderMarkerSnapshot {
@@ -149,7 +173,6 @@ export interface SliderMarkerSnapshot {
   percent: number;
   style: string;
   active: boolean;
-  markerProps: Record<string, any>;
 }
 
 export interface SliderApi {
@@ -167,8 +190,6 @@ export interface SliderApi {
   orientation: SliderOrientation;
   inverted: boolean;
   size: SliderSize;
-  color: string;
-  label: string;
   activeThumbIndex: number;
   thumbs: SliderThumbSnapshot[];
   thumbIds: string;
@@ -179,25 +200,47 @@ export interface SliderApi {
   valueText: string;
   rootProps: Record<string, any>;
   controlProps: Record<string, any>;
-  trackProps: Record<string, any>;
   rangeProps: Record<string, any>;
-  labelProps: Record<string, any>;
-  valueTextProps: Record<string, any>;
-  markerGroupProps: Record<string, any>;
-  getThumbProps(index?: number): Record<string, any>;
-  getMarkerProps(value: number): Record<string, any>;
   setValue(value: number | number[], index?: number): void;
   stepUp(index?: number, step?: number): void;
   stepDown(index?: number, step?: number): void;
   reset(): void;
-  handleTouchStart(e: any): Promise<void> | void;
-  handleTouchMove(e: any): void;
-  handleTouchEnd(e?: any): void;
-  handleTap(e: any): Promise<void> | void;
+  handleTouchStart(e?: SliderPointerEvent): void;
+  handleTouchMove(e?: SliderPointerEvent): void;
+  handleTouchEnd(e?: SliderPointerEvent): void;
+  handleTap(e?: SliderPointerEvent): void;
 }
 
+type SliderDefaultedKey =
+  | "value"
+  | "defaultValue"
+  | "name"
+  | "form"
+  | "disabled"
+  | "readOnly"
+  | "invalid"
+  | "required"
+  | "min"
+  | "max"
+  | "step"
+  | "orientation"
+  | "inverted"
+  | "minStepsBetweenThumbs"
+  | "color"
+  | "size"
+  | "label"
+  | "marks"
+  | "fieldDisabled"
+  | "fieldSize"
+  | "className"
+  | "ui";
+
+export type SliderResolvedProps = Omit<SliderProps, SliderDefaultedKey> & {
+  [K in SliderDefaultedKey]-?: Exclude<SliderProps[K], undefined>;
+};
+
 export interface SliderSchema extends MachineSchema {
-  props: SliderProps;
+  props: SliderResolvedProps;
   context: SliderContext;
   state: SliderState;
   event: SliderEvent;
