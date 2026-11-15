@@ -27,6 +27,11 @@ const pullDownRefreshBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [pullDownRefreshBehavior, computedBehavior],
+    slots: {
+      default: false,
+      header: false,
+      indicator: false,
+    },
 
     properties: createProperties(defaultPullDownRefreshProps, {
       className: {

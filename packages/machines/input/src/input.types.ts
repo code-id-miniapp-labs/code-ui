@@ -100,12 +100,8 @@ export interface InputProps {
   clearIcon?: string | undefined;
   /** Whether input is in loading state */
   loading?: boolean | undefined;
-  /** Whether leading slot/icon is shown */
-  leading?: boolean | undefined;
   /** custom loading Icon */
   loadingIcon?: string | undefined;
-  /** Whether trailing slot/icon is shown */
-  trailing?: boolean | undefined;
   /** Leading icon class */
   leadingIcon?: string | undefined;
   /** Trailing icon class */
@@ -210,8 +206,6 @@ type InputDefaultedKey =
   | "clearIcon"
   | "loading"
   | "loadingIcon"
-  | "leading"
-  | "trailing"
   | "leadingIcon"
   | "trailingIcon"
   | "autoFocus"

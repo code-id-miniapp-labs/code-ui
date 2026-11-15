@@ -16,6 +16,9 @@ Component(
   createComponentOptions({
     behaviors: [cuiAvatarGroupBehavior, computedBehavior],
     relations,
+    slots: {
+      default: false,
+    },
     properties: {
       className: {
         type: String,

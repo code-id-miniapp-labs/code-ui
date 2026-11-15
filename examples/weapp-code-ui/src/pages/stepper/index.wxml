@@ -14,7 +14,7 @@
         Navigate steps using controls or tap individual steps (linear mode blocks skipping ahead).
       </view>
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200 mb-5">
-        <c-stepper value="{{activeStep}}" linear="{{linear}}" color="{{color}}" size="{{size}}" hasContent="{{true}}" bind:change="onStepChange">
+        <c-stepper value="{{activeStep}}" linear="{{linear}}" color="{{color}}" size="{{size}}" bind:change="onStepChange">
           <c-stepper-item title="Profile" description="Personal info" />
           <c-stepper-item title="Security" description="Password & 2FA" />
           <c-stepper-item title="Review" description="Verify entries" />
@@ -93,7 +93,7 @@
       <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
         <c-stepper value="{{activeStep}}" bind:change="onStepChange" color="primary" size="md">
           <block wx:for="{{stepsData}}" wx:for-item="stepItem" wx:key="index">
-            <c-stepper-item title="{{stepItem.title}}" description="{{stepItem.description}}" customIndicator customCompletedIndicator>
+            <c-stepper-item title="{{stepItem.title}}" description="{{stepItem.description}}">
               <c-icon slot="indicator" name="{{stepItem.icon}}" />
               <c-icon slot="completed-indicator" name="{{stepItem.completedIcon}}" />
             </c-stepper-item>

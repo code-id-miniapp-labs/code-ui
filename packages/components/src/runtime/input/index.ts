@@ -25,6 +25,12 @@ Component(
   createComponentOptions({
     behaviors: [inputBehavior, computedBehavior],
 
+    slots: {
+      trailing: false,
+      leading: false,
+      loadingIcon: false,
+    },
+
     properties: createProperties(defaultInputProps, {
       className: {
         type: String,
@@ -42,12 +48,13 @@ Component(
           highlight: Boolean(this.data.highlight),
           invalid: Boolean(api?.invalid ?? this.data.invalid),
           disabled: Boolean(api?.disabled ?? this.data.disabled),
-          leading: Boolean(this.data.leading || this.data.leadingIcon),
+          leading: Boolean(this.data.slots.leading || this.data.leadingIcon),
           trailing: Boolean(
-            this.data.trailing ||
+            this.data.slots.trailing ||
               this.data.trailingIcon ||
               api?.isClearable ||
-              this.data.loading,
+              this.data.loading ||
+              this.data.slots.loadingIcon,
           ),
         });
         return resolveSlots(themeFns, this.data.ui, this.data.className);

@@ -23,6 +23,9 @@ const qrCodeBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [qrCodeBehavior, computedBehavior],
+    slots: {
+      overlay: false,
+    },
 
     properties: createProperties(defaultQrCodeProps, {
       className: {

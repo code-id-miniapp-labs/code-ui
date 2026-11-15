@@ -79,6 +79,29 @@ export interface ResolvedAppWrapperOptions {
   include?: (string | RegExp)[] | undefined;
 }
 
+export interface SlotDetectOptions {
+  /**
+   * Whether to enable compile-time active slot detection (`slots` prop injection).
+   * Default: true
+   */
+  enable?: boolean;
+  /**
+   * Component tag prefix (without trailing hyphen, e.g. "c").
+   * Default: inherited from `autoImport.prefix` ("c")
+   */
+  prefix?: string;
+  /**
+   * Custom component slot manifest override/extension.
+   */
+  componentSlots?: Record<string, readonly string[]>;
+}
+
+export interface ResolvedSlotDetectOptions {
+  enable: boolean;
+  prefix: string;
+  componentSlots?: Record<string, readonly string[]> | undefined;
+}
+
 export interface CodeUIVitePluginOptions {
   cwd?: string;
   configFile?: string;
@@ -95,6 +118,11 @@ export interface CodeUIVitePluginOptions {
    * Default: true
    */
   appWrapper?: boolean | AppWrapperOptions;
+  /**
+   * Compile-time active slot detection for `<c-*>` components in WXML.
+   * Default: true
+   */
+  slotDetect?: boolean | SlotDetectOptions;
   icons?: CodeUIConfig["icons"] | boolean | IconsPluginOptions;
   ui?: CodeUIConfig["ui"];
   components?: CodeUIConfig["components"];

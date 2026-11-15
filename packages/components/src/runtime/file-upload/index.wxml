@@ -1,13 +1,14 @@
 <view id="{{fileUpload.rootProps.id}}" class="{{classes.root}}" data-scope="file-upload" data-part="root" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled}}" data-readonly="{{fileUpload.readOnly}}" data-invalid="{{fileUpload.invalid}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="group" aria-disabled="{{fileUpload.disabled}}" aria-invalid="{{fileUpload.invalid}}">
   <!-- Dropzone Area -->
   <view wx:if="{{dropzone && !fileUpload.isMaxFiles}}" id="{{fileUpload.dropzoneProps.id}}" class="{{classes.dropzone}}" data-scope="file-upload" data-part="dropzone" data-state="{{fileUpload.state}}" data-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" data-readonly="{{fileUpload.readOnly}}" data-max="{{fileUpload.isMaxFiles}}" aria-role="button" aria-disabled="{{fileUpload.disabled || fileUpload.isMaxFiles}}" aria-busy="{{fileUpload.isUploading}}" aria-label="{{fileUpload.dropzoneProps['aria-label']}}" bindtap="handleDropzoneTap">
-    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:if="{{fileUpload.isUploading && loadingIcon}}">
-      <c-icon name="{{loadingIcon}}" className="w-full h-full animate-spin" />
+    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:if="{{fileUpload.isUploading && (slots.loadingIcon || loadingIcon)}}">
+      <slot wx:if="{{slots.loadingIcon}}" name="loadingIcon" />
+      <c-icon wx:else name="{{loadingIcon}}" className="w-full h-full animate-spin" />
     </view>
-    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:elif="{{icon}}">
-      <c-icon name="{{icon}}" className="w-full h-full" />
+    <view class="{{classes.icon}}" data-scope="file-upload" data-part="icon" aria-hidden="true" wx:elif="{{slots.icon || icon}}">
+      <slot wx:if="{{slots.icon}}" name="icon" />
+      <c-icon wx:else name="{{icon}}" className="w-full h-full" />
     </view>
-    <slot name="icon" wx:else />
     <view class="{{classes.content}}" data-scope="file-upload" data-part="content">
       <view wx:if="{{title}}" class="{{classes.title}}" data-scope="file-upload" data-part="title">
         {{title}}

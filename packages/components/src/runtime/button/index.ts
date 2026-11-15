@@ -27,6 +27,14 @@ Component(
   createComponentOptions({
     behaviors: [buttonBehavior, wxButtonBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      icon: false,
+      leading: false,
+      trailing: false,
+      loadingIcon: false,
+    },
+
     data: {},
     properties: createProperties(defaultButtonProps, {
       className: {

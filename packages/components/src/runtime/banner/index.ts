@@ -46,6 +46,19 @@ Component(
   createComponentOptions({
     behaviors: [cuiAppChildBehavior, bannerBehavior, computedBehavior],
     relations,
+    slots: {
+      default: false,
+      leading: false,
+      badge: false,
+      caption: false,
+      title: false,
+      description: false,
+      image: false,
+      close: false,
+      more: false,
+      buttonArea: false,
+      actions: false,
+    },
 
     properties: createProperties(defaultBannerProps, {
       className: {

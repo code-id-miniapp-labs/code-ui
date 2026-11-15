@@ -20,8 +20,6 @@
             size="{{banner.badge.size}}"
             ui="{{banner.badge.ui}}"
             className="{{banner.badge.className}}"
-            leading="{{banner.badge.leading}}"
-            trailing="{{banner.badge.trailing}}"
           />
         </view>
         <slot wx:else name="badge" />
@@ -43,7 +41,7 @@
         <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode}}" data-scope="banner" data-part="image" aria-hidden="true" />
       </view>
       <slot wx:else name="image" />
-      <view wx:if="{{more || (close && closable)}}" class="cui-banner-button-area {{classes.buttonArea}}" data-scope="banner" data-part="buttonArea">
+      <view wx:if="{{more || (close && closable) || slots.close || slots.more}}" class="cui-banner-button-area {{classes.buttonArea}}" data-scope="banner" data-part="buttonArea">
         <view wx:if="{{close !== false && closable !== false}}" class="{{classes.close}}" data-scope="banner" data-part="close" aria-role="button" aria-label="Dismiss" catchtap="handleCloseTap">
           <c-icon name="{{closeIcon}}" className="w-4 h-4" />
         </view>

@@ -40,6 +40,9 @@ Component(
       computedBehavior,
     ],
     relations,
+    slots: {
+      default: false,
+    },
 
     properties: {
       safeArea: {

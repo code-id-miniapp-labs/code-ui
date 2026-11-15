@@ -28,6 +28,10 @@ const tabsBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [tabsBehavior, computedBehavior],
+    slots: {
+      default: false,
+      listTrailing: false,
+    },
 
     properties: createProperties(defaultTabsProps, {
       className: {

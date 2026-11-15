@@ -29,18 +29,19 @@ Component(
   createComponentOptions({
     behaviors: [accordionItemBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      leading: false,
+      label: false,
+      description: false,
+      trailing: false,
+      content: false,
+    },
+
     properties: createProperties(defaultAccordionItemProps, {
       className: {
         type: String,
         value: "",
-      },
-      customTrailing: {
-        type: Boolean,
-        value: false,
-      },
-      hasLeadingSlot: {
-        type: Boolean,
-        value: false,
       },
     }),
 

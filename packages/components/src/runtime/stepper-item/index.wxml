@@ -4,11 +4,11 @@
       <view class="{{classes.indicator}}" aria-hidden="true" data-scope="stepper" data-part="indicator" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}">
         <block wx:if="{{cStepperItem.isCompleted}}">
           <slot name="completed-indicator" />
-          <c-icon wx:if="{{!customCompletedIndicator}}" name="{{completedIcon}}" className="{{classes.icon}}" />
+          <c-icon wx:if="{{!slots.completedIndicator}}" name="{{completedIcon}}" className="{{classes.icon}}" />
         </block>
         <block wx:else>
           <slot name="indicator" />
-          <block wx:if="{{!customIndicator}}">
+          <block wx:if="{{!slots.indicator}}">
             <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.icon}}" />
             <view wx:else>{{cStepperItem.index + 1}}</view>
           </block>

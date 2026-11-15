@@ -31,6 +31,9 @@ const formBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [formBehavior, computedBehavior],
+    slots: {
+      default: false,
+    },
 
     properties: createProperties(defaultFormProps, {
       validateOn: {

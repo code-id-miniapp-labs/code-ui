@@ -96,10 +96,8 @@ export interface TextareaProps {
   clearIcon?: string | undefined;
   /** Whether textarea is in loading state */
   loading?: boolean | undefined;
-  /** Whether leading slot/icon is shown */
-  leading?: boolean | undefined;
-  /** Whether trailing slot/icon is shown */
-  trailing?: boolean | undefined;
+  /** Custom loading icon class */
+  loadingIcon?: string | undefined;
   /** Leading icon class */
   leadingIcon?: string | undefined;
   /** Trailing icon class */
@@ -213,8 +211,7 @@ type TextareaDefaultedKey =
   | "clearable"
   | "clearIcon"
   | "loading"
-  | "leading"
-  | "trailing"
+  | "loadingIcon"
   | "leadingIcon"
   | "trailingIcon"
   | "autoFocus"

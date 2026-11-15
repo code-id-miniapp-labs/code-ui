@@ -62,9 +62,7 @@ export function connectBanner<T extends PropTypes = PropTypes>(
       merged.color ||
       merged.variant ||
       merged.ui ||
-      merged.className ||
-      merged.leading ||
-      merged.trailing
+      merged.className
     ) {
       badge = {
         label,
@@ -81,8 +79,6 @@ export function connectBanner<T extends PropTypes = PropTypes>(
               : "sm"),
         ui: merged.ui,
         className: merged.className,
-        leading: Boolean(merged.leading),
-        trailing: Boolean(merged.trailing),
       };
     }
   }

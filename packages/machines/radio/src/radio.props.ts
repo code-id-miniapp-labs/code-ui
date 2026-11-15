@@ -12,6 +12,5 @@ export const defaultRadioProps: RadioResolvedProps = {
   color: "primary" as const,
   size: "md" as const,
   variant: "outline" as const,
-  customIndicator: false,
   ui: {},
 };

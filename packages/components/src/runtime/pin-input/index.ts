@@ -24,6 +24,9 @@ const pinInputBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [pinInputBehavior, computedBehavior],
+    slots: {
+      label: false,
+    },
 
     properties: createProperties(defaultPinInputProps, {
       label: {

@@ -8,6 +8,10 @@ const chipTheme = tv(themeConfig);
 Component(
   createComponentOptions({
     behaviors: [computedBehavior],
+    slots: {
+      default: false,
+      content: false,
+    },
 
     properties: {
       text: {

@@ -114,8 +114,6 @@ export interface StepperProps {
   variant?: StepperVariant | undefined;
   /** Whether the entire stepper is disabled */
   disabled?: boolean | undefined;
-  /** Whether content panel is present */
-  hasContent?: boolean | undefined;
   /** Step items rendered in data-driven mode */
   items?: StepperItem[] | undefined;
   /** Callback fired when active step changes */
@@ -139,7 +137,6 @@ export type StepperDefaultedKey =
   | "size"
   | "variant"
   | "disabled"
-  | "hasContent"
   | "items"
   | "ui";
 

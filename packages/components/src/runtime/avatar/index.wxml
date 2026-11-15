@@ -1,7 +1,9 @@
 <view wx:if="{{!groupHidden}}" class="{{classes.root}}" style="{{rootStyle}}">
   <image wx:if="{{src && !imageError}}" src="{{src}}" mode="{{mode}}" lazy-load="{{lazyLoad}}" class="{{classes.image}}" binderror="onImageError" />
   <block wx:else>
-    <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.icon}}" />
+    <slot wx:if="{{slots.icon}}" name="icon" />
+    <c-icon wx:elif="{{icon}}" name="{{icon}}" className="{{classes.icon}}" />
+    <slot wx:elif="{{slots.default}}" />
     <view wx:else class="{{classes.fallback}}">{{fallbackText}}</view>
   </block>
 </view>

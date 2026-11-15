@@ -1,13 +1,13 @@
 <view class="{{ classes.root }}" data-scope="card" data-part="root" data-variant="{{ variant }}" data-size="{{ size }}">
-  <view wx:if="{{ title || description || showHeader }}" class="{{ classes.header }}" data-scope="card" data-part="header">
+  <view wx:if="{{ title || description || slots.header }}" class="{{ classes.header }}" data-scope="card" data-part="header">
     <slot name="header" />
     <text wx:if="{{ title }}" class="{{ classes.title }}" data-scope="card" data-part="title">{{ title }}</text>
     <text wx:if="{{ description }}" class="{{ classes.description }}" data-scope="card" data-part="description">{{ description }}</text>
   </view>
-  <view class="{{ classes.body }}" data-scope="card" data-part="body">
+  <view wx:if="{{ slots.default }}" class="{{ classes.body }}" data-scope="card" data-part="body">
     <slot />
   </view>
-  <view wx:if="{{ showFooter }}" class="{{ classes.footer }}" data-scope="card" data-part="footer">
+  <view wx:if="{{ slots.footer }}" class="{{ classes.footer }}" data-scope="card" data-part="footer">
     <slot name="footer" />
   </view>
 </view>

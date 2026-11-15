@@ -195,10 +195,10 @@
       </view>
       <view class="flex flex-col gap-3">
         <c-radio-group value="{{customDelivery}}" bind:change="onCustomDeliveryChange">
-          <c-radio customIndicator="{{true}}" value="delivery" label="Home Delivery" description="Standard door delivery in 2-3 business days">
+          <c-radio value="delivery" label="Home Delivery" description="Standard door delivery in 2-3 business days">
             <view slot="indicator" class="w-2.5 h-2.5 rounded-full {{customDelivery === 'delivery' ? 'bg-primary' : 'bg-transparent'}}" />
           </c-radio>
-          <c-radio customIndicator="{{true}}" value="pickup" label="In-Store Pickup" description="Ready in 1 hour at your nearest store">
+          <c-radio value="pickup" label="In-Store Pickup" description="Ready in 1 hour at your nearest store">
             <view slot="indicator" class="w-2.5 h-2.5 rounded-full {{customDelivery === 'pickup' ? 'bg-success' : 'bg-transparent'}}" />
           </c-radio>
         </c-radio-group>

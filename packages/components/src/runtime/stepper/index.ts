@@ -25,6 +25,11 @@ Component(
   createComponentOptions({
     behaviors: [stepperBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      content: false,
+    },
+
     properties: createProperties(defaultStepperProps, {
       className: {
         type: String,

@@ -20,8 +20,6 @@ export const defaultInputProps: InputResolvedProps = {
   clearIcon: "close",
   loading: false,
   loadingIcon: "loading",
-  leading: false,
-  trailing: false,
   leadingIcon: "",
   trailingIcon: "",
   autoFocus: false,

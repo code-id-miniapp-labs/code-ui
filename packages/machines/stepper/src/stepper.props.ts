@@ -13,7 +13,6 @@ export const defaultStepperProps: StepperResolvedProps = {
   size: "md",
   variant: "subtle",
   disabled: false,
-  hasContent: false,
   items: [],
   ui: {},
 };

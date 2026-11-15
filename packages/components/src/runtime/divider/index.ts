@@ -7,6 +7,11 @@ const dividerTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
+    slots: {
+      default: false,
+      leading: false,
+      trailing: false,
+    },
     properties: {
       ui: {
         type: Object,
@@ -31,10 +36,6 @@ Component(
       type: {
         type: String,
         value: "solid",
-      },
-      content: {
-        type: Boolean,
-        value: false,
       },
       label: {
         type: String,
@@ -79,14 +80,13 @@ Component(
       },
       hasContent() {
         return !!(
-          this.data.content ||
+          this.data.slots.default ||
+          this.data.slots.leading ||
+          this.data.slots.trailing ||
           this.data.label ||
           this.data.leadingIcon ||
           this.data.trailingIcon
         );
-      },
-      defaultSlot() {
-        return !this.data.label;
       },
     },
   }),

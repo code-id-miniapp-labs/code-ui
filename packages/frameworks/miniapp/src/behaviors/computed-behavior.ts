@@ -149,10 +149,16 @@ export type ComponentComputedData<
   TProperty,
   TComputed,
   TBehavior extends readonly any[] = [],
+  TSlots extends Record<string, boolean> = {},
 > = FilterUnknownKeys<TData> &
   WechatMiniprogram.Component.MixinData<TypedBehaviors<TBehavior>> &
   WechatMiniprogram.Component.MixinProperties<TypedBehaviors<TBehavior>> &
   PropertiesToData<TProperty> &
+  (keyof TSlots extends never
+    ? {}
+    : {
+        slots: { [K in keyof TSlots]: boolean } & Record<string, boolean>;
+      }) &
   ExtractComputedReturns<TComputed> &
   LooseWhen<
     Or<
@@ -203,17 +209,24 @@ export type ComponentInstanceFull<
   TBehavior extends readonly any[] = [],
   TCustomInstanceProperty = {},
   TIsPage extends boolean = false,
+  TSlots extends Record<string, boolean> = {},
 > = WechatMiniprogram.Component.InstanceProperties &
   WechatMiniprogram.Component.InstanceMethods<
-    ComponentComputedData<TData, TProperty, TComputed, TBehavior>
+    ComponentComputedData<TData, TProperty, TComputed, TBehavior, TSlots>
   > &
   TMethod &
   WechatMiniprogram.Component.MixinMethods<TypedBehaviors<TBehavior>> &
   (TIsPage extends true ? WechatMiniprogram.Page.ILifetime : {}) &
   TCustomInstanceProperty &
   ExtractComputedReturns<TComputed> & {
-    data: ComponentComputedData<TData, TProperty, TComputed, TBehavior>;
-    properties: ComponentComputedData<TData, TProperty, TComputed, TBehavior>;
+    data: ComponentComputedData<TData, TProperty, TComputed, TBehavior, TSlots>;
+    properties: ComponentComputedData<
+      TData,
+      TProperty,
+      TComputed,
+      TBehavior,
+      TSlots
+    >;
   } & LooseWhen<HasUntypedBehavior<TBehavior>>;
 
 /** @deprecated Use {@link ComputedDefsOption}. */
@@ -230,12 +243,14 @@ export type ComponentOptionsWithComputed<
   TBehavior extends readonly any[] = any[],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
+  TSlots extends Record<string, boolean> = {},
 > = {
   data?: TData;
   properties?: TProperty;
   methods?: TMethod;
   behaviors?: TBehavior;
   computed?: TComputed;
+  slots?: TSlots;
 } & Partial<WechatMiniprogram.Component.OtherOption> &
   Partial<WechatMiniprogram.Component.Lifetimes> &
   ThisType<
@@ -246,12 +261,14 @@ export type ComponentOptionsWithComputed<
       TComputed,
       TBehavior,
       TCustomInstanceProperty,
-      TIsPage
+      TIsPage,
+      TSlots
     >
   >;
 
 const _COMPUTED_INITIALIZED = "__cui_computedInit__" as const;
 const _COMPUTED_DEFS = "__cui_computedDefs__" as const;
+const _SLOTS_DEFAULTS = "__cui_slotsDefaults__" as const;
 /** Prevents duplicate initial evaluation when both `createPageOptions` and `computedBehavior` run. */
 const _COMPUTED_PRE_EVALUATED = "__cui_computedPreEval__" as const;
 /** Synchronously re-syncs signals from `this.data` and emits computed changes. */
@@ -265,6 +282,88 @@ const _COMPUTED_DISPOSE = "__cui_computedDispose__" as const;
 
 const hasOwn = (obj: object, key: PropertyKey): boolean =>
   Object.prototype.hasOwnProperty.call(obj, key);
+
+function toCamelSlotKey(key: string): string {
+  return key.replace(/-([a-zA-Z0-9])/g, (_, ch: string) => ch.toUpperCase());
+}
+
+export function normalizeComponentSlots(
+  self: any,
+  slotDefaults: Record<string, boolean>,
+  incoming?: unknown,
+): Record<string, boolean> {
+  const raw = incoming !== undefined ? incoming : self?.data?.slots;
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const rawObj = raw as Record<string, unknown>;
+    let alreadyNormalized = true;
+    for (const key of Object.keys(slotDefaults)) {
+      if (!hasOwn(rawObj, key) || typeof rawObj[key] !== "boolean") {
+        alreadyNormalized = false;
+        break;
+      }
+    }
+    if (alreadyNormalized) {
+      for (const key of Object.keys(rawObj)) {
+        if (typeof rawObj[key] !== "boolean") {
+          alreadyNormalized = false;
+          break;
+        }
+        const camel = toCamelSlotKey(key);
+        if (camel !== key && !hasOwn(rawObj, camel)) {
+          alreadyNormalized = false;
+          break;
+        }
+      }
+    }
+    if (alreadyNormalized) {
+      const normalized = rawObj as Record<string, boolean>;
+      if (self) {
+        if (!self.data) self.data = {};
+        self.data.slots = normalized;
+        if (self.properties && typeof self.properties === "object") {
+          self.properties.slots = normalized;
+        }
+      }
+      return normalized;
+    }
+  }
+
+  const merged: Record<string, boolean> = {};
+  for (const key of Object.keys(slotDefaults)) {
+    const defVal = Boolean(slotDefaults[key]);
+    const camel = toCamelSlotKey(key);
+    merged[key] = defVal;
+    if (camel !== key) merged[camel] = defVal;
+  }
+
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const rawObj = raw as Record<string, unknown>;
+    for (const key of Object.keys(rawObj)) {
+      const val = Boolean(rawObj[key]);
+      const camel = toCamelSlotKey(key);
+      merged[key] = val;
+      if (camel !== key) merged[camel] = val;
+    }
+  }
+
+  if (self) {
+    if (!self.data) self.data = {};
+    self.data.slots = merged;
+    if (self.properties && typeof self.properties === "object") {
+      self.properties.slots = merged;
+    }
+  }
+
+  return merged;
+}
+
+function getSlotDefaults(self: any): Record<string, boolean> | undefined {
+  if (!self) return undefined;
+  const direct = self[_SLOTS_DEFAULTS];
+  if (typeof direct === "function") return direct();
+  if (direct && typeof direct === "object") return direct;
+  return undefined;
+}
 
 function ensureComputedBehavior(behaviors: readonly any[] | undefined): any[] {
   const list = behaviors ? [...behaviors] : [];
@@ -304,6 +403,7 @@ export function createComponentOptions<
   const TBehavior extends readonly any[] = [],
   TCustomInstanceProperty extends WechatMiniprogram.IAnyObject = {},
   TIsPage extends boolean = false,
+  TSlots extends Record<string, boolean> = {},
 >(
   options: ComponentOptionsWithComputed<
     TData,
@@ -312,25 +412,84 @@ export function createComponentOptions<
     TComputed,
     TBehavior,
     TCustomInstanceProperty,
-    TIsPage
+    TIsPage,
+    TSlots
   >,
 ): any {
   const mergedOptions = options.options
     ? { ...DEFAULT_COMPONENT_OPTIONS, ...options.options }
     : DEFAULT_COMPONENT_OPTIONS;
 
-  if (!options.computed) {
-    return {
-      ...options,
-      options: mergedOptions,
+  let slotDefaults: Record<string, boolean> | undefined;
+  let properties: WechatMiniprogram.Component.PropertyOption | undefined =
+    options.properties;
+  let observers: Record<string, (...args: any[]) => any> | undefined =
+    options.observers as Record<string, (...args: any[]) => any> | undefined;
+  let lifetimes: Partial<WechatMiniprogram.Component.Lifetimes["lifetimes"]> | undefined =
+    options.lifetimes;
+
+  if (options.slots && typeof options.slots === "object") {
+    slotDefaults = {};
+    for (const key of Object.keys(options.slots)) {
+      slotDefaults[key] = Boolean(options.slots[key]);
+    }
+    const frozenDefaults = slotDefaults;
+
+    properties = {
+      ...(options.properties as Record<string, any> | undefined),
+      slots: (options.properties as Record<string, any> | undefined)?.slots ?? {
+        type: Object,
+        value: { ...frozenDefaults },
+      },
+    };
+
+    const existingSlotsWildcardObserver = observers?.["slots.**"];
+    const existingSlotsObserver = observers?.slots;
+    observers = {
+      ...observers,
+      "slots.**": function (this: any, newVal: any) {
+        const merged = normalizeComponentSlots(this, frozenDefaults, newVal);
+        this[_COMPUTED_SYNC_PROP]?.("slots", merged);
+        existingSlotsObserver?.call(this, merged);
+        return existingSlotsWildcardObserver?.call(this, merged);
+      },
+    };
+
+    const existingCreated = lifetimes?.created ?? options.created;
+    const existingAttached = lifetimes?.attached ?? options.attached;
+    lifetimes = {
+      ...lifetimes,
+      created(this: any) {
+        this[_SLOTS_DEFAULTS] = frozenDefaults;
+        normalizeComponentSlots(this, frozenDefaults);
+        return existingCreated?.call(this);
+      },
+      attached(this: any) {
+        this[_SLOTS_DEFAULTS] = frozenDefaults;
+        normalizeComponentSlots(this, frozenDefaults);
+        this[_COMPUTED_SYNC_PROP]?.("slots", this.data?.slots);
+        return existingAttached?.call(this);
+      },
     };
   }
 
-  return {
+  const baseResult: Record<string, any> = {
     ...options,
     options: mergedOptions,
-    behaviors: ensureComputedBehavior(options.behaviors),
   };
+  if (properties !== undefined) baseResult.properties = properties;
+  if (observers !== undefined) baseResult.observers = observers;
+  if (lifetimes !== undefined) baseResult.lifetimes = lifetimes;
+  if (slotDefaults !== undefined) {
+    baseResult[_SLOTS_DEFAULTS] = slotDefaults;
+  }
+
+  if (!options.computed && !slotDefaults) {
+    return baseResult;
+  }
+
+  baseResult.behaviors = ensureComputedBehavior(options.behaviors);
+  return baseResult;
 }
 
 export type PageInstanceBase<TData extends WechatMiniprogram.Page.DataOption> =
@@ -660,6 +819,10 @@ export function setupComputed(
     {};
 
   const computedKeys = Object.keys(computedDefs);
+  const slotDefaults = getSlotDefaults(self);
+  if (slotDefaults) {
+    normalizeComponentSlots(self, slotDefaults);
+  }
   if (!computedKeys.length) return;
 
   self[_COMPUTED_INITIALIZED] = true;
@@ -883,12 +1046,17 @@ export function setupComputed(
    * Skips work entirely if no computed getter ever subscribed to `key`.
    */
   const syncPropFromData = (key: string, currentVal?: unknown) => {
+    const activeSlotDefaults = key === "slots" ? getSlotDefaults(self) : undefined;
+    const normalizedVal = activeSlotDefaults
+      ? normalizeComponentSlots(self, activeSlotDefaults, currentVal)
+      : currentVal;
     const sig = dataSignals.get(key);
     if (!sig) return;
 
     pauseTracking();
     try {
-      const current = currentVal !== undefined ? currentVal : readData(key);
+      const current =
+        normalizedVal !== undefined ? normalizedVal : readData(key);
       const prev = sig();
       if (!Object.is(prev, current)) {
         if (
@@ -919,6 +1087,10 @@ export function setupComputed(
    * and `pageLifetimes.show`).
    */
   const syncFromData = () => {
+    const activeSlotDefaults = getSlotDefaults(self);
+    if (activeSlotDefaults) {
+      normalizeComponentSlots(self, activeSlotDefaults);
+    }
     if (!dataSignals.size) return;
     pauseTracking();
     startBatch();
@@ -1114,6 +1286,15 @@ export const computedBehavior =
   typeof Behavior !== "undefined"
     ? /*#__PURE__*/ Behavior({
         definitionFilter(defFields: any) {
+          const slotDefaults: Record<string, boolean> | undefined =
+            defFields[_SLOTS_DEFAULTS];
+          if (slotDefaults && typeof slotDefaults === "object") {
+            defFields.methods = defFields.methods || {};
+            defFields.methods[_SLOTS_DEFAULTS] = function () {
+              return slotDefaults;
+            };
+          }
+
           const computedDefs: ComputedDefs | undefined = defFields.computed;
           if (!computedDefs || typeof computedDefs !== "object") return;
           if (!Object.keys(computedDefs).length) return;

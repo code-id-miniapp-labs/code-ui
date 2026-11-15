@@ -1,12 +1,13 @@
 <view id="{{textarea.rootProps.id}}" class="{{classes.root}}" data-scope="textarea" data-part="root" data-state="{{textarea.state}}" data-focused="{{textarea.textareaProps.focus}}" data-disabled="{{textarea.disabled}}" data-readonly="{{textarea.readOnly}}" data-invalid="{{textarea.invalid}}" aria-role="group" aria-disabled="{{textarea.disabled}}" aria-invalid="{{textarea.invalid}}" bindtap="handleRootTap">
-  <view wx:if="{{leading || leadingIcon}}" class="{{classes.leading}}" data-scope="textarea" data-part="leading" aria-hidden="true">
+  <view wx:if="{{slots.leading || leadingIcon}}" class="{{classes.leading}}" data-scope="textarea" data-part="leading" aria-hidden="true">
     <slot name="leading" />
     <c-icon wx:if="{{leadingIcon}}" name="{{leadingIcon}}" className="{{classes.leadingIcon}}" />
   </view>
   <textarea id="{{textarea.textareaProps.id}}" name="{{name}}" class="{{classes.base}}" data-scope="textarea" data-part="base" data-state="{{textarea.state}}" data-focused="{{textarea.textareaProps.focus}}" data-disabled="{{textarea.disabled}}" data-readonly="{{textarea.readOnly}}" data-invalid="{{textarea.invalid}}" value="{{textarea.value}}" focus="{{textarea.textareaProps.focus}}" disabled="{{textarea.textareaProps.disabled}}" placeholder="{{placeholder}}" placeholder-class="{{classes.placeholder}}{{placeholderClass ? ' ' + placeholderClass : ''}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" auto-height="{{autoHeight}}" fixed="{{fixed}}" cursor-spacing="{{cursorSpacing}}" cursor="{{cursor}}" show-confirm-bar="{{showConfirmBar}}" selection-start="{{selectionStart}}" selection-end="{{selectionEnd}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" disable-default-padding="{{disableDefaultPadding}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" aria-invalid="{{textarea.invalid}}" aria-multiline="true" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" bindlinechange="handleLineChange" bindkeyboardheightchange="handleKeyboardHeightChange" />
-  <view wx:if="{{trailing || trailingIcon || textarea.isClearable || loading}}" class="{{classes.trailing}}" data-scope="textarea" data-part="trailing" aria-hidden="true">
-    <view wx:if="{{loading}}" class="{{classes.trailingIcon}}">
-      <c-icon name="loading" className="w-full h-full animate-spin" />
+  <view wx:if="{{slots.trailing || trailingIcon || textarea.isClearable || loading || slots.loadingIcon}}" class="{{classes.trailing}}" data-scope="textarea" data-part="trailing" aria-hidden="true">
+    <view wx:if="{{loading || slots.loadingIcon}}" class="{{classes.trailingIcon}}">
+      <slot wx:if="{{slots.loadingIcon}}" name="loadingIcon" />
+      <c-icon wx:else name="{{loadingIcon || 'loading'}}" className="w-full h-full animate-spin" />
     </view>
     <view wx:elif="{{textarea.isClearable}}" class="{{classes.clear}}" data-scope="textarea" data-part="clear" aria-role="button" aria-label="Clear textarea" catchtap="handleClear">
       <c-icon name="{{clearIcon}}" className="size-3.5" />
@@ -14,8 +15,8 @@
     <c-icon wx:elif="{{trailingIcon}}" name="{{trailingIcon}}" className="{{classes.trailingIcon}}" />
     <slot name="trailing" />
   </view>
-  <view wx:if="{{count}}" class="{{classes.count}}" data-scope="textarea" data-part="count" aria-live="polite">
-    <text>{{textarea.characterCount}}{{maxlength > 0 ? '/' + maxlength : ''}}</text>
-    <slot name="count" />
+  <view wx:if="{{count || slots.count}}" class="{{classes.count}}" data-scope="textarea" data-part="count" aria-live="polite">
+    <slot wx:if="{{slots.count}}" name="count" />
+    <text wx:else>{{textarea.characterCount}}{{maxlength > 0 ? '/' + maxlength : ''}}</text>
   </view>
 </view>

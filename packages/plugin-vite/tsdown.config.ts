@@ -12,6 +12,6 @@ export default defineConfig({
     exports: "named",
   },
   deps: {
-    neverBundle: ["vite", "c12", "@code-ui/core"],
+    neverBundle: ["vite", "c12", "@code-ui/core", "@code-ui/compiler"],
   },
 });
