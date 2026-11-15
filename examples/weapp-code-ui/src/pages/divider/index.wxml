@@ -24,7 +24,7 @@
         </view>
         <view class="flex flex-col gap-2">
           <text class="text-xs text-neutral-400">With custom slot badge</text>
-          <c-divider content>
+          <c-divider>
             <c-badge color="primary" variant="subtle" size="sm">Featured</c-badge>
           </c-divider>
         </view>
@@ -110,7 +110,7 @@
         </view>
         <view class="flex flex-col gap-1">
           <text class="text-xs text-neutral-400">Custom leading & trailing slot elements</text>
-          <c-divider content>
+          <c-divider>
             <view slot="leading" class="flex items-center text-xs text-neutral-500">
               <c-icon name="i-lucide-user" size="14px" />
             </view>

@@ -252,8 +252,6 @@ describe("bannerMachine", () => {
         size: "sm",
         ui: undefined,
         className: undefined,
-        leading: false,
-        trailing: false,
       });
 
       machine.stop();
@@ -267,7 +265,6 @@ describe("bannerMachine", () => {
           variant: "outline",
           size: "xs",
           className: "my-badge",
-          leading: true,
         },
       });
       machine.start();
@@ -280,8 +277,6 @@ describe("bannerMachine", () => {
         size: "xs",
         ui: undefined,
         className: "my-badge",
-        leading: true,
-        trailing: false,
       });
 
       machine.stop();
@@ -306,8 +301,6 @@ describe("bannerMachine", () => {
         size: "sm",
         ui: undefined,
         className: undefined,
-        leading: false,
-        trailing: false,
       });
 
       machine.stop();

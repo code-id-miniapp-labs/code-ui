@@ -28,9 +28,15 @@ import {
   transformAppWrapper,
 } from "./core/app-wrapper";
 import {
+  applyBundleSlotDetect,
+  applySlotDetectToCode,
+  syncDiskSlotDetect,
+} from "./core/slot-detect";
+import {
   PluginConfigManager,
   resolveAppWrapperOptions,
   resolveAutoImportOptions,
+  resolveSlotDetectOptions,
   resolveTreeShakeOptions,
 } from "./core/config";
 import { cleanKeyframes, cleanKeyframesInDir } from "./core/keyframes";
@@ -44,10 +50,18 @@ import {
   type CodeUIVitePluginOptions,
   type OutputBundleLike,
   type ResolvedAppWrapperOptions,
+  type ResolvedSlotDetectOptions,
+  type SlotDetectOptions,
   type TreeShakeOptions,
 } from "./types";
 
 export { defineConfig } from "@code-ui/core";
+export {
+  COMPONENT_SLOTS_MANIFEST,
+  transformWxmlSlots,
+  type TransformWxmlSlotsOptions,
+  type TransformWxmlSlotsResult,
+} from "@code-ui/compiler";
 export { serializeCompactThemeModule } from "./core/serialize";
 export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
 export type {
@@ -55,6 +69,8 @@ export type {
   AutoImportOptions,
   CodeUIVitePluginOptions,
   ResolvedAppWrapperOptions,
+  ResolvedSlotDetectOptions,
+  SlotDetectOptions,
   TreeShakeOptions,
 };
 
@@ -64,6 +80,11 @@ export {
   isPageFile,
   wrapPageWxml,
 } from "./core/app-wrapper";
+export {
+  applyBundleSlotDetect,
+  applySlotDetectToCode,
+  syncDiskSlotDetect,
+} from "./core/slot-detect";
 
 export {
   generateThemeCSS,
@@ -161,6 +182,10 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
   const treeShakeOpts = resolveTreeShakeOptions(options.treeShake);
   const appWrapperOpts = resolveAppWrapperOptions(
     options.appWrapper,
+    autoImportOpts.prefix,
+  );
+  const slotDetectOpts = resolveSlotDetectOptions(
+    options.slotDetect,
     autoImportOpts.prefix,
   );
 
@@ -295,10 +320,33 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         return autoImportResult;
       }
 
-      // 2. WXML page auto-wrapper
+      // 2. WXML page auto-wrapper & compile-time slot detection
       if (cleanId.endsWith(".wxml")) {
-        if (!appWrapperOpts.enable) return null;
-        return transformAppWrapper(code, cleanId, projectRoot, appWrapperOpts);
+        let currentCode = code;
+        let changed = false;
+
+        if (appWrapperOpts.enable) {
+          const wrapped = transformAppWrapper(
+            currentCode,
+            cleanId,
+            projectRoot,
+            appWrapperOpts,
+          );
+          if (wrapped) {
+            currentCode = wrapped.code;
+            changed = true;
+          }
+        }
+
+        if (slotDetectOpts.enable) {
+          const slotRes = applySlotDetectToCode(currentCode, slotDetectOpts);
+          if (slotRes.hasChanges) {
+            currentCode = slotRes.code;
+            changed = true;
+          }
+        }
+
+        return changed ? { code: currentCode, map: null } : null;
       }
 
       if (cleanId.includes("node_modules")) return null;
@@ -351,6 +399,7 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         const typedBundle = bundle as unknown as OutputBundleLike;
 
         generateBundleAppWrapper(typedBundle, appWrapperOpts, projectRoot);
+        applyBundleSlotDetect(typedBundle, slotDetectOpts);
         const updatedInBundle = generateBundleAutoImport(
           typedBundle,
           autoImportOpts,
@@ -392,6 +441,7 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       const outDir = viteConfigObj?.build?.outDir || "dist";
       const distRoot = path.resolve(projectRoot, outDir);
       syncDiskAppWrapper(distRoot, appWrapperOpts, projectRoot);
+      syncDiskSlotDetect(projectRoot, distRoot, slotDetectOpts);
       syncDiskAutoImport(
         distRoot,
         autoImportOpts,

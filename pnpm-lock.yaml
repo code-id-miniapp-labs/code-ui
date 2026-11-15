@@ -152,6 +152,18 @@ importers:
         specifier: ^5.5.4
         version: 5.9.3
 
+  packages/compiler:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.2.0
+        version: 26.2.0
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(@volar/typescript@2.4.28(typescript@5.9.3))(@vue/language-core@3.3.11)(oxc-resolver@11.24.2)(typescript@5.9.3)(vue-tsc@3.3.13(typescript@5.9.3))
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.3
+
   packages/components:
     devDependencies:
       '@code-ui/accordion':
@@ -1118,6 +1130,9 @@ importers:
 
   packages/plugin-vite:
     dependencies:
+      '@code-ui/compiler':
+        specifier: workspace:*
+        version: link:../compiler
       '@code-ui/core':
         specifier: workspace:*
         version: link:../core

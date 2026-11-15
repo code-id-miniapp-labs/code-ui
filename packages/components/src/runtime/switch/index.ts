@@ -24,6 +24,13 @@ const switchBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [switchBehavior, computedBehavior],
+    slots: {
+      default: false,
+      thumb: false,
+      label: false,
+      description: false,
+      loadingIcon: false,
+    },
 
     properties: createProperties(defaultSwitchProps, {
       className: {

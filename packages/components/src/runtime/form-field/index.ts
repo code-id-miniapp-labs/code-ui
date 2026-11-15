@@ -23,6 +23,14 @@ const formFieldBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [formFieldBehavior, computedBehavior],
+    slots: {
+      default: false,
+      label: false,
+      hint: false,
+      description: false,
+      error: false,
+      help: false,
+    },
 
     properties: createProperties(defaultFormFieldProps, {
       className: {

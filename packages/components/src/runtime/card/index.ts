@@ -9,6 +9,12 @@ Component(
   createComponentOptions({
     behaviors: [computedBehavior],
 
+    slots: {
+      default: false,
+      header: false,
+      footer: false,
+    },
+
     properties: {
       variant: {
         type: String,
@@ -25,14 +31,6 @@ Component(
       description: {
         type: String,
         value: "",
-      },
-      showHeader: {
-        type: Boolean,
-        value: false,
-      },
-      showFooter: {
-        type: Boolean,
-        value: false,
       },
       ui: {
         type: Object,

@@ -25,14 +25,17 @@ Component(
   createComponentOptions({
     behaviors: [checkboxBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      indicator: false,
+      label: false,
+      description: false,
+    },
+
     properties: createProperties(defaultCheckboxProps, {
       className: {
         type: String,
         value: "",
-      },
-      customIndicator: {
-        type: Boolean,
-        value: false,
       },
     }),
 

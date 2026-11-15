@@ -48,7 +48,6 @@ export interface RadioProps {
   color?: RadioColor | undefined;
   size?: RadioSize | undefined;
   variant?: RadioVariant | undefined;
-  customIndicator?: boolean | undefined;
   onChange?: ((details: RadioValueChangeDetails) => void) | undefined;
 }
 
@@ -64,7 +63,6 @@ export interface RadioResolvedProps extends RadioProps {
   color: RadioColor;
   size: RadioSize;
   variant: RadioVariant;
-  customIndicator: boolean;
   ui: RadioUI;
 }
 

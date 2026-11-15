@@ -3,9 +3,9 @@
   <view wx:if="{{hasContent}}" class="{{classes.container}}">
     <slot name="leading" />
     <c-icon wx:if="{{leadingIcon}}" className="{{classes.icon}}" name="{{leadingIcon}}" />
-    <view wx:if="{{label || defaultSlot}}" class="{{classes.label}}">
+    <view wx:if="{{label || slots.default}}" class="{{classes.label}}">
       <text wx:if="{{label}}">{{label}}</text>
-      <slot />
+      <slot wx:else />
     </view>
     <c-icon wx:if="{{trailingIcon}}" className="{{classes.icon}}" name="{{trailingIcon}}" />
     <slot name="trailing" />

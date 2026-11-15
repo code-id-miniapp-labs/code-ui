@@ -86,6 +86,7 @@ export interface CuiCommonElementProps {
   className?: string;
   style?: string | Record<string, any>;
   slot?: string;
+  slots?: Record<string, boolean>;
   key?: string | number;
   children?: any;
 }
@@ -173,8 +174,6 @@ export interface CuiCardElementProps extends CuiCommonElementProps {
   size?: "sm" | "md" | "lg";
   title?: string;
   description?: string;
-  showHeader?: boolean;
-  showFooter?: boolean;
 }
 
 export interface CuiCheckboxElementProps extends CuiCommonElementProps {
@@ -196,7 +195,6 @@ export interface CuiCheckboxElementProps extends CuiCommonElementProps {
   invalid?: boolean | null;
   icon?: string;
   indeterminateIcon?: string;
-  customIndicator?: boolean;
   onChange?: (
     event: WechatMiniprogram.CustomEvent<CheckboxCheckedChangeDetails>,
   ) => void;
@@ -337,8 +335,7 @@ export interface CuiInputElementProps extends CuiCommonElementProps {
   clearable?: boolean;
   clearIcon?: string;
   loading?: boolean;
-  leading?: boolean;
-  trailing?: boolean;
+  loadingIcon?: string;
   leadingIcon?: string;
   trailingIcon?: string;
   autoFocus?: boolean;
@@ -468,8 +465,7 @@ export interface CuiTextareaElementProps extends CuiCommonElementProps {
   clearable?: boolean;
   clearIcon?: string;
   loading?: boolean;
-  leading?: boolean;
-  trailing?: boolean;
+  loadingIcon?: string;
   leadingIcon?: string;
   trailingIcon?: string;
   autoFocus?: boolean;
@@ -659,7 +655,6 @@ export interface CuiStepperElementProps extends CuiCommonElementProps {
   size?: StepperProps["size"];
   variant?: StepperProps["variant"];
   disabled?: boolean;
-  hasContent?: boolean;
   items?: StepperProps["items"];
   onChange?: (
     event: WechatMiniprogram.CustomEvent<StepperStepChangeDetails>,
@@ -680,7 +675,6 @@ export interface CuiStepperItemElementProps extends CuiCommonElementProps {
   color?: StepperItemProps["color"];
   size?: StepperItemProps["size"];
   variant?: StepperItemProps["variant"];
-  customIndicator?: boolean;
   onTap?: (
     event: WechatMiniprogram.CustomEvent<{
       index: number;
@@ -738,8 +732,6 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
   defaultOpen?: boolean;
   size?: AccordionItemProps["size"];
   variant?: AccordionItemProps["variant"];
-  customTrailing?: boolean;
-  hasLeadingSlot?: boolean;
   onTap?: (
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;

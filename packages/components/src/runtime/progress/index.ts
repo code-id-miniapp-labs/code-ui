@@ -26,6 +26,11 @@ const progressBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [progressBehavior, computedBehavior],
+    slots: {
+      default: false,
+      label: false,
+      valueText: false,
+    },
 
     properties: createProperties(defaultProgressProps, {
       className: { type: String, value: "" },

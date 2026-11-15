@@ -92,10 +92,10 @@
         Leading slot, trailing slot, and loading state.
       </view>
       <view class="flex flex-col gap-3">
-        <c-input leading="{{true}}" placeholder="Search with leading slot">
+        <c-input placeholder="Search with leading slot">
           <text slot="leading" class="text-xs text-neutral-400">🔍</text>
         </c-input>
-        <c-input trailing="{{true}}" placeholder="Domain with trailing slot">
+        <c-input placeholder="Domain with trailing slot">
           <text slot="trailing" class="text-xs text-neutral-400 font-semibold pe-1">.com</text>
         </c-input>
         <c-input loading="{{true}}" placeholder="Loading state with spinner" />

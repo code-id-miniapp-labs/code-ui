@@ -22,7 +22,7 @@
       bind:tap="handleTap"
     >
       <!-- Leading element / icon -->
-      <view wx:if="{{icon || hasLeadingSlot}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
+      <view wx:if="{{icon || slots.leading}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
         <slot name="leading" />
         <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.leadingIcon}}" />
       </view>
@@ -41,7 +41,7 @@
       <view class="{{classes.trailing}} {{cAccordionItem.isOpen ? 'rotate-180' : ''}}" data-scope="accordion" data-part="trailing">
         <slot name="trailing" />
         <c-icon
-          wx:if="{{!customTrailing}}"
+          wx:if="{{!slots.trailing}}"
           name="{{trailingIcon}}"
           className="{{classes.trailingIcon}}"
         />

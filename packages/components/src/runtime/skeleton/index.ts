@@ -13,6 +13,9 @@ Component(
       variant: { type: String, value: "pulse" },
     },
     behaviors: [computedBehavior],
+    slots: {
+      default: false,
+    },
     computed: {
       classes() {
         const ui = this.data.ui;

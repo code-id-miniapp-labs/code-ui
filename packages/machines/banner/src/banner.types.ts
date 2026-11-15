@@ -76,8 +76,6 @@ export interface BannerBadgeProps {
   size?: BannerBadgeSize | undefined;
   ui?: Record<string, any> | undefined;
   className?: string | undefined;
-  leading?: boolean | undefined;
-  trailing?: boolean | undefined;
 }
 
 export interface BannerProps {

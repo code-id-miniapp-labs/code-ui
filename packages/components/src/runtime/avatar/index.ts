@@ -17,6 +17,10 @@ Component(
   createComponentOptions({
     behaviors: [cuiAvatarItemBehavior, computedBehavior],
     relations,
+    slots: {
+      default: false,
+      icon: false,
+    },
     properties: {
       className: {
         type: String,

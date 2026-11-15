@@ -1,6 +1,6 @@
 <view class="{{classes.root}}" id="{{formField.rootProps.id}}" data-scope="form-field" data-part="root" data-name="{{name}}" data-disabled="{{formField.disabled}}" data-invalid="{{formField.invalid}}">
-  <view wx:if="{{label || description || hint}}" class="{{classes.wrapper}}" data-scope="form-field" data-part="wrapper">
-    <view wx:if="{{label || hint}}" class="{{classes.labelWrapper}}" data-scope="form-field" data-part="label-wrapper">
+  <view wx:if="{{label || description || hint || slots.label || slots.description || slots.hint}}" class="{{classes.wrapper}}" data-scope="form-field" data-part="wrapper">
+    <view wx:if="{{label || hint || slots.label || slots.hint}}" class="{{classes.labelWrapper}}" data-scope="form-field" data-part="label-wrapper">
       <view class="flex items-center gap-1">
         <slot name="label" />
         <text wx:if="{{label}}" class="{{classes.label}}" id="{{formField.labelProps.id}}" data-scope="form-field" data-part="label">{{label}}</text>

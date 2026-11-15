@@ -1,11 +1,14 @@
 <button id="{{button.rootProps.id}}" class="{{classes.root}}" data-scope="button" data-part="root" data-state="{{button.state}}" data-loading="{{button.rootProps['data-loading']}}" data-disabled="{{button.rootProps['data-disabled']}}" disabled="{{formType ? button.rootProps.disabled : false}}" aria-busy="{{button.loading}}" aria-disabled="{{button.disabled}}" open-type="{{openType}}" form-type="{{formType}}" hover-class="{{hoverClass || (button.rootProps.disabled ? 'none' : '')}}" hover-start-time="{{hoverStartTime}}" hover-stay-time="{{hoverStayTime}}" hover-stop-propagation="{{hoverStopPropagation}}" lang="{{lang}}" session-from="{{sessionFrom}}" send-message-title="{{sendMessageTitle}}" send-message-path="{{sendMessagePath}}" send-message-img="{{sendMessageImg}}" show-message-card="{{showMessageCard}}" app-parameter="{{appParameter}}" catchtap="handleTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact" binderror="handleError" bindopensetting="handleOpenSetting" bindlaunchapp="handleLaunchApp" bindagreeprivacyauthorization="handleAgreePrivacyAuthorization">
   <view class="{{classes.spinner}}" data-scope="button" data-part="spinner" aria-hidden="true" wx:if="{{button.loading}}">
-    <c-icon name="loading" className="w-full h-full animate-spin" />
+    <slot wx:if="{{slots.loadingIcon}}" name="loadingIcon" />
+    <c-icon wx:else name="loading" className="w-full h-full animate-spin" />
   </view>
-  <view class="{{classes.icon}}" data-scope="button" data-part="icon" aria-hidden="true" wx:if="{{!button.loading}}">
-    <slot name="icon" />
+  <view class="{{classes.icon}}" data-scope="button" data-part="icon" aria-hidden="true" wx:if="{{!button.loading && (slots.icon || slots.leading)}}">
+    <slot wx:if="{{slots.icon}}" name="icon" />
+    <slot wx:if="{{slots.leading}}" name="leading" />
   </view>
   <view class="{{classes.label}}" data-scope="button" data-part="label">
     <slot />
   </view>
+  <slot wx:if="{{!button.loading && slots.trailing}}" name="trailing" />
 </button>

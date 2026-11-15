@@ -28,6 +28,11 @@ const sliderBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [sliderBehavior, computedBehavior],
+    slots: {
+      label: false,
+      value: false,
+      thumb: false,
+    },
 
     properties: createProperties(defaultSliderProps, {
       showValue: {

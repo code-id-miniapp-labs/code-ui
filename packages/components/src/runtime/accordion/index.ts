@@ -29,6 +29,10 @@ Component(
   createComponentOptions({
     behaviors: [accordionBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+    },
+
     properties: createProperties(defaultAccordionProps, {
       className: {
         type: String,

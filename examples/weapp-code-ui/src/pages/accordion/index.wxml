@@ -202,7 +202,7 @@
       </view>
 
       <c-accordion variant="outline">
-        <c-accordion-item value="custom-1" customTrailing="{{true}}">
+        <c-accordion-item value="custom-1">
           <view slot="leading" class="size-6 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 me-2.5">
             <c-icon name="i-lucide-shield-check" className="size-3.5" />
           </view>

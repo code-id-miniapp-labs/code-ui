@@ -1,5 +1,5 @@
 <view class="{{classes.root}}">
-  <view wx:if="{{leading}}" class="{{classes.leading}}">
+  <view wx:if="{{slots.leading}}" class="{{classes.leading}}">
     <slot name="leading" />
   </view>
   
@@ -8,7 +8,7 @@
     {{label}}
   </view>
 
-  <view wx:if="{{trailing}}" class="{{classes.trailing}}">
+  <view wx:if="{{slots.trailing}}" class="{{classes.trailing}}">
     <slot name="trailing" />
   </view>
 </view>

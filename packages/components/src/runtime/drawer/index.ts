@@ -39,6 +39,12 @@ const drawerBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [drawerBehavior, computedBehavior],
+    slots: {
+      default: false,
+      header: false,
+      close: false,
+      footer: false,
+    },
 
     computed: {
       classes() {

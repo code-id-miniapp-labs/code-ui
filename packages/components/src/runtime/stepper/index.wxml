@@ -13,7 +13,7 @@
     </block>
     <slot wx:else />
   </view>
-  <view wx:if="{{hasContent}}" id="{{stepper.contentProps.id}}" class="{{classes.content}}" aria-role="tabpanel" data-scope="stepper" data-part="content">
+  <view wx:if="{{slots.content}}" id="{{stepper.contentProps.id}}" class="{{classes.content}}" aria-role="tabpanel" data-scope="stepper" data-part="content">
     <slot name="content" />
   </view>
 </view>

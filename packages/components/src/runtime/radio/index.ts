@@ -21,6 +21,13 @@ Component(
   createComponentOptions({
     behaviors: [radioBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      indicator: false,
+      label: false,
+      description: false,
+    },
+
     properties: createProperties(defaultRadioProps, {
       className: {
         type: String,

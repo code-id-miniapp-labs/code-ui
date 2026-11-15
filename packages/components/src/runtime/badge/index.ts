@@ -7,6 +7,11 @@ const badgeTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
+    slots: {
+      default: false,
+      leading: false,
+      trailing: false,
+    },
     properties: {
       ui: { type: Object, value: {} },
       className: { type: String, value: "" },
@@ -14,8 +19,6 @@ Component(
       size: { type: String, value: "md" },
       variant: { type: String, value: "solid" },
       label: { type: String, value: "" },
-      leading: { type: Boolean, value: false },
-      trailing: { type: Boolean, value: false },
     },
     behaviors: [computedBehavior],
     computed: {

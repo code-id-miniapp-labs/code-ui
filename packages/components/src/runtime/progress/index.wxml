@@ -12,7 +12,7 @@
   aria-valuenow="{{progress.isIndeterminate ? undefined : progress.value}}"
   aria-valuetext="{{progress.valueAsString}}"
 >
-  <view wx:if="{{progress.type !== 'circular' && (label || showValue)}}" class="flex items-center justify-between mb-1.5 w-full">
+  <view wx:if="{{progress.type !== 'circular' && (label || showValue || slots.label || slots.valueText)}}" class="flex items-center justify-between mb-1.5 w-full">
     <text wx:if="{{label}}" id="{{progress.labelProps.id}}" class="{{classes.label}}" data-scope="progress" data-part="label">{{label}}</text>
     <slot wx:else name="label" />
 

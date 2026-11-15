@@ -12,7 +12,9 @@ import type {
   IconsPluginOptions,
   ResolvedAppWrapperOptions,
   ResolvedAutoImportOptions,
+  ResolvedSlotDetectOptions,
   ResolvedTreeShakeOptions,
+  SlotDetectOptions,
   TreeShakeOptions,
 } from "../types";
 import {
@@ -157,6 +159,26 @@ export function resolveAppWrapperOptions(
     defaultProps,
     exclude,
     include,
+  };
+}
+
+export function resolveSlotDetectOptions(
+  slotDetect?: boolean | SlotDetectOptions,
+  defaultPrefix: string = "c",
+): ResolvedSlotDetectOptions {
+  const raw: SlotDetectOptions =
+    typeof slotDetect === "boolean"
+      ? { enable: slotDetect }
+      : slotDetect || { enable: true };
+
+  const enable = raw.enable !== false;
+  const rawPrefix = raw.prefix || defaultPrefix;
+  const prefix = rawPrefix.endsWith("-") ? rawPrefix : `${rawPrefix}-`;
+
+  return {
+    enable,
+    prefix,
+    componentSlots: raw.componentSlots,
   };
 }
 

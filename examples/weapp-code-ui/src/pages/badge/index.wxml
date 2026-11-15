@@ -29,15 +29,15 @@
   <section class="space-y-4">
     <text class="text-lg font-bold">Slots & Icons</text>
     <view class="flex flex-wrap gap-2">
-      <c-badge leading>
+      <c-badge>
         <c-icon slot="leading" name="i-lucide-check" size="12px" />
         Verified
       </c-badge>
-      <c-badge trailing>
+      <c-badge>
         Notification
         <c-icon slot="trailing" name="i-lucide-bell" size="12px" />
       </c-badge>
-      <c-badge leading trailing>
+      <c-badge>
         <c-icon slot="leading" name="i-lucide-alert-circle" className="text-sm" />
         Attention Required
         <c-icon slot="trailing" name="i-lucide-chevron-right" className="text-sm" />

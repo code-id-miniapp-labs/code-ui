@@ -32,6 +32,13 @@ Component(
   createComponentOptions({
     behaviors: [cuiAppChildBehavior, toastBehavior, computedBehavior],
     relations,
+    slots: {
+      title: false,
+      description: false,
+      icon: false,
+      close: false,
+      actions: false,
+    },
 
     properties: createProperties(defaultToastProps, {
       className: {

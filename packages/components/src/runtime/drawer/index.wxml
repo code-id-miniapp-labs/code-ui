@@ -10,13 +10,14 @@
         <slot name="header" />
       </view>
       <view class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger" aria-role="button" aria-label="Close" bindtap="handleCloseTap">
-        <c-icon name="close" className="size-4" />
+        <slot wx:if="{{slots.close}}" name="close" />
+        <c-icon wx:else name="close" className="size-4" />
       </view>
     </view>
     <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" style="box-sizing: border-box; width: 100%;">
       <slot />
     </scroll-view>
-    <view class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">
+    <view wx:if="{{slots.footer}}" class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">
       <slot name="footer" />
     </view>
   </view>

@@ -25,6 +25,14 @@ Component(
   createComponentOptions({
     behaviors: [textareaBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      leading: false,
+      trailing: false,
+      loadingIcon: false,
+      count: false,
+    },
+
     properties: createProperties(defaultTextareaProps, {
       className: {
         type: String,
@@ -41,14 +49,17 @@ Component(
         const variant = this.data.variant;
         const color = this.data.color;
         const highlight = Boolean(this.data.highlight);
-        const hasLeading = Boolean(this.data.leading || this.data.leadingIcon);
-        const hasTrailing = Boolean(
-          this.data.trailing ||
-          this.data.trailingIcon ||
-          api?.isClearable ||
-          this.data.loading,
+        const hasLeading = Boolean(
+          this.data.slots.leading || this.data.leadingIcon,
         );
-        const hasCount = Boolean(this.data.count);
+        const hasTrailing = Boolean(
+          this.data.slots.trailing ||
+            this.data.trailingIcon ||
+            api?.isClearable ||
+            this.data.loading ||
+            this.data.slots.loadingIcon,
+        );
+        const hasCount = Boolean(this.data.count || this.data.slots.count);
         const isAutoHeight = Boolean(this.data.autoHeight);
         const ui = this.data.ui;
 

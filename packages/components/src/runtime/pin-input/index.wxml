@@ -1,5 +1,6 @@
 <view id="{{pinInput.rootProps.id}}" class="{{classes.root}}" data-scope="pin-input" data-part="root" data-state="{{pinInput.state}}" data-disabled="{{pinInput.disabled}}" data-readonly="{{pinInput.readOnly}}" data-invalid="{{pinInput.invalid}}" data-complete="{{pinInput.isValueComplete}}" aria-role="group" aria-disabled="{{pinInput.disabled}}" aria-invalid="{{pinInput.invalid}}">
   <text wx:if="{{label}}" id="{{pinInput.labelProps.id}}" class="{{classes.label}}" data-scope="pin-input" data-part="label">{{label}}</text>
+  <slot wx:elif="{{slots.label}}" name="label" />
   <view class="{{classes.control}}" data-scope="pin-input" data-part="control" data-disabled="{{pinInput.disabled}}" data-invalid="{{pinInput.invalid}}">
     <block wx:for="{{pinInput.inputs}}" wx:key="index">
       <input

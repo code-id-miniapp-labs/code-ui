@@ -27,6 +27,11 @@ Component(
   createComponentOptions({
     behaviors: [checkboxGroupBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      legend: false,
+    },
+
     properties: createProperties(defaultCheckboxGroupProps, {
       className: {
         type: String,

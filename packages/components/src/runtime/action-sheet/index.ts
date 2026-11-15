@@ -27,6 +27,14 @@ const actionSheetBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [actionSheetBehavior, computedBehavior],
+    slots: {
+      default: false,
+      header: false,
+      title: false,
+      description: false,
+      close: false,
+      actions: false,
+    },
 
     computed: {
       classes() {

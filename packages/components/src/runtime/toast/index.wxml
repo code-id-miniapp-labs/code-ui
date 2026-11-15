@@ -4,7 +4,8 @@
     <c-progress className="w-full h-full" color="{{resolvedProgressColor}}" size="2xs" value="{{100}}" ui="{{progressUi}}" />
   </view>
 
-  <c-icon wx:if="{{resolvedIcon}}" name="{{resolvedIcon}}" className="{{classes.icon}}" />
+  <slot wx:if="{{slots.icon}}" name="icon" />
+  <c-icon wx:elif="{{resolvedIcon}}" name="{{resolvedIcon}}" className="{{classes.icon}}" />
   <view class="{{classes.wrapper}}" data-scope="toast" data-part="wrapper">
     <view wx:if="{{title}}" class="{{classes.title}}" data-scope="toast" data-part="title">
       {{title}}
@@ -19,8 +20,10 @@
         {{item.label}}
       </c-button>
     </view>
+    <slot wx:elif="{{mode !== 'native' && slots.actions}}" name="actions" />
   </view>
-  <view wx:if="{{mode !== 'native' && (close !== false)}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
-    <c-icon name="{{closeIcon}}" className="w-4 h-4" />
+  <view wx:if="{{mode !== 'native' && (close !== false || slots.close)}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
+    <slot wx:if="{{slots.close}}" name="close" />
+    <c-icon wx:else name="{{closeIcon}}" className="w-4 h-4" />
   </view>
 </view>

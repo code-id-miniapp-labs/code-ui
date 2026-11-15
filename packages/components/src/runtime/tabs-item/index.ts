@@ -27,6 +27,12 @@ const tabsItemBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [tabsItemBehavior, computedBehavior],
+    slots: {
+      default: false,
+      leading: false,
+      label: false,
+      trailing: false,
+    },
 
     properties: createProperties(defaultTabsItemProps, {
       className: {

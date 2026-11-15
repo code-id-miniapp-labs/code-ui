@@ -28,6 +28,11 @@ const swipeCellBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [swipeCellBehavior, computedBehavior],
+    slots: {
+      default: false,
+      left: false,
+      right: false,
+    },
 
     properties: createProperties(defaultSwipeCellProps, {
       className: {

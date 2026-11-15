@@ -24,18 +24,18 @@ Component(
   createComponentOptions({
     behaviors: [stepperItemBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      indicator: false,
+      completedIndicator: false,
+      title: false,
+      description: false,
+    },
+
     properties: createProperties(defaultStepperItemProps, {
       className: {
         type: String,
         value: "",
-      },
-      customIndicator: {
-        type: Boolean,
-        value: false,
-      },
-      customCompletedIndicator: {
-        type: Boolean,
-        value: false,
       },
     }),
 

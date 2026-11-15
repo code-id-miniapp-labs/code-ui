@@ -12,7 +12,7 @@
   aria-disabled="{{slider.disabled}}"
   aria-invalid="{{slider.invalid}}"
 >
-  <view wx:if="{{label || hasLabelSlot}}" class="{{classes.wrapper}}" data-part="wrapper">
+  <view wx:if="{{label || showValue || slots.label || slots.value}}" class="{{classes.wrapper}}" data-part="wrapper">
     <text wx:if="{{label}}" class="{{classes.label}}" data-part="label">{{label}}</text>
     <slot wx:else name="label" />
 
@@ -63,7 +63,9 @@
       aria-valuenow="{{item.value}}"
       aria-orientation="{{slider.orientation}}"
       aria-disabled="{{slider.disabled}}"
-    />
+    >
+      <slot wx:if="{{slots.thumb}}" name="thumb" />
+    </view>
 
     <view wx:if="{{slider.markers.length > 0}}" class="{{classes.markerGroup}}" data-part="marker-group">
       <view

@@ -28,6 +28,13 @@ const fileUploadBehavior = createMachineBehavior({
 Component(
   createComponentOptions({
     behaviors: [fileUploadBehavior, computedBehavior],
+    slots: {
+      default: false,
+      icon: false,
+      loadingIcon: false,
+      title: false,
+      description: false,
+    },
 
     properties: createProperties(defaultFileUploadProps, {
       className: {

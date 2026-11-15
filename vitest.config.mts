@@ -6,6 +6,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@code-ui/anatomy": resolve(import.meta.dirname, "packages/anatomy/src"),
+      "@code-ui/compiler": resolve(import.meta.dirname, "packages/compiler/src"),
       "@code-ui/context": resolve(import.meta.dirname, "packages/context/src"),
       "@code-ui/core": resolve(import.meta.dirname, "packages/core/src"),
       "@code-ui/utils": resolve(import.meta.dirname, "packages/utils/src"),

@@ -27,6 +27,11 @@ Component(
   createComponentOptions({
     behaviors: [radioGroupBehavior, computedBehavior],
 
+    slots: {
+      default: false,
+      legend: false,
+    },
+
     properties: createProperties(defaultRadioGroupProps, {
       className: {
         type: String,
