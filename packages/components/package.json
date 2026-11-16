@@ -110,6 +110,12 @@
       "require": "./dist/runtime/file-upload/index.js"
     },
     "./file-upload/*": "./dist/runtime/file-upload/*",
+    "./floating-menu": {
+      "types": "./dist/runtime/floating-menu/index.d.ts",
+      "import": "./dist/runtime/floating-menu/index.js",
+      "require": "./dist/runtime/floating-menu/index.js"
+    },
+    "./floating-menu/*": "./dist/runtime/floating-menu/*",
     "./form": {
       "types": "./dist/runtime/form/index.d.ts",
       "import": "./dist/runtime/form/index.js",
@@ -170,6 +176,18 @@
       "require": "./dist/runtime/radio-group/index.js"
     },
     "./radio-group/*": "./dist/runtime/radio-group/*",
+    "./select": {
+      "types": "./dist/runtime/select/index.d.ts",
+      "import": "./dist/runtime/select/index.js",
+      "require": "./dist/runtime/select/index.js"
+    },
+    "./select/*": "./dist/runtime/select/*",
+    "./select-item": {
+      "types": "./dist/runtime/select-item/index.d.ts",
+      "import": "./dist/runtime/select-item/index.js",
+      "require": "./dist/runtime/select-item/index.js"
+    },
+    "./select-item/*": "./dist/runtime/select-item/*",
     "./slider": {
       "types": "./dist/runtime/slider/index.d.ts",
       "import": "./dist/runtime/slider/index.js",
@@ -269,6 +287,7 @@
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
     "@code-ui/file-upload": "workspace:*",
+    "@code-ui/floating-menu": "workspace:*",
     "@code-ui/form": "workspace:*",
     "@code-ui/form-field": "workspace:*",
     "@code-ui/input": "workspace:*",
@@ -279,6 +298,8 @@
     "@code-ui/qr-code": "workspace:*",
     "@code-ui/radio": "workspace:*",
     "@code-ui/radio-group": "workspace:*",
+    "@code-ui/select": "workspace:*",
+    "@code-ui/select-item": "workspace:*",
     "@code-ui/slider": "workspace:*",
     "@code-ui/stepper": "workspace:*",
     "@code-ui/stepper-item": "workspace:*",

@@ -100,6 +100,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["table", "card", "horizontal/vertical"],
   },
   {
+    id: "select",
+    name: "Select",
+    path: "/pages/select/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Dropdown menu & WeChat picker-view bottom sheet with multiple selection, c-select-item & FormField.",
+    icon: "i-lucide-chevrons-up-down",
+    highlights: ["dropdown", "picker-view", "c-select-item"],
+  },
+  {
     id: "switch",
     name: "Switch",
     path: "/pages/switch/index",

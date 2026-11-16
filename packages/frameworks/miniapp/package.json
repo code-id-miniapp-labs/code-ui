@@ -56,6 +56,11 @@
       "import": "./dist/behaviors/tabs.js",
       "require": "./dist/behaviors/tabs.cjs"
     },
+    "./behaviors/select": {
+      "types": "./dist/behaviors/select.d.ts",
+      "import": "./dist/behaviors/select.js",
+      "require": "./dist/behaviors/select.cjs"
+    },
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",

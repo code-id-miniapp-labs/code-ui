@@ -1,0 +1,26 @@
+<view id="{{selectItem.rootProps.id}}" class="{{classes.root}}" data-scope="select-item" data-part="root" data-type="{{type}}" data-state="{{selectItem.state}}" data-selected="{{selectItem.selected}}" data-disabled="{{selectItem.disabled}}">
+  <view wx:if="{{type === 'separator'}}" class="{{classes.separator}}" data-scope="select-item" data-part="separator" aria-hidden="{{true}}" />
+  <view wx:elif="{{type === 'label'}}" class="{{classes.groupLabel}}" data-scope="select-item" data-part="group-label">
+    <text wx:if="{{label}}">{{label}}</text>
+    <slot wx:else name="label" />
+  </view>
+  <view wx:else class="{{classes.base}}" data-scope="select-item" data-part="base" data-selected="{{selectItem.selected}}" data-disabled="{{selectItem.disabled}}" aria-role="option" aria-selected="{{selectItem.selected}}" aria-disabled="{{selectItem.disabled}}" catchtap="handleTap">
+    <view wx:if="{{slots.leading || icon}}" class="{{classes.leading}}" data-scope="select-item" data-part="leading" aria-hidden="{{true}}">
+      <slot wx:if="{{slots.leading}}" name="leading" />
+      <c-icon wx:else name="{{icon}}" className="{{classes.leadingIcon}}" />
+    </view>
+    <view class="{{classes.wrapper}}" data-scope="select-item" data-part="wrapper">
+      <slot wx:if="{{slots.default}}" />
+      <block wx:else>
+        <text wx:if="{{label}}" class="{{classes.label}}" data-scope="select-item" data-part="label">{{label}}</text>
+        <slot wx:elif="{{slots.label}}" name="label" />
+        <text wx:if="{{description}}" class="{{classes.description}}" data-scope="select-item" data-part="description">{{description}}</text>
+        <slot wx:elif="{{slots.description}}" name="description" />
+      </block>
+    </view>
+    <view wx:if="{{slots.trailing || selectItem.selected}}" class="{{classes.trailing}}" data-scope="select-item" data-part="trailing" aria-hidden="{{true}}">
+      <slot wx:if="{{slots.trailing}}" name="trailing" />
+      <c-icon wx:elif="{{selectItem.selected}}" name="{{resolvedTrailingIcon}}" className="{{classes.trailingIcon}}" />
+    </view>
+  </view>
+</view>

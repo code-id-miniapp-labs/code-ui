@@ -69,6 +69,14 @@ import type {
   FileUploadVariant,
 } from "@code-ui/file-upload";
 import type {
+  FloatingAlign,
+  FloatingMatchWidth,
+  FloatingMenuOpenChangeDetails,
+  FloatingMenuUI,
+  FloatingSide,
+  FloatingTriggerMode,
+} from "@code-ui/floating-menu";
+import type {
   FormErrorDetails,
   FormRule,
   FormSubmitDetails,
@@ -130,6 +138,28 @@ import type {
   RadioUI,
   RadioVariant,
 } from "@code-ui/radio";
+import type {
+  SelectColor,
+  SelectColumnChangeDetails,
+  SelectConfirmDetails,
+  SelectContentConfig,
+  SelectItemType,
+  SelectItemsInput,
+  SelectMode,
+  SelectOpenChangeDetails,
+  SelectScalarValue,
+  SelectSelectDetails,
+  SelectSize,
+  SelectUI,
+  SelectValue,
+  SelectValueChangeDetails,
+  SelectVariant,
+} from "@code-ui/select";
+import type {
+  SelectItemColor,
+  SelectItemSize,
+  SelectItemUI,
+} from "@code-ui/select-item";
 import type {
   StepperColor,
   StepperOrientation,
@@ -985,3 +1015,116 @@ export interface CuiToastElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<{ action: any; index: number }>,
   ) => void;
 }
+
+export interface CuiFloatingMenuElementProps extends CuiCommonElementProps {
+  ui?: FloatingMenuUI;
+  open?: boolean | null;
+  defaultOpen?: boolean;
+  disabled?: boolean;
+  closeOnBackdropClick?: boolean;
+  triggerMode?: FloatingTriggerMode;
+  portal?: boolean;
+  arrow?: boolean;
+  side?: FloatingSide;
+  align?: FloatingAlign;
+  sideOffset?: number;
+  alignOffset?: number;
+  collisionPadding?: number;
+  avoidCollisions?: boolean;
+  matchTriggerWidth?: FloatingMatchWidth;
+  maxHeight?: number;
+  duration?: number;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<FloatingMenuOpenChangeDetails>,
+  ) => void;
+  onOpen?: (event: WechatMiniprogram.CustomEvent) => void;
+  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
+export interface CuiSelectElementProps extends CuiCommonElementProps {
+  ui?: SelectUI;
+  name?: string;
+  form?: string;
+  rules?: FormRule[];
+  validateOn?: FormValidateOn;
+  mode?: SelectMode;
+  value?: SelectValue;
+  defaultValue?: SelectValue;
+  open?: boolean | null;
+  defaultOpen?: boolean;
+  multiple?: boolean;
+  items?: SelectItemsInput;
+  valueKey?: string;
+  labelKey?: string;
+  descriptionKey?: string;
+  disabledKey?: string;
+  variant?: SelectVariant;
+  color?: SelectColor;
+  size?: SelectSize;
+  highlight?: boolean;
+  placeholder?: string;
+  icon?: string;
+  leading?: boolean;
+  leadingIcon?: string;
+  trailing?: boolean;
+  trailingIcon?: string;
+  selectedIcon?: string;
+  clearIcon?: string;
+  loading?: boolean;
+  loadingIcon?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean | null;
+  closeOnSelect?: boolean | null;
+  closeOnBackdropClick?: boolean;
+  portal?: boolean;
+  arrow?: boolean;
+  content?: SelectContentConfig;
+  title?: string;
+  cancelBtn?: string | boolean;
+  confirmBtn?: string | boolean;
+  header?: boolean;
+  itemHeight?: number;
+  emptyText?: string;
+  duration?: number;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<SelectValueChangeDetails>,
+  ) => void;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<SelectSelectDetails>,
+  ) => void;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<SelectOpenChangeDetails>,
+  ) => void;
+  onConfirm?: (
+    event: WechatMiniprogram.CustomEvent<SelectConfirmDetails>,
+  ) => void;
+  onCancel?: (
+    event: WechatMiniprogram.CustomEvent<{ trigger?: string }>,
+  ) => void;
+  onColumnChange?: (
+    event: WechatMiniprogram.CustomEvent<SelectColumnChangeDetails>,
+  ) => void;
+  onClear?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
+export interface CuiSelectItemElementProps extends CuiCommonElementProps {
+  ui?: SelectItemUI;
+  type?: SelectItemType;
+  value?: SelectScalarValue;
+  label?: string;
+  description?: string;
+  icon?: string;
+  trailingIcon?: string;
+  disabled?: boolean;
+  selected?: boolean | null;
+  color?: SelectItemColor;
+  size?: SelectItemSize;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<{ value: SelectScalarValue }>,
+  ) => void;
+}
+

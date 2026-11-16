@@ -1,0 +1,90 @@
+<view id="{{select.rootProps.id}}" class="{{classes.root}}" data-scope="select" data-part="root" data-mode="{{mode}}" data-state="{{select.state}}" data-disabled="{{select.disabled}}" data-readonly="{{select.readOnly}}" data-invalid="{{select.invalid}}">
+  <c-floating-menu open="{{mode !== 'picker' && select.open}}" disabled="{{mode === 'picker' || select.disabled || select.readOnly}}" close-on-backdrop-click="{{closeOnBackdropClick}}" trigger-mode="manual" portal="{{portal}}" arrow="{{arrow}}" side="{{menuConfig.side}}" align="{{menuConfig.align}}" side-offset="{{menuConfig.sideOffset}}" align-offset="{{menuConfig.alignOffset}}" collision-padding="{{menuConfig.collisionPadding}}" avoid-collisions="{{menuConfig.avoidCollisions}}" match-trigger-width="{{menuConfig.matchTriggerWidth}}" max-height="{{menuConfig.maxHeight}}" duration="{{duration}}" ui="{{floatingMenuUi}}" bind:openchange="handleMenuOpenChange">
+    <view slot="trigger" id="{{select.triggerProps.id}}" class="{{classes.base}}" data-scope="select" data-part="base" data-state="{{select.state}}" data-open="{{select.open}}" data-disabled="{{select.disabled}}" data-readonly="{{select.readOnly}}" data-invalid="{{select.invalid}}" aria-role="combobox" aria-expanded="{{select.open}}" aria-disabled="{{select.disabled}}" aria-invalid="{{select.invalid}}" aria-haspopup="listbox" catchtap="handleTriggerTap">
+      <view wx:if="{{icons.isLeading}}" class="{{classes.leading}}" data-scope="select" data-part="leading" aria-hidden="{{true}}">
+        <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
+        <view wx:elif="{{icons.leadingIconName}}" class="{{classes.leadingIcon}}">
+          <c-icon name="{{icons.leadingIconName}}" className="{{classes.iconInner}}" />
+        </view>
+      </view>
+      <slot wx:if="{{slots.value}}" name="value" />
+      <view wx:elif="{{select.hasValue}}" class="{{classes.value}}" data-scope="select" data-part="value">
+        {{select.displayLabel}}
+      </view>
+      <view wx:else class="{{classes.placeholder}}" data-scope="select" data-part="placeholder">
+        {{placeholder}}
+      </view>
+      <view wx:if="{{icons.isTrailing || select.isClearable}}" class="{{classes.trailing}}" data-scope="select" data-part="trailing" aria-hidden="{{true}}">
+        <view wx:if="{{icons.trailingLoading}}" class="{{classes.trailingIcon}}">
+          <slot wx:if="{{icons.hasLoadingSlot}}" name="loadingIcon" />
+          <c-icon wx:else name="{{icons.trailingIconName}}" className="{{classes.loadingIcon}}" />
+        </view>
+        <view wx:elif="{{select.isClearable}}" class="{{classes.trailingIcon}}" data-scope="select" data-part="clear" aria-role="button" aria-label="Clear selection" catchtap="handleClear">
+          <c-icon name="{{clearIcon}}" className="{{classes.iconInner}}" />
+        </view>
+        <slot wx:elif="{{icons.hasTrailingSlot}}" name="trailing" />
+        <view wx:elif="{{icons.trailingIconName}}" class="{{classes.trailingIcon}}">
+          <c-icon name="{{icons.trailingIconName}}" className="{{classes.iconInner}}" />
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{mode !== 'picker' && slots.header}}" class="{{classes.header}}" data-scope="select" data-part="header">
+      <slot name="header" />
+    </view>
+    <scroll-view scroll-y scroll-x="{{false}}" scroll-into-view="{{select.activeItemDomId}}" scroll-with-animation="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" style="{{viewportMaxHeightStyle}}" aria-role="listbox" aria-multiselectable="{{multiple}}">
+      <view class="{{classes.viewport}}" data-scope="select" data-part="viewport">
+        <block wx:if="{{hasItems}}">
+          <c-select-item wx:for="{{resolvedDropdownItems}}" wx:key="key" id="{{item.domId}}" type="{{item.type}}" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" icon="{{item.icon}}" trailing-icon="{{item.trailingIcon}}" disabled="{{item.disabled}}" selected="{{item.selected}}" managed="{{true}}" color="{{color}}" size="{{resolvedSize}}" ui="{{item.ui}}" class-name="{{item.className}}" bind:select="handleItemSelect" />
+        </block>
+        <slot />
+        <block wx:if="{{!hasDropdownContent}}">
+          <slot wx:if="{{mode !== 'picker' && slots.empty}}" name="empty" />
+          <view wx:elif="{{emptyText}}" class="{{classes.empty}}" data-scope="select" data-part="empty">
+            {{emptyText}}
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+    <view wx:if="{{mode !== 'picker' && slots.footer}}" class="{{classes.footer}}" data-scope="select" data-part="footer">
+      <slot name="footer" />
+    </view>
+  </c-floating-menu>
+  <root-portal wx:if="{{mode === 'picker' && select.visible}}" enable="{{true}}">
+    <view class="{{themeMode}} {{classes.pickerRoot}}" style="{{pickerThemeStyle}}" data-scope="select" data-part="picker-root" data-state="{{select.state}}" catchtouchmove="noop">
+      <view class="{{classes.pickerBackdrop}}" data-scope="select" data-part="picker-backdrop" data-state="{{select.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" catchtap="handlePickerBackdropTap" />
+      <view class="{{classes.pickerContent}}" data-scope="select" data-part="picker-content" data-state="{{select.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!select.open}}">
+        <view wx:if="{{header}}" class="{{classes.pickerHeader}}" data-scope="select" data-part="picker-header">
+          <view wx:if="{{resolvedCancelBtn}}" class="{{classes.pickerCancel}}" data-scope="select" data-part="picker-cancel" aria-role="button" catchtap="handlePickerCancel">
+            {{resolvedCancelBtn}}
+          </view>
+          <slot wx:if="{{slots.header}}" name="header" />
+          <view wx:elif="{{title}}" class="{{classes.pickerTitle}}" data-scope="select" data-part="picker-title">
+            {{title}}
+          </view>
+          <view wx:else class="{{classes.pickerTitle}}" />
+          <view wx:if="{{resolvedConfirmBtn}}" class="{{classes.pickerConfirm}}" data-scope="select" data-part="picker-confirm" aria-role="button" catchtap="handlePickerConfirm">
+            {{resolvedConfirmBtn}}
+          </view>
+        </view>
+        <view class="{{classes.pickerBody}}" data-scope="select" data-part="picker-body">
+          <picker-view wx:if="{{resolvedPickerColumns.length > 0}}" class="{{classes.pickerView}}" style="width: 100%; height: {{pickerViewHeight}}px;" indicator-style="{{pickerIndicatorStyle}}" indicator-class="cui-picker-indicator" mask-style="{{pickerMaskStyle}}" value="{{select.pickerIndices}}" bindchange="handlePickerChange" bindpickstart="handlePickerStart" bindpickend="handlePickerEnd">
+            <picker-view-column wx:for="{{resolvedPickerColumns}}" wx:for-item="col" wx:for-index="colIndex" wx:key="colIndex" class="{{classes.pickerColumn}}">
+              <view wx:for="{{col}}" wx:key="key" class="{{item.disabled ? classes.pickerItemDisabled : classes.pickerItem}}" style="height: {{itemHeight}}px; line-height: {{itemHeight}}px;">
+                {{item.label}}
+              </view>
+            </picker-view-column>
+          </picker-view>
+          <block wx:else>
+            <slot wx:if="{{slots.empty}}" name="empty" />
+            <view wx:elif="{{emptyText}}" class="{{classes.empty}}" data-scope="select" data-part="empty">
+              {{emptyText}}
+            </view>
+          </block>
+        </view>
+        <view wx:if="{{slots.footer}}" class="{{classes.pickerFooter}}" data-scope="select" data-part="picker-footer">
+          <slot name="footer" />
+        </view>
+      </view>
+    </view>
+  </root-portal>
+</view>

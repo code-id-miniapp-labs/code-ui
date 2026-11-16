@@ -140,6 +140,7 @@ export { default as chipTheme } from "./theme/definitions/chip";
 export { default as dividerTheme } from "./theme/definitions/divider";
 export { default as drawerTheme } from "./theme/definitions/drawer";
 export { default as fileUploadTheme } from "./theme/definitions/file-upload";
+export { default as floatingMenuTheme } from "./theme/definitions/floating-menu";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as iconTheme } from "./theme/definitions/icon";
@@ -150,6 +151,8 @@ export { default as pullDownRefreshTheme } from "./theme/definitions/pull-down-r
 export { default as qrCodeTheme } from "./theme/definitions/qr-code";
 export { default as radioTheme } from "./theme/definitions/radio";
 export { default as radioGroupTheme } from "./theme/definitions/radio-group";
+export { default as selectTheme } from "./theme/definitions/select";
+export { default as selectItemTheme } from "./theme/definitions/select-item";
 export { default as skeletonTheme } from "./theme/definitions/skeleton";
 export { default as sliderTheme } from "./theme/definitions/slider";
 export { default as stepperTheme } from "./theme/definitions/stepper";

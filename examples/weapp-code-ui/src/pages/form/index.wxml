@@ -12,7 +12,7 @@
         <view class="flex-1 min-w-0">
           <text class="block text-sm font-semibold text-highlighted">Full Registration Form</text>
           <text class="block text-xs text-muted mt-0.5">
-            Combines Input, PinInput, RadioGroup, CheckboxGroup, Slider, Switch & Checkbox.
+            Combines Input, PinInput, Select, RadioGroup, CheckboxGroup, Slider, Switch & Checkbox.
           </text>
         </view>
         <view class="flex items-center gap-2">
@@ -49,6 +49,10 @@
 
           <c-form-field name="role" label="Workspace Role" required="{{ true }}" rules="{{ roleRules }}">
             <c-radio-group items="{{ roleItems }}" orientation="horizontal" default-value="developer" />
+          </c-form-field>
+
+          <c-form-field name="department" label="Department" description="Primary engineering group" required="{{ true }}" rules="{{ departmentRules }}">
+            <c-select items="{{ departmentItems }}" placeholder="Select department..." leading-icon="i-lucide-building-2" clearable="{{ true }}" />
           </c-form-field>
 
           <c-form-field name="topics" label="Interests (Custom Rule)" required="{{ true }}" rules="{{ topicsRules }}">
@@ -147,6 +151,51 @@
           <c-button size="xs" color="neutral" variant="outline" label="Reset" bind:tap="resetPreferences" />
         </view>
         <text wx:if="{{ preferencesStatus }}" class="block text-xs text-muted mt-2">{{ preferencesStatus }}: {{ preferencesMessage }}</text>
+      </view>
+    </view>
+
+    <!-- 4. Select & Form Integration -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Select & Form Integration</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Single dropdown, multi-select, and picker mode wired to Form validation, setValues, setErrors & reset.
+        </text>
+      </view>
+
+      <c-form
+        id="select-form"
+        disabled="{{ formDisabled }}"
+        validate-on="{{ validateOn }}"
+        bind:submit="handleSelectFormSubmit"
+        bind:error="handleSelectFormError"
+      >
+        <view class="flex flex-col gap-3.5">
+          <c-form-field name="country" label="Country / Region" description="Required single dropdown selection" required="{{ true }}" rules="{{ countryRules }}">
+            <c-select items="{{ countryItems }}" placeholder="Choose country..." leading-icon="i-lucide-globe" clearable="{{ true }}" />
+          </c-form-field>
+
+          <c-form-field name="skills" label="Core Skills (Min 2)" description="Multiple selection with custom validator" hint="Select >= 2" required="{{ true }}" rules="{{ skillsRules }}">
+            <c-select multiple="{{ true }}" items="{{ skillItems }}" placeholder="Pick at least 2 skills..." leading-icon="i-lucide-tags" clearable="{{ true }}" />
+          </c-form-field>
+
+          <c-form-field name="city" label="Office City (Picker Mode)" description="WeChat picker-view bottom sheet inside Form" required="{{ true }}" rules="{{ cityRules }}">
+            <c-select mode="picker" title="Select City" items="{{ cityItems }}" placeholder="Choose city..." leading-icon="i-lucide-map-pin" />
+          </c-form-field>
+        </view>
+      </c-form>
+
+      <view class="flex flex-wrap gap-2 pt-3 border-t border-muted">
+        <c-button size="sm" color="primary" label="Submit" bind:tap="submitSelectForm" />
+        <c-button size="sm" color="secondary" variant="soft" label="Fill Sample" bind:tap="fillSelectForm" />
+        <c-button size="sm" color="danger" variant="soft" label="Inject Errors" bind:tap="injectSelectFormErrors" />
+        <c-button size="sm" color="neutral" variant="outline" label="Clear Errors" bind:tap="clearSelectFormErrors" />
+        <c-button size="sm" color="neutral" variant="outline" label="Reset" bind:tap="resetSelectForm" />
+      </view>
+
+      <view wx:if="{{ selectFormStatus }}" class="rounded-xl p-3 border {{ selectFormStatus === 'Success' ? 'bg-success/10 border-success/30 text-success' : 'bg-elevated border-default text-toned' }}">
+        <text class="block text-xs font-bold">{{ selectFormStatus }}</text>
+        <text class="block text-xs mt-1 break-all">{{ selectFormMessage }}</text>
       </view>
     </view>
   </view>

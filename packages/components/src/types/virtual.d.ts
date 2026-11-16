@@ -70,6 +70,12 @@ declare module "virtual:cui/theme/file-upload" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/floating-menu" {
+  import type { default as floatingMenuTheme } from "@code-ui/core/src/theme/definitions/floating-menu";
+  const theme: ReturnType<typeof floatingMenuTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/form" {
   import type { default as formTheme } from "@code-ui/core/src/theme/definitions/form";
   const theme: ReturnType<typeof formTheme>;
@@ -127,6 +133,18 @@ declare module "virtual:cui/theme/radio" {
 declare module "virtual:cui/theme/radio-group" {
   import type { default as radioGroupTheme } from "@code-ui/core/src/theme/definitions/radio-group";
   const theme: ReturnType<typeof radioGroupTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/select" {
+  import type { default as selectTheme } from "@code-ui/core/src/theme/definitions/select";
+  const theme: ReturnType<typeof selectTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/select-item" {
+  import type { default as selectItemTheme } from "@code-ui/core/src/theme/definitions/select-item";
+  const theme: ReturnType<typeof selectItemTheme>;
   export default theme;
 }
 

@@ -1,0 +1,73 @@
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header title="Select" badge="Form" subtitle="Dropdown menu & WeChat picker-view bottom sheet supporting single/multiple, grouped items, c-select-item slots & FormField." />
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Default Dropdown Mode -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Dropdown Mode (Default)</text>
+        <text class="block text-xs text-muted mt-0.5">Selected: {{ basicValue || 'None' }}</text>
+      </view>
+      <c-select value="{{ basicValue }}" items="{{ basicItems }}" placeholder="Select status..." clearable="{{ true }}" arrow="{{true}}" bind:change="onBasicChange" />
+      <c-select multiple="{{ true }}" value="{{ multipleValue }}" items="{{ multipleItems }}" placeholder="Pick fruits..." arrow="{{true}}" leading-icon="i-lucide-shopping-basket" bind:change="onMultipleChange" />
+      <c-select items="{{ groupedItems }}" placeholder="Grouped options with descriptions..." />
+    </view>
+    <!-- 2. Custom c-select-item Composition (Avatar & Chip) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Custom c-select-item Slots</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Compose avatars, chips, or custom layouts with declarative c-select-item.
+        </text>
+      </view>
+      <c-select value="{{ assigneeValue }}" placeholder="Assign reviewer..." bind:change="onAssigneeChange">
+        <c-select-item value="alice" label="Alice Wang" description="Design Systems">
+          <c-avatar slot="leading" size="xs" text="Alice Wang" color="primary" />
+        </c-select-item>
+        <c-select-item value="bob" label="Bob Chen" description="Core Runtime">
+          <c-avatar slot="leading" size="xs" text="Bob Chen" color="secondary" />
+        </c-select-item>
+        <c-select-item type="separator" />
+        <c-select-item value="online" label="Available Now">
+          <c-chip slot="leading" standalone="{{ true }}" color="success" size="sm" />
+        </c-select-item>
+      </c-select>
+    </view>
+    <!-- 3. WeChat Picker Mode (TDesign-style Bottom Sheet) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Picker Mode (WeChat picker-view)
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Single-column and multi-column cascading wheel pickers.
+        </text>
+      </view>
+      <c-select mode="picker" title="Select City" cancel-btn="Cancel" confirm-btn="Confirm" value="{{ pickerValue }}" items="{{ pickerItems }}" placeholder="Choose a city..." leading-icon="i-lucide-map-pin" bind:confirm="onPickerConfirm" />
+      <c-select mode="picker" title="Select Region" value="{{ cascadeValue }}" items="{{ cascadeItems }}" placeholder="Choose province & city..." bind:columnchange="onCascadeColumnChange" bind:confirm="onCascadeConfirm" />
+    </view>
+    <!-- 4. Variants, Sizes, Colors & FormField -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Variants, Sizes & FormField
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Matches c-input visual tokens and inherits FormField size & errors.
+        </text>
+      </view>
+      <view class="flex flex-col gap-2">
+        <c-select wx:for="{{ variants }}" wx:key="*this" variant="{{ item }}" items="{{ basicItems }}" placeholder="Variant: {{ item }}" />
+      </view>
+      <view class="flex flex-col gap-2 pt-2 border-t border-muted">
+        <c-select wx:for="{{ sizes }}" wx:key="*this" size="{{ item }}" items="{{ basicItems }}" placeholder="Size: {{ item }}" />
+      </view>
+      <view class="flex flex-col gap-2 pt-2 border-t border-muted">
+        <c-select loading="{{ true }}" items="{{ basicItems }}" value="Todo" />
+        <c-select disabled="{{ true }}" items="{{ basicItems }}" value="Backlog" />
+        <c-form-field label="Department" hint="Required" required="{{ true }}" help="Select your primary engineering team">
+          <c-select items="{{ basicItems }}" placeholder="Choose department..." />
+        </c-form-field>
+      </view>
+    </view>
+  </view>
+</view>

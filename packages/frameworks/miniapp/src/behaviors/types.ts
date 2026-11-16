@@ -121,6 +121,12 @@ export interface TabsVisualData extends Record<string, unknown> {
   groupFitted: boolean | null;
 }
 
+export interface SelectVisualData extends Record<string, unknown> {
+  groupColor: string;
+  groupSize: string;
+  groupSelectedIcon: string;
+}
+
 export interface FormInheritedData extends Record<string, unknown> {
   fieldSize: string;
 }
@@ -216,6 +222,26 @@ export interface TabsItemInstance extends CodeUiComponentInstance<TabsItemData> 
   __codeUiPendingTabs?: TabsInstance | undefined;
   __codeUiTabsIndex?: number | undefined;
   __codeUiTabsId?: string | undefined;
+}
+
+export interface SelectInstance extends CodeUiComponentInstance<BaseComponentData> {
+  __codeUiSelectChildren?: SelectItemInstance[] | undefined;
+}
+
+export interface SelectItemData
+  extends BaseComponentData,
+    Partial<SelectVisualData> {
+  managed?: boolean | undefined;
+  type?: string | undefined;
+  value?: string | number | boolean | undefined;
+  label?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface SelectItemInstance extends CodeUiComponentInstance<SelectItemData> {
+  __codeUiPendingSelect?: SelectInstance | undefined;
+  __codeUiSelectIndex?: number | undefined;
+  __codeUiSelectId?: string | undefined;
 }
 
 export interface AvatarGroupData extends BaseComponentData {
