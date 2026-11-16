@@ -49,7 +49,7 @@
       <slot name="footer" />
     </view>
   </c-floating-menu>
-  <root-portal wx:if="{{mode === 'picker' && select.visible}}" enable="{{true}}">
+  <root-portal wx:if="{{mode === 'picker' && select.state !== 'closed'}}" enable="{{true}}">
     <view class="{{themeMode}} {{classes.pickerRoot}}" style="{{pickerThemeStyle}}" data-scope="select" data-part="picker-root" data-state="{{select.state}}" catchtouchmove="noop">
       <view class="{{classes.pickerBackdrop}}" data-scope="select" data-part="picker-backdrop" data-state="{{select.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" catchtap="handlePickerBackdropTap" />
       <view class="{{classes.pickerContent}}" data-scope="select" data-part="picker-content" data-state="{{select.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!select.open}}">

@@ -113,6 +113,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
       },
       open: {
         true: {
+          root: "z-50",
           trailingIcon: "rotate-180",
           pickerBackdrop: "opacity-100 pointer-events-auto",
           pickerContent: "translate-y-0",
@@ -121,12 +122,6 @@ export default function selectTheme(options: ThemeOptions = {}) {
           pickerBackdrop: "opacity-0 pointer-events-none",
           pickerContent: "translate-y-full",
         },
-      },
-      visible: {
-        true: {
-          root: "z-50",
-        },
-        false: {},
       },
       leading: {
         true: { base: "" },
@@ -207,7 +202,6 @@ export default function selectTheme(options: ThemeOptions = {}) {
       color: "primary",
       size: "md",
       open: false,
-      visible: false,
       leading: false,
       trailing: true,
       highlight: false,

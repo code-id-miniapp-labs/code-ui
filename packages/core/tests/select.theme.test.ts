@@ -24,7 +24,6 @@ describe("selectTheme (@code-ui/core)", () => {
       color: "primary",
       size: "md",
       open: false,
-      visible: false,
       leading: false,
       trailing: true,
       highlight: false,
@@ -33,7 +32,7 @@ describe("selectTheme (@code-ui/core)", () => {
     });
     expect(theme.slots.viewport).toContain("flex-col");
     expect(theme.slots.viewport).toContain("gap-1");
-    expect(theme.variants.visible.true.root).toContain("z-50");
+    expect(theme.variants.open.true.root).toContain("z-50");
     expect(Object.keys(theme.variants.variant)).toEqual([
       "outline",
       "soft",

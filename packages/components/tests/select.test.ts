@@ -32,6 +32,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
       {},
       "",
     );
+    expect(outlineClosed.root).not.toContain("z-50");
     expect(outlineClosed.base).toContain("border-accented");
     expect(outlineClosed.pickerContent).toContain("translate-y-full");
 
@@ -46,6 +47,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
       "my-select",
     );
     expect(openPrimary.root).toContain("my-select");
+    expect(openPrimary.root).toContain("z-50");
     expect(openPrimary.trailingIcon).toContain("rotate-180");
     expect(openPrimary.pickerContent).toContain("translate-y-0");
     expect(openPrimary.base).toContain("h-10");

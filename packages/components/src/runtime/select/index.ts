@@ -347,7 +347,6 @@ Component(
           color: this.data.color,
           size: this.data.resolvedSize,
           open: Boolean(api?.open),
-          visible: Boolean(api?.visible),
           highlight: Boolean(this.data.highlight),
           invalid: Boolean(api?.invalid),
           disabled: Boolean(api?.disabled),
