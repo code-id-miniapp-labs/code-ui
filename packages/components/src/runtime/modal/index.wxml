@@ -1,0 +1,39 @@
+<view wx:if="{{slots.trigger}}" class="{{classes.trigger}}" data-scope="modal" data-part="trigger" bindtap="handleTriggerTap">
+  <slot name="trigger" />
+</view>
+<view wx:if="{{modal.visible}}" id="{{modal.rootProps.id}}" class="{{classes.root}}" data-scope="modal" data-part="root" data-state="{{modal.state}}" data-variant="{{variant}}" data-size="{{size}}" data-fullscreen="{{fullscreen}}" data-scrollable="{{scrollable}}">
+  <view wx:if="{{overlay}}" id="{{modal.overlayProps.id}}" class="{{classes.overlay}}" data-scope="modal" data-part="overlay" data-state="{{modal.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleOverlayTap" catchtouchmove="noop" />
+  <view id="{{modal.containerProps.id}}" class="{{classes.container}}" style="{{modal.containerProps.style}}" data-scope="modal" data-part="container" bindtap="handleContainerTap">
+    <view id="{{modal.contentProps.id}}" class="{{classes.content}}" style="{{modal.contentProps.style}}" data-scope="modal" data-part="content" data-state="{{modal.state}}" data-keyboard-height="{{modal.contentProps['data-keyboard-height']}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!modal.open}}">
+      <slot wx:if="{{slots.content}}" name="content" />
+      <block wx:else>
+        <view wx:if="{{resolvedClose || slots.close}}" id="{{modal.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="modal" data-part="close-trigger">
+          <view wx:if="{{slots.close}}" class="{{classes.closeButton}}" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
+            <slot name="close" />
+          </view>
+          <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
+        </view>
+        <view wx:if="{{slots.header || title || description || slots.title || slots.description}}" class="{{classes.header}}" data-scope="modal" data-part="header">
+          <slot wx:if="{{slots.header}}" name="header" />
+          <view wx:else class="{{classes.wrapper}}" data-scope="modal" data-part="wrapper">
+            <view wx:if="{{title}}" class="{{classes.title}}" data-scope="modal" data-part="title">
+              {{title}}
+            </view>
+            <slot wx:else name="title" />
+            <view wx:if="{{description}}" class="{{classes.description}}" data-scope="modal" data-part="description">
+              {{description}}
+            </view>
+            <slot wx:else name="description" />
+          </view>
+        </view>
+        <scroll-view wx:if="{{slots.body || slots.default}}" scroll-y="{{!scrollable}}" scroll-x="{{false}}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" class="{{classes.body}}" data-scope="modal" data-part="body" style="box-sizing: border-box; width: 100%;">
+          <slot wx:if="{{slots.body}}" name="body" />
+          <slot wx:else />
+        </scroll-view>
+        <view wx:if="{{slots.footer}}" class="{{classes.footer}}" data-scope="modal" data-part="footer">
+          <slot name="footer" />
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

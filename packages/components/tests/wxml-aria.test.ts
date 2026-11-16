@@ -77,7 +77,8 @@ function extractTagAttributes(wxmlSource: string): string[] {
   const withoutComments = wxmlSource.replace(/<!--[\s\S]*?-->/g, "");
   const attrs: string[] = [];
   // Match opening/self-closing tags while skipping {{ ... }} expressions inside attribute values
-  const tagRe = /<[a-zA-Z][\w-]*((?:\s+[^>"'{]+|\s+[a-zA-Z_:][\w:.-]*\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*\/?>/g;
+  const tagRe =
+    /<[a-zA-Z][\w-]*((?:\s+[^>"'{]+|\s+[a-zA-Z_:][\w:.-]*\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*\/?>/g;
   let tagMatch: RegExpExecArray | null;
   while ((tagMatch = tagRe.exec(withoutComments)) !== null) {
     const attrBlock = tagMatch[1] ?? "";
@@ -108,7 +109,9 @@ describe("WeChat WXML ARIA compliance & attribute allowlist", () => {
 
       for (const attr of attrs) {
         if (attr === "role") {
-          violations.push(`${rel}: standalone role= found (use aria-role= instead)`);
+          violations.push(
+            `${rel}: standalone role= found (use aria-role= instead)`,
+          );
         }
         if (attr === "tabindex") {
           violations.push(`${rel}: unsupported tabindex= found`);
@@ -150,6 +153,7 @@ describe("WeChat WXML ARIA compliance & attribute allowlist", () => {
       ["drawer/index.wxml", 'aria-role="dialog"'],
       ["select/index.wxml", 'aria-role="combobox"'],
       ["select-item/index.wxml", 'aria-role="option"'],
+      ["modal/index.wxml", 'aria-role="dialog"'],
       ["progress/index.wxml", 'aria-role="progressbar"'],
       ["qr-code/index.wxml", 'aria-role="img"'],
       ["toast/index.wxml", 'aria-role="status"'],
@@ -165,4 +169,3 @@ describe("WeChat WXML ARIA compliance & attribute allowlist", () => {
     }
   });
 });
-

@@ -40,17 +40,22 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
   chip: ["default", "content"],
   divider: ["default", "leading", "trailing"],
   drawer: ["default", "header", "close", "footer"],
-  "file-upload": [
-    "default",
-    "icon",
-    "loadingIcon",
-    "title",
-    "description",
-  ],
+  "file-upload": ["default", "icon", "loadingIcon", "title", "description"],
   "floating-menu": ["default", "trigger"],
   form: ["default"],
   "form-field": ["default", "label", "hint", "description", "error", "help"],
   input: ["trailing", "leading", "loadingIcon"],
+  modal: [
+    "default",
+    "trigger",
+    "content",
+    "header",
+    "title",
+    "description",
+    "close",
+    "body",
+    "footer",
+  ],
   "pin-input": ["label"],
   progress: ["default", "label", "valueText"],
   "pull-down-refresh": ["default", "header", "indicator"],
@@ -67,13 +72,7 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
     "header",
     "footer",
   ],
-  "select-item": [
-    "default",
-    "leading",
-    "label",
-    "description",
-    "trailing",
-  ],
+  "select-item": ["default", "leading", "label", "description", "trailing"],
   skeleton: ["default"],
   slider: ["label", "value", "thumb"],
   stepper: ["default", "content"],
@@ -501,7 +500,10 @@ export function parseWxml(source: string): WxmlNode[] {
   return rootChildren;
 }
 
-function getAttr(node: WxmlElementNode, name: string): WxmlAttribute | undefined {
+function getAttr(
+  node: WxmlElementNode,
+  name: string,
+): WxmlAttribute | undefined {
   for (const attr of node.attrs) {
     if (attr.name === name) return attr;
   }
@@ -671,9 +673,7 @@ function extractDirectiveExpr(attr: WxmlAttribute | undefined): string | null {
 
   return parts
     .map((p) =>
-      p.type === "static"
-        ? `'${escapeSingleQuotes(p.value)}'`
-        : `(${p.value})`,
+      p.type === "static" ? `'${escapeSingleQuotes(p.value)}'` : `(${p.value})`,
     )
     .join(" + ");
 }
@@ -690,9 +690,7 @@ function mixedAttrToJsExpr(raw: string): string {
   }
   return parts
     .map((p) =>
-      p.type === "static"
-        ? `'${escapeSingleQuotes(p.value)}'`
-        : `(${p.value})`,
+      p.type === "static" ? `'${escapeSingleQuotes(p.value)}'` : `(${p.value})`,
     )
     .join(" + ");
 }
@@ -859,7 +857,11 @@ function serializeSlotCondition(cond: SlotCondition): string {
   if (cond.kind === "static") return "true";
   const stripped = stripOuterParens(cond.expr);
   if (stripped === "true" || stripped === "false") return stripped;
-  if (stripped.startsWith("!!") && !stripped.includes("||") && !stripped.includes("&&")) {
+  if (
+    stripped.startsWith("!!") &&
+    !stripped.includes("||") &&
+    !stripped.includes("&&")
+  ) {
     return stripped;
   }
   return `!!(${stripped})`;
@@ -982,10 +984,7 @@ class WxsHelperRegistry {
   /**
    * Registers or reuses an ES5 WXS loop predicate helper and returns the WXML call expression.
    */
-  registerLoopPredicate(
-    loops: LoopScope[],
-    predicateExpr: string,
-  ): string {
+  registerLoopPredicate(loops: LoopScope[], predicateExpr: string): string {
     const loopVars = new Set<string>();
     for (const loop of loops) {
       loopVars.add(loop.itemVar);
@@ -1093,7 +1092,9 @@ interface TernarySlotBranch {
  * into static slot name branches with their respective conditions.
  * Returns `null` if the expression is not a static-string ternary.
  */
-function tryParseTernaryStringLiterals(expr: string): TernarySlotBranch[] | null {
+function tryParseTernaryStringLiterals(
+  expr: string,
+): TernarySlotBranch[] | null {
   const s = stripOuterParens(expr);
 
   // Single string literal `'foo'`
@@ -1259,7 +1260,11 @@ function recordSlotActivation(
   const hasExpr = parts.some((p) => p.type === "expr");
 
   if (!hasExpr) {
-    const wrapped = wrapWithLoops(effectiveCond, ctx.activeLoops, ctx.wxsRegistry);
+    const wrapped = wrapWithLoops(
+      effectiveCond,
+      ctx.activeLoops,
+      ctx.wxsRegistry,
+    );
     if (wrapped) {
       targetMap.set(
         trimmedSpec,
@@ -1277,7 +1282,11 @@ function recordSlotActivation(
       for (const branch of ternaryBranches) {
         if (!branch.slotName) continue;
         const branchCond = andConditions(effectiveCond, branch.condition);
-        const wrapped = wrapWithLoops(branchCond, ctx.activeLoops, ctx.wxsRegistry);
+        const wrapped = wrapWithLoops(
+          branchCond,
+          ctx.activeLoops,
+          ctx.wxsRegistry,
+        );
         if (wrapped) {
           targetMap.set(
             branch.slotName,
@@ -1293,7 +1302,11 @@ function recordSlotActivation(
   for (const candidateSlot of ctx.knownSlots) {
     const matchExpr = `(${slotJsExpr}) === '${escapeSingleQuotes(candidateSlot)}'`;
     const combinedCond = andConditions(effectiveCond, matchExpr);
-    const wrapped = wrapWithLoops(combinedCond, ctx.activeLoops, ctx.wxsRegistry);
+    const wrapped = wrapWithLoops(
+      combinedCond,
+      ctx.activeLoops,
+      ctx.wxsRegistry,
+    );
     if (wrapped) {
       targetMap.set(
         candidateSlot,
@@ -1355,7 +1368,10 @@ function collectUnconditionalSlotsFromNodes(
       flush();
       const condExpr = extractDirectiveExpr(wxIf);
       if (isStaticTrue(condExpr)) {
-        for (const s of collectUnconditionalSlotsFromElement(node, inheritedSlot)) {
+        for (const s of collectUnconditionalSlotsFromElement(
+          node,
+          inheritedSlot,
+        )) {
           out.add(s);
         }
       } else if (!isStaticFalse(condExpr)) {
@@ -1380,7 +1396,10 @@ function collectUnconditionalSlotsFromNodes(
       flush();
     } else {
       flush();
-      for (const s of collectUnconditionalSlotsFromElement(node, inheritedSlot)) {
+      for (const s of collectUnconditionalSlotsFromElement(
+        node,
+        inheritedSlot,
+      )) {
         out.add(s);
       }
     }
@@ -1410,7 +1429,8 @@ function collectUnconditionalSlotsFromElement(
       nodeSlotAttr ?? inheritedSlot,
     );
   }
-  const slotSpec = (nodeSlotAttr ?? inheritedSlot ?? "default").trim() || "default";
+  const slotSpec =
+    (nodeSlotAttr ?? inheritedSlot ?? "default").trim() || "default";
   if (splitMustacheParts(slotSpec).some((p) => p.type === "expr")) {
     return new Set();
   }
@@ -1499,7 +1519,9 @@ function analyzeChildrenIntoMap(
       if (hasStaticNonEmpty) {
         recordSlotActivation(result, null, ctx.condition, ctx);
       } else {
-        const exprParts = parts.filter((p) => p.type === "expr" && p.value.length > 0);
+        const exprParts = parts.filter(
+          (p) => p.type === "expr" && p.value.length > 0,
+        );
         if (exprParts.length > 0) {
           const nonEmptyChecks = exprParts
             .map(
@@ -1554,8 +1576,7 @@ function analyzeChildrenIntoMap(
     // Check wx:for / wx:for-items on this element
     // Note: in WeChat WXML, when `wx:for` and `wx:if` are on the same element,
     // `wx:for` runs first and `wx:if` is evaluated per-item inside the loop scope.
-    const wxForAttr =
-      getAttr(node, "wx:for") ?? getAttr(node, "wx:for-items");
+    const wxForAttr = getAttr(node, "wx:for") ?? getAttr(node, "wx:for-items");
     let elementLoops = ctx.activeLoops;
     let innerConditionForElement = effectiveBranchCond;
 

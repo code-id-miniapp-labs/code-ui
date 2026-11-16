@@ -145,6 +145,7 @@ export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as iconTheme } from "./theme/definitions/icon";
 export { default as inputTheme } from "./theme/definitions/input";
+export { default as modalTheme } from "./theme/definitions/modal";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
 export { default as progressTheme } from "./theme/definitions/progress";
 export { default as pullDownRefreshTheme } from "./theme/definitions/pull-down-refresh";

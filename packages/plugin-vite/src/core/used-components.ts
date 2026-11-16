@@ -48,6 +48,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
   form: ["form-field", "icon"],
   "form-field": ["icon"],
   input: ["icon"],
+  modal: ["button", "icon"],
   "pin-input": ["icon"],
   "radio-group": ["radio", "icon"],
   radio: ["icon"],

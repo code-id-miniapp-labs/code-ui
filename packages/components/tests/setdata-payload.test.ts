@@ -9,6 +9,7 @@ import { sliderMachine, connectSlider } from "@code-ui/slider";
 import { stepperMachine, connectStepper } from "@code-ui/stepper";
 import { tabsMachine, connectTabs } from "@code-ui/tabs";
 import { drawerMachine, connectDrawer } from "@code-ui/drawer";
+import { modalMachine, connectModal } from "@code-ui/modal";
 
 const flush = () =>
   new Promise<void>((resolve) => queueMicrotask(() => queueMicrotask(resolve)));
@@ -17,7 +18,11 @@ function createMockInstance(
   initialData: Record<string, any> = {},
   computedDefs?: Record<string, () => any>,
 ) {
-  const calls: Array<{ keys: number; bytes: number; payload: Record<string, any> }> = [];
+  const calls: Array<{
+    keys: number;
+    bytes: number;
+    payload: Record<string, any>;
+  }> = [];
   const data: Record<string, any> = { ...initialData };
 
   const rawSetData = vi.fn((patch: Record<string, any>) => {
@@ -47,12 +52,15 @@ function createMockInstance(
 
 describe("setData call count & payload budget", () => {
   it("checkbox toggle emits <= 1 setData call per tap", async () => {
-    const { instance, calls } = createMockInstance({ checked: false }, {
-      classes() {
-        const api = this.data.cCheckbox;
-        return { root: api?.checked ? "checked" : "unchecked" };
+    const { instance, calls } = createMockInstance(
+      { checked: false },
+      {
+        classes() {
+          const api = this.data.cCheckbox;
+          return { root: api?.checked ? "checked" : "unchecked" };
+        },
       },
-    });
+    );
 
     const machine = new MiniappMachine(checkboxMachine, {
       id: "cb1",
@@ -85,12 +93,15 @@ describe("setData call count & payload budget", () => {
   });
 
   it("slider stepUp emits <= 1 setData call per step", async () => {
-    const { instance, calls } = createMockInstance({}, {
-      classes() {
-        const api = this.data.slider;
-        return { root: api?.dragging ? "dragging" : "idle" };
+    const { instance, calls } = createMockInstance(
+      {},
+      {
+        classes() {
+          const api = this.data.slider;
+          return { root: api?.dragging ? "dragging" : "idle" };
+        },
       },
-    });
+    );
 
     const machine = new MiniappMachine(sliderMachine, {
       id: "s1",
@@ -122,12 +133,15 @@ describe("setData call count & payload budget", () => {
   });
 
   it("stepper nextStep emits <= 1 setData call per step", async () => {
-    const { instance, calls } = createMockInstance({}, {
-      classes() {
-        const api = this.data.stepper;
-        return { root: `step-${api?.step ?? 0}` };
+    const { instance, calls } = createMockInstance(
+      {},
+      {
+        classes() {
+          const api = this.data.stepper;
+          return { root: `step-${api?.step ?? 0}` };
+        },
       },
-    });
+    );
 
     const machine = new MiniappMachine(stepperMachine, {
       id: "st1",
@@ -157,12 +171,15 @@ describe("setData call count & payload budget", () => {
   });
 
   it("tabs setValue emits <= 1 setData call per tab switch", async () => {
-    const { instance, calls } = createMockInstance({}, {
-      classes() {
-        const api = this.data.tabs;
-        return { root: `tab-${api?.value ?? ""}` };
+    const { instance, calls } = createMockInstance(
+      {},
+      {
+        classes() {
+          const api = this.data.tabs;
+          return { root: `tab-${api?.value ?? ""}` };
+        },
       },
-    });
+    );
 
     const machine = new MiniappMachine(tabsMachine, {
       id: "t1",
@@ -190,12 +207,15 @@ describe("setData call count & payload budget", () => {
   });
 
   it("drawer open/close emits <= 1 setData call per transition", async () => {
-    const { instance, calls } = createMockInstance({}, {
-      classes() {
-        const api = this.data.drawer;
-        return { root: api?.open ? "open" : "closed" };
+    const { instance, calls } = createMockInstance(
+      {},
+      {
+        classes() {
+          const api = this.data.drawer;
+          return { root: api?.open ? "open" : "closed" };
+        },
       },
-    });
+    );
 
     const machine = new MiniappMachine(drawerMachine, {
       id: "d1",
@@ -207,6 +227,43 @@ describe("setData call count & payload budget", () => {
       instance,
       connectDrawer,
       "drawer",
+    );
+
+    const mountBytes = calls.reduce((sum, c) => sum + c.bytes, 0);
+    expect(calls.length).toBe(1);
+    calls.length = 0;
+
+    instance.__codeUiApi.setOpen(true);
+    await flush();
+
+    expect(calls.length).toBe(1);
+    expect(calls[0]!.bytes).toBeLessThan(mountBytes);
+
+    dispose();
+    machine.stop();
+  });
+
+  it("modal open/close emits <= 1 setData call per transition", async () => {
+    const { instance, calls } = createMockInstance(
+      {},
+      {
+        classes() {
+          const api = this.data.modal;
+          return { root: api?.open ? "open" : "closed" };
+        },
+      },
+    );
+
+    const machine = new MiniappMachine(modalMachine, {
+      id: "m1",
+      duration: 0,
+    });
+    machine.start();
+    const dispose = connectToComponent(
+      machine,
+      instance,
+      connectModal,
+      "modal",
     );
 
     const mountBytes = calls.reduce((sum, c) => sum + c.bytes, 0);
