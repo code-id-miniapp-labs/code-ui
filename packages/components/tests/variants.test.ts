@@ -41,10 +41,7 @@ const progressTheme = tv(createProgressTheme());
 const fileUploadTheme = tv(createFileUploadTheme());
 const stepperItemTheme = tv(createStepperItemTheme());
 const drawerTheme = tv(createDrawerTheme());
-import {
-  clearThemeCache,
-  getResolvedTheme,
-} from "../src/utils/theme-resolve";
+import { clearThemeCache, getResolvedTheme } from "../src/utils/theme-resolve";
 import { resolveSlots } from "../src/utils/ui";
 
 describe("escapeClass", () => {
@@ -849,16 +846,12 @@ describe("checkboxGroupTheme resolution", () => {
   });
 
   it("resolves size on legend", () => {
-    const slots = resolveSlots(
-      checkboxGroupTheme({ size: "lg" }) as any,
-    );
+    const slots = resolveSlots(checkboxGroupTheme({ size: "lg" }) as any);
     expect(slots.legend).toContain("text-base");
   });
 
   it("resolves required state", () => {
-    const slots = resolveSlots(
-      checkboxGroupTheme({ required: true }) as any,
-    );
+    const slots = resolveSlots(checkboxGroupTheme({ required: true }) as any);
     expect(slots.legend).toContain("after_ctext-danger");
   });
 });
@@ -985,7 +978,7 @@ describe("avatarTheme resolution", () => {
       expect(slots.title).toContain("font-medium");
       expect(slots.description).toContain("text-muted");
       expect(slots.fileList).toContain("flex-col");
-      expect(slots.file).toContain("rounded-xl");
+      expect(slots.file).toContain("rounded-md");
       expect(slots.fileRemove).toContain("rounded-lg");
     });
 

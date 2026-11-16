@@ -61,6 +61,11 @@
       "import": "./dist/behaviors/select.js",
       "require": "./dist/behaviors/select.cjs"
     },
+    "./behaviors/input-menu": {
+      "types": "./dist/behaviors/input-menu.d.ts",
+      "import": "./dist/behaviors/input-menu.js",
+      "require": "./dist/behaviors/input-menu.cjs"
+    },
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",

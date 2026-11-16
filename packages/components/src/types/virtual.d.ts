@@ -100,6 +100,18 @@ declare module "virtual:cui/theme/input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/input-menu" {
+  import type { default as inputMenuTheme } from "@code-ui/core/src/theme/definitions/input-menu";
+  const theme: ReturnType<typeof inputMenuTheme>;
+  export default theme;
+}
+
+declare module "virtual:cui/theme/input-menu-item" {
+  import type { default as inputMenuItemTheme } from "@code-ui/core/src/theme/definitions/input-menu-item";
+  const theme: ReturnType<typeof inputMenuItemTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/modal" {
   import type { default as modalTheme } from "@code-ui/core/src/theme/definitions/modal";
   const theme: ReturnType<typeof modalTheme>;

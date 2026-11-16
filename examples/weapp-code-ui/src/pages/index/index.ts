@@ -110,6 +110,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["dropdown", "picker-view", "c-select-item"],
   },
   {
+    id: "input-menu",
+    name: "Input Menu",
+    path: "/pages/input-menu/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Autocomplete combobox with live search filtering, multiple removable tags, createItem & c-input-menu-item.",
+    icon: "i-lucide-list-filter",
+    highlights: ["autocomplete", "multiple tags", "createItem"],
+  },
+  {
     id: "switch",
     name: "Switch",
     path: "/pages/switch/index",

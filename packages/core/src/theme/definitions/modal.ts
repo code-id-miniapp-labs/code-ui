@@ -55,7 +55,7 @@ export default function modalTheme(_options: ThemeOptions = {}) {
         },
         false: {
           container: "p-5",
-          content: "rounded-md",
+          content: "rounded-xl",
         },
       },
       scrollable: {

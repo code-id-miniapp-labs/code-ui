@@ -45,6 +45,17 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
   form: ["default"],
   "form-field": ["default", "label", "hint", "description", "error", "help"],
   input: ["trailing", "leading", "loadingIcon"],
+  "input-menu": [
+    "default",
+    "leading",
+    "trailing",
+    "loadingIcon",
+    "empty",
+    "header",
+    "footer",
+    "createItem",
+  ],
+  "input-menu-item": ["default", "leading", "label", "description", "trailing"],
   modal: [
     "default",
     "trigger",
