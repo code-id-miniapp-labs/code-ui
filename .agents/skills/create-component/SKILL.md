@@ -111,30 +111,42 @@ Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and 
 
 ## Step 3: Create Nuxt UI v4 Theme Definition in `packages/core`
 
-1. Create `packages/core/src/theme/definitions/<name>.ts`:
+1. Create `packages/core/src/theme/definitions/<name>.ts` following the Nuxt UI v4 standalone pattern (`DEFAULT_THEME_COLORS` contains the 6 semantic colors; `neutral` is defined directly without `hasNeutral` conditionals):
    ```ts
    import {
      DEFAULT_THEME_COLORS,
-     createColorVariants,
      defineTheme,
      type ThemeOptions,
    } from "../../theme";
 
    export default function <camelName>Theme(options: ThemeOptions = {}) {
-     const colors = options.colors ?? DEFAULT_THEME_COLORS;
+     const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
+
      return defineTheme({
        slots: {
          root: "relative inline-flex items-center justify-center ...",
        },
        variants: {
-         color: createColorVariants(colors),
+         color: Object.assign(
+           Object.fromEntries(colors.map((color) => [color, {}])),
+           { neutral: {} },
+         ),
          size: {
            sm: { root: "text-xs ..." },
            md: { root: "text-sm ..." },
            lg: { root: "text-base ..." },
          },
        },
-       compoundVariants: [],
+       compoundVariants: [
+         ...colors.map((color) => ({
+           color,
+           class: { root: `text-${color}` },
+         })),
+         {
+           color: "neutral" as const,
+           class: { root: "text-highlighted" },
+         },
+       ],
        defaultVariants: {
          color: "primary",
          size: "md",
