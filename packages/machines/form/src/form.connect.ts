@@ -11,7 +11,6 @@ import {
   submitForm,
   validateFormFields,
 } from "./form.machine";
-import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   FormApi,
   FormErrorBag,
@@ -20,7 +19,7 @@ import type {
 } from "./form.types";
 
 export function connectForm(service: FormService): FormApi {
-  const { state, context, computed, prop, refs, scope } = service;
+  const { state, context, computed, refs, scope } = service;
 
   return {
     state: state.get(),
@@ -37,8 +36,6 @@ export function connectForm(service: FormService): FormApi {
     isValidating: computed("isValidating"),
     isSubmitting: computed("isSubmitting"),
     submitCount: context.get("submitCount"),
-    disabled: prop("disabled"),
-    readOnly: prop("readOnly"),
     formContext: refs.get("hostContext"),
 
     validate(name?: string | string[]) {
@@ -109,11 +106,11 @@ export function connectForm(service: FormService): FormApi {
       return scrollToFirstInvalidField(service);
     },
 
-    handleSubmit(e?: MiniAppEventLike<{ value?: Record<string, any> }>) {
-      return submitForm(service, e?.detail?.value);
+    handleSubmit(values?: Record<string, any>) {
+      return submitForm(service, values);
     },
 
-    handleReset(_e?: MiniAppEventLike<Record<string, any>>) {
+    handleReset() {
       resetFormFields(service);
     },
 

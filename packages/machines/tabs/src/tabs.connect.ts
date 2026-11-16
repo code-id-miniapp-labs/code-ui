@@ -1,41 +1,25 @@
-import {
-  getContentId,
-  getListId,
-  getRootId,
-  getTriggerId,
-} from "./tabs.dom";
-import type {
-  TabItemComputed,
-  TabsApi,
-  TabsService,
-} from "./tabs.types";
+import { getContentId, getListId, getRootId, getTriggerId } from "./tabs.dom";
+import type { TabItemComputed, TabsApi, TabsService } from "./tabs.types";
 
 export function connectTabs(service: TabsService): TabsApi {
-  const { context, computed, send, scope, prop } = service;
+  const { context, computed, send, scope } = service;
 
   const value = computed("selectedValue");
   const selectedIndex = computed("selectedIndex");
   const focusedValue = context.get("focusedValue");
-  const orientation = prop("orientation");
   const disabled = computed("isDisabled");
   const normalizedItems = computed("normalizedItems");
-  const fallbackUi = prop("ui");
 
-  const activeTriggerId =
-    value !== "" ? getTriggerId(scope, value) : "";
+  const activeTriggerId = value !== "" ? getTriggerId(scope, value) : "";
 
   const getRootProps = (): Record<string, any> => ({
     id: getRootId(scope),
-    "data-orientation": orientation,
     ...(disabled ? { "data-disabled": true } : {}),
   });
 
   const getListProps = (): Record<string, any> => ({
     id: getListId(scope),
     "aria-role": "tablist",
-    "aria-orientation": orientation,
-    "scroll-x": orientation === "horizontal",
-    "scroll-y": orientation === "vertical",
     "enable-flex": true,
     enhanced: true,
     "show-scrollbar": false,
@@ -83,20 +67,14 @@ export function connectTabs(service: TabsService): TabsApi {
     const isSelected = item.value === value;
     const itemDisabled = disabled || Boolean(item.disabled);
 
-    return Object.assign({}, item, {
+    return {
       index,
       value: item.value,
-      label: item.label,
-      icon: item.icon,
-      trailingIcon: item.trailingIcon,
       disabled: itemDisabled,
       isSelected,
-      content: item.content,
-      slot: item.slot,
-      ui: item.ui ?? fallbackUi,
       triggerProps: getTriggerProps({ value: item.value, index }),
       contentProps: getContentProps({ value: item.value, index }),
-    });
+    };
   });
 
   return {

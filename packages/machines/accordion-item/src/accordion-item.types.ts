@@ -3,13 +3,9 @@ import type {
   ComponentUI,
   ResolvedUI,
 } from "@code-ui/anatomy";
-import type {
-  AccordionGroupContext,
-  AccordionSize,
-  AccordionVariant,
-} from "@code-ui/accordion";
+import type { AccordionGroupContext } from "@code-ui/accordion";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./accordion-item.anatomy";
 
 export type AccordionItemState = "open" | "closed";
@@ -30,20 +26,10 @@ export interface AccordionItemProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes */
-  ui?: AccordionItemUI | undefined;
   /** Unique value of this item */
   value?: string | number | undefined;
-  /** Primary label/title text */
-  label?: string | undefined;
-  /** Subtitle or description text */
-  description?: string | undefined;
-  /** Main body content text */
+  /** Main body content text (tracked for height re-measurement) */
   content?: string | undefined;
-  /** Leading icon name or path */
-  icon?: string | undefined;
-  /** Trailing icon name or path */
-  trailingIcon?: string | undefined;
   /** Whether this item is disabled */
   disabled?: boolean | undefined;
   /** Controlled open state */
@@ -52,10 +38,6 @@ export interface AccordionItemProps {
   defaultOpen?: boolean | undefined;
   /** Explicit or measured content height in pixels */
   contentHeight?: number | null | undefined;
-  /** Explicit item size (overrides group) */
-  size?: AccordionSize | "" | undefined;
-  /** Explicit item variant (overrides group) */
-  variant?: AccordionVariant | "" | undefined;
   /** Whether the item can be collapsed when active (standalone mode) */
   collapsible?: boolean | undefined;
 
@@ -77,19 +59,12 @@ export interface AccordionItemProps {
 }
 
 export interface AccordionItemResolvedProps extends AccordionItemProps {
-  ui: AccordionItemUI;
   value: string | number;
-  label: string;
-  description: string;
   content: string;
-  icon: string;
-  trailingIcon: string;
   disabled: boolean;
   open: boolean | null;
   defaultOpen: boolean;
   contentHeight: number | null;
-  size: AccordionSize | "";
-  variant: AccordionVariant | "";
   collapsible: boolean;
 }
 
@@ -112,8 +87,6 @@ export interface AccordionItemComputed {
   isDisabled: boolean;
   isInteractive: boolean;
   isCollapsible: boolean;
-  effectiveSize: AccordionSize;
-  effectiveVariant: AccordionVariant;
 }
 
 export interface AccordionItemSchema extends MachineSchema {
@@ -134,15 +107,11 @@ export interface AccordionItemApi {
   /** Whether the item is expanded */
   isOpen: boolean;
   /** Whether the item is disabled */
-  isDisabled: boolean;
+  disabled: boolean;
   /** Whether the item is collapsible */
   isCollapsible: boolean;
   /** Resolved item value */
   resolvedValue: string;
-  /** Effective size */
-  size: AccordionSize;
-  /** Effective variant */
-  variant: AccordionVariant;
   /** Measured content height in pixels */
   contentHeight: number;
   /** Inline CSS style for content transition */
@@ -157,8 +126,8 @@ export interface AccordionItemApi {
   open: () => void;
   /** Collapse item */
   close: () => void;
-  /** Handle tap event */
-  handleTap: (e?: MiniAppBaseEventLike) => void;
+  /** Handle tap interaction */
+  handleTap: () => void;
   /** Root container DOM props */
   itemProps: Record<string, any>;
   /** Trigger button DOM props */

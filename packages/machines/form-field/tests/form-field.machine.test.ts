@@ -101,20 +101,20 @@ describe("formFieldMachine", () => {
     form.start();
     const host = connectForm(form.service).formContext;
     const machine = new MiniappMachine(formFieldMachine, {
-      name: "otp", size: "lg", required: true, formContext: host,
+      name: "otp", required: true, formContext: host,
     });
     machine.start();
     await flush();
-    expect(host.fieldState("otp")).toEqual({ disabled: false, size: "lg" });
+    expect(host.fieldState("otp")).toEqual({ disabled: false });
     form.updateProps({ disabled: true, readOnly: true });
     await flush();
     expect(connectFormField(machine.service).disabled).toBe(true);
     expect(machine.computed("isReadOnly")).toBe(true);
     expect(machine.computed("effectiveRules")).toEqual([]);
     expect(host.fieldState("otp")?.disabled).toBe(false);
-    machine.updateProps({ size: "sm" });
+    machine.updateProps({ disabled: true });
     await flush();
-    expect(host.fieldState("otp")?.size).toBe("sm");
+    expect(host.fieldState("otp")?.disabled).toBe(true);
     machine.stop();
     await flush();
     expect(host.fieldState("otp")).toEqual({});
@@ -140,7 +140,7 @@ describe("formFieldMachine", () => {
     machine.updateProps({ formContext: nextHost });
     await flush();
     expect(host.fieldState("new")).toEqual({});
-    expect(nextHost.fieldState("new")?.size).toBe("md");
+    expect(nextHost.fieldState("new")).toEqual({ disabled: false });
     machine.stop(); first.stop(); second.stop();
   });
 
@@ -166,7 +166,7 @@ describe("formFieldMachine", () => {
     await flush();
     expect(machine.computed("host")).toBe(secondHost);
     expect(firstHost.fieldState("scoped")).toEqual({});
-    expect(secondHost.fieldState("scoped")?.size).toBe("md");
+    expect(secondHost.fieldState("scoped")).toEqual({ disabled: false });
     machine.stop(); first.stop(); second.stop();
   });
 

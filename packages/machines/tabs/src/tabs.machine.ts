@@ -15,11 +15,10 @@ export function normalizeItems(
   if (!Array.isArray(rawItems)) return [];
   return rawItems.map((item, index) =>
     typeof item === "string"
-      ? { label: item, value: item, disabled: false }
+      ? { value: item, disabled: false }
       : {
-          ...item,
-          label: item.label ?? String(item.value ?? index),
-          value: item.value ?? item.label ?? index,
+          ...(item.id !== undefined ? { id: item.id } : {}),
+          value: item.value ?? index,
           disabled: Boolean(item.disabled),
         },
   );
@@ -57,12 +56,7 @@ export const tabsMachine: TabsMachine = createMachine<TabsSchema>({
   refs: ({ prop, computed, send }) => ({
     groupContext: {
       value: () => computed("selectedValue"),
-      orientation: () => prop("orientation"),
-      variant: () => prop("variant"),
-      color: () => prop("color"),
-      size: () => prop("size"),
       disabled: () => prop("disabled"),
-      fitted: () => prop("fitted"),
       select: (value) => send({ type: "SELECT", value }),
       setValue: (value) => send({ type: "SET_VALUE", value }),
       next: () => send({ type: "NEXT" }),

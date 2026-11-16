@@ -17,12 +17,4 @@ export const defaultPullDownRefreshProps: PullDownRefreshResolvedProps = {
   successDuration: 500,
   loadingTexts: [],
   duration: 300,
-  showScrollbar: true,
-  enableBackToTop: true,
-  scrollIntoView: "",
-  upperThreshold: 50,
-  lowerThreshold: 50,
-  scrollWithAnimation: false,
-  loadingIcon: "loading",
-  ui: {},
 };

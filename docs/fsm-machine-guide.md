@@ -14,8 +14,8 @@ Read this before adding `watch`, new context fields, or new state transitions.
 7. **Delete dead events and duplicate transitions.** An event nobody sends (e.g. `CHECK`/`UNCHECK`) is dead weight and a maintenance trap.
 8. **Actions run after the target state is applied.** Read `state.matches(...)` for the new value; do not duplicate what the transition target already does.
 9. **Refs own handles and stable facades.** Form bindings, parent group/form facades, disposers, and previous-value snapshots belong in `refs`. Dispose machine-lifetime handles in `exit`; state-scoped effects own their own timer cleanup.
-10. **`connect` is a read-only adapter.** No writes, no machine logic. Precompute WXML arrays there.
-11. **Zero non-inherited prop-echoing in `connect` (Do not re-export pass-through props on `Api`).** Standalone props already live in `this.data` via WeChat `properties: createProperties(defaultProps)` and are accessible directly in runtime `classes()` and WXML (`{{title}}`, `{{color}}`, `this.data.variant`). Do **not** expose non-mutating, non-inherited visual props (`variant`, `color`, `highlight`, standalone `size`, `autoHeight`, etc.) on `Api` or as unused `data-*` attributes on `rootProps`, and do not write `api?.variant ?? this.data.variant` fallbacks in runtime `classes()`. Keep styling props on `connect()` **only** when they are resolved/inherited from a parent or machine (`computed("effectiveSize")`, `effectiveColor`, `effectiveVariant`, `orientation` for geometry calculations) or synthesized into child item descriptors (e.g. group `items`, banner `badge`).
+10. **`connect` is a read-only behavioral adapter.** No writes, no machine logic. Return only FSM state, behavioral flags, accessibility/DOM props, imperative action handlers, and minimal stateful item descriptors (`items` / `cells`) when WXML lists need per-item state; perform visual/label/badge formatting in runtime `computed` (`resolvedItems`, `resolvedActions`, `resolvedBadge`).
+11. **Zero visual or pass-through prop-echoing in machines and `connect` (Keep pure visual props in runtime `properties` / `this.data`).** Visual, styling, display, and native pass-through props (`variant`, `color`, `size`, `highlight`, `block`, `title`, `description`, `label`, `icon`, `ui`, `autoHeight`, etc.) belong strictly in runtime `properties: createProperties(default*Props, { ... })` (`this.data`) — NOT in `default*Props`, `*Props`, `connect()`, or `*Api` (keep the TS type aliases exported from `*.types.ts` / `index.ts` for runtime and JSX consumers). Parent-to-child visual inheritance (`size`, `color`, `variant`, `orientation`) flows directly on `this.data` through MiniApp relation/inheritance behaviors (`fieldSize`, `groupSize`, `groupColor`, `groupVariant`, etc.), NEVER through machine `effectiveSize`/`effectiveColor`/`effectiveVariant` or `api?.size ?? this.data.size` fallbacks. Keep a prop in machine `props`/`connect` **only** when machine transitions, inline style geometry (`orientation`/`inverted` in `slider`), or SVG generation (`color` SVG fill in `qr-code`) genuinely depend on it.
 
 12. **Keep snapshots stable.** `connect()` runs in a reactive effect and its output goes through `diffSnapshot` → `setData`. Return plain data only, reuse unchanged slices, and keep per-frame values out of context when WXS can own them (see [Performance and snapshot hygiene](#performance-and-snapshot-hygiene)).
 13. **The machine is the only place for logic.** Runtime `index.ts` stays a thin adapter (no timers, DOM measurement, or custom `observers`). Timers live in state-scoped `effects`; measurement is declarative or done in WXS (see `AGENTS.md`, rule 6).
@@ -53,21 +53,26 @@ watch: props/computed ──▶ FSM state (or narrowly necessary external subscr
 | Data owned by a parent group/form | Live facade getters read in `computed` | Parent remains the writer; do not copy its state into child bindables |
 | Derived flags (`isOpen`, `isChecked`, `isDisabled`) | `computed` | Cheap, pure reads |
 | Mutually exclusive modes (`idle`/`focused`, `checked`/`unchecked`) | FSM `state` | Used by guards/transitions/tags |
-| Non-inherited visual/pass-through props (`variant`, `color`, `highlight`, standalone `size`, `block`, `title`, `description`, `mode`, `ui`, `autoHeight`) | Component `properties` (`this.data`) | Do NOT copy into context, do NOT expose on `connect` `Api` or unused `rootProps["data-*"]`. Read `this.data.*` directly in runtime `classes()` and `{{prop}}` in WXML |
-| Parent-inherited or geometry-driving visual props (`effectiveSize` from `form-field`/parent; `color`/`variant`/`orientation`/`fitted` on child items; `orientation` when computing styles) | `computed("effective*")` (or internal `connect` read) | Expose resolved value on `Api` (`api.size`) and consume in runtime `classes()` via `api?.size ?? this.data.size`; use internal `prop()` only to compute derived styles/SVG/item descriptors |
+| Pure visual, display, & native pass-through props (`variant`, `color`, `size`, `highlight`, `block`, `title`, `description`, `label`, `icon`, `ui`, `autoHeight`) | Runtime component `properties` (`this.data`) | Keep out of `default*Props`, `*Props`, `context`, `connect()`, and `*Api` (keep type aliases exported from `*.types.ts`). Read `this.data.*` directly in runtime `classes()`, runtime `computed` formatters (`resolvedBadge`, `resolvedActions`, `resolvedItems`), and `{{prop}}` in WXML |
+| Parent-inherited visual props (`size` from `<c-form-field>`; `size`/`color`/`variant`/`orientation` on compound children) | MiniApp relation/inheritance behaviors (`this.data.fieldSize`, `this.data.groupSize`, etc.) | Inherited directly onto `this.data` via `@code-ui/miniapp/behaviors/<domain>` (`patchInheritedData`). Resolve in runtime `classes()` via `this.data.size || this.data.groupSize || this.data.fieldSize || "md"` — never in machine `computed` or `Api` |
+| Behavioral or geometry/SVG-driving props (`placement`, `orientation`/`inverted` for slider styles, `color` for QR SVG `dataUrl`, `placeholder`/`mask` for pin-input cells) | Machine `props` (internal `prop()` read only) | Keep in `default*Props`/`*Props` when transitions, animations, geometry styles, or SVG/cell generation depend on them; expose only the derived output (`trackStyle`, `dataUrl`, `cells`), not raw theme props |
 | Handles, disposers, timers, previous snapshot | `refs` | Cleanup in `exit` |
 
 Displayed API fields should be derived (computed or `.matches()`), not stored again.
 
-### `connect()` vs Runtime `this.data` Boundary
+### Machine / `connect()` vs Runtime `this.data` Boundary
 
-Use this rule when deciding whether a prop belongs in `<name>.connect.ts` or directly in `runtime/<name>/index.ts` / `index.wxml`:
+Use this rule when deciding where a prop belongs:
 
-- **Runtime `this.data.*` / WXML directly** when the machine never mutates or inherits it:
-  - Examples: `variant`, `color`, `highlight` on `input` / `textarea` / `pin-input`; `autoHeight` on `textarea`; `color` on `slider`; `variant` and `size` on `swipe-cell`; `size`, `color` in `qr-code.connect.ts` / `button.connect.ts` (even if `qr-code.machine.ts` still reads `prop("color")` internally to render its SVG `dataUrl`).
-  - Runtime `classes()` reads `this.data.variant`, `this.data.color`, `Boolean(this.data.highlight)`, etc. directly, and WXML binds `{{size}}` / `{{color}}` without going through `connect()`.
-- **`connect()` / `Api` (`computed("effective*")`)** when the effective value can be inherited or derived:
-  - Examples: `size` (`effectiveSize` from `form-field` on `input`, `textarea`, `pin-input`, `slider`, `switch`, `checkbox-group`, `radio-group`), `size`/`color`/`variant`/`orientation`/`fitted` on compound child items (`checkbox`, `radio`, `accordion-item`, `tabs-item`, `stepper-item`), or `orientation`/`inverted`/`type` when `connect()` calculates inline positions, transforms, or SVG geometry (`slider`, `progress`).
+- **Runtime `properties` (`this.data.*`) & runtime `computed` directly** for all styling, text, icon, and native pass-through props:
+  - Keep `variant`, `color`, `size`, `highlight`, `block`, `ui`, `title`, `description`, `label`, `icon`, `autoHeight`, etc. out of `default*Props`, `*Props`, `connect()`, and `*Api`.
+  - Runtime `classes()` reads `this.data.*` (plus inherited behavior fields such as `this.data.fieldSize`, `this.data.groupSize`, `this.data.groupColor`, `this.data.groupVariant`) directly, and WXML binds `{{prop}}` without going through `connect()`.
+  - Visual formatting over arrays/badges/actions (`resolvedBadge`, `resolvedActions`, `resolvedItems`) lives in runtime `computed`, merging `this.data.*` with minimal machine state (e.g. `loadingActionIndex`, `checked`, `disabled`, `activeIndex`).
+- **MiniApp relation/inheritance behaviors (`@code-ui/miniapp/behaviors/*`)** for parent-child visual inheritance:
+  - `<c-form-field>` wrapper patches `fieldSize` onto child controls (`input`, `textarea`, `pin-input`, `slider`, `switch`, `checkbox`, `checkbox-group`, `radio`, `radio-group`).
+  - Compound parents (`checkbox-group`, `radio-group`, `accordion`, `tabs`, `stepper`) patch `group*` / domain visual fields directly onto child `this.data` so machines stay 100% free of `variant`, `color`, and `size`.
+- **Machine `props` / `connect()`** strictly for behavioral state and narrow geometry/SVG/cell derivations:
+  - Keep only state/behavior props (`open`, `defaultOpen`, `value`, `defaultValue`, `disabled`, `readOnly`, `required`, `name`, `form`, `rules`, `actions`, `items`, callbacks) plus narrow internal exceptions (`color` SVG fill in `qr-code.machine.ts`; `orientation`/`inverted`/`marks` in `slider.connect.ts`; `placeholder`/`mask`/`separator` in `pin-input.connect.ts`; `placement` in `drawer.machine.ts`).
 
 ## `watch` policy
 
@@ -184,9 +189,6 @@ refs: ({ context, computed, send }) => ({
     disabled: () => computed("isDisabled"),
     readOnly: () => computed("isReadOnly"),
     invalid: () => computed("isInvalid"),
-    color: () => context.get("color") || "primary",
-    size: () => computed("effectiveSize"),
-    variant: () => context.get("variant") || "outline",
     setValue: (value) => send({ type: "SET_VALUE", value }),
     toggleValue: (value, checked) =>
       send({ type: "TOGGLE_VALUE", value, checked }),
@@ -271,7 +273,7 @@ emitChange: ({ state, context, prop, refs }) => {
 - Do not emit from `watch` or echo programmatic prop changes as user changes.
 - Parent → child state is a reactive read, **not** full-snapshot messaging or broadcast deltas. Domain behaviors link/distribute facade identity; getter reads propagate state changes.
 - `bindable.onChange` is the right place for user-initiated changes. It already fires once per `set`.
-- **Framework event adapter bridge**: Machines MUST invoke pure props like `prop("onTap")(payload)` or `prop("onChange")(payload)`. Never call `prop("component")?.triggerEvent(...)` or `prop("component")?.setData(...)` inside machine code. The MiniApp runtime `createMachinePropGetter` adapter transparently translates these pure callbacks to WeChat's `instance.triggerEvent("tap" | "click" | "change" | "update:modelValue", ...)` and user props.
+- **Framework event adapter bridge & pure `connect()` inputs**: Machines and `connect*()` handlers MUST NOT accept raw `MiniApp*EventLike` objects or unwrap `e.detail` / `currentTarget.dataset` inside `connect()`. Always unwrap MiniApp DOM events in runtime `packages/components/src/runtime/<name>/index.ts` methods and pass typed values/details into `api.handle*(...)`; likewise expose uniform behavioral flags (`disabled`, `invalid`, `readOnly`, `open`, `checked`, `loading` — never `isDisabled` on APIs). Inside machines, invoke pure props like `prop("onTap")(payload)` or `prop("onChange")(payload)`. Never call `prop("component")?.triggerEvent(...)` or `prop("component")?.setData(...)` inside machine code. The MiniApp runtime `createMachinePropGetter` adapter transparently translates these pure callbacks to WeChat's `instance.triggerEvent("tap" | "click" | "change" | "update:modelValue", ...)` and user props.
 
 ## Lifecycle and side effects
 
@@ -356,7 +358,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 1. **Inventory writers.** `grep -n "context.set\|state.set\|refs.set" <machine>.ts`.
 2. **Classify each value.** Assign one owner using the table above. Mark duplicates.
 3. **Delete mirrored context keys and their setters.**
-4. **Convert derivations to `computed` and slim `connect`.** Update `connect` to read `computed` fields (`effectiveSize`, `isInvalid`, etc.). Remove non-inherited visual pass-through props (`variant`, `color`, `highlight`, standalone `size`, etc.) and unused `rootProps["data-*"]` visual attributes from `<name>.connect.ts` and `*Api`; update `runtime/<name>/index.ts` `classes()` and `index.wxml` to read `this.data.*` directly while keeping `api?.size` (and other `effective*` values) for parent-inherited props.
+4. **Convert derivations to `computed` and slim machines / `connect`.** Update `connect` to read behavioral `computed` fields (`isDisabled`, `isInvalid`, etc.). Move visual/display/pass-through props (`variant`, `color`, `size`, `highlight`, `ui`, `title`, `description`, etc.) out of `default*Props`, `*Props`, `<name>.connect.ts`, `*Api`, and `rootProps["data-*"]` into runtime `properties`; move visual formatting (`resolvedItems`, `resolvedActions`, `resolvedBadge`) into runtime `computed`; inherit parent visuals via `@code-ui/miniapp/behaviors/*` (`fieldSize`, `groupSize`, etc.) and read `this.data.*` directly in `runtime/<name>/index.ts` and `index.wxml`.
 5. **Reduce `watch`** to genuine prop/computed → FSM state sync + narrowly necessary external subscriptions. Delete `syncingFromProps`/`prev*` guards that only protect mirroring, and manual form registration/rebind bookkeeping. Use live facade getters and the form helper instead.
 6. **Dedupe transitions and actions.** Remove unreachable events; share branches; collapse constant-only actions.
 7. **Centralize user notification payloads.** One path, no emit in `watch`, no initial emit unless required by the contract. Remove parent snapshot broadcasts; let reactive getters propagate state.
@@ -368,7 +370,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 | Anti-pattern | Symptom | Fix |
 |---|---|---|
 | Prop mirror in `watch` | `context.set` for every prop, `syncingFromProps` refs | Delete; rely on `bindable` |
-| Prop-echoing in `connect` `Api` | Standalone `variant`, `color`, `highlight`, `size`, `title`, or unused `data-variant`/`data-size` re-exported in `Api` / `rootProps`, with `api?.variant ?? this.data.variant` fallbacks in runtime | See rule 11. Read non-inherited props directly from `this.data` in runtime `classes()` and `{{prop}}` in WXML; keep only parent-inherited `effective*` values (e.g. `api.size`) on `Api`. |
+| Visual props in machine or `connect` `Api` | `variant`, `color`, `size`, `ui`, `title`, `description`, or `data-variant`/`data-size` declared in `*Props` / `Api` / `rootProps`, or `api?.<visual> ?? this.data.<visual>` fallbacks in runtime | See rule 11. Move pure visual/display/pass-through props to runtime `properties`; read `this.data.*` directly in runtime `classes()`, `resolved*()` computeds, and `{{prop}}` in WXML; inherit parent visuals via `@code-ui/miniapp/behaviors/*`. |
 | Unstable `connect` output | New objects or closures for unchanged slices; per-frame values in context | See rule 12. Reuse slices, return data-only snapshots, move drag values to WXS. |
 | Omitted controlled prop in `defaultProps` | MiniProgram `createProperties` creates no observer; parent `setData({ value })` fails to reach machine | Include every controlled prop in `defaultProps` (`value: null as any`) |
 | Missing `isEqual` in array/reference `bindable` | Factory creates new array reference on each read, breaking dirty checks or causing spurious updates | Pass `isEqual: isEqual` from `@code-ui/utils` to `bindable` |
@@ -382,7 +384,7 @@ Planned improvements are tracked in Phase 4.5 of [bundle-size-optimization.md](.
 | Manual form registration/rebinding in `watch` | `currentName`, `currentFormContext`, repeated helper setup, or `rebind` calls | Setup once with reactive `getHost`/name/form getters; let the helper manage discovery and registration |
 | Duplicate tri-state | state + `checked` + `indeterminate` kept in sync | One owner; derive the rest |
 | Emit from multiple places | `onChange` + `watch` + `entry` all emit | Single `emitChange` |
-| Presentational props in context | Standalone `size`, `variant`, `color`, `ui` mirrored as bindables | Keep in `this.data` and read in runtime `classes()`/WXML; read `prop()` in `connect` only when deriving child item descriptors or geometry, or expose `computed("effective*")` when parent-inherited |
+| Presentational props in machine / context | `size`, `variant`, `color`, `ui`, `title`, `description`, icons declared in `default*Props` or `bindable`s | Keep in runtime `properties` (`this.data`) and read directly in `classes()` / `resolved*()` / WXML; inherit parent visuals via MiniApp behaviors; read `prop()` in machine/`connect` only for genuine logic/geometry/SVG (`qr-code` SVG `color`, `slider` `orientation`). |
 | Dead events | `CHECK`/`UNCHECK` typed but never sent | Delete event + transitions |
 | Constant-only actions | `emitTrue` / `emitFalse` clones | One parameterized action |
 | Derivation in `watch` | `context.set("isOpen", ...)` | `computed` |
@@ -474,7 +476,7 @@ export const exampleMachine: ExampleMachine = createMachine<ExampleSchema>({
 - [ ] Group children read facade getters; facade methods send parent intents. No mirrored group state or snapshot broadcasts.
 - [ ] Machine-lifetime bindings have exit cleanup; external subscriptions also clean up on identity change/unlink; state-scoped effects return cleanup.
 - [ ] `connect` only reads and precomputes; no writes.
-- [ ] `connect`, `*Api`, and `rootProps` do not echo non-inherited visual props (runtime `classes()` and WXML read `this.data.*` directly, consuming `api.*` only for machine-derived or parent-inherited `effective*` values).
+- [ ] `default*Props`, `*Props`, `connect`, `*Api`, and `rootProps` do not declare or echo pure visual/display/pass-through props (`variant`, `color`, `size`, `ui`, etc.); runtime `classes()`, `resolved*()` computeds, and WXML read `this.data.*` (plus MiniApp-inherited `fieldSize`/`group*` data fields) directly with zero `api?.<visualProp> ?? this.data.<visualProp>` fallbacks.
 - [ ] Tests cover: initial/default, controlled `updateProps`, user events + guards, programmatic API, reactive group/form facades, `stop()` cleanup.
 
 ## Testing pattern

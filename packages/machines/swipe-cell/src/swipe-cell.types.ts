@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./swipe-cell.anatomy";
 
 export type SwipeSide = "left" | "right";
@@ -70,12 +70,6 @@ export interface SwipeCellProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Visual style variant */
-  variant?: SwipeCellVariant | undefined;
-  /** Size of swipe cell actions */
-  size?: SwipeCellSize | undefined;
-  /** Custom UI slot classes for swipe-cell anatomy parts */
-  ui?: SwipeCellUI | undefined;
   /** Whether swipe cell interaction is disabled */
   disabled?: boolean | undefined;
   /** Controlled opened state: boolean, "left", "right", or null */
@@ -124,12 +118,10 @@ export interface SwipeCellProps {
   onContentTap?: (() => void) | undefined;
 }
 
-export type SwipeCellActionTapEvent =
-  | { side: SwipeSide; index: number }
-  | MiniAppBaseEventLike<{
-      side?: SwipeSide | undefined;
-      index?: number | string | undefined;
-    }>;
+export interface SwipeCellActionTapEvent {
+  side: SwipeSide;
+  index: number;
+}
 
 export type SwipeCellEvent =
   | { type: "DRAG_START"; data?: Record<string, unknown> | undefined }
@@ -197,8 +189,6 @@ export type SwipeCellGuard =
 export interface SwipeCellRefs {}
 
 type SwipeCellDefaultedKey =
-  | "variant"
-  | "size"
   | "disabled"
   | "opened"
   | "defaultOpened"
@@ -209,8 +199,7 @@ type SwipeCellDefaultedKey =
   | "threshold"
   | "duration"
   | "closeOnActionClick"
-  | "closeOnContentClick"
-  | "ui";
+  | "closeOnContentClick";
 
 export type SwipeCellResolvedProps = Omit<
   SwipeCellProps,

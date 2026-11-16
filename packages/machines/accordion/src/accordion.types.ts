@@ -32,8 +32,6 @@ export interface AccordionGroupContext {
   readonly multiple: () => boolean;
   readonly collapsible: () => boolean;
   readonly disabled: () => boolean;
-  readonly size: () => AccordionSize;
-  readonly variant: () => AccordionVariant;
 
   toggleItem: (value: string) => void;
   setItemOpen: (value: string, open: boolean) => void;
@@ -66,14 +64,8 @@ export interface AccordionItemData {
 export interface AccordionItemSnapshot {
   index: number;
   value: string;
-  label: string;
-  description: string;
-  content: string;
-  icon: string;
-  trailingIcon: string;
   isOpen: boolean;
-  isDisabled: boolean;
-  ui?: Record<string, any> | undefined;
+  disabled: boolean;
   itemProps: Record<string, any>;
 }
 
@@ -84,8 +76,6 @@ export interface AccordionProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes */
-  ui?: AccordionUI | undefined;
   /** Controlled active values */
   value?: string | number | (string | number)[] | null | undefined;
   /** Default active values when uncontrolled */
@@ -98,10 +88,6 @@ export interface AccordionProps {
   collapsible?: boolean | undefined;
   /** Whether the accordion is disabled */
   disabled?: boolean | undefined;
-  /** Size variant */
-  size?: AccordionSize | undefined;
-  /** Visual variant */
-  variant?: AccordionVariant | undefined;
   /** Programmatic list of items */
   items?: AccordionItemData[] | undefined;
   /** Count of linked declarative children */
@@ -113,15 +99,12 @@ export interface AccordionProps {
 }
 
 export interface AccordionResolvedProps extends AccordionProps {
-  ui: AccordionUI;
   value: string | number | (string | number)[] | null;
   defaultValue: string | number | (string | number)[] | null;
   modelValue: string | number | (string | number)[] | null;
   multiple: boolean;
   collapsible: boolean;
   disabled: boolean;
-  size: AccordionSize;
-  variant: AccordionVariant;
   items: AccordionItemData[];
   linkedCount: number;
 }
@@ -188,7 +171,7 @@ export interface AccordionApi {
   /** Get an item's current state */
   getItemState: (value: string | number) => {
     isOpen: boolean;
-    isDisabled: boolean;
+    disabled: boolean;
   };
   /** Root container DOM props */
   rootProps: Record<string, any>;

@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   setupAccordionRelations,
   linkAccordionItemToParent,
   unlinkAccordionItemFromParent,
   handleAccordionAttached,
+  handleAccordionReady,
 } from "../src/behaviors/accordion";
 import { accordionMachine } from "@code-ui/accordion";
 import { accordionItemMachine } from "@code-ui/accordion-item";
@@ -18,13 +19,11 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     const parentMachine = new MiniappMachine(accordionMachine, {
       value: ["item-0"],
       multiple: false,
-      size: "lg",
-      variant: "subtle",
     });
     parentMachine.start();
 
     const parentInstance: any = {
-      data: { id: "test-accordion" },
+      data: { id: "test-accordion", size: "lg", variant: "subtle" },
       __codeUiMachine: parentMachine,
     };
 
@@ -33,6 +32,10 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     });
     childMachine1.start();
     const child1: any = {
+      data: { groupSize: "", groupVariant: "" },
+      setData(patch: Record<string, any>) {
+        Object.assign(this.data, patch);
+      },
       __codeUiMachine: childMachine1,
     };
 
@@ -41,6 +44,10 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     });
     childMachine2.start();
     const child2: any = {
+      data: { groupSize: "", groupVariant: "" },
+      setData(patch: Record<string, any>) {
+        Object.assign(this.data, patch);
+      },
       __codeUiMachine: childMachine2,
     };
 
@@ -49,8 +56,8 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     await flush();
 
     expect(parentMachine.prop("linkedCount")).toBe(2);
-    expect(childMachine1.computed("effectiveSize")).toBe("lg");
-    expect(childMachine1.computed("effectiveVariant")).toBe("subtle");
+    expect(child1.data.groupSize).toBe("lg");
+    expect(child1.data.groupVariant).toBe("subtle");
     expect(childMachine1.computed("isOpen")).toBe(true);
     expect(childMachine2.computed("isOpen")).toBe(false);
 
@@ -60,6 +67,8 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
 
     expect(parentMachine.prop("linkedCount")).toBe(1);
     expect(childMachine1.prop("groupContext")).toBeUndefined();
+    expect(child1.data.groupSize).toBe("");
+    expect(child1.data.groupVariant).toBe("");
 
     parentMachine.stop();
     childMachine1.stop();
@@ -69,16 +78,19 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
   it("handles handleAccordionAttached correctly", () => {
     const parentMachine = new MiniappMachine(accordionMachine, {
       value: ["item-1"],
-      size: "sm",
     });
     parentMachine.start();
 
     const parentInstance: any = {
-      data: { id: "acc-1" },
+      data: { id: "acc-1", size: "sm" },
       __codeUiMachine: parentMachine,
     };
 
     const childInstance: any = {
+      data: { groupSize: "", groupVariant: "" },
+      setData(patch: Record<string, any>) {
+        Object.assign(this.data, patch);
+      },
       __codeUiPendingAccordion: parentInstance,
       __codeUiAccordionIndex: 1,
       __codeUiAccordionId: "acc-1",
@@ -95,7 +107,7 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
       parentMachine.service.refs.get("groupContext"),
     );
     expect(initialProps.groupContext.value()).toEqual(["item-1"]);
-    expect(initialProps.groupContext.size()).toBe("sm");
+    expect(childInstance.data.groupSize).toBe("sm");
 
     parentMachine.stop();
   });
@@ -185,5 +197,90 @@ describe("Accordion Behavior (Parent-Child Relations)", () => {
     parentMachine.stop();
     childMachine0.stop();
     childMachine1.stop();
+  });
+
+  it("links shadow-template data-driven items via selectOwnerComponent without relations", async () => {
+    const onChange = vi.fn();
+    const parentMachine = new MiniappMachine(accordionMachine, {
+      value: ["faq-1"],
+      collapsible: true,
+      onChange,
+    });
+    parentMachine.start();
+
+    const parentInstance: any = {
+      data: { id: "data-accordion", size: "md", variant: "subtle" },
+      __codeUiMachine: parentMachine,
+    };
+    handleAccordionAttached(parentInstance, {}, { accordion: true });
+
+    const childOnChange = vi.fn();
+    const childProps: Record<string, any> = {
+      value: "faq-2",
+      open: false,
+      onChange: childOnChange,
+    };
+    const childInstance: any = {
+      data: { value: "faq-2", open: false },
+      selectOwnerComponent: () => parentInstance,
+      setData: vi.fn(),
+    };
+    handleAccordionAttached(childInstance, childProps, {
+      accordionItem: true,
+    });
+
+    const childMachine = new MiniappMachine(accordionItemMachine, childProps);
+    childMachine.start();
+    childInstance.__codeUiMachine = childMachine;
+    handleAccordionReady(childInstance, { accordionItem: true });
+
+    await flush();
+
+    // Verify groupContext is wired even though relations are absent
+    expect(childProps.groupContext).toBeDefined();
+    expect(childMachine.computed("isOpen")).toBe(false);
+
+    // Tapping item invokes groupContext.toggleItem -> onChange(["faq-2"]) without emitting item change
+    childMachine.send({ type: "TOGGLE" });
+    await flush();
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ value: ["faq-2"] }),
+    );
+    expect(childOnChange).not.toHaveBeenCalled();
+
+    parentMachine.stop();
+    childMachine.stop();
+  });
+
+  it("toggles data-driven items via controlled onChange fallback when unlinked", async () => {
+    const onChange = vi.fn();
+    const parentMachine = new MiniappMachine(accordionMachine, {
+      value: ["faq-1"],
+      items: [{ value: "faq-1" }, { value: "faq-2" }],
+      collapsible: true,
+      onChange,
+    });
+    parentMachine.start();
+
+    const childOnChange = vi.fn((details: { value: string; open: boolean }) => {
+      parentMachine.send({ type: "VALUE.TOGGLE", value: details.value });
+    });
+    const childMachine = new MiniappMachine(accordionItemMachine, {
+      value: "faq-2",
+      open: false,
+      onChange: childOnChange,
+    });
+    childMachine.start();
+
+    childMachine.send({ type: "TOGGLE" });
+    await flush();
+
+    expect(childOnChange).toHaveBeenCalledWith({ value: "faq-2", open: true });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ value: ["faq-2"] }),
+    );
+
+    parentMachine.stop();
+    childMachine.stop();
   });
 });

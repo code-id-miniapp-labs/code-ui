@@ -5,6 +5,16 @@ Page({
     wifiEnabled: true,
     notifications: true,
     lastEvent: "None",
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
     agreementRules: [
       { required: true, message: "You must accept the terms to proceed" },
     ],

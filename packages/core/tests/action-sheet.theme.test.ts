@@ -27,6 +27,7 @@ describe("actionSheetTheme (@code-ui/core)", () => {
     const theme = actionSheetTheme();
     expect(theme.defaultVariants).toEqual({
       open: false,
+      disabled: false,
     });
   });
 
@@ -42,5 +43,14 @@ describe("actionSheetTheme (@code-ui/core)", () => {
       (cv) => cv.open === false,
     );
     expect(closedCompound?.class?.content).toContain("translate-y-full");
+  });
+
+  it("configures disabled variants without relying on native :disabled pseudo-classes", () => {
+    const theme = actionSheetTheme();
+    expect(theme.slots.item).not.toContain("disabled:");
+    expect(theme.variants.disabled.true.item).toContain("pointer-events-none");
+    expect(theme.variants.disabled.true.itemTitle).toContain("opacity-50");
+    expect(theme.variants.disabled.true.itemDescription).toContain("opacity-75");
+    expect(theme.variants.disabled.false).toEqual({});
   });
 });

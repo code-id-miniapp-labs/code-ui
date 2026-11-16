@@ -5,9 +5,11 @@ describe("toastTheme (@code-ui/core)", () => {
   it("provides all required slots", () => {
     const theme = toastTheme();
     expect(theme.slots).toHaveProperty("root");
+    expect(theme.slots).toHaveProperty("tint");
     expect(theme.slots).toHaveProperty("wrapper");
     expect(theme.slots).toHaveProperty("title");
     expect(theme.slots).toHaveProperty("description");
+    expect(theme.slots).toHaveProperty("iconWrapper");
     expect(theme.slots).toHaveProperty("icon");
     expect(theme.slots).toHaveProperty("actions");
     expect(theme.slots).toHaveProperty("action");
@@ -51,15 +53,30 @@ describe("toastTheme (@code-ui/core)", () => {
     );
 
     expect(nativeTop?.class?.root).toContain("fixed top-0 left-1/2 -translate-x-1/2");
-    expect(nativeTop?.class?.root).toContain("calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))+32rpx)");
+    expect(nativeTop?.class?.root).toContain("calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)");
     expect(nativeCenter?.class?.root).toContain("fixed top-1/2 left-1/2 -translate-x-1/2");
     expect(nativeBottom?.class?.root).toContain("fixed bottom-0 left-1/2 -translate-x-1/2");
-    expect(nativeBottom?.class?.root).toContain("calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))+32rpx)");
+    expect(nativeBottom?.class?.root).toContain("calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)");
   });
 
   it("creates color variants for default theme colors", () => {
     const theme = toastTheme();
-    expect(Object.keys(theme.variants.color)).toEqual(DEFAULT_THEME_COLORS);
+    expect(Object.keys(theme.variants.color)).toEqual([
+      ...DEFAULT_THEME_COLORS,
+      "neutral",
+    ]);
+  });
+
+  it("layers tint over opaque root for soft and subtle variants", () => {
+    const theme = toastTheme();
+    for (const variant of ["soft", "subtle"] as const) {
+      const rule = theme.compoundVariants.find(
+        (cv) => cv.color === "primary" && cv.variant === variant && cv.mode === "default",
+      );
+      expect(rule?.class?.root).toContain("bg-default");
+      expect(rule?.class?.root).not.toContain("bg-primary/10");
+      expect(rule?.class?.tint).toContain("bg-primary/10");
+    }
   });
 });
 

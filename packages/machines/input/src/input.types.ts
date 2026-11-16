@@ -10,11 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type {
-  MiniAppBaseEventLike,
-  MiniAppComponent,
-  MiniAppEventLike,
-} from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./input.anatomy";
 
 export type InputState = "idle" | "focused";
@@ -54,8 +50,6 @@ export interface InputProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: InputUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -64,68 +58,20 @@ export interface InputProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the input is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Visual variant */
-  variant?: InputVariant | undefined;
-  /** Semantic color */
-  color?: InputColor | undefined;
-  /** Size variant */
-  size?: InputSize | "" | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: InputSize | undefined;
-  /** Highlight input with color ring */
-  highlight?: boolean | undefined;
   /** Controlled value */
   value?: string | number | null | undefined;
   /** Default value */
   defaultValue?: string | number | null | undefined;
-  /** Type of input accepted */
-  type?: InputType | undefined;
-  /** Whether the input is masked (password mode) */
-  password?: boolean | undefined;
-  /** Placeholder text */
-  placeholder?: string | undefined;
-  /** Placeholder CSS class */
-  placeholderClass?: string | undefined;
-  /** Placeholder inline styles */
-  placeholderStyle?: string | undefined;
   /** Whether the input is disabled */
   disabled?: boolean | undefined;
   /** Whether the input is read-only */
   readOnly?: boolean | undefined;
   /** Whether to show a clear button when value is non-empty */
   clearable?: boolean | undefined;
-  /** Custom clear icon class */
-  clearIcon?: string | undefined;
-  /** Whether input is in loading state */
-  loading?: boolean | undefined;
-  /** custom loading Icon */
-  loadingIcon?: string | undefined;
-  /** Leading icon class */
-  leadingIcon?: string | undefined;
-  /** Trailing icon class */
-  trailingIcon?: string | undefined;
   /** Whether to focus on mount */
   autoFocus?: boolean | undefined;
-  /** Maximum number of characters */
-  maxlength?: number | undefined;
-  /** Distance between cursor and keyboard */
-  cursorSpacing?: number | undefined;
-  /** Keyboard confirm button type */
-  confirmType?: "send" | "search" | "next" | "go" | "done" | undefined;
-  /** Keep keyboard active on confirm */
-  confirmHold?: boolean | undefined;
-  /** Cursor position */
-  cursor?: number | undefined;
-  /** Selection start */
-  selectionStart?: number | undefined;
-  /** Selection end */
-  selectionEnd?: number | undefined;
-  /** Adjust position when keyboard appears */
-  adjustPosition?: boolean | undefined;
-  /** Hold keyboard */
-  holdKeyboard?: boolean | undefined;
   /** Callback fired when value changes */
   onChange?: ((details: InputValueChangeDetails) => void) | undefined;
   /** Callback fired when input receives focus */
@@ -157,7 +103,6 @@ export interface InputComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isEmpty: boolean;
@@ -166,7 +111,6 @@ export interface InputComputed {
   isClearable: boolean;
   isInteractive: boolean;
   isReadOnly: boolean;
-  effectiveSize: InputSize;
 }
 
 export interface InputRefs {
@@ -189,36 +133,12 @@ export type InputGuard = "isInteractive";
 type InputDefaultedKey =
   | "value"
   | "invalid"
-  | "type"
-  | "variant"
-  | "color"
-  | "size"
-  | "highlight"
   | "defaultValue"
   | "name"
-  | "password"
-  | "placeholder"
-  | "placeholderClass"
-  | "placeholderStyle"
   | "disabled"
   | "readOnly"
   | "clearable"
-  | "clearIcon"
-  | "loading"
-  | "loadingIcon"
-  | "leadingIcon"
-  | "trailingIcon"
-  | "autoFocus"
-  | "maxlength"
-  | "cursorSpacing"
-  | "confirmType"
-  | "confirmHold"
-  | "cursor"
-  | "selectionStart"
-  | "selectionEnd"
-  | "adjustPosition"
-  | "holdKeyboard"
-  | "ui";
+  | "autoFocus";
 
 export type InputResolvedProps = Omit<InputProps, InputDefaultedKey> & {
   [K in InputDefaultedKey]-?: Exclude<InputProps[K], undefined>;
@@ -258,8 +178,6 @@ export interface InputApi {
   disabled: boolean;
   /** Whether the field is read-only (via Form or direct prop) */
   readOnly: boolean;
-  /** Effective size variant */
-  size: InputSize;
   /** Set value programmatically */
   setValue(value: string | number): void;
   /** Clear value */
@@ -270,16 +188,16 @@ export interface InputApi {
   focus(): void;
   /** Blur input */
   blur(): void;
-  /** MiniProgram bindinput handler */
-  handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>): string | void;
-  /** MiniProgram bindfocus handler */
-  handleFocus(e?: MiniAppBaseEventLike): void;
-  /** MiniProgram bindblur handler */
-  handleBlur(e?: MiniAppBaseEventLike): void;
-  /** MiniProgram bindconfirm handler */
-  handleConfirm(e?: MiniAppEventLike<{ value?: string }>): void;
-  /** Tap handler for clear button */
-  handleClear(e?: MiniAppBaseEventLike): void;
+  /** Handle input value update */
+  handleInput(value: string, cursor?: number): string | void;
+  /** Handle focus interaction */
+  handleFocus(): void;
+  /** Handle blur interaction */
+  handleBlur(): void;
+  /** Handle confirm interaction */
+  handleConfirm(value?: string): void;
+  /** Handle clear interaction */
+  handleClear(): void;
   /** Get props for root container */
   rootProps: Record<string, any>;
   /** Get props for input element */

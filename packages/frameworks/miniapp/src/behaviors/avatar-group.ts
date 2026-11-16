@@ -1,97 +1,130 @@
-const mkBehavior = (def: Record<string, any>): any =>
-  typeof Behavior !== "undefined" ? Behavior(def) : {};
+import {
+  createBehaviorRef,
+  createRelationOption,
+  patchInheritedData,
+  resolveParentNode,
+} from "./inherit";
+import type {
+  AvatarGroupInstance,
+  AvatarItemData,
+  AvatarItemInstance,
+  MiniappBehaviorRef,
+} from "./types";
 
 /**
  * Shared Behavior reference for `<c-avatar-group>` parent components.
+ * Used as `relations.target` to link descendant `<c-avatar>` components natively
+ * without circular imports or tree-shaking hazards.
  */
-export const cuiAvatarGroupParentBehavior: any = /* @__PURE__ */ mkBehavior({});
+export const cuiAvatarGroupParentBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({});
 
-const childParentRel = {
-  type: "ancestor" as const,
+const childParentRel = createRelationOption<
+  AvatarItemInstance,
+  AvatarGroupInstance
+>({
+  type: "ancestor",
   target: cuiAvatarGroupParentBehavior,
-  linked(this: any, target: any) {
+  linked(this: AvatarItemInstance, target: AvatarGroupInstance) {
     linkAvatarItemToParentGroup(target, this);
   },
-  unlinked(this: any, target: any) {
+  unlinked(this: AvatarItemInstance, target: AvatarGroupInstance) {
     unlinkAvatarItemFromParentGroup(target, this);
   },
-};
+});
 
-function resolveGroupParent(item: any): any {
-  return (
-    item.__codeUiPendingAvatarGroup ??
-    item.getRelationNodes?.("cuiAvatarGroupParent")?.[0]
+function resolveGroupParent(
+  item: AvatarItemInstance,
+): AvatarGroupInstance | undefined {
+  return resolveParentNode<AvatarGroupInstance>(
+    item,
+    item.__codeUiPendingAvatarGroup,
+    "cuiAvatarGroupParent",
   );
 }
 
 /**
  * Shared Behavior reference for `<c-avatar>` child components.
  */
-export const cuiAvatarItemBehavior: any = /* @__PURE__ */ mkBehavior({
-  relations: { cuiAvatarGroupParent: childParentRel },
-  lifetimes: {
-    attached(this: any) {
-      if (this.data?.isGroupCounter) return;
-      const parent = resolveGroupParent(this);
-      if (parent) linkAvatarItemToParentGroup(parent, this);
+export const cuiAvatarItemBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    relations: { cuiAvatarGroupParent: childParentRel },
+    lifetimes: {
+      attached(this: AvatarItemInstance) {
+        if (this.data?.isGroupCounter) return;
+        const parent = resolveGroupParent(this);
+        if (parent) linkAvatarItemToParentGroup(parent, this);
+      },
+      detached(this: AvatarItemInstance) {
+        if (this.data?.isGroupCounter) return;
+        const parent = resolveGroupParent(this);
+        if (parent) unlinkAvatarItemFromParentGroup(parent, this);
+      },
     },
-    detached(this: any) {
-      if (this.data?.isGroupCounter) return;
-      const parent = resolveGroupParent(this);
-      if (parent) unlinkAvatarItemFromParentGroup(parent, this);
-    },
-  },
-});
+  });
 
-const parentChildRel = {
-  type: "descendant" as const,
+const parentChildRel = createRelationOption<
+  AvatarGroupInstance,
+  AvatarItemInstance
+>({
+  type: "descendant",
   target: cuiAvatarItemBehavior,
-  linked(this: any, target: any) {
+  linked(this: AvatarGroupInstance, target: AvatarItemInstance) {
     linkAvatarItemToParentGroup(this, target);
   },
-  linkChanged(this: any) {
+  linkChanged(this: AvatarGroupInstance) {
     syncAvatarGroupChildren(this);
   },
-  unlinked(this: any, target: any) {
+  unlinked(this: AvatarGroupInstance, target: AvatarItemInstance) {
     unlinkAvatarItemFromParentGroup(this, target);
   },
-};
+});
 
 /**
  * Shared Behavior reference for `<c-avatar-group>` parent components.
  */
-export const cuiAvatarGroupBehavior: any = /* @__PURE__ */ mkBehavior({
-  behaviors: [cuiAvatarGroupParentBehavior],
-  relations: { cuiAvatarChild: parentChildRel },
-  observers: {
-    "max, size, classes.base"(this: any) {
-      syncAvatarGroupChildren(this);
+export const cuiAvatarGroupBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    behaviors: [cuiAvatarGroupParentBehavior],
+    relations: { cuiAvatarChild: parentChildRel },
+    observers: {
+      "max, size, classes.base"(this: AvatarGroupInstance) {
+        syncAvatarGroupChildren(this);
+      },
     },
-  },
-  lifetimes: {
-    attached(this: any) {
-      syncAvatarGroupChildren(this);
+    lifetimes: {
+      attached(this: AvatarGroupInstance) {
+        syncAvatarGroupChildren(this);
+      },
+      ready(this: AvatarGroupInstance) {
+        syncAvatarGroupChildren(this);
+      },
     },
-    ready(this: any) {
-      syncAvatarGroupChildren(this);
-    },
-  },
-});
+  });
 
-export function syncAvatarGroupChildren(group: any): void {
+const EMPTY_AVATAR_ITEM_PATCH: Partial<AvatarItemData> = {
+  groupAttached: false,
+  groupHidden: false,
+  groupOrder: 0,
+  groupZIndex: 0,
+  groupIsEdge: false,
+  groupSize: "",
+  groupBaseClass: "",
+};
+
+export function syncAvatarGroupChildren(group: AvatarGroupInstance): void {
   if (!group) return;
-
-  const rel = group.getRelationNodes?.("cuiAvatarChild");
-  const tpl =
-    !rel?.length ? group.selectAllComponents?.(".cui-avatar") : undefined;
-  const raw: any[] = rel?.length
-    ? rel
-    : tpl?.length
-      ? tpl
-      : group.__codeUiAvatarChildren || [];
+  const related =
+    typeof group.getRelationNodes === "function"
+      ? group.getRelationNodes<AvatarItemInstance>("cuiAvatarChild")
+      : undefined;
+  const raw =
+    Array.isArray(related) && related.length > 0
+      ? related
+      : (group.__codeUiAvatarChildren ?? []);
 
   const children = raw.filter(
-    (c: any) => c && !c.data?.isGroupCounter && !c.__codeUiIsGroupCounter,
+    (c) => c && !c.data?.isGroupCounter && !c.__codeUiIsGroupCounter,
   );
 
   const total = children.length;
@@ -116,56 +149,52 @@ export function syncAvatarGroupChildren(group: any): void {
     const isHidden = max > 0 && i >= max;
     const rank = total - i;
     const isEdge = overflowCount === 0 && i === visibleLimit - 1;
-    const d = child.data;
 
     child.__codeUiPendingAvatarGroup = group;
 
-    const patch: Record<string, any> = {};
-    let dirty = false;
-    const set = (k: string, v: any) => {
-      if (d?.[k] !== v) {
-        patch[k] = v;
-        dirty = true;
-      }
+    const inheritedPatch: Partial<AvatarItemData> = {
+      groupAttached: true,
+      groupHidden: isHidden,
+      groupOrder: rank,
+      groupZIndex: rank,
+      groupIsEdge: isEdge,
+      groupBaseClass,
+      ...(groupSize ? { groupSize } : {}),
     };
-    set("groupAttached", true);
-    set("groupHidden", isHidden);
-    set("groupOrder", rank);
-    set("groupZIndex", rank);
-    set("groupIsEdge", isEdge);
-    if (groupSize) set("groupSize", groupSize);
-    set("groupBaseClass", groupBaseClass);
-
-    if (dirty) child.setData?.(patch);
+    patchInheritedData(child, inheritedPatch);
   }
 }
 
-export function linkAvatarItemToParentGroup(group: any, item: any): void {
-  if (!group || !item || item.data?.isGroupCounter || item.__codeUiIsGroupCounter)
+export function linkAvatarItemToParentGroup(
+  group: AvatarGroupInstance | null | undefined,
+  item: AvatarItemInstance | null | undefined,
+): void {
+  if (
+    !group ||
+    !item ||
+    item.data?.isGroupCounter ||
+    item.__codeUiIsGroupCounter
+  ) {
     return;
+  }
   const list = (group.__codeUiAvatarChildren ||= []);
   if (!list.includes(item)) list.push(item);
   item.__codeUiPendingAvatarGroup = group;
   syncAvatarGroupChildren(group);
 }
 
-export function unlinkAvatarItemFromParentGroup(group: any, item: any): void {
+export function unlinkAvatarItemFromParentGroup(
+  group: AvatarGroupInstance | null | undefined,
+  item: AvatarItemInstance | null | undefined,
+): void {
   if (!item) return;
-  if (Array.isArray(group?.__codeUiAvatarChildren)) {
+  if (group && Array.isArray(group.__codeUiAvatarChildren)) {
     group.__codeUiAvatarChildren = group.__codeUiAvatarChildren.filter(
-      (c: any) => c !== item,
+      (c) => c !== item,
     );
   }
   item.__codeUiPendingAvatarGroup = undefined;
-  item.setData?.({
-    groupAttached: false,
-    groupHidden: false,
-    groupOrder: 0,
-    groupZIndex: 0,
-    groupIsEdge: false,
-    groupSize: "",
-    groupBaseClass: "",
-  });
+  item.setData?.(EMPTY_AVATAR_ITEM_PATCH);
   if (group) syncAvatarGroupChildren(group);
 }
 

@@ -10,7 +10,6 @@ import type {
   CheckboxGroupContext,
   CheckboxGroupMachine,
   CheckboxGroupSchema,
-  CheckboxGroupSize,
 } from "./checkbox-group.types";
 import { defaultCheckboxGroupProps } from "./checkbox-group.props";
 
@@ -44,9 +43,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
           disabled: () => computed("isDisabled"),
           readOnly: () => computed("isReadOnly"),
           invalid: () => computed("isInvalid"),
-          color: () => prop("color"),
-          size: () => computed("effectiveSize"),
-          variant: () => prop("variant"),
           setValue: (value) => send({ type: "SET_VALUE", value }),
           toggleValue: (value, checked) =>
             send({ type: "TOGGLE_VALUE", value, checked }),
@@ -89,12 +85,6 @@ export const checkboxGroupMachine: CheckboxGroupMachine =
 
     computed: {
       ...createFormFieldComputed("checkbox-group"),
-      effectiveSize: ({ prop, computed }) => {
-        const size = prop("size");
-        return size && size !== "md"
-          ? size
-          : ((computed("fieldSize") || size || "md") as CheckboxGroupSize);
-      },
       isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
           context.get("invalid") ||

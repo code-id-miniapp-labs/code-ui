@@ -2,6 +2,7 @@
   "component": true,
   "styleIsolation": "apply-shared",
   "usingComponents": {
+    "c-button": "../button/index",
     "c-icon": "../icon/index"
   }
 }

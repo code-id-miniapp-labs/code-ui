@@ -2,10 +2,8 @@
   <!-- Horizontal Orientation: Scrollable Tablist -->
   <scroll-view
     wx:if="{{orientation !== 'vertical'}}"
-    class="cui-tabs-scroll w-full shrink-0 flex flex-row"
+    class="cui-tabs-scroll {{classes.scroll}}"
     scroll-x="{{true}}"
-    scroll-y="{{false}}"
-    enable-flex="{{true}}"
     scroll-with-animation="{{true}}"
     scroll-into-view="{{tabs.activeTriggerId}}"
     enhanced="{{true}}"
@@ -21,10 +19,10 @@
       data-orientation="horizontal"
     >
       <view
-        wx:for="{{tabs.items}}"
+        wx:for="{{resolvedItems}}"
         wx:key="value"
         id="{{item.triggerProps.id}}"
-        class="flex flex-row {{fitted ? 'flex-1 min-w-0' : 'shrink-0'}}"
+        class="{{classes.itemWrapper}}"
       >
         <c-tabs-item
           mode="trigger"
@@ -63,7 +61,7 @@
     data-orientation="vertical"
   >
     <c-tabs-item
-      wx:for="{{tabs.items}}"
+      wx:for="{{resolvedItems}}"
       wx:key="value"
       mode="trigger"
       triggerId="{{item.triggerProps.id}}"
@@ -93,7 +91,7 @@
     <!-- Items Mode: rendered when items prop is passed, calling c-tabs-item -->
     <block wx:if="{{hasItems}}">
       <c-tabs-item
-        wx:for="{{tabs.items}}"
+        wx:for="{{resolvedItems}}"
         wx:key="value"
         mode="panel"
         value="{{item.value}}"

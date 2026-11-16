@@ -15,10 +15,6 @@ function makeGroupContext(
     step: () => 0,
     count: () => 0,
     linear: () => false,
-    orientation: () => "horizontal",
-    color: () => "primary",
-    size: () => "md",
-    variant: () => "subtle",
     disabled: () => false,
     setStep: vi.fn(),
     next: vi.fn(),
@@ -40,7 +36,7 @@ describe("StepperItem Machine", () => {
     expect(api.isLast).toBe(false);
     expect(api.status).toBe("current");
     expect(api.isCurrent).toBe(true);
-    expect(api.isDisabled).toBe(false);
+    expect(api.disabled).toBe(false);
 
     machine.stop();
   });
@@ -56,21 +52,18 @@ describe("StepperItem Machine", () => {
     const item0 = new MiniappMachine(stepperItemMachine, {
       groupContext: group,
       groupIndex: 0,
-      title: "Step 0",
     });
     item0.start();
 
     const item1 = new MiniappMachine(stepperItemMachine, {
       groupContext: group,
       groupIndex: 1,
-      title: "Step 1",
     });
     item1.start();
 
     const item2 = new MiniappMachine(stepperItemMachine, {
       groupContext: group,
       groupIndex: 2,
-      title: "Step 2",
     });
     item2.start();
 
@@ -181,13 +174,9 @@ describe("StepperItem Machine", () => {
     itemCustomStatus.stop();
   });
 
-  it("resolves presentation values from the group context", () => {
+  it("resolves disabled state from the group context", () => {
     const item = new MiniappMachine(stepperItemMachine, {
       groupContext: makeGroupContext({
-        orientation: () => "vertical",
-        color: () => "danger",
-        size: () => "lg",
-        variant: () => "outline",
         disabled: () => true,
       }),
       groupIndex: 0,
@@ -195,13 +184,9 @@ describe("StepperItem Machine", () => {
     item.start();
 
     const api = connectStepperItem(item.service);
-    expect(api.orientation).toBe("vertical");
-    expect(api.color).toBe("danger");
-    expect(api.size).toBe("lg");
-    expect(api.variant).toBe("outline");
     expect(item.state.get()).toBe("disabled");
     expect(api.state).toBe("disabled");
-    expect(api.isDisabled).toBe(true);
+    expect(api.disabled).toBe(true);
     expect(api.status).toBe("disabled");
 
     item.stop();

@@ -1,227 +1,165 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-20">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Checkbox & CheckboxGroup</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Accessible checkbox and multi-select groups with indeterminate state, card variants, min/max limits, zero-bloat icons, and Form validation.
-    </view>
-  </view>
-  <c-switch value="{{disabled}}" bind:change="onToggleDisabled" />
-  <view class="px-5 flex flex-col gap-6">
-    <!-- 1. Standalone Controlled Checkbox -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">1. Controlled Standalone Checkbox</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Declarative two-way sync via checked prop and bind:change event.
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Checkbox"
+    badge="Form"
+    subtitle="Single & group selection with indeterminate state, card variant, custom icons/slots, 7 colors & Form validation."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Standalone Controlled -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Controlled Standalone Checkbox</text>
+        <text class="block text-xs text-muted mt-0.5">State synchronized cleanly with page data: {{ controlledChecked }}</text>
       </view>
-      <view class="flex flex-col gap-4">
-        <c-checkbox checked="{{controlledChecked}}" disabled="{{disabled}}" label="Enable push notifications" description="Receive real-time alerts on your device" bind:change="onControlledChange" />
-        <view class="flex items-center justify-between text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200">
-          <text class="text-neutral-500">Checked Status:</text>
-          <text class="font-bold {{controlledChecked ? 'text-primary' : 'text-neutral-400'}} font-mono">
-            {{controlledChecked ? 'true' : 'false'}}
-          </text>
+      <c-checkbox
+        checked="{{ controlledChecked }}"
+        disabled="{{ disabled }}"
+        label="Enable automatic cloud backups"
+        description="Syncs nightly to your workspace bucket."
+        bind:change="onControlledChange"
+      />
+      <view class="flex flex-wrap items-center justify-between gap-2 pt-1">
+        <view class="flex gap-2">
+          <c-button size="xs" variant="soft" color="primary" label="Check" bind:tap="setControlledTrue" />
+          <c-button size="xs" variant="outline" color="neutral" label="Uncheck" bind:tap="setControlledFalse" />
+          <c-button size="xs" variant="outline" color="secondary" label="Toggle" bind:tap="toggleControlled" />
         </view>
-        <view class="flex flex-wrap gap-2 pt-1">
-          <c-button size="sm" variant="outline" color="primary" bind:tap="setControlledTrue">
-            Set True
-          </c-button>
-          <c-button size="sm" variant="outline" color="neutral" bind:tap="setControlledFalse">
-            Set False
-          </c-button>
-          <c-button size="sm" variant="outline" color="neutral" bind:tap="toggleControlled">
-            Toggle
-          </c-button>
-        </view>
+        <c-switch checked="{{ disabled }}" size="sm" label="Disabled" bind:change="onToggleDisabled" />
       </view>
     </view>
-    <!-- 2. Indeterminate State & Master Select-All -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">
-        2. Indeterminate State (Master Select-All)
+
+    <!-- 2. Indeterminate State -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Indeterminate (Master Select-All)</text>
+        <text class="block text-xs text-muted mt-0.5">Displays indeterminate icon when a subset of child channels is active.</text>
       </view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Master checkbox shows minus indicator when some (not all) child options are selected.
-      </view>
-      <view class="flex flex-col gap-3">
-        <view class="pb-3 border-b border-neutral-200 shrink-0">
-          <c-checkbox checked="{{isAllNotificationsSelected}}" indeterminate="{{isSomeNotificationsSelected}}" label="Select All Channels" description="Toggle all notification methods at once" bind:change="onMasterNotificationToggle" />
-        </view>
-        <view class="pl-4 flex flex-col gap-2.5">
-          <c-checkbox wx:for="{{notificationChannels}}" wx:key="id" checked="{{item.checked}}" label="{{item.label}}" data-id="{{item.id}}" bind:change="onNotificationChannelToggle" />
-        </view>
-        <view class="flex items-center justify-between text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200 mt-1">
-          <text class="text-neutral-500">Master State:</text>
-          <text class="font-bold text-neutral-900 font-mono">
-            {{isAllNotificationsSelected ? 'checked' : (isSomeNotificationsSelected ? 'indeterminate' : 'unchecked')}}
-          </text>
-        </view>
-      </view>
-    </view>
-    <!-- 3. Controlled Checkbox Group -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">3. Controlled Checkbox Group</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        c-checkbox-group manages an array of values with automatic ancestor-descendant relation wiring.
-      </view>
-      <view class="flex flex-col gap-4">
-        <c-checkbox-group value="{{selectedFruits}}" bind:change="onFruitsChange">
-          <c-checkbox value="apple" label="Fresh Apple" description="Organic crisp red apple" />
-          <c-checkbox value="banana" label="Cavendish Banana" description="Rich in natural potassium" />
-          <c-checkbox value="cherry" label="Sweet Cherry" description="Imported seasonal cherries" />
-          <c-checkbox value="mango" label="Alphonso Mango" description="Sweet and aromatic tropical fruit" />
-        </c-checkbox-group>
-        <view class="text-xs bg-neutral-50 p-3 rounded-xl border border-neutral-200 flex flex-col gap-1">
-          <text class="text-neutral-500">Selected Values Array ({{selectedFruits.length}}):</text>
-          <text class="font-bold text-primary font-mono break-all">{{selectedFruitsJson}}</text>
-        </view>
-        <view class="flex flex-wrap gap-2 pt-1">
-          <c-button size="sm" variant="outline" color="primary" bind:tap="selectAllFruits">
-            Select All
-          </c-button>
-          <c-button size="sm" variant="outline" color="neutral" bind:tap="setFavoriteFruits">
-            Set ["apple", "cherry"]
-          </c-button>
-          <c-button size="sm" variant="outline" color="danger" bind:tap="clearFruits">
-            Clear
-          </c-button>
-        </view>
+      <c-checkbox
+        checked="{{ isAllNotificationsSelected }}"
+        indeterminate="{{ isSomeNotificationsSelected }}"
+        label="All Notification Channels"
+        bind:change="onMasterNotificationToggle"
+      />
+      <view class="pl-5 flex flex-col gap-2 pt-2 border-t border-muted">
+        <c-checkbox
+          wx:for="{{ notificationChannels }}"
+          wx:key="id"
+          data-id="{{ item.id }}"
+          checked="{{ item.checked }}"
+          label="{{ item.label }}"
+          bind:change="onNotificationChannelToggle"
+        />
       </view>
     </view>
-    <!-- 4. Auto-rendered Items Prop -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">4. Auto-rendered (items Prop)</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Pass an array of options directly to c-checkbox-group without writing child tags.
+
+    <!-- 3. Controlled & Items-Driven Groups -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Controlled Group & Items Prop</text>
+        <text class="block text-xs text-muted mt-0.5">Selected: {{ selectedFruitsJson }}</text>
       </view>
-      <view class="flex flex-col gap-3">
-        <c-checkbox-group value="{{selectedTechs}}" items="{{techOptions}}" bind:change="onTechsChange" />
-        <view class="text-xs text-neutral-500 bg-neutral-50 p-2.5 rounded-xl border border-neutral-200 font-mono">
-          Selected:
-          <text class="font-bold text-neutral-900">{{selectedTechsJson}}</text>
-        </view>
+      <c-checkbox-group value="{{ selectedFruits }}" bind:change="onFruitsChange">
+        <c-checkbox value="apple" label="Apple" />
+        <c-checkbox value="banana" label="Banana" />
+        <c-checkbox value="cherry" label="Cherry" />
+        <c-checkbox value="mango" label="Mango" />
+      </c-checkbox-group>
+      <view class="flex gap-2">
+        <c-button size="xs" variant="soft" color="primary" label="Select All" bind:tap="selectAllFruits" />
+        <c-button size="xs" variant="outline" color="neutral" label="Favorites" bind:tap="setFavoriteFruits" />
+        <c-button size="xs" variant="outline" color="neutral" label="Clear" bind:tap="clearFruits" />
       </view>
-    </view>
-    <!-- 5. Min & Max Limits -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">5. Min & Max Selection Limits</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        min="1" and max="2" boundaries prevent deselecting below 1 or selecting more than 2.
-      </view>
-      <view class="flex flex-col gap-3">
-        <c-form-field help="Select between 1 and 2 project roles">
-          <c-checkbox-group min="{{1}}" max="{{2}}" value="{{limitedRoles}}" items="{{roleOptions}}" bind:change="onRolesChange" />
-        </c-form-field>
-        <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
-          <text class="text-neutral-500">Active Count:</text>
-          <text class="font-bold {{limitedRoles.length === 2 ? 'text-warning' : 'text-primary'}} font-mono">
-            {{limitedRoles.length}} / 2 (min: 1)
-          </text>
-        </view>
+
+      <view class="pt-3 border-t border-muted flex flex-col gap-2">
+        <text class="text-xs font-semibold text-toned">Data-Driven Stack ({{ selectedTechsJson }})</text>
+        <c-checkbox-group items="{{ techOptions }}" value="{{ selectedTechs }}" bind:change="onTechsChange" />
       </view>
     </view>
-    <!-- 6. Card Variant -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">6. Card Variant (variant="card")</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Selectable card containers with soft background, active border, and ring.
+
+    <!-- 4. Custom Icons, Slots & Card Variant -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Custom Icons, Slots & Card Variant</text>
+        <text class="block text-xs text-muted mt-0.5">Override icon/indeterminateIcon props, custom slots, or use variant='card'.</text>
       </view>
-      <view class="flex flex-col gap-3">
-        <c-checkbox-group value="{{selectedAddons}}" variant="card" bind:change="onAddonsChange">
-          <c-checkbox value="priority" variant="card" label="Priority Fulfillment" description="Guaranteed same-day packing & dispatch (+$4.99)" />
-          <c-checkbox value="insurance" variant="card" label="Shipping Insurance" description="Full refund if lost, stolen, or damaged (+$2.50)" />
-          <c-checkbox value="gift" variant="card" label="Gift Wrapping & Note" description="Eco-friendly festive wrap with personal card (+$3.00)" />
+
+      <view class="flex flex-col gap-2.5">
+        <c-checkbox default-checked="{{ true }}" color="secondary" icon="i-lucide-heart" label="Custom Heart Icon Prop" />
+        <c-checkbox indeterminate="{{ true }}" color="info" indeterminate-icon="i-lucide-sparkles" label="Custom Indeterminate Icon" />
+        <c-checkbox default-checked="{{ true }}" color="success">
+          <view slot="label" class="flex items-center gap-1.5">
+            <text class="text-sm font-medium text-highlighted">Slot Label</text>
+            <c-badge label="New" size="xs" color="success" variant="soft" />
+          </view>
+          <text slot="description" class="text-xs text-muted">Description rendered via slot="description".</text>
+        </c-checkbox>
+      </view>
+
+      <view class="pt-3 border-t border-muted">
+        <c-checkbox-group variant="card" value="{{ selectedAddons }}" bind:change="onAddonsChange">
+          <c-checkbox value="priority" label="Priority Edge Support" description="24/7 response SLA within 15 minutes." />
+          <c-checkbox value="audit" label="Compliance Audit Logs" description="Export immutable 365-day retention." />
         </c-checkbox-group>
       </view>
     </view>
-    <!-- 7. Horizontal Orientation -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">7. Horizontal Orientation</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        orientation="horizontal" wraps items in a flex row.
+
+    <!-- 5. Colors, Sizes, Limits & Validation States -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Colors, Sizes & States</text>
+        <text class="block text-xs text-muted mt-0.5">All 7 colors including secondary, sizes xs-xl, invalid, required & min/max.</text>
       </view>
-      <view class="flex flex-col gap-3">
-        <c-checkbox-group orientation="horizontal" value="{{selectedTags}}" bind:change="onTagsChange">
+
+      <view class="flex flex-wrap gap-3">
+        <c-checkbox wx:for="{{ colors }}" wx:key="*this" default-checked="{{ true }}" color="{{ item }}" label="{{ item }}" />
+      </view>
+
+      <view class="flex flex-wrap items-center gap-4 pt-2 border-t border-muted">
+        <c-checkbox wx:for="{{ sizes }}" wx:key="*this" default-checked="{{ true }}" size="{{ item }}" label="{{ item }}" />
+      </view>
+
+      <view class="flex flex-col gap-2 pt-2 border-t border-muted">
+        <c-checkbox invalid="{{ true }}" required="{{ true }}" label="Invalid + Required Standalone Checkbox" />
+        <c-checkbox disabled="{{ true }}" checked="{{ true }}" label="Disabled Checked" />
+        <c-checkbox read-only="{{ true }}" checked="{{ true }}" label="Read-Only Checked" />
+      </view>
+
+      <view class="pt-2 border-t border-muted">
+        <text class="block text-xs font-medium text-muted mb-2">Horizontal Tags & Min=1 / Max=2 Limit</text>
+        <c-checkbox-group orientation="horizontal" value="{{ selectedTags }}" bind:change="onTagsChange">
           <c-checkbox value="react" label="React" />
-          <c-checkbox value="vue" label="Vue" />
-          <c-checkbox value="miniapp" label="MiniApp" />
-          <c-checkbox value="tailwind" label="Tailwind" />
           <c-checkbox value="vite" label="Vite" />
+          <c-checkbox value="ts" label="TypeScript" />
         </c-checkbox-group>
       </view>
     </view>
-    <!-- 8. Sizes -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">8. Sizes</view>
-      <view class="text-xs text-neutral-400 mb-3">xs, sm, md, lg, xl</view>
-      <view class="flex flex-col gap-3.5">
-        <c-checkbox size="xs" defaultChecked label="Size xs (3.5 / 2.5)" />
-        <c-checkbox size="sm" defaultChecked label="Size sm (4.0 / 3.0)" />
-        <c-checkbox size="md" defaultChecked label="Size md (4.5 / 3.5 - Default)" />
-        <c-checkbox size="lg" defaultChecked label="Size lg (5.0 / 4.0)" />
-        <c-checkbox size="xl" defaultChecked label="Size xl (6.0 / 4.5)" />
-      </view>
-    </view>
-    <!-- 9. Semantic Colors -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">9. Semantic Colors</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        primary, success, warning, danger, info, neutral
-      </view>
-      <view class="grid grid-cols-2 gap-3">
-        <c-checkbox color="primary" defaultChecked label="Primary" />
-        <c-checkbox color="success" defaultChecked label="Success" />
-        <c-checkbox color="warning" defaultChecked label="Warning" />
-        <c-checkbox color="danger" defaultChecked label="Danger" />
-        <c-checkbox color="info" defaultChecked label="Info" />
-        <c-checkbox color="neutral" defaultChecked label="Neutral" />
-      </view>
-    </view>
-    <!-- 10. Disabled & ReadOnly States -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">10. Disabled & ReadOnly States</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Disabled checkboxes prevent tap interaction and render muted styling.
-      </view>
-      <view class="flex flex-col gap-3">
-        <c-checkbox disabled="{{true}}" label="Disabled (unchecked)" />
-        <c-checkbox disabled="{{true}}" defaultChecked label="Disabled (checked)" />
-        <c-checkbox readOnly="{{true}}" defaultChecked label="ReadOnly (locked to checked)" />
-        <c-checkbox disabled="{{true}}" defaultIndeterminate label="Disabled (indeterminate)" />
-      </view>
-    </view>
-    <!-- 11. Form & Validation Integration -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">11. Form & Validation Integration</view>
-      <view class="text-xs text-neutral-400 mb-3">
-        Connected with c-form and c-form-field. Validates required checkboxes and group arrays.
+
+    <!-- 6. Form Validation -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Form & Validation Integration</text>
+        <text class="block text-xs text-muted mt-0.5">Requires at least 2 interests + accepted agreement.</text>
       </view>
       <c-form id="checkbox-demo-form" bind:submit="handleFormSubmit" bind:error="handleFormError">
-        <!-- Form Field 1: Group Validation -->
-        <c-form-field name="interests" label="Areas of Interest" required rules="{{interestRules}}" description="Choose at least 2 topics you want to follow">
-          <c-checkbox-group name="interests" value="{{formInterests}}" variant="card" bind:change="onFormInterestsChange">
-            <c-checkbox value="ai" variant="card" label="Artificial Intelligence" description="LLMs, neural networks, and agent frameworks" />
-            <c-checkbox value="web" variant="card" label="Modern Web & MiniApp" description="Micro-frontends, Vite, and mobile runtimes" />
-            <c-checkbox value="cloud" variant="card" label="Cloud Native Systems" description="Kubernetes, serverless, and distributed storage" />
-          </c-checkbox-group>
-        </c-form-field>
-        <!-- Form Field 2: Single Required Agreement Checkbox -->
-        <view class="mt-4">
-          <c-form-field name="agreement" required rules="{{agreementRules}}">
-            <c-checkbox name="agreement" checked="{{formAgreement}}" label="I accept the Terms of Service & Privacy Policy" bind:change="onFormAgreementChange" />
+        <view class="flex flex-col gap-3">
+          <c-form-field name="interests" label="Areas of Interest (Min 2)" required="{{ true }}" rules="{{ interestRules }}">
+            <c-checkbox-group variant="card" value="{{ formInterests }}" bind:change="onFormInterestsChange">
+              <c-checkbox value="ai" label="Artificial Intelligence" />
+              <c-checkbox value="web" label="MiniProgram & Vite" />
+              <c-checkbox value="cloud" label="Edge & Systems" />
+            </c-checkbox-group>
+          </c-form-field>
+          <c-form-field name="agreement" required="{{ true }}" rules="{{ agreementRules }}">
+            <c-checkbox checked="{{ formAgreement }}" label="I accept the terms of service" bind:change="onFormAgreementChange" />
           </c-form-field>
         </view>
-        <!-- Submit & Reset Buttons -->
-        <view class="flex gap-2 pt-4">
-          <c-button color="primary" bind:tap="submitForm">Submit Registration</c-button>
-          <c-button variant="outline" color="neutral" bind:tap="resetForm">Reset</c-button>
-        </view>
       </c-form>
-      <!-- Form Submission Result Feedback -->
-      <view wx:if="{{formStatus}}" class="mt-4 p-3 rounded-xl text-xs {{formStatus === 'Success' ? 'bg-success-50 text-success-700 border border-success-200' : 'bg-danger-50 text-danger-700 border border-danger-200'}}">
-        <view class="font-bold">{{formStatus}}</view>
-        <view class="mt-0.5 break-all font-mono">{{formMessage}}</view>
+      <view class="flex gap-2">
+        <c-button size="xs" color="primary" label="Submit" bind:tap="submitForm" />
+        <c-button size="xs" color="neutral" variant="outline" label="Reset" bind:tap="resetForm" />
       </view>
+      <text wx:if="{{ formStatus }}" class="text-xs text-muted">{{ formStatus }}: {{ formMessage }}</text>
     </view>
   </view>
 </view>

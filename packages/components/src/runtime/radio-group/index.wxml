@@ -2,8 +2,8 @@
   <view wx:if="{{legend}}" class="{{classes.legend}}">{{legend}}</view>
   <slot wx:else name="legend" />
   <view class="{{classes.fieldset}}">
-    <block wx:if="{{cRadioGroup.items.length > 0}}">
-      <c-radio wx:for="{{cRadioGroup.items}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant}}" color="{{item.color}}" size="{{cRadioGroup.size}}" ui="{{item.ui || ui}}" bind:change="handleItemTap" />
+    <block wx:if="{{resolvedItems.length > 0}}">
+      <c-radio wx:for="{{resolvedItems}}" wx:key="value" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" disabled="{{item.disabled}}" checked="{{item.checked}}" variant="{{item.variant}}" color="{{item.color}}" size="{{item.size}}" ui="{{item.ui}}" bind:change="handleItemTap" />
     </block>
     <slot />
   </view>

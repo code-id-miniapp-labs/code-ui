@@ -1,11 +1,14 @@
 <view wx:if="{{toast.visible}}" id="{{toast.rootProps.id}}" class="{{classes.root}}" style="{{rootStyle}}" aria-role="status" aria-live="polite" data-scope="toast" data-part="root" data-id="{{toast.rootProps.id}}" data-index="{{index}}" data-state="{{toast.state}}" data-mode="{{mode}}" data-color="{{color}}" data-variant="{{variant}}" data-placement="{{placement}}" data-progress-position="{{progressPosition}}" bindtouchstart="handleTouchStart" bindtouchend="handleTouchEnd" bindtouchcancel="handleTouchEnd">
+  <view wx:if="{{mode !== 'native' && color !== 'neutral' && (variant === 'soft' || variant === 'subtle')}}" class="{{classes.tint}}" aria-hidden="{{true}}" data-scope="toast" data-part="tint" />
   <!-- Progress Bar (single node positioned via theme) -->
   <view wx:if="{{mode !== 'native' && progress !== false}}" class="{{classes.progress}}" style="{{progressStyle}}" aria-hidden="{{true}}" data-scope="toast" data-part="progress">
-    <c-progress className="w-full h-full" color="{{resolvedProgressColor}}" size="2xs" value="{{100}}" ui="{{progressUi}}" />
+    <c-progress className="{{classes.progressBar}}" color="{{resolvedProgressColor}}" size="2xs" value="{{100}}" ui="{{progressUi}}" />
   </view>
 
-  <slot wx:if="{{slots.icon}}" name="icon" />
-  <c-icon wx:elif="{{resolvedIcon}}" name="{{resolvedIcon}}" className="{{classes.icon}}" />
+  <view wx:if="{{slots.icon || resolvedIcon}}" class="{{classes.iconWrapper}}" data-scope="toast" data-part="icon-wrapper">
+    <slot wx:if="{{slots.icon}}" name="icon" />
+    <c-icon wx:else name="{{resolvedIcon}}" className="{{classes.icon}}" />
+  </view>
   <view class="{{classes.wrapper}}" data-scope="toast" data-part="wrapper">
     <view wx:if="{{title}}" class="{{classes.title}}" data-scope="toast" data-part="title">
       {{title}}
@@ -15,15 +18,15 @@
       {{description}}
     </view>
     <slot wx:else name="description" />
-    <view wx:if="{{mode !== 'native' && toast.actions && toast.actions.length > 0}}" class="{{classes.actions}}" data-scope="toast" data-part="actions">
-      <c-button wx:for="{{toast.actions}}" wx:key="index" size="xs" color="{{item.color}}" variant="{{item.variant}}" data-index="{{item.index}}" catch:tap="handleActionTap">
-        {{item.label}}
-      </c-button>
+    <view wx:if="{{mode !== 'native' && resolvedActions.length > 0}}" class="{{classes.actions}}" data-scope="toast" data-part="actions">
+      <c-button wx:for="{{resolvedActions}}" wx:key="index" label="{{item.label}}" icon="{{item.icon || ''}}" leading-icon="{{item.leadingIcon || ''}}" trailing-icon="{{item.trailingIcon || ''}}" loading="{{item.loading}}" loading-icon="{{item.loadingIcon}}" disabled="{{item.disabled}}" size="{{item.size}}" color="{{item.color}}" variant="{{item.variant}}" ui="{{item.ui}}" className="{{item.className}}" data-index="{{item.index}}" catch:tap="handleActionTap" />
     </view>
     <slot wx:elif="{{mode !== 'native' && slots.actions}}" name="actions" />
   </view>
-  <view wx:if="{{mode !== 'native' && (close !== false || slots.close)}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
-    <slot wx:if="{{slots.close}}" name="close" />
-    <c-icon wx:else name="{{closeIcon}}" className="w-4 h-4" />
+  <view wx:if="{{mode !== 'native' && (resolvedClose || slots.close)}}" class="{{classes.closeTrigger}}" data-scope="toast" data-part="close-trigger">
+    <view wx:if="{{slots.close}}" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
+      <slot name="close" />
+    </view>
+    <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
   </view>
 </view>

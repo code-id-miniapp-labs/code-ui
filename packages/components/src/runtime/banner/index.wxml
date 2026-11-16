@@ -7,20 +7,11 @@
       <view wx:if="{{image && imagePosition === 'left'}}" class="cui-banner-image-area {{classes.imageArea}}" data-scope="banner" data-part="imageArea">
         <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode}}" data-scope="banner" data-part="image" aria-hidden="true" />
       </view>
-      <view wx:if="{{icon}}" class="cui-banner-icon {{classes.icon}}" data-scope="banner" data-part="icon" aria-hidden="true">
-        <c-icon name="{{icon}}" className="w-full h-full" />
-      </view>
+      <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.icon}}" />
       <slot wx:else name="leading" />
       <view class="cui-banner-content {{classes.content}}" data-scope="banner" data-part="content">
-        <view wx:if="{{banner.badge}}" class="cui-banner-badge {{classes.badge}}" data-scope="banner" data-part="badge">
-          <c-badge
-            label="{{banner.badge.label}}"
-            color="{{banner.badge.color}}"
-            variant="{{banner.badge.variant}}"
-            size="{{banner.badge.size}}"
-            ui="{{banner.badge.ui}}"
-            className="{{banner.badge.className}}"
-          />
+        <view wx:if="{{resolvedBadge}}" class="cui-banner-badge {{classes.badge}}" data-scope="banner" data-part="badge">
+          <c-badge label="{{resolvedBadge.label}}" color="{{resolvedBadge.color}}" variant="{{resolvedBadge.variant}}" size="{{resolvedBadge.size}}" ui="{{resolvedBadge.ui}}" className="{{resolvedBadge.className}}" />
         </view>
         <slot wx:else name="badge" />
         <view wx:if="{{caption}}" class="{{classes.caption}}" data-scope="banner" data-part="caption">
@@ -41,25 +32,22 @@
         <image class="{{classes.image}}" src="{{image}}" mode="{{imageMode}}" data-scope="banner" data-part="image" aria-hidden="true" />
       </view>
       <slot wx:else name="image" />
-      <view wx:if="{{more || (close && closable) || slots.close || slots.more}}" class="cui-banner-button-area {{classes.buttonArea}}" data-scope="banner" data-part="buttonArea">
-        <view wx:if="{{close !== false && closable !== false}}" class="{{classes.close}}" data-scope="banner" data-part="close" aria-role="button" aria-label="Dismiss" catchtap="handleCloseTap">
-          <c-icon name="{{closeIcon}}" className="w-4 h-4" />
+      <view wx:if="{{resolvedMore || resolvedClose || slots.close || slots.more}}" class="cui-banner-button-area {{classes.buttonArea}}" data-scope="banner" data-part="buttonArea">
+        <view wx:if="{{slots.close}}" class="{{classes.close}}" data-scope="banner" data-part="close" aria-role="button" aria-label="Dismiss" catchtap="handleCloseTap">
+          <slot name="close" />
         </view>
-        <slot wx:else name="close" />
-        <view wx:if="{{more}}" class="{{classes.more}}" data-scope="banner" data-part="more" aria-role="button" aria-label="More" catchtap="handleMoreTap">
-          <c-icon name="{{moreIcon}}" className="w-4 h-4" />
+        <c-button wx:elif="{{resolvedClose}}" label="{{resolvedClose.label || ''}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" disabled="{{resolvedClose.disabled || false}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" data-scope="banner" data-part="close" aria-label="Dismiss" catch:tap="handleCloseTap" />
+        <view wx:if="{{slots.more}}" class="{{classes.more}}" data-scope="banner" data-part="more" aria-role="button" aria-label="More" catchtap="handleMoreTap">
+          <slot name="more" />
         </view>
-        <slot wx:else name="more" />
+        <c-button wx:elif="{{resolvedMore}}" label="{{resolvedMore.label || ''}}" icon="{{resolvedMore.icon || ''}}" leading-icon="{{resolvedMore.leadingIcon || ''}}" trailing-icon="{{resolvedMore.trailingIcon || ''}}" loading="{{resolvedMore.loading || false}}" loading-icon="{{resolvedMore.loadingIcon || 'loading'}}" disabled="{{resolvedMore.disabled || false}}" color="{{resolvedMore.color}}" variant="{{resolvedMore.variant}}" size="{{resolvedMore.size}}" ui="{{resolvedMore.ui}}" className="{{resolvedMore.className}}" data-scope="banner" data-part="more" aria-label="More" catch:tap="handleMoreTap" />
       </view>
       <slot wx:else name="buttonArea" />
     </view>
-    <view wx:if="{{banner.actions && banner.actions.length > 0}}" class="{{classes.actions}}" data-scope="banner" data-part="actions">
-      <block wx:for="{{banner.actions}}" wx:key="index">
+    <view wx:if="{{resolvedActions.length > 0}}" class="{{classes.actions}}" data-scope="banner" data-part="actions">
+      <block wx:for="{{resolvedActions}}" wx:key="index">
         <view class="{{classes.action}}" data-scope="banner" data-part="action">
-          <c-button data-index="{{index}}" block ui="{{item.ui}}" catch:tap="handleActionTap" loading="{{item.loading}}" variant="{{item.variant}}" color="{{item.color}}" size="{{item.size}}" className="{{item.color ? '' : 'text-inherit'}}">
-            <c-icon wx:if="{{item.icon}}" slot="icon" name="{{item.icon}}" className="w-3.5 h-3.5" />
-            {{item.label}}
-          </c-button>
+          <c-button data-index="{{item.index}}" block="{{true}}" label="{{item.label}}" icon="{{item.icon || ''}}" leading-icon="{{item.leadingIcon || ''}}" trailing-icon="{{item.trailingIcon || ''}}" loading="{{item.loading}}" loading-icon="{{item.loadingIcon}}" disabled="{{item.disabled}}" variant="{{item.variant}}" color="{{item.color}}" size="{{item.size}}" ui="{{item.ui}}" className="{{item.className}}" catch:tap="handleActionTap" />
         </view>
       </block>
     </view>

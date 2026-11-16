@@ -6,12 +6,14 @@
       <view class="{{ classes.grabberBar }}" />
     </view>
     <view class="{{ classes.header }}" catchtouchmove="{{gesture.preventTouchMove}}">
-      <view class="flex-1">
+      <view class="{{ classes.headerContent }}">
         <slot name="header" />
       </view>
-      <view class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger" aria-role="button" aria-label="Close" bindtap="handleCloseTap">
-        <slot wx:if="{{slots.close}}" name="close" />
-        <c-icon wx:else name="close" className="size-4" />
+      <view wx:if="{{resolvedClose || slots.close}}" class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger">
+        <view wx:if="{{slots.close}}" class="{{ classes.closeButton }}" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
+          <slot name="close" />
+        </view>
+        <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
       </view>
     </view>
     <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" style="box-sizing: border-box; width: 100%;">

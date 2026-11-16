@@ -8,7 +8,7 @@
   data-readonly="{{slider.readOnly}}"
   data-invalid="{{slider.invalid}}"
   data-dragging="{{slider.dragging}}"
-  data-orientation="{{slider.orientation}}"
+  data-orientation="{{orientation}}"
   aria-disabled="{{slider.disabled}}"
   aria-invalid="{{slider.invalid}}"
 >
@@ -26,11 +26,12 @@
     data-part="control"
     data-disabled="{{slider.disabled}}"
     data-readonly="{{slider.readOnly}}"
-    data-orientation="{{slider.orientation}}"
+    data-orientation="{{orientation}}"
     data-min="{{slider.min}}"
     data-max="{{slider.max}}"
     data-step="{{slider.step}}"
-    data-inverted="{{slider.inverted}}"
+    data-min-steps-between-thumbs="{{minStepsBetweenThumbs}}"
+    data-inverted="{{inverted}}"
     data-is-range="{{slider.thumbs.length > 1}}"
     data-range-id="{{slider.rangeProps.id}}"
     data-thumb-ids="{{slider.thumbIds}}"
@@ -61,7 +62,7 @@
       aria-valuemin="{{slider.min}}"
       aria-valuemax="{{slider.max}}"
       aria-valuenow="{{item.value}}"
-      aria-orientation="{{slider.orientation}}"
+      aria-orientation="{{orientation}}"
       aria-disabled="{{slider.disabled}}"
     >
       <slot wx:if="{{slots.thumb}}" name="thumb" />
@@ -76,8 +77,8 @@
         data-active="{{item.active}}"
         style="{{item.style}}"
       >
-        <view class="{{classes.markerTick}} {{item.active ? 'bg-white/90' : ''}}" />
-        <text wx:if="{{item.label}}" class="{{classes.markerLabel}} {{item.active ? 'text-neutral-700 font-semibold' : ''}}">{{item.label}}</text>
+        <view class="{{classes.markerTick}} {{item.active ? classes.markerTickActive : ''}}" />
+        <text wx:if="{{item.label}}" class="{{classes.markerLabel}} {{item.active ? classes.markerLabelActive : ''}}">{{item.label}}</text>
       </view>
     </view>
   </view>

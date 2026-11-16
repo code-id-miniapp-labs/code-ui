@@ -63,30 +63,6 @@ export const progressMachine: ProgressMachine = createMachine<ProgressSchema>({
       }
       return computed("isIndeterminate") ? "" : `${percent}%`;
     },
-
-    rangeStyle: ({ prop, computed }) => {
-      if (computed("isIndeterminate")) return "";
-      return `${prop("orientation") === "horizontal" ? "width" : "height"}: ${computed("percent")}%;`;
-    },
-
-    circleStyle: ({ computed, prop }) => {
-      const percent = computed("isIndeterminate")
-        ? 25
-        : Math.max(0, Math.min(100, computed("percent")));
-      const color = prop("color");
-      const strokeWidth = prop("strokeWidth");
-      const trackColor = prop("trackColor");
-      let style = `--cui-progress-percent: ${percent}%; --cui-progress-stroke-width: ${strokeWidth}px;`;
-      if (trackColor) style += ` --cui-progress-track-color: ${trackColor};`;
-      if (
-        typeof color === "string" &&
-        /^(#|rgb|hsl|oklch)/.test(color)
-      ) {
-        style += ` color: ${color};`;
-      }
-      if (prop("inverted")) style += " transform: scaleX(-1);";
-      return style;
-    },
   },
 
   on: {

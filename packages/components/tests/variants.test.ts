@@ -463,7 +463,7 @@ describe("switchTheme resolution", () => {
       switchTheme({ checked: false, size: "md", color: "primary" }) as any,
     );
 
-    expect(slots.base).toContain("bg-neutral-200");
+    expect(slots.base).toContain("bg-accented");
     expect(slots.base).not.toContain("bg-primary");
     expect(slots.thumb).toContain("translate-x-0");
     expect(slots.thumb).toContain("translate-y-0");
@@ -490,7 +490,7 @@ describe("switchTheme resolution", () => {
         console.log("LG THUMB SLOTS:", slots.thumb);
       }
       expect(slots.base).toContain("bg-primary");
-      expect(slots.base).not.toContain("bg-neutral-200");
+      expect(slots.base).not.toContain("bg-accented");
       expect(slots.thumb).toContain(escapeClass(expectedTranslate));
       expect(slots.thumb).toContain("translate-y-0");
       expect(slots.thumb).not.toContain("translate-x-0");
@@ -537,6 +537,12 @@ describe("inputTheme invalid & highlight theming", () => {
     const slots = resolveSlots(
       inputTheme({ color: "primary", invalid: false, highlight: false }) as any,
     );
+    expect(slots.base).toContain("min-h-0");
+    expect(slots.base).toContain("flex");
+    expect(slots.base).toContain("items-center");
+    expect(slots.base).toContain("overflow-hidden");
+    expect(slots.nativeInput).toContain("min-h-0");
+    expect(slots.nativeInput).toContain("text-inherit");
     expect(slots.base).toContain(escapeClass("focus:border-primary"));
     expect(slots.base).toContain(escapeClass("focus:ring-primary/20"));
     expect(slots.base).not.toContain("border-danger");
@@ -561,7 +567,7 @@ describe("inputTheme invalid & highlight theming", () => {
     expect(slots.base).toContain(escapeClass("ring-danger/20"));
     expect(slots.base).toContain(escapeClass("focus:border-danger"));
     expect(slots.base).toContain(escapeClass("focus:ring-danger/20"));
-    expect(slots.base).not.toContain("border-neutral-300");
+    expect(slots.base).not.toContain("border-accented");
   });
 
   it("supports custom errorColor via theme options", () => {
@@ -582,6 +588,16 @@ describe("pinInputTheme invalid & highlight theming", () => {
     const slots = resolveSlots(
       pinInputTheme({ color: "primary", invalid: false }) as any,
     );
+    expect(slots.input).toContain("min-h-0");
+    expect(slots.input).toContain("flex");
+    expect(slots.input).toContain("items-center");
+    expect(slots.input).toContain("justify-center");
+    expect(slots.input).toContain("overflow-hidden");
+    expect(slots.input).toContain("box-border");
+    expect(slots.input).toContain("p-0");
+    expect(slots.input).toContain("m-0");
+    expect(slots.nativeInput).toContain("min-h-0");
+    expect(slots.nativeInput).toContain("text-center");
     expect(slots.input).toContain(escapeClass("focus:border-primary"));
     expect(slots.input).not.toContain("border-danger");
   });
@@ -631,7 +647,7 @@ describe("textareaTheme autoHeight and variants", () => {
 
   it("resolves placeholder slot styling across sizes", () => {
     const slots = resolveSlots(textareaTheme({ size: "md" }) as any);
-    expect(slots.placeholder).toContain("text-neutral-400");
+    expect(slots.placeholder).toContain("text-dimmed");
     expect(slots.placeholder).toContain("text-sm");
   });
 });
@@ -731,12 +747,25 @@ describe("iconTheme resolution", () => {
     expect(slots.root).toContain("text-danger");
     expect(slots.root).toContain("animate-spin");
   });
+
+  it("supports size, color, and spin variants cleanly", () => {
+    const slots = resolveSlots(
+      iconTheme({ size: "lg", color: "warning", spin: true }) as any,
+    );
+    expect(slots.root).not.toContain(escapeClass("size-[1em]"));
+    expect(slots.root).toContain("size-6");
+    expect(slots.root).toContain("text-warning");
+    expect(slots.root).toContain("animate-spin");
+  });
 });
 
 describe("checkboxTheme resolution", () => {
   it("resolves unchecked state", () => {
     const slots = resolveSlots(checkboxTheme() as any);
-    expect(slots.base).toContain("border-neutral-300");
+    expect(slots.base).toContain("border-accented");
+    expect(slots.base).toContain("bg-default");
+    expect(slots.base).toContain("rounded-sm");
+    expect(slots.base.split(" ")).not.toContain("rounded");
     expect(slots.indicator).toContain("opacity-0");
   });
 
@@ -769,10 +798,34 @@ describe("checkboxTheme resolution", () => {
   });
 
   it("resolves invalid state", () => {
-    const slots = resolveSlots(
+    const checkedInvalid = resolveSlots(
       checkboxTheme({ invalid: true, checked: true }) as any,
     );
-    expect(slots.base).toContain("bg-danger");
+    expect(checkedInvalid.base).toContain("bg-danger");
+
+    const uncheckedInvalid = resolveSlots(
+      checkboxTheme({
+        invalid: true,
+        checked: false,
+        indeterminate: false,
+      }) as any,
+    );
+    expect(uncheckedInvalid.base).toContain("border-danger");
+    expect(uncheckedInvalid.base).toContain("bg-default");
+    expect(uncheckedInvalid.base).not.toContain("bg-primary");
+    expect(uncheckedInvalid.indicator).toContain("opacity-0");
+
+    const cardInvalid = resolveSlots(
+      checkboxTheme({
+        variant: "card",
+        invalid: true,
+        checked: false,
+        indeterminate: false,
+      }) as any,
+    );
+    expect(cardInvalid.root).toContain("border-danger");
+    expect(cardInvalid.base).toContain("bg-default");
+    expect(cardInvalid.base).toContain("border-danger");
   });
 });
 
@@ -841,7 +894,7 @@ describe("avatarTheme resolution", () => {
     it("resolves default tabs slots", () => {
       const slots = resolveSlots(tabsTheme() as any);
       expect(slots.root).toContain("flex");
-      expect(slots.list).toContain("bg-neutral-100");
+      expect(slots.list).toContain("bg-elevated");
       expect(slots.content).toContain("w-full");
     });
 
@@ -897,7 +950,7 @@ describe("avatarTheme resolution", () => {
         progressTheme({ type: "circular", color: "success" }) as any,
       );
       expect(slots.circle).toContain("overflow-visible");
-      expect(slots.circleTrack).toContain("text-neutral-200");
+      expect(slots.circleTrack).toContain("text-accented");
       expect(slots.circleRange).toContain("text-success");
     });
 
@@ -924,9 +977,9 @@ describe("avatarTheme resolution", () => {
       const slots = resolveSlots(fileUploadTheme() as any);
       expect(slots.root).toContain("relative");
       expect(slots.dropzone).toContain("border-dashed");
-      expect(slots.icon).toContain("text-neutral-400");
+      expect(slots.icon).toContain("text-dimmed");
       expect(slots.title).toContain("font-medium");
-      expect(slots.description).toContain("text-neutral-500");
+      expect(slots.description).toContain("text-muted");
       expect(slots.fileList).toContain("flex-col");
       expect(slots.file).toContain("rounded-xl");
       expect(slots.fileRemove).toContain("rounded-lg");

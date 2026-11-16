@@ -102,7 +102,6 @@ export const formFieldMachine: FormFieldMachine =
         computed("host")?.errors(prop("name"))[0] ||
         context.get("innerError") ||
         "",
-      displayHelp: ({ prop }) => prop("help") || prop("helperText"),
       invalid: ({ state, computed }) =>
         state.matches("invalid") || Boolean(computed("displayError")),
       effectiveRules: ({ prop, computed }) =>
@@ -196,7 +195,6 @@ export const formFieldMachine: FormFieldMachine =
             host.setFieldRules(name, () => params.computed("effectiveRules"));
             host.setFieldState(name, {
               disabled: params.prop("disabled"),
-              size: params.prop("size"),
             });
           }),
       },

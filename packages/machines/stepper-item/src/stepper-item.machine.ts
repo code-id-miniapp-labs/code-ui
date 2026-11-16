@@ -107,18 +107,6 @@ export const stepperItemMachine: StepperItemMachine =
       isDisabled: ({ prop }) => resolveDisabled(prop),
 
       status: ({ prop }): StepperStatus => resolveStatus(prop),
-
-      effectiveOrientation: ({ prop }) =>
-        prop("orientation") || prop("groupContext")?.orientation() || "horizontal",
-
-      effectiveColor: ({ prop }) =>
-        prop("color") || prop("groupContext")?.color() || "primary",
-
-      effectiveSize: ({ prop }) =>
-        prop("size") || prop("groupContext")?.size() || "md",
-
-      effectiveVariant: ({ prop }) =>
-        prop("variant") || prop("groupContext")?.variant() || "subtle",
     },
 
     watch({ track, computed, state }) {

@@ -5,6 +5,7 @@ import {
   getApi,
 } from "../_shared/machine";
 import { wxButtonBehavior } from "./wx-button";
+import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
   buttonMachine,
@@ -37,6 +38,54 @@ Component(
 
     data: {},
     properties: createProperties(defaultButtonProps, {
+      variant: {
+        type: String,
+        value: "solid",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      block: {
+        type: Boolean,
+        value: false,
+      },
+      label: {
+        type: String,
+        value: "",
+      },
+      icon: {
+        type: String,
+        value: "",
+      },
+      leading: {
+        type: Boolean,
+        value: false,
+      },
+      leadingIcon: {
+        type: String,
+        value: "",
+      },
+      trailing: {
+        type: Boolean,
+        value: false,
+      },
+      trailingIcon: {
+        type: String,
+        value: "",
+      },
+      loadingIcon: {
+        type: String,
+        value: "loading",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -44,6 +93,19 @@ Component(
     }),
 
     computed: {
+      icons() {
+        return useComponentIcons({
+          icon: this.data.icon,
+          leading: this.data.leading,
+          leadingIcon: this.data.leadingIcon,
+          trailing: this.data.trailing,
+          trailingIcon: this.data.trailingIcon,
+          loading: Boolean(this.data.button?.loading),
+          loadingIcon: this.data.loadingIcon,
+          slots: this.data.slots,
+        });
+      },
+
       classes() {
         const api = this.data.button;
         const themeFns = buttonTheme({
@@ -62,7 +124,7 @@ Component(
     methods: {
       handleTap(e: WechatMiniprogram.TouchEvent) {
         const api = getApi(this, "button");
-        return api.handleTap(e);
+        return api.handleTap(e?.detail);
       },
     },
   }),

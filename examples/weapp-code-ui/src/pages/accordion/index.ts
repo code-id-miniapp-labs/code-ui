@@ -68,7 +68,7 @@ Page({
   onDataAccordionChange(e: WechatMiniprogram.CustomEvent) {
     const value = e.detail?.value;
     this.setData({
-      dataValue: Array.isArray(value) ? value : [value],
+      dataValue: Array.isArray(value) ? value : value ? [value] : [],
     });
   },
 
@@ -132,6 +132,13 @@ Page({
     this.setData({
       activeValue: [],
     });
+  },
+
+  programmaticToggleFirst() {
+    const acc = this.selectComponent("#interactive-accordion") as {
+      toggle?: (val: string) => void;
+    } | null;
+    acc?.toggle?.("getting-started");
   },
 });
 

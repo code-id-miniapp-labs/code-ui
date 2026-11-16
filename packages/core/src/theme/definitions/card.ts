@@ -4,30 +4,30 @@ export default function cardTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "rounded-xl overflow-hidden flex flex-col",
-      header: "flex flex-col gap-1 border-b border-neutral-200",
-      title: "text-base font-semibold text-neutral-900",
-      description: "text-sm text-neutral-500",
-      body: "flex-1 text-sm text-neutral-700",
-      footer: "flex items-center gap-2 border-t border-neutral-200",
+      header: "flex flex-col gap-1 border-b border-default",
+      title: "text-base font-semibold text-highlighted",
+      description: "text-sm text-muted",
+      body: "flex-1 text-sm text-default",
+      footer: "flex items-center gap-2 border-t border-default",
     },
     variants: {
       variant: {
         outline: {
-          root: "bg-white border border-neutral-200 shadow-xs",
+          root: "bg-default border border-default shadow-xs",
         },
         solid: {
-          root: "bg-neutral-900 text-white border border-neutral-800",
-          header: "border-neutral-800",
-          title: "text-white",
-          description: "text-neutral-400",
-          body: "text-neutral-200",
-          footer: "border-neutral-800",
+          root: "bg-inverted text-inverted border border-inverted",
+          header: "border-accented",
+          title: "text-inverted",
+          description: "text-dimmed",
+          body: "text-inverted",
+          footer: "border-accented",
         },
         soft: {
-          root: "bg-neutral-50/80 border border-transparent",
+          root: "bg-muted border border-transparent",
         },
         subtle: {
-          root: "bg-neutral-50/80 border border-neutral-200",
+          root: "bg-muted border border-default",
         },
       },
       size: {

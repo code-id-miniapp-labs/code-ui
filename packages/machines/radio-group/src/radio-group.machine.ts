@@ -10,7 +10,6 @@ import type {
   RadioGroupContext,
   RadioGroupMachine,
   RadioGroupSchema,
-  RadioGroupSize,
 } from "./radio-group.types";
 import { defaultRadioGroupProps } from "./radio-group.props";
 import { dispatchChangeEvent, resolveInitialValue } from "./radio-group.utils";
@@ -32,9 +31,6 @@ export const radioGroupMachine: RadioGroupMachine =
         disabled: () => computed("isDisabled"),
         readOnly: () => computed("isReadOnly"),
         invalid: () => computed("isInvalid"),
-        color: () => prop("color"),
-        size: () => computed("effectiveSize"),
-        variant: () => prop("variant"),
         select: (value) => send({ type: "SET_VALUE", value }),
         setValue: (value) =>
           value === null
@@ -69,12 +65,6 @@ export const radioGroupMachine: RadioGroupMachine =
 
     computed: {
       ...createFormFieldComputed("radio-group"),
-      effectiveSize: ({ prop, computed }) => {
-        const size = prop("size");
-        return size !== "md"
-          ? size
-          : ((computed("fieldSize") || size) as RadioGroupSize);
-      },
       isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
           context.get("invalid") ||

@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { signal } from "alien-signals";
 import { MiniappMachine } from "@code-ui/miniapp";
 import type { RadioGroupContext } from "@code-ui/radio-group";
-import type { RadioSize } from "../src/radio.types";
 import { radioMachine } from "../src/radio.machine";
 import { connectRadio } from "../src/radio.connect";
 
@@ -18,9 +17,6 @@ function makeGroupContext(
     disabled: () => false,
     readOnly: () => false,
     invalid: () => false,
-    color: () => "primary",
-    size: () => "md",
-    variant: () => "outline",
     select: vi.fn(),
     setValue: vi.fn(),
     clear: vi.fn(),
@@ -39,9 +35,8 @@ describe("Radio Machine", () => {
 
       const api = connectRadio(machine.service);
       expect(api.checked).toBe(false);
-      expect(api.size).toBe("md");
-      expect(api.color).toBe("primary");
-      expect(api.variant).toBe("outline");
+      expect(api.disabled).toBe(false);
+      expect(api.invalid).toBe(false);
 
       machine.stop();
     });
@@ -77,29 +72,13 @@ describe("Radio Machine", () => {
 
       machine.stop();
     });
-
-    it("supports variant = card", () => {
-      const machine = new MiniappMachine(radioMachine, {
-        value: "premium",
-        variant: "card",
-      });
-      machine.start();
-
-      const api = connectRadio(machine.service);
-      expect(api.variant).toBe("card");
-
-      machine.stop();
-    });
   });
 
   describe("Group Mode via groupContext", () => {
     it("inherits group value and reflects checked state", async () => {
       const groupValue = signal<string | null>("opt1");
-      const groupSize = signal<RadioSize>("md");
       const groupContext = makeGroupContext({
         value: () => groupValue(),
-        size: () => groupSize(),
-        variant: () => "card",
       });
       const machine = new MiniappMachine(radioMachine, {
         value: "opt1",
@@ -109,15 +88,12 @@ describe("Radio Machine", () => {
 
       let api = connectRadio(machine.service);
       expect(api.checked).toBe(true);
-      expect(api.variant).toBe("card");
 
       groupValue("opt2");
-      groupSize("lg");
       await flush();
 
       api = connectRadio(machine.service);
       expect(api.checked).toBe(false);
-      expect(api.size).toBe("lg");
 
       machine.stop();
     });
@@ -185,25 +161,6 @@ describe("Radio Machine", () => {
 
       api = connectRadio(machine.service);
       expect(api.invalid).toBe(true);
-
-      machine.stop();
-    });
-
-    it("resolves presentation values from the group context", () => {
-      const machine = new MiniappMachine(radioMachine, {
-        value: "opt1",
-        groupContext: makeGroupContext({
-          color: () => "danger",
-          size: () => "lg",
-          variant: () => "card",
-        }),
-      });
-      machine.start();
-
-      const api = connectRadio(machine.service);
-      expect(api.color).toBe("danger");
-      expect(api.size).toBe("lg");
-      expect(api.variant).toBe("card");
 
       machine.stop();
     });

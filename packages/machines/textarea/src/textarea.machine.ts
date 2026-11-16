@@ -10,7 +10,6 @@ import type {
   TextareaLineChangeDetails,
   TextareaMachine,
   TextareaSchema,
-  TextareaSize,
 } from "./textarea.types";
 import { defaultTextareaProps } from "./textarea.props";
 
@@ -84,13 +83,6 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       Boolean(
         prop("clearable") && computed("isInteractive") && computed("isFilled"),
       ),
-    effectiveSize: ({ prop, computed }) => {
-      const rawSize = prop("size");
-      const fieldSize = computed("fieldSize");
-      return rawSize !== "md"
-        ? rawSize
-        : ((fieldSize || rawSize) as TextareaSize);
-    },
   },
 
   entry: ["setupFormField"],

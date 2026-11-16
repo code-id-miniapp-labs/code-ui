@@ -23,7 +23,6 @@ describe("RadioGroup Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
       expect(api.items).toEqual([]);
 
       machine.stop();
@@ -144,8 +143,6 @@ describe("RadioGroup Machine", () => {
 
       expect(api.items[0]).toMatchObject({
         value: "opt1",
-        label: "Option 1",
-        description: "Desc 1",
         checked: false,
         disabled: false,
       });
@@ -153,8 +150,6 @@ describe("RadioGroup Machine", () => {
 
       expect(api.items[1]).toMatchObject({
         value: "opt2",
-        label: "Option 2",
-        description: "Desc 2",
         checked: true,
         disabled: false,
       });
@@ -162,7 +157,6 @@ describe("RadioGroup Machine", () => {
 
       expect(api.items[2]).toMatchObject({
         value: "opt3",
-        label: "Option 3",
         checked: false,
         disabled: true,
       });
@@ -212,8 +206,8 @@ describe("RadioGroup Machine", () => {
       expect(api.items[0]?.checked).toBe(true);
       expect(api.items[1]?.checked).toBe(false);
 
-      // Tap on banana via detail.value
-      api.handleItemTap({ detail: { value: "banana" } });
+      // Tap on banana
+      api.handleItemTap({ value: "banana" });
       await flush();
 
       api = connectRadioGroup(machine.service);
@@ -222,8 +216,8 @@ describe("RadioGroup Machine", () => {
       expect(api.items[1]?.checked).toBe(true);
       expect(onChange).toHaveBeenCalledWith({ value: "banana" });
 
-      // Tap on orange via detail.value
-      api.handleItemTap({ detail: { value: "orange" } });
+      // Tap on orange
+      api.handleItemTap({ value: "orange" });
       await flush();
 
       api = connectRadioGroup(machine.service);

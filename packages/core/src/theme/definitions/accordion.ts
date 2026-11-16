@@ -8,16 +8,16 @@ export default function accordionTheme(_options: ThemeOptions = {}) {
     variants: {
       variant: {
         outline: {
-          root: "border border-neutral-200 divide-y divide-neutral-200 rounded-lg overflow-hidden",
+          root: "border border-default divide-y divide-default rounded-lg overflow-hidden",
         },
         subtle: {
-          root: "bg-neutral-50/80 divide-y divide-neutral-200/60 rounded-lg overflow-hidden",
+          root: "bg-muted divide-y divide-default rounded-lg overflow-hidden",
         },
         soft: {
-          root: "bg-neutral-100/50 divide-y divide-neutral-200/50 rounded-lg overflow-hidden",
+          root: "bg-elevated divide-y divide-default rounded-lg overflow-hidden",
         },
         plain: {
-          root: "divide-y divide-neutral-200",
+          root: "divide-y divide-default",
         },
         separated: {
           root: "gap-2",

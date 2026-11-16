@@ -8,9 +8,7 @@ export function connectFormField(
 ): FormFieldApi {
   const { computed, prop } = service;
   const displayError = computed("displayError");
-  const displayHelp = computed("displayHelp");
   const isInvalid = computed("invalid");
-  const size = prop("size");
   const disabled = computed("isDisabled");
   const required = prop("required");
   const effectiveRules = computed("effectiveRules");
@@ -18,7 +16,6 @@ export function connectFormField(
   return {
     invalid: isInvalid,
     displayError,
-    displayHelp,
     effectiveRules,
     disabled,
 
@@ -27,7 +24,6 @@ export function connectFormField(
       "data-disabled": String(disabled),
       "data-invalid": String(isInvalid),
       "data-required": String(required),
-      "data-size": size,
     },
 
     labelProps: {

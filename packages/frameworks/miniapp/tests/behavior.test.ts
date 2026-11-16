@@ -193,14 +193,13 @@ describe("createMachineBehavior - formParent & formField relations", () => {
       get: vi.fn((key: string) => {
         if (key === "disabled") return true;
         if (key === "formDisabled") return false;
-        if (key === "size") return "md";
         return undefined;
       }),
     };
 
     const wrapperComp: any = {
       id: "field-wrapper-1",
-      data: { disabled: true, formField: { disabled: true } },
+      data: { disabled: true, size: "lg", formField: { disabled: true } },
       __codeUiMachine: {
         service: { context: wrapperMachineContext },
         updateProps: vi.fn(),
@@ -214,15 +213,14 @@ describe("createMachineBehavior - formParent & formField relations", () => {
     );
     expect(updatePropsChild).toHaveBeenCalledWith({
       fieldDisabled: true,
-      fieldSize: "md",
     });
+    expect(childComp.data.fieldSize).toBe("lg");
 
     // 2. Runtime toggle: disabled changes from true to false
     // Simulate machine updating context to false
     wrapperMachineContext.get.mockImplementation((key: string) => {
       if (key === "disabled") return false;
       if (key === "formDisabled") return false;
-      if (key === "size") return "md";
       return undefined;
     });
 
@@ -236,7 +234,6 @@ describe("createMachineBehavior - formParent & formField relations", () => {
     // Child must receive fieldDisabled: false despite stale wrapper.data.formField!
     expect(updatePropsChild).toHaveBeenLastCalledWith({
       fieldDisabled: false,
-      fieldSize: "md",
     });
   });
 

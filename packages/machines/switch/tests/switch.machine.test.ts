@@ -24,7 +24,6 @@ describe("Switch Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
       expect(api.rootProps["data-state"]).toBe("unchecked");
       expect(api.rootProps["data-checked"]).toBe("false");
       expect(api.baseProps["aria-checked"]).toBe(false);
@@ -217,16 +216,14 @@ describe("Switch Machine", () => {
       machine.stop();
     });
 
-    it("respects fieldDisabled and fieldSize from formField wrapper", () => {
+    it("respects fieldDisabled from formField wrapper", () => {
       const machine = new MiniappMachine(switchMachine, {
         fieldDisabled: true,
-        fieldSize: "lg",
       });
       machine.start();
 
       const api = connectSwitch(machine.service);
       expect(api.disabled).toBe(true);
-      expect(api.size).toBe("lg");
       expect(machine.computed("isInteractive")).toBe(false);
 
       machine.stop();
@@ -329,8 +326,6 @@ describe("Switch Machine", () => {
     it("provides accessible ARIA attributes and data attributes", () => {
       const machine = new MiniappMachine(switchMachine, {
         id: "my-switch",
-        label: "Enable notifications",
-        description: "Receive push notifications",
         name: "notifications",
         value: "yes",
         required: true,

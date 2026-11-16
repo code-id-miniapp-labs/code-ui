@@ -160,11 +160,6 @@ export const qrCodeMachine: QrCodeMachine = createMachine<QrCodeSchema>({
 
     pixelSize: ({ prop }) => normalizePixelSize(prop("pixelSize")),
 
-    overlaySrc: ({ prop }) => String(prop("overlaySrc")),
-
-    showOverlay: ({ prop, computed }) =>
-      Boolean(prop("showOverlay") || computed("overlaySrc")),
-
     encoded: ({ context, computed }) => {
       const value = context.get("value");
       const resolvedEncoding = computed("resolvedEncoding");

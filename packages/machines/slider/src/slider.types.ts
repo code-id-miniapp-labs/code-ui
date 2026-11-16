@@ -10,12 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type {
-  MiniAppComponent,
-  MiniAppEventLike,
-  MiniAppRect,
-  MiniAppTouchEventLike,
-} from "@code-ui/utils";
+import type { MiniAppComponent, MiniAppRect } from "@code-ui/utils";
 import type { anatomy } from "./slider.anatomy";
 
 export type SliderOrientation = "horizontal" | "vertical";
@@ -56,29 +51,17 @@ export interface SliderProps {
   orientation?: SliderOrientation | undefined;
   inverted?: boolean | undefined;
   minStepsBetweenThumbs?: number | undefined;
-  color?: string | undefined;
-  size?: SliderSize | undefined;
-  label?: string | undefined;
   marks?: boolean | SliderMark[] | undefined;
   rules?: FormRule[] | undefined;
   formContext?: FormHostContext | null | undefined;
   fieldDisabled?: boolean | undefined;
-  fieldSize?: string | undefined;
   validateOn?: FormValidateOn | undefined;
   component?: MiniAppComponent | undefined;
-  ui?: SliderUI | undefined;
-  className?: string | undefined;
   onChange?: ((details: SliderChangeDetails) => void) | undefined;
   onChangeEnd?: ((details: SliderChangeDetails) => void) | undefined;
   onFocus?: ((details: { index: number; value: number }) => void) | undefined;
   onBlur?: ((details: { index: number; value: number }) => void) | undefined;
 }
-
-export type SliderPointerEvent =
-  | SliderPoint
-  | { clientX: number; clientY: number }
-  | MiniAppEventLike<{ x?: number | undefined; y?: number | undefined }>
-  | MiniAppTouchEventLike;
 
 export interface SliderContext {
   invalid: boolean;
@@ -139,7 +122,6 @@ export interface SliderComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isDisabled: boolean;
@@ -147,7 +129,6 @@ export interface SliderComputed {
   isInteractive: boolean;
   isDragging: boolean;
   isRange: boolean;
-  effectiveSize: SliderSize;
   values: number[];
   value: number | number[];
   valueAsPercent: number[];
@@ -187,9 +168,6 @@ export interface SliderApi {
   invalid: boolean;
   dragging: boolean;
   isRange: boolean;
-  orientation: SliderOrientation;
-  inverted: boolean;
-  size: SliderSize;
   activeThumbIndex: number;
   thumbs: SliderThumbSnapshot[];
   thumbIds: string;
@@ -205,10 +183,10 @@ export interface SliderApi {
   stepUp(index?: number, step?: number): void;
   stepDown(index?: number, step?: number): void;
   reset(): void;
-  handleTouchStart(e?: SliderPointerEvent): void;
-  handleTouchMove(e?: SliderPointerEvent): void;
-  handleTouchEnd(e?: SliderPointerEvent): void;
-  handleTap(e?: SliderPointerEvent): void;
+  handleTouchStart(point?: SliderPoint, rect?: MiniAppRect, index?: number): void;
+  handleTouchMove(point?: SliderPoint): void;
+  handleTouchEnd(): void;
+  handleTap(point?: SliderPoint): void;
 }
 
 type SliderDefaultedKey =
@@ -226,14 +204,8 @@ type SliderDefaultedKey =
   | "orientation"
   | "inverted"
   | "minStepsBetweenThumbs"
-  | "color"
-  | "size"
-  | "label"
   | "marks"
-  | "fieldDisabled"
-  | "fieldSize"
-  | "className"
-  | "ui";
+  | "fieldDisabled";
 
 export type SliderResolvedProps = Omit<SliderProps, SliderDefaultedKey> & {
   [K in SliderDefaultedKey]-?: Exclude<SliderProps[K], undefined>;

@@ -12,6 +12,4 @@ export const defaultFormProps: FormResolvedProps = {
   scrollOffset: 24,
   disabled: false,
   readOnly: false,
-  showErrors: false,
-  ui: {},
 };

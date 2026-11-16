@@ -1,92 +1,123 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Button</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Trigger actions with finite state machine, async auto-loading.
-    </view>
-  </view>
-  <c-switch value="{{disabled}}" bind:change="toggleDisabled" />
-  <view class="px-5 flex flex-col gap-6">
-    <!-- Variants -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Variants</view>
-      <view class="text-xs text-neutral-400 mb-4">solid, outline, ghost, soft, secondary</view>
-      <view class="flex flex-wrap gap-2.5 items-center">
-        <c-button variant="solid" disabled="{{disabled}}">Solid</c-button>
-        <c-button variant="outline">Outline</c-button>
-        <c-button variant="ghost">Ghost</c-button>
-        <c-button variant="soft">Soft</c-button>
-        <c-button variant="secondary">Secondary</c-button>
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header title="Button" badge="Form" subtitle="Interactive button FSM supporting 5 variants, 7 colors, 5 sizes, icon props/slots, loadingAuto & WeChat openType." />
+  <view class="px-4 flex flex-col gap-4">
+    <!-- Global Disabled Switch -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex items-center justify-between gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Toggle Global Disabled</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Test disabled styling across variants below.
+        </text>
       </view>
+      <c-switch checked="{{ disabled }}" size="sm" color="primary" bind:change="toggleDisabled" />
     </view>
-    <!-- Colors -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        primary, neutral, success, warning, danger, info
+    <!-- 1. Variants -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Variants</text>
+        <text class="block text-xs text-muted mt-0.5">
+          solid, outline, soft, ghost & secondary.
+        </text>
       </view>
       <view class="flex flex-wrap gap-2.5 items-center">
-        <c-button color="primary">Primary</c-button>
-        <c-button color="neutral">Neutral</c-button>
-        <c-button color="success">Success</c-button>
-        <c-button color="warning">Warning</c-button>
-        <c-button color="danger">Danger</c-button>
-        <c-button color="info">Info</c-button>
+        <c-button wx:for="{{ variants }}" wx:key="*this" variant="{{ item }}" color="primary" disabled="{{ disabled }}" label="{{ item }}" bind:tap="handleCountTap" />
       </view>
     </view>
-    <!-- Sizes -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
-      <view class="text-xs text-neutral-400 mb-4">xs, sm, md, lg, xl</view>
-      <view class="flex flex-wrap gap-3 items-center">
-        <c-button size="xs">Extra Small</c-button>
-        <c-button size="sm">Small</c-button>
-        <c-button size="md">Medium</c-button>
-        <c-button size="lg">Large</c-button>
-        <c-button size="xl">Extra Large</c-button>
+    <!-- 2. Semantic Colors -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Semantic Colors</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Solid & soft across primary, secondary, neutral, success, warning, danger & info.
+        </text>
+      </view>
+      <view class="flex flex-wrap gap-2">
+        <c-button wx:for="{{ colors }}" wx:key="*this" size="sm" color="{{ item }}" variant="solid" disabled="{{ disabled }}" label="{{ item }}" />
+      </view>
+      <view class="flex flex-wrap gap-2 pt-2 border-t border-muted">
+        <c-button wx:for="{{ colors }}" wx:key="*this" size="sm" color="{{ item }}" variant="soft" disabled="{{ disabled }}" label="{{ item }}" />
       </view>
     </view>
-    <!-- Async Auto-Loading -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">FSM Async Auto-Loading</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Returns a promise in tap handler; machine transitions to 'loading' state with built-in spinner.
+    <!-- 3. Size Scale -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Sizes & Icon-Only</text>
+        <text class="block text-xs text-muted mt-0.5">
+          xs, sm, md, lg & xl button and icon-only proportions.
+        </text>
       </view>
-      <view class="flex flex-col gap-3">
-        <view class="flex items-center justify-between text-xs text-neutral-500">
-          <text>Clicks completed:</text>
-          <text class="font-bold text-neutral-800">{{count}}</text>
-        </view>
-        <view class="flex flex-wrap gap-2.5">
-          <c-button bind:tap="handleAsyncAction" loadingAuto="{{true}}" color="primary">
-            Async Action (1.5s)
-          </c-button>
-          <c-button loading="{{true}}" color="neutral">Always Loading</c-button>
-        </view>
+      <view class="flex flex-wrap items-center gap-2.5">
+        <c-button wx:for="{{ sizes }}" wx:key="*this" size="{{ item }}" color="primary" label="Size {{ item }}" />
+      </view>
+      <view class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-muted">
+        <c-button wx:for="{{ sizes }}" wx:key="*this" size="{{ item }}" color="secondary" variant="soft" icon="i-lucide-sparkles" />
       </view>
     </view>
-    <!-- Block & Disabled -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Block & Disabled States</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Full-width block buttons and disabled state.
+    <!-- 4. Icons Props & Custom Slots -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Icons, Trailing & Custom Slots
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Using leadingIcon, trailingIcon, trailing prop, or leading/trailing slots.
+        </text>
       </view>
-      <view class="flex flex-col w-full gap-3">
-        <c-button block="{{true}}" color="primary">Full Width Button</c-button>
-        <view class="flex gap-2.5">
-          <c-button disabled="{{checked}}" variant="solid">Disabled Solid</c-button>
-          <c-button disabled="{{checked}}" variant="outline">Disabled Outline</c-button>
-        </view>
+      <view class="flex flex-wrap items-center gap-2.5">
+        <c-button color="primary" leading-icon="i-lucide-rocket" label="Leading Prop" />
+        <c-button color="primary" variant="outline" trailing-icon="i-lucide-arrow-right" label="Trailing Prop" />
+        <c-button color="secondary" variant="soft" leading-icon="i-lucide-check" trailing-icon="i-lucide-chevron-right" label="Both Icons" />
+        <c-button color="neutral" variant="soft" icon="i-lucide-download" trailing="{{ true }}" label="Icon Trailing" />
+        <c-button color="success" variant="outline">
+          <c-icon slot="leading" name="i-lucide-shield-check" size="xs" color="success" />
+          <text>Slot Icons</text>
+          <c-badge slot="trailing" label="New" size="xs" color="success" variant="soft" />
+        </c-button>
       </view>
     </view>
-    <!-- Custom UI Slot Overrides -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Custom UI Prop Override</view>
-      <view class="text-xs text-neutral-400 mb-4">Custom slot override via local ui prop.</view>
-      <c-button ui="{{customButtonUI}}" color="primary" variant="solid">
-        Ring Highlight Button
-      </c-button>
+    <!-- 5. Async LoadingAuto & Manual Loading -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Loading & Async Auto-Loading
+        </text>
+        <text class="block text-xs text-muted mt-0.5">Count: {{ count }} · {{ asyncResult }}</text>
+      </view>
+      <view class="flex flex-wrap gap-2.5">
+        <c-button loading-auto="{{ true }}" color="primary" trailing="{{true}}" leading-icon="i-lucide-send" label="Async Resolve" bind:tap="handleAsyncResolve" />
+        <c-button loading-auto="{{ true }}" color="danger" variant="soft" leading-icon="i-lucide-alert-circle" label="Async Reject" bind:tap="handleAsyncReject" />
+        <c-button loading="{{ true }}" color="neutral" variant="outline" loading-icon="i-lucide-loader-circle" label="Always Loading" />
+      </view>
+    </view>
+    <!-- 6. WeChat Native openType -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">WeChat Native openType</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Passes open-type and MiniProgram callbacks transparently through native button.
+        </text>
+      </view>
+      <view class="flex flex-wrap gap-2.5">
+        <c-button open-type="share" color="primary" variant="soft" leading-icon="i-lucide-share-2" label="Share Page" />
+        <c-button open-type="contact" color="secondary" variant="outline" leading-icon="i-lucide-message-circle" label="Support Chat" />
+        <c-button open-type="openSetting" color="neutral" variant="outline" leading-icon="i-lucide-settings" label="Open Settings" bind:opensetting="onOpenSetting" />
+      </view>
+    </view>
+    <!-- 7. Block & UI Overrides -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Block Layout & UI Slot Override
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Full-width stack and custom ring/shadow classes via ui.
+        </text>
+      </view>
+      <view class="flex flex-col gap-2.5">
+        <c-button block="{{ true }}" color="primary" label="Full Width Primary Action" bind:tap="handleCountTap" />
+        <c-button block="{{ true }}" color="primary" variant="soft" disabled="{{ true }}" label="Full Width Disabled" />
+        <c-button color="neutral" variant="outline" ui="{{ customButtonUI }}" label="Custom UI Ring Override" />
+      </view>
     </view>
   </view>
 </view>

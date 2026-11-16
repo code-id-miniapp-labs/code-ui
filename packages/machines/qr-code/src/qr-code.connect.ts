@@ -11,8 +11,6 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
   const currentState = state.get();
   const value = context.get("value");
   const pixelSize = computed("pixelSize");
-  const overlaySrc = computed("overlaySrc");
-  const showOverlay = computed("showOverlay");
 
   const resolvedEncoding = computed("resolvedEncoding");
   const ecc = computed("ecc");
@@ -63,8 +61,6 @@ export function connectQrCode(service: QrCodeService): QrCodeApi {
     ecc,
     border,
     encoding: resolvedEncoding,
-    overlaySrc,
-    showOverlay,
     dataUrl,
 
     setValue(nextValue: string) {

@@ -16,12 +16,6 @@ export const defaultSliderProps: SliderResolvedProps = {
   orientation: "horizontal",
   inverted: false,
   minStepsBetweenThumbs: 0,
-  color: "primary",
-  size: "md",
-  label: "",
   marks: false,
   fieldDisabled: false,
-  fieldSize: "",
-  className: "",
-  ui: {},
 };

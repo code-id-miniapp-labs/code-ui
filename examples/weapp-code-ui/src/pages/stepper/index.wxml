@@ -1,133 +1,97 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Stepper</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Progress indicators for multi-step workflows supporting compound children, custom slots, data-driven lists, linear progression guards, and vertical orientation.
-    </view>
-  </view>
-  <view class="px-5 flex flex-col gap-6">
-    <!-- 1. Interactive Compound Stepper Demo -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Interactive Stepper</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Navigate steps using controls or tap individual steps (linear mode blocks skipping ahead).
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Stepper"
+    badge="Navigation"
+    subtitle="Multi-step workflow tracker with horizontal/vertical layout, linear guard, 7 colors, 5 sizes & custom completedIcon."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Interactive Compound Stepper -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Interactive Stepper & Linear Guard</text>
+        <text class="block text-xs text-muted mt-0.5">Active Step: {{ activeStep + 1 }} · useChild synced step: {{ stepper.step !== undefined ? stepper.step + 1 : 1 }}</text>
       </view>
-      <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200 mb-5">
-        <c-stepper value="{{activeStep}}" linear="{{linear}}" color="{{color}}" size="{{size}}" bind:change="onStepChange">
-          <c-stepper-item title="Profile" description="Personal info" />
-          <c-stepper-item title="Security" description="Password & 2FA" />
-          <c-stepper-item title="Review" description="Verify entries" />
-          <c-stepper-item title="Done" description="All complete" />
-          <!-- Active Step Content Panel -->
-          <view slot="content" class="mt-4 p-4 bg-white rounded-lg border border-neutral-200 text-center">
-            <view wx:if="{{activeStep === 0}}" class="text-sm font-medium text-neutral-800">
-              👤 Step 1: Please enter your personal details.
-            </view>
-            <view wx:elif="{{activeStep === 1}}" class="text-sm font-medium text-neutral-800">
-              🔒 Step 2: Configure your security credentials.
-            </view>
-            <view wx:elif="{{activeStep === 2}}" class="text-sm font-medium text-neutral-800">
-              📋 Step 3: Review your submitted information.
-            </view>
-            <view wx:elif="{{activeStep === 3}}" class="text-sm font-medium text-neutral-800">
-              🎉 Step 4: Ready to complete setup! Click Finish to resolve.
-            </view>
-            <view wx:elif="{{activeStep >= 4}}" class="text-sm font-medium text-green-600">
-              ✅ All steps successfully completed!
-            </view>
-          </view>
-        </c-stepper>
+
+      <view class="flex flex-wrap gap-1.5">
+        <c-button
+          wx:for="{{ colorOptions }}"
+          wx:key="*this"
+          size="xs"
+          color="{{ color === item ? item : 'neutral' }}"
+          variant="{{ color === item ? 'solid' : 'outline' }}"
+          label="{{ item }}"
+          data-color="{{ item }}"
+          bind:tap="selectColor"
+        />
       </view>
-      <!-- Navigation & Controls -->
-      <view class="flex flex-col gap-4">
-        <!-- Navigation Buttons -->
-        <view class="flex gap-2">
-          <c-button size="sm" variant="outline" color="neutral" disabled="{{activeStep === 0}}" bind:tap="prevStep">
-            ← Previous
-          </c-button>
-          <c-button wx:if="{{activeStep < 3}}" size="sm" variant="solid" color="primary" bind:tap="nextStep">
-            Next Step →
-          </c-button>
-          <c-button wx:else size="sm" variant="solid" color="success" disabled="{{activeStep >= 4}}" bind:tap="nextStep">
-            Finish ✓
-          </c-button>
-          <c-button size="sm" variant="ghost" color="neutral" bind:tap="resetStep">Reset</c-button>
+
+      <view class="flex items-center justify-between gap-2 flex-wrap">
+        <view class="flex gap-1.5">
+          <c-button
+            wx:for="{{ sizeOptions }}"
+            wx:key="*this"
+            size="xs"
+            color="{{ size === item ? 'secondary' : 'neutral' }}"
+            variant="{{ size === item ? 'solid' : 'outline' }}"
+            label="{{ item }}"
+            data-size="{{ item }}"
+            bind:tap="selectSize"
+          />
         </view>
-        <!-- Linear Guard Toggle -->
-        <view class="flex items-center justify-between pt-2 border-t border-neutral-100">
-          <view class="flex flex-col">
-            <text class="text-xs font-semibold text-neutral-800">Linear Mode</text>
-            <text class="text-[11px] text-neutral-400">Enforces sequential step progression</text>
-          </view>
-          <c-switch checked="{{linear}}" bind:change="toggleLinear" size="sm" />
-        </view>
-        <!-- Color Options -->
-        <view class="flex flex-col gap-1.5">
-          <text class="text-xs font-semibold text-neutral-600">Color Theme:</text>
-          <view class="flex flex-wrap gap-2">
-            <block wx:for="{{colorOptions}}" wx:key="*this">
-              <c-button size="xs" variant="{{color === item ? 'solid' : 'outline'}}" color="{{item}}" data-color="{{item}}" bind:tap="selectColor">
-                {{item}}
-              </c-button>
-            </block>
-          </view>
-        </view>
-        <!-- Size Options -->
-        <view class="flex flex-col gap-1.5">
-          <text class="text-xs font-semibold text-neutral-600">Size Variant:</text>
-          <view class="flex gap-2">
-            <block wx:for="{{sizeOptions}}" wx:key="*this">
-              <c-button size="xs" variant="{{size === item ? 'solid' : 'outline'}}" color="{{size === item ? 'primary' : 'neutral'}}" data-size="{{item}}" bind:tap="selectSize">
-                {{item}}
-              </c-button>
-            </block>
-          </view>
+        <view class="flex items-center gap-1.5">
+          <text class="text-xs text-muted">Linear</text>
+          <c-switch checked="{{ linear }}" size="xs" bind:change="toggleLinear" />
         </view>
       </view>
-    </view>
-    <!-- 2. Custom Slots in Compound Items -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Custom Slots in Stepper Items</view>
-      <view class="text-xs text-neutral-400 mb-4"></view>
-      <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-stepper value="{{activeStep}}" bind:change="onStepChange" color="primary" size="md">
-          <block wx:for="{{stepsData}}" wx:for-item="stepItem" wx:key="index">
-            <c-stepper-item title="{{stepItem.title}}" description="{{stepItem.description}}">
-              <c-icon slot="indicator" name="{{stepItem.icon}}" />
-              <c-icon slot="completed-indicator" name="{{stepItem.completedIcon}}" />
-            </c-stepper-item>
-          </block>
-        </c-stepper>
-        {{activeStep}}
+
+      <c-stepper
+        id="stepper-controlled"
+        value="{{ activeStep }}"
+        linear="{{ linear }}"
+        color="{{ color }}"
+        size="{{ size }}"
+        bind:change="onStepChange"
+      >
+        <c-stepper-item title="Cart" description="Review items" icon="i-lucide-shopping-cart" completed-icon="i-lucide-check" />
+        <c-stepper-item title="Shipping" description="Address info" icon="i-lucide-truck" completed-icon="i-lucide-sparkles" />
+        <c-stepper-item title="Payment" description="Method & billing" icon="i-lucide-credit-card" />
+        <c-stepper-item title="Locked Step" description="Disabled step" icon="i-lucide-lock" disabled="{{ true }}" />
+      </c-stepper>
+
+      <view class="flex flex-wrap gap-2 pt-2 border-t border-muted">
+        <c-button size="xs" variant="outline" color="neutral" label="Prev" disabled="{{ activeStep <= 0 }}" bind:tap="prevStep" />
+        <c-button size="xs" color="primary" label="Next" bind:tap="nextStep" />
+        <c-button size="xs" variant="soft" color="secondary" label="api.setStep(2)" bind:tap="jumpToStepTwo" />
+        <c-button size="xs" variant="outline" color="neutral" label="Reset" bind:tap="resetStep" />
       </view>
     </view>
-    <!-- 3. Data-Driven Mode (items array) -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Data-Driven Stepper (items Prop)</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Pass an array of step objects to auto-generate steps without declarative children.
+
+    <!-- 2. Data-Driven Steps Array -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Data-Driven Items Array</text>
+        <text class="block text-xs text-muted mt-0.5">Configured with custom icon & completedIcon per step object.</text>
       </view>
-      <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-stepper id="stepper-data" value="{{dataStep}}" items="{{stepsData}}" color="success" size="sm" bind:change="onDataStepChange"></c-stepper>
-      </view>
+      <c-stepper items="{{ stepsData }}" value="{{ dataStep }}" color="secondary" bind:change="onDataStepChange" />
     </view>
-    <!-- 4. Vertical Stepper (Timeline / Order Tracking) -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">
-        Vertical Orientation (Order Tracking)
+
+    <!-- 3. Vertical Order Tracking -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Vertical Orientation & Custom Slots</text>
+        <text class="block text-xs text-muted mt-0.5">Vertical order tracking timeline with panel descriptions.</text>
       </view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Vertical orientation with connecting separator lines for order fulfillment or status timelines.
-      </view>
-      <view class="p-4 bg-neutral-50/70 rounded-xl border border-neutral-200">
-        <c-stepper value="{{orderStep}}" orientation="vertical" color="primary" size="sm" bind:change="onOrderStepChange">
-          <c-stepper-item title="Order Placed" description="Oct 24, 10:30 AM · Paid with WeChat Pay" />
-          <c-stepper-item title="Processing & Packaging" description="Oct 24, 02:15 PM · Warehouse Shanghai" />
-          <c-stepper-item title="Shipped with SF Express" description="Oct 25, 08:00 AM · In transit" />
-          <c-stepper-item title="Delivered" description="Estimated Oct 26, afternoon" />
-        </c-stepper>
-      </view>
+      <c-stepper orientation="vertical" value="{{ orderStep }}" color="success" bind:change="onOrderStepChange">
+        <c-stepper-item title="Order Confirmed" description="Received at 09:12 AM" icon="i-lucide-circle-check" />
+        <c-stepper-item title="Prepared at Fulfillment" description="Packed & labeled" icon="i-lucide-box" />
+        <c-stepper-item title="Out for Delivery" description="Arriving today by 6 PM" icon="i-lucide-compass">
+          <view slot="default" class="p-2.5 mt-1 rounded-lg bg-muted border border-default">
+            <text class="text-xs text-muted">Live courier ETA updated dynamically via step content slot.</text>
+          </view>
+        </c-stepper-item>
+        <c-stepper-item title="Delivered" description="Signed by recipient" icon="i-lucide-home" />
+      </c-stepper>
     </view>
   </view>
 </view>

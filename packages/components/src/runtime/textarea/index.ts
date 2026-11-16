@@ -1,12 +1,14 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
   textareaMachine,
   connectTextarea,
   defaultTextareaProps,
+  type TextareaSize,
 } from "@code-ui/textarea";
 import themeConfig from "virtual:cui/theme/textarea";
 import { tv } from "../../utils/variants";
@@ -34,6 +36,114 @@ Component(
     },
 
     properties: createProperties(defaultTextareaProps, {
+      variant: {
+        type: String,
+        value: "outline",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      highlight: {
+        type: Boolean,
+        value: false,
+      },
+      placeholder: {
+        type: String,
+        value: "",
+      },
+      placeholderClass: {
+        type: String,
+        value: "",
+      },
+      placeholderStyle: {
+        type: String,
+        value: "",
+      },
+      clearIcon: {
+        type: String,
+        value: "close",
+      },
+      loading: {
+        type: Boolean,
+        value: false,
+      },
+      loadingIcon: {
+        type: String,
+        value: "loading",
+      },
+      leadingIcon: {
+        type: String,
+        value: "",
+      },
+      trailingIcon: {
+        type: String,
+        value: "",
+      },
+      autoHeight: {
+        type: Boolean,
+        value: false,
+      },
+      fixed: {
+        type: Boolean,
+        value: false,
+      },
+      maxlength: {
+        type: Number,
+        value: -1,
+      },
+      showConfirmBar: {
+        type: Boolean,
+        value: true,
+      },
+      cursorSpacing: {
+        type: Number,
+        value: 0,
+      },
+      confirmType: {
+        type: String,
+        value: "return",
+      },
+      confirmHold: {
+        type: Boolean,
+        value: false,
+      },
+      cursor: {
+        type: Number,
+        value: -1,
+      },
+      selectionStart: {
+        type: Number,
+        value: -1,
+      },
+      selectionEnd: {
+        type: Number,
+        value: -1,
+      },
+      adjustPosition: {
+        type: Boolean,
+        value: true,
+      },
+      holdKeyboard: {
+        type: Boolean,
+        value: false,
+      },
+      disableDefaultPadding: {
+        type: Boolean,
+        value: true,
+      },
+      count: {
+        type: Boolean,
+        value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -41,24 +151,32 @@ Component(
     }),
 
     computed: {
+      resolvedSize(): TextareaSize {
+        return (this.data.size || this.data.fieldSize || "md") as TextareaSize;
+      },
+
+      icons() {
+        return useComponentIcons({
+          leadingIcon: this.data.leadingIcon,
+          trailingIcon: this.data.trailingIcon,
+          loading: Boolean(this.data.loading),
+          loadingIcon: this.data.loadingIcon,
+          loadingPlacement: "trailing",
+          slots: this.data.slots,
+        });
+      },
+
       classes() {
         const api = this.data.textarea;
-        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size;
+        const icons = this.data.icons;
+        const isInvalid = Boolean(api?.invalid);
+        const disabled = Boolean(api?.disabled);
+        const size = this.data.resolvedSize;
         const variant = this.data.variant;
         const color = this.data.color;
         const highlight = Boolean(this.data.highlight);
-        const hasLeading = Boolean(
-          this.data.slots.leading || this.data.leadingIcon,
-        );
-        const hasTrailing = Boolean(
-          this.data.slots.trailing ||
-            this.data.trailingIcon ||
-            api?.isClearable ||
-            this.data.loading ||
-            this.data.slots.loadingIcon,
-        );
+        const hasLeading = icons.isLeading;
+        const hasTrailing = Boolean(icons.isTrailing || api?.isClearable);
         const hasCount = Boolean(this.data.count || this.data.slots.count);
         const isAutoHeight = Boolean(this.data.autoHeight);
         const ui = this.data.ui;
@@ -86,27 +204,30 @@ Component(
       },
 
       handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>) {
-        return getApi(this, "textarea")?.handleInput?.(e);
+        return getApi(this, "textarea")?.handleInput?.(
+          e?.detail?.value ?? "",
+          e?.detail?.cursor,
+        );
       },
 
-      handleFocus(e: MiniAppBaseEventLike) {
-        getApi(this, "textarea")?.handleFocus?.(e);
+      handleFocus() {
+        getApi(this, "textarea")?.handleFocus?.();
       },
 
-      handleBlur(e: MiniAppBaseEventLike) {
-        getApi(this, "textarea")?.handleBlur?.(e);
+      handleBlur() {
+        getApi(this, "textarea")?.handleBlur?.();
       },
 
       handleConfirm(e: MiniAppEventLike<{ value?: string }>) {
-        getApi(this, "textarea")?.handleConfirm?.(e);
+        getApi(this, "textarea")?.handleConfirm?.(e?.detail?.value);
       },
 
       handleLineChange(e: MiniAppEventLike<Record<string, any>>) {
-        getApi(this, "textarea")?.handleLineChange?.(e);
+        getApi(this, "textarea")?.handleLineChange?.(e?.detail ?? {});
       },
 
-      handleClear(e: MiniAppBaseEventLike) {
-        getApi(this, "textarea")?.handleClear?.(e);
+      handleClear() {
+        getApi(this, "textarea")?.handleClear?.();
       },
 
       handleKeyboardHeightChange(e: MiniAppEventLike<Record<string, any>>) {

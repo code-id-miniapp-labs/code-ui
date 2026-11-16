@@ -41,6 +41,14 @@ Component(
         optionalTypes: [String],
         value: defaultFormProps.validateOn,
       },
+      showErrors: {
+        type: Boolean,
+        value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -59,10 +67,10 @@ Component(
 
     methods: {
       handleSubmit(e?: MiniAppEventLike<{ value?: Record<string, any> }>) {
-        return getApi<FormApi>(this, "form")?.handleSubmit(e);
+        return getApi<FormApi>(this, "form")?.handleSubmit(e?.detail?.value);
       },
-      handleReset(e?: MiniAppEventLike<Record<string, any>>) {
-        getApi<FormApi>(this, "form")?.handleReset(e);
+      handleReset() {
+        getApi<FormApi>(this, "form")?.handleReset();
       },
       validate(name?: string | string[]) {
         return getApi<FormApi>(this, "form")?.validate(name);

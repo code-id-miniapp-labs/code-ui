@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./file-upload.anatomy";
 
 export type FileUploadState = "idle" | "choosing" | "uploading";
@@ -74,8 +74,6 @@ export interface FileUploadProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: FileUploadUI | undefined;
   /** Optional target `<c-form>` id/name */
   form?: string | undefined;
   /** Form field name for registration */
@@ -84,16 +82,8 @@ export interface FileUploadProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the field is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Visual variant */
-  variant?: FileUploadVariant | undefined;
-  /** Semantic color */
-  color?: FileUploadColor | undefined;
-  /** Size variant */
-  size?: FileUploadSize | "" | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: FileUploadSize | undefined;
   /** Controlled files array */
   value?: FileUploadFile[] | null | undefined;
   /** Default files array */
@@ -126,32 +116,6 @@ export interface FileUploadProps {
   maxDuration?: number | undefined;
   /** Whether the dropzone is clickable */
   interactive?: boolean | undefined;
-  /** Whether the dropzone is displayed */
-  dropzone?: boolean | undefined;
-  /** Layout for file list: list or grid */
-  layout?: FileUploadLayout | undefined;
-  /** Dropzone prompt title alias */
-  title?: string | undefined;
-  /** Dropzone hint description */
-  description?: string | undefined;
-  /** Dropzone icon name */
-  icon?: string | undefined;
-  /** Loading icon name */
-  loadingIcon?: string | undefined;
-  /** Delete button icon name */
-  deleteIcon?: string | undefined;
-  /** Generic file icon name */
-  fileIcon?: string | undefined;
-  /** Image file icon name */
-  imageIcon?: string | undefined;
-  /** Video file icon name */
-  videoIcon?: string | undefined;
-  /** Audio file icon name */
-  audioIcon?: string | undefined;
-  /** Success status icon name */
-  successIcon?: string | undefined;
-  /** Error status icon name */
-  errorIcon?: string | undefined;
   /** Whether component is in uploading state */
   uploading?: boolean | undefined;
   /** Overall upload progress percentage (0-100) or null */
@@ -193,11 +157,9 @@ export interface FileUploadComputed {
   hasFiles: boolean;
   fileCount: number;
   isUploading: boolean;
-  effectiveSize: FileUploadSize;
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
 }
 
 export interface FileUploadRefs {
@@ -263,23 +225,8 @@ type FileUploadDefaultedKey =
   | "camera"
   | "maxDuration"
   | "interactive"
-  | "dropzone"
-  | "layout"
-  | "title"
-  | "description"
-  | "icon"
-  | "loadingIcon"
-  | "deleteIcon"
-  | "fileIcon"
-  | "imageIcon"
-  | "videoIcon"
-  | "audioIcon"
-  | "color"
-  | "size"
-  | "variant"
   | "uploading"
-  | "progress"
-  | "ui";
+  | "progress";
 
 export type FileUploadResolvedProps = Omit<
   FileUploadProps,
@@ -333,14 +280,14 @@ export interface FileUploadApi {
   dropzoneProps: Record<string, any>;
   fileListProps: Record<string, any>;
   chooseFiles: () => Promise<void>;
-  handleDropzoneTap: (event?: MiniAppBaseEventLike) => Promise<void>;
+  handleDropzoneTap: () => Promise<void>;
   addFiles: (files: unknown[]) => void;
   removeFile: (idOrIndex: string | number) => void;
-  handleRemove: (event: MiniAppBaseEventLike<{ index: number }>) => void;
+  handleRemove: (index: number) => void;
   previewFile: (idOrIndex: string | number) => void;
-  handlePreview: (event: MiniAppBaseEventLike<{ index: number }>) => void;
-  handleFileClick: (event: MiniAppBaseEventLike<{ index: number }>) => void;
-  handleImageError: (event: MiniAppBaseEventLike<{ index: number }>) => void;
+  handlePreview: (index: number) => void;
+  handleFileClick: (index: number) => void;
+  handleImageError: (index: number) => void;
   clearFiles: () => void;
   setFiles: (files: FileUploadFile[]) => void;
 }

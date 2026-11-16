@@ -1,16 +1,71 @@
-<view class="h-screen">
-  <c-pull-down-refresh class="h-full" threshold="{{30}}" maxPullDistance="{{50}}" loadingTexts="{{loadingTexts}}" bind:refresh="onRefresh">
-    <view slot="header" class="px-4 pt-4 pb-2 bg-white">
-      <text class="text-lg font-bold">PullDownRefresh</text>
-      <text class="block text-xs text-neutral-500">
-        Drag down from the top to trigger a refresh.
-      </text>
-    </view>
-    <view class="p-4 space-y-3 pb-16">
-      <view wx:for="{{items}}" wx:key="id" class="p-4 bg-white border border-neutral-200 rounded-xl">
-        <text class="font-medium">{{item.title}}</text>
-        <text class="block text-xs text-neutral-500 mt-1">{{item.description}}</text>
+<view class="h-screen flex flex-col bg-muted text-default overflow-hidden">
+  <demo-header
+    title="Pull Down Refresh"
+    badge="Feedback"
+    subtitle="WXS physics pull-to-refresh container with custom indicator slots, threshold config & programmatic refresh()."
+  />
+
+  <!-- Controls Bar -->
+  <view class="px-4 pb-3 shrink-0">
+    <view class="bg-default border border-default rounded-2xl p-3 flex flex-col gap-2.5">
+      <view class="flex items-center justify-between gap-2 flex-wrap">
+        <view class="flex items-center gap-2">
+          <c-badge label="Batch #{{ batch }}" color="primary" variant="soft" size="sm" />
+          <text class="text-xs text-muted">Last sync: {{ lastRefreshedAt }}</text>
+        </view>
+        <view class="flex items-center gap-2">
+          <c-button size="xs" color="primary" label="Trigger refresh()" bind:tap="triggerRefresh" />
+          <c-button size="xs" color="neutral" variant="outline" label="close()" bind:tap="triggerClose" />
+        </view>
+      </view>
+
+      <view class="flex items-center justify-between gap-4 pt-2 border-t border-muted">
+        <view class="flex items-center gap-2">
+          <text class="text-xs text-muted">Disabled</text>
+          <c-switch checked="{{ disabled }}" size="sm" bind:change="onToggleDisabled" />
+        </view>
+        <view class="flex items-center gap-2">
+          <text class="text-xs text-muted">Custom Indicator Slot</text>
+          <c-switch checked="{{ useCustomIndicatorSlot }}" size="sm" color="secondary" bind:change="onToggleIndicatorSlot" />
+        </view>
       </view>
     </view>
-  </c-pull-down-refresh>
+  </view>
+
+  <!-- Scrollable Pull-to-Refresh List -->
+  <view class="flex-1 min-h-0 px-4 pb-4">
+    <view class="h-full bg-default border border-default rounded-2xl overflow-hidden">
+      <c-pull-down-refresh
+        id="demo-pdr"
+        className="h-full"
+        disabled="{{ disabled }}"
+        threshold="{{ threshold }}"
+        max-pull-distance="{{ maxPullDistance }}"
+        success-duration="{{ successDuration }}"
+        loading-icon="{{ loadingIcon }}"
+        loading-texts="{{ loadingTexts }}"
+        bind:refresh="onRefresh"
+      >
+        <view slot="header" class="px-4 py-2 bg-primary/10 border-b border-muted">
+          <text class="text-[11px] font-medium text-primary">
+            Drag down inside this list or tap "Trigger refresh()" above.
+          </text>
+        </view>
+
+        <view wx:if="{{ useCustomIndicatorSlot }}" slot="indicator" class="mr-2 flex items-center">
+          <c-icon name="i-lucide-sparkles" size="sm" color="secondary" spin="{{ true }}" />
+        </view>
+
+        <view class="flex flex-col divide-y divide-muted px-4">
+          <view wx:for="{{ items }}" wx:key="id" class="py-3 flex items-center justify-between gap-3">
+            <view class="min-w-0 flex-1">
+              <text class="block text-sm font-medium text-highlighted">{{ item.title }}</text>
+              <text class="block text-xs text-muted mt-0.5">{{ item.description }}</text>
+            </view>
+            <c-badge label="#{{ item.id }}" color="neutral" variant="soft" size="xs" />
+          </view>
+        </view>
+      </c-pull-down-refresh>
+    </view>
+  </view>
 </view>

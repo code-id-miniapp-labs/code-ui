@@ -59,6 +59,16 @@ Page({
 
     // 7. Horizontal Orientation
     selectedTags: ["react", "vite"],
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
 
     // 8. Form & Validation
     formInterests: [] as string[],

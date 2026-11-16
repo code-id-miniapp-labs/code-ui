@@ -28,19 +28,19 @@ describe("avatarGroupTheme (@code-ui/core)", () => {
     const theme = avatarGroupTheme();
     expect(theme.variants.size["3xs"]).toEqual({
       base: "ring -me-0.5",
-      counter: "text-[14rpx] ps-0.5",
+      counter: "text-3xs ps-0.5",
     });
     expect(theme.variants.size["2xs"]).toEqual({
       base: "ring -me-0.5",
-      counter: "text-[16rpx] ps-0.5",
+      counter: "text-3xs ps-0.5",
     });
     expect(theme.variants.size.xs).toEqual({
       base: "ring -me-0.5",
-      counter: "text-[18rpx] ps-0.5",
+      counter: "text-3xs ps-0.5",
     });
     expect(theme.variants.size.sm).toEqual({
       base: "ring-2 -me-1",
-      counter: "text-[20rpx] ps-0.5",
+      counter: "text-2xs ps-0.5",
     });
     expect(theme.variants.size.md).toEqual({
       base: "ring-2 -me-1.5",

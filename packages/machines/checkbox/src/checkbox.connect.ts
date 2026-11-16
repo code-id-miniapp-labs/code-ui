@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type { CheckboxApi, CheckboxService } from "./checkbox.types";
 import * as dom from "./checkbox.dom";
 
@@ -11,10 +10,6 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-
-  const size = computed("effectiveSize");
-  const color = computed("effectiveColor");
-  const variant = computed("effectiveVariant");
 
   const dataState = indeterminate
     ? "indeterminate"
@@ -39,9 +34,6 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
     disabled,
     readOnly,
     invalid,
-    size,
-    color,
-    variant,
 
     setChecked(nextChecked: boolean) {
       send({ type: "SET_CHECKED", checked: nextChecked });
@@ -59,7 +51,7 @@ export function connectCheckbox(service: CheckboxService): CheckboxApi {
       send({ type: "RESET_VALUE" });
     },
 
-    handleTap(_event?: MiniAppBaseEventLike) {
+    handleTap() {
       send({ type: "TOGGLE" });
     },
 

@@ -1,15 +1,11 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function tabsItemTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
-  const semanticColors = (colors as readonly string[]).filter(
-    (c) => c !== "neutral",
-  );
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
@@ -17,6 +13,8 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
       content: "w-full",
       trigger:
         "relative flex flex-row items-center justify-center font-medium transition-colors duration-200 select-none shrink-0 whitespace-nowrap z-[1] cursor-pointer focus:outline-none data-[disabled=true]:opacity-40 data-[disabled=true]:pointer-events-none",
+      triggerInner:
+        "relative z-10 flex flex-row items-center justify-center gap-1.5 min-w-0",
       leading: "relative z-10 shrink-0",
       label: "relative z-10 truncate",
       trailing: "relative z-10 shrink-0",
@@ -24,10 +22,13 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
         "absolute pointer-events-none transition-all duration-200 ease-out origin-center",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       variant: {
         pill: {
-          indicator: "inset-0 rounded-lg bg-white shadow-xs z-0",
+          indicator: "inset-0 rounded-lg bg-default shadow-xs z-0",
           trigger: "rounded-lg",
         },
         link: {
@@ -49,7 +50,7 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
           indicator: "opacity-100 scale-100",
         },
         false: {
-          trigger: "text-neutral-500 hover:text-neutral-700",
+          trigger: "text-muted hover:text-default",
           indicator: "opacity-0 scale-95",
         },
       },
@@ -162,34 +163,34 @@ export default function tabsItemTheme(options: ThemeOptions = {}) {
           indicator: "opacity-100 scale-y-100",
         },
       },
-      {
+      ...colors.map((color) => ({
         selected: true as const,
-        color: "neutral" as (typeof colors)[number],
-        class: {
-          trigger: "text-neutral-900",
-        },
-      },
-      ...semanticColors.map((color) => ({
-        selected: true as const,
-        color: color as (typeof colors)[number],
+        color,
         class: {
           trigger: `text-${color}`,
         },
       })),
       {
-        variant: "link" as const,
-        color: "neutral" as (typeof colors)[number],
+        selected: true as const,
+        color: "neutral" as const,
         class: {
-          indicator: "bg-neutral-900",
+          trigger: "text-highlighted",
         },
       },
-      ...semanticColors.map((color) => ({
+      ...colors.map((color) => ({
         variant: "link" as const,
-        color: color as (typeof colors)[number],
+        color,
         class: {
           indicator: `bg-${color}`,
         },
       })),
+      {
+        variant: "link" as const,
+        color: "neutral" as const,
+        class: {
+          indicator: "bg-inverted",
+        },
+      },
     ],
     defaultVariants: {
       color: "primary",

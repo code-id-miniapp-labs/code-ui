@@ -10,7 +10,6 @@ import type {
   PinInputMachine,
   PinInputParams,
   PinInputSchema,
-  PinInputSize,
   PinInputType,
 } from "./pin-input.types";
 import { defaultPinInputProps } from "./pin-input.props";
@@ -199,8 +198,6 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           computed("fieldDisabled") ||
           prop("disabled"),
       ),
-    effectiveSize: ({ prop, computed }) =>
-      (prop("size") || computed("fieldSize") || "md") as PinInputSize,
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
   },

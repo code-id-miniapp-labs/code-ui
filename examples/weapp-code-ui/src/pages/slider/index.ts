@@ -11,6 +11,18 @@ Page({
     singleValue: 35,
     rangeValue: [20, 80],
     stepValue: 40,
+    verticalValue: 65,
+    invertedValue: 45,
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
     marks: [
       { value: 0, label: "0°C" },
       { value: 25, label: "25°C" },

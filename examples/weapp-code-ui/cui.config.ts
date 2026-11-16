@@ -17,11 +17,11 @@ export default defineConfig({
   },
   ui: {
     colors: {
-      primary: "stone",
+      primary: "gray",
       secondary: "amber",
       danger: "red",
     },
-    colorMode: "light",
+    colorMode: "system",
   },
   components: {
     button: {

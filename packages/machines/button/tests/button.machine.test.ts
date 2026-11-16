@@ -61,13 +61,13 @@ describe("Button Machine", () => {
       machine.start();
 
       const api = connectButton(machine.service);
-      const fakeEvent = { detail: { x: 10, y: 20 } };
-      api.handleTap(fakeEvent);
+      const fakeDetail = { x: 10, y: 20 };
+      api.handleTap(fakeDetail);
 
       await flush();
 
       expect(onTap).toHaveBeenCalledTimes(1);
-      expect(onTap).toHaveBeenCalledWith(fakeEvent);
+      expect(onTap).toHaveBeenCalledWith(fakeDetail);
       expect(machine.state.get()).toBe("idle");
 
       machine.stop();
@@ -364,21 +364,19 @@ describe("Button Machine", () => {
       const machine = new MiniappMachine(buttonMachine, {
         loadingAuto: true,
         autoResetDuration: 1200,
-        onTap: (rawEvent: any) => {
-          // Parent Miniapp handler attaches promise to event detail
-          rawEvent?.detail?.setPromise?.(asyncPromise);
+        onTap: (detail: any) => {
+          // Parent Miniapp handler attaches promise to tap detail
+          detail?.setPromise?.(asyncPromise);
         },
       });
       machine.start();
 
-      const fakeEvent = {
-        detail: {
-          x: 10,
-          y: 20,
-        },
+      const fakeDetail = {
+        x: 10,
+        y: 20,
       };
 
-      machine.send({ type: "TAP", event: fakeEvent });
+      machine.send({ type: "TAP", detail: fakeDetail });
       await flush();
 
       expect(machine.state.get()).toBe("loading");
@@ -569,10 +567,6 @@ describe("Button Machine", () => {
     it("generates correct DOM accessibility and data attributes", () => {
       const machine = new MiniappMachine(buttonMachine, {
         id: "submit-btn",
-        variant: "secondary",
-        color: "neutral",
-        size: "sm",
-        block: true,
       });
       machine.start();
 

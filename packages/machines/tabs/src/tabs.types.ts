@@ -26,12 +26,7 @@ export type TabsResolvedUI = ResolvedUI<typeof anatomy>;
 
 export interface TabsGroupContext {
   readonly value: () => string | number;
-  readonly orientation: () => TabsOrientation;
-  readonly variant: () => TabsVariant;
-  readonly color: () => TabsColor;
-  readonly size: () => TabsSize;
   readonly disabled: () => boolean;
-  readonly fitted: () => boolean;
 
   select: (value: string | number) => void;
   setValue: (value: string | number) => void;
@@ -43,31 +38,17 @@ export interface TabsGroupContext {
 
 export interface TabsItem {
   id?: string | undefined;
-  label?: string | undefined;
   value?: string | number | undefined;
-  icon?: string | undefined;
-  trailingIcon?: string | undefined;
   disabled?: boolean | undefined;
-  content?: string | undefined;
-  slot?: string | undefined;
-  ui?: Record<string, any> | undefined;
-  [key: string]: any;
 }
 
 export interface TabItemComputed {
   index: number;
   value: string | number;
-  label: string;
-  icon?: string | undefined;
-  trailingIcon?: string | undefined;
   disabled: boolean;
   isSelected: boolean;
-  content?: string | undefined;
-  slot?: string | undefined;
-  ui?: Record<string, any> | undefined;
   triggerProps: Record<string, any>;
   contentProps: Record<string, any>;
-  [key: string]: any;
 }
 
 export interface TabsValueChangeDetails {
@@ -83,34 +64,22 @@ export interface TabsProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes */
-  ui?: TabsUI | undefined;
   /** Controlled active tab value */
   value?: string | number | null | undefined;
   /** Default active tab value */
   defaultValue?: string | number | null | undefined;
-  /** Array of tab definitions or string labels */
+  /** Array of tab definitions or string values */
   items?: Array<TabsItem | string> | undefined;
   /** Linked child tab definitions when using declarative <c-tabs-item> */
   childItems?: Array<TabsItem | string> | undefined;
   /** Number of linked child components */
   linkedCount?: number | undefined;
-  /** Tabs orientation */
-  orientation?: TabsOrientation | undefined;
-  /** Visual variant */
-  variant?: TabsVariant | undefined;
-  /** Semantic color */
-  color?: TabsColor | undefined;
-  /** Size variant */
-  size?: TabsSize | undefined;
   /** Whether the entire tabs component is disabled */
   disabled?: boolean | undefined;
   /** Whether navigation loops from end to start */
   loopFocus?: boolean | undefined;
   /** Selection trigger mode on focus */
   activationMode?: TabsActivationMode | undefined;
-  /** Whether tabs should divide space equally to fit container */
-  fitted?: boolean | undefined;
   /** Callback fired when the active tab changes */
   onChange?: ((details: TabsValueChangeDetails) => void) | undefined;
 }
@@ -118,16 +87,10 @@ export interface TabsProps {
 export type TabsDefaultedKey =
   | "value"
   | "defaultValue"
-  | "orientation"
-  | "variant"
-  | "color"
-  | "size"
   | "disabled"
-  | "fitted"
   | "loopFocus"
   | "activationMode"
-  | "items"
-  | "ui";
+  | "items";
 
 export type TabsResolvedProps = Omit<TabsProps, TabsDefaultedKey> & {
   [K in TabsDefaultedKey]-?: Exclude<TabsProps[K], undefined>;
@@ -135,7 +98,6 @@ export type TabsResolvedProps = Omit<TabsProps, TabsDefaultedKey> & {
 
 export interface NormalizedTabItem extends TabsItem {
   value: string | number;
-  label: string;
   disabled: boolean;
 }
 

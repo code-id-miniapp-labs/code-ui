@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import {
   getContentId,
   getRootId,
@@ -16,10 +15,8 @@ export function connectAccordionItem(
 
   const resolvedValue = computed("resolvedValue");
   const isOpen = computed("isOpen");
-  const isDisabled = computed("isDisabled");
+  const disabled = computed("isDisabled");
   const isCollapsible = computed("isCollapsible");
-  const size = computed("effectiveSize");
-  const variant = computed("effectiveVariant");
 
   const accordionId = prop("accordionId") || "";
   const contentHeight = context.get("contentHeight");
@@ -34,17 +31,17 @@ export function connectAccordionItem(
     id: getRootId(scope, resolvedValue, accordionId),
     "data-value": resolvedValue,
     "data-state": stateStr,
-    "data-disabled": String(isDisabled),
+    "data-disabled": String(disabled),
   };
 
   const triggerProps: Record<string, any> = {
     id: triggerId,
     "aria-role": "button",
-    "aria-disabled": isDisabled,
+    "aria-disabled": disabled,
     "aria-expanded": isOpen,
     "data-value": resolvedValue,
     "data-state": stateStr,
-    "data-disabled": String(isDisabled),
+    "data-disabled": String(disabled),
   };
 
   const contentProps: Record<string, any> = {
@@ -57,15 +54,13 @@ export function connectAccordionItem(
     "data-state": stateStr,
   };
 
-  const handleTap = (_e?: MiniAppBaseEventLike) => send({ type: "TOGGLE" });
+  const handleTap = () => send({ type: "TOGGLE" });
 
   return {
     isOpen,
-    isDisabled,
+    disabled,
     isCollapsible,
     resolvedValue,
-    size,
-    variant,
     contentHeight,
     contentStyle,
     measure: () => send({ type: "MEASURE" }),

@@ -48,6 +48,10 @@ export interface ActionSheetAction {
   onClick?: (() => void | Promise<void>) | undefined;
   /** Optional icon */
   icon?: string | undefined;
+  /** Leading icon */
+  leadingIcon?: string | undefined;
+  /** Trailing icon */
+  trailingIcon?: string | undefined;
   /** Loading state */
   loading?: boolean | undefined;
   /** Perform auto loading when onClick is async function */
@@ -72,6 +76,16 @@ export interface ActionSheetAction {
   ui?: any | undefined;
 }
 
+export interface ActionSheetCloseProps {
+  icon?: string | undefined;
+  color?: string | undefined;
+  variant?: string | undefined;
+  size?: string | undefined;
+  disabled?: boolean | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
+}
+
 export interface ActionSheetSelectDetails {
   item: ActionSheetItem;
   index: number;
@@ -93,24 +107,14 @@ export interface ActionSheetProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for action sheet anatomy parts */
-  ui?: ActionSheetUI | undefined;
   /** Whether the action sheet is open (controlled) */
   open?: boolean | null | undefined;
   /** Initial open state when uncontrolled */
   defaultOpen?: boolean | undefined;
-  /** Action sheet title */
-  title?: string | undefined;
-  /** Action sheet description / message */
-  description?: string | undefined;
   /** Array of menu items */
   items?: ActionSheetItem[] | undefined;
   /** Array of footer actions powered by <c-button> */
   actions?: ActionSheetAction[] | undefined;
-  /** Whether to show a close trigger button in the header */
-  close?: boolean | undefined;
-  /** Icon name for the close trigger button (default: "close") */
-  closeIcon?: string | undefined;
   /** Whether clicking a menu item automatically closes the sheet (default: true) */
   closeOnItem?: boolean | undefined;
   /** Whether clicking the backdrop closes the sheet (default: true) */
@@ -132,16 +136,11 @@ export interface ActionSheetProps {
 export interface ActionSheetResolvedProps extends ActionSheetProps {
   open: boolean | null;
   defaultOpen: boolean;
-  title: string;
-  description: string;
   items: ActionSheetItem[];
   actions: ActionSheetAction[];
-  close: boolean;
-  closeIcon: string;
   closeOnItem: boolean;
   closeOnBackdropClick: boolean;
   duration: number;
-  ui: ActionSheetUI;
 }
 
 export type ActionSheetEvent =
@@ -203,10 +202,8 @@ export interface ActionSheetApi {
   visible: boolean;
   /** Current machine state ('open' | 'closed' | 'closing') */
   state: ActionSheetState;
-  /** Pre-computed items list safe for WXML wx:for */
-  items: ActionSheetItem[];
-  /** Pre-computed footer actions list safe for WXML wx:for */
-  actions: ActionSheetAction[];
+  /** Index of the footer action currently in async loading state, or null */
+  loadingActionIndex: number | null;
   /** Open or close the action sheet */
   setOpen(open: boolean): void;
   /** Open the action sheet */

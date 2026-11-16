@@ -23,9 +23,7 @@ export function connectStepper(service: StepperService): StepperApi {
   const isLast = computed("isLast");
   const isCompleted = computed("isCompleted");
   const linear = prop("linear");
-  const orientation = prop("orientation");
   const disabled = prop("disabled");
-  const fallbackUi = prop("ui");
   const rawItems = context.get("items");
   const scrollTargetIndex = computed("scrollTargetIndex");
   const scrollIntoViewId = computed("scrollIntoViewId");
@@ -37,7 +35,6 @@ export function connectStepper(service: StepperService): StepperApi {
   const getListProps = (): Record<string, any> => ({
     id: getListId(scope),
     "enable-flex": true,
-    "scroll-x": orientation === "horizontal",
     "scroll-into-view": scrollIntoViewId,
     enhanced: true,
     "show-scrollbar": false,
@@ -71,18 +68,13 @@ export function connectStepper(service: StepperService): StepperApi {
         return {
           index,
           value: item.value !== undefined ? item.value : index,
-          title: item.title ?? "",
-          description: item.description ?? "",
-          icon: item.icon ?? "",
-          completedIcon: item.completedIcon ?? "",
           status,
           isCurrent,
           isCompleted: isComplete,
           isUpcoming,
-          isDisabled,
+          disabled: isDisabled,
           isFirst: index === 0,
           isLast: index === rawItems.length - 1,
-          ui: item.ui ?? fallbackUi,
           itemProps: { id: getItemId(scope, index), "data-index": index },
         };
       })

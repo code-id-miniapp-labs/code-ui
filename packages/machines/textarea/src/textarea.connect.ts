@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import type {
   TextareaApi,
   TextareaLineChangeDetails,
@@ -14,10 +13,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
   const value = context.get("value");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
-  const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const placeholder = prop("placeholder");
-  const maxlength = prop("maxlength");
   const name = prop("name");
 
   const isFilled = computed("isFilled");
@@ -38,8 +34,6 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     value,
     focus: isFocused,
     disabled: disabled || readOnly,
-    placeholder,
-    maxlength,
     "aria-role": "textbox",
     "aria-multiline": true,
   };
@@ -54,7 +48,6 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     invalid,
     disabled,
     readOnly,
-    size,
 
     setValue(nextVal: string | number) {
       send({ type: "SET_VALUE", value: nextVal });
@@ -76,37 +69,32 @@ export function connectTextarea(service: TextareaService): TextareaApi {
       send({ type: "TEXTAREA.BLUR" });
     },
 
-    handleInput(
-      event: MiniAppEventLike<{ value: string; cursor?: number }>,
-    ): string | void {
-      const val = event.detail.value;
+    handleInput(nextValue: string, cursor?: number): string | void {
       send({
         type: "TEXTAREA.CHANGE",
-        value: val,
-        cursor: event.detail.cursor,
+        value: nextValue,
+        cursor,
       });
-      return val;
+      return nextValue;
     },
 
-    handleFocus(_event?: MiniAppBaseEventLike) {
+    handleFocus() {
       send({ type: "TEXTAREA.FOCUS" });
     },
 
-    handleBlur(_event?: MiniAppBaseEventLike) {
+    handleBlur() {
       send({ type: "TEXTAREA.BLUR" });
     },
 
-    handleConfirm(event?: MiniAppEventLike<{ value?: string }>) {
-      send({ type: "TEXTAREA.CONFIRM", value: event?.detail?.value ?? value });
+    handleConfirm(nextValue?: string) {
+      send({ type: "TEXTAREA.CONFIRM", value: nextValue ?? value });
     },
 
-    handleLineChange(
-      event: MiniAppEventLike<Partial<TextareaLineChangeDetails>>,
-    ) {
-      send({ type: "TEXTAREA.LINE_CHANGE", detail: event.detail });
+    handleLineChange(detail: Partial<TextareaLineChangeDetails>) {
+      send({ type: "TEXTAREA.LINE_CHANGE", detail });
     },
 
-    handleClear(_event?: MiniAppBaseEventLike) {
+    handleClear() {
       send({ type: "TEXTAREA.CLEAR" });
     },
 

@@ -61,6 +61,11 @@
       "import": "./dist/behaviors/app.js",
       "require": "./dist/behaviors/app.cjs"
     },
+    "./behaviors/theme": {
+      "types": "./dist/behaviors/theme.d.ts",
+      "import": "./dist/behaviors/theme.js",
+      "require": "./dist/behaviors/theme.cjs"
+    },
     "./behaviors/avatar-group": {
       "types": "./dist/behaviors/avatar-group.d.ts",
       "import": "./dist/behaviors/avatar-group.js",

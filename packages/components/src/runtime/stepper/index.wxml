@@ -2,14 +2,14 @@
   <scroll-view wx:if="{{orientation !== 'vertical'}}" id="{{stepper.listProps.id}}" class="cui-stepper-list {{classes.list}}" aria-role="tablist" scroll-x="{{true}}" scroll-with-animation="{{true}}" scroll-into-view="{{stepper.scrollIntoViewId}}" enhanced="{{true}}" show-scrollbar="{{false}}" aria-orientation="horizontal" data-scope="stepper" data-part="list" data-orientation="horizontal">
     <view class="cui-stepper-header {{classes.header}}">
       <block wx:if="{{hasItems}}">
-        <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" id="{{item.itemProps.id}}" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" completedIcon="{{item.completedIcon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{orientation}}" color="{{color}}" size="{{size}}" variant="{{variant}}" ui="{{item.ui}}" bind:tap="handleItemTap" />
+        <c-stepper-item wx:for="{{resolvedItems}}" wx:key="index" id="{{item.itemProps.id}}" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" completedIcon="{{item.completedIcon}}" status="{{item.status}}" disabled="{{item.disabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{orientation}}" color="{{color}}" size="{{size}}" variant="{{variant}}" ui="{{item.ui}}" bind:tap="handleItemTap" />
       </block>
       <slot wx:else />
     </view>
   </scroll-view>
   <view wx:else id="{{stepper.listProps.id}}" class="{{classes.list}}" aria-role="tablist" aria-orientation="vertical" data-scope="stepper" data-part="list" data-orientation="vertical">
     <block wx:if="{{hasItems}}">
-      <c-stepper-item wx:for="{{stepper.steps}}" wx:key="index" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" completedIcon="{{item.completedIcon}}" status="{{item.status}}" disabled="{{item.isDisabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{orientation}}" color="{{color}}" size="{{size}}" variant="{{variant}}" ui="{{item.ui}}" bind:tap="handleItemTap" />
+      <c-stepper-item wx:for="{{resolvedItems}}" wx:key="index" index="{{item.index}}" title="{{item.title}}" description="{{item.description}}" icon="{{item.icon}}" completedIcon="{{item.completedIcon}}" status="{{item.status}}" disabled="{{item.disabled}}" value="{{item.value}}" isLast="{{item.isLast}}" orientation="{{orientation}}" color="{{color}}" size="{{size}}" variant="{{variant}}" ui="{{item.ui}}" bind:tap="handleItemTap" />
     </block>
     <slot wx:else />
   </view>

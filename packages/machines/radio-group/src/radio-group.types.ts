@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./radio-group.anatomy";
 
 export type RadioGroupState = "idle";
@@ -51,13 +51,8 @@ export interface RadioGroupItemTapDetail {
 
 export interface RadioGroupItem {
   value: string;
-  label: string;
-  description: string;
   disabled: boolean;
   checked: boolean;
-  color: RadioGroupColor;
-  variant: RadioGroupVariant;
-  ui?: Record<string, any> | undefined;
   itemProps: Record<string, any>;
   controlProps: Record<string, any>;
   indicatorProps: Record<string, any>;
@@ -74,8 +69,6 @@ export interface RadioGroupProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: RadioGroupUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -88,26 +81,14 @@ export interface RadioGroupProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the radio group is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Semantic color variant */
-  color?: RadioGroupColor | undefined;
-  /** Size variant */
-  size?: RadioGroupSize | undefined;
-  /** Layout orientation */
-  orientation?: RadioGroupOrientation | undefined;
-  /** Visual variant (outline or card) */
-  variant?: RadioGroupVariant | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: RadioGroupSize | undefined;
   /** Whether the entire radio group is disabled */
   disabled?: boolean | undefined;
   /** Whether the radio group is read-only */
   readOnly?: boolean | undefined;
   /** Whether selection is required */
   required?: boolean | undefined;
-  /** Legend / group label */
-  legend?: string | undefined;
   /** Item options rendered automatically via wx:for */
   items?: (string | RadioGroupItemRaw)[] | undefined;
   /** Callback fired when selected value changes */
@@ -121,15 +102,9 @@ export interface RadioGroupResolvedProps extends RadioGroupProps {
   readOnly: boolean;
   required: boolean;
   invalid: boolean | null;
-  color: RadioGroupColor;
-  size: RadioGroupSize;
-  orientation: RadioGroupOrientation;
-  variant: RadioGroupVariant;
   name: string;
   form: string;
-  legend: string;
   items: (string | RadioGroupItemRaw)[];
-  ui: RadioGroupUI;
 }
 
 export interface RadioGroupContext {
@@ -137,9 +112,6 @@ export interface RadioGroupContext {
   readonly disabled: () => boolean;
   readonly readOnly: () => boolean;
   readonly invalid: () => boolean;
-  readonly color: () => RadioGroupColor;
-  readonly size: () => RadioGroupSize;
-  readonly variant: () => RadioGroupVariant;
 
   select: (value: string) => void;
   setValue: (value: string | null) => void;
@@ -158,11 +130,9 @@ export type RadioGroupEvent =
   | { type: "SET_INVALID"; invalid: boolean };
 
 export interface RadioGroupComputed {
-  effectiveSize: RadioGroupSize;
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isInteractive: boolean;
@@ -216,12 +186,10 @@ export interface RadioGroupApi {
   readOnly: boolean;
   /** Whether the group is invalid */
   invalid: boolean;
-  /** Effective size */
-  size: RadioGroupSize;
   /** Pre-computed items with state and props for WXML wx:for rendering */
   items: RadioGroupItem[];
   /** Change handler for precomputed wx:for items */
-  handleItemTap: (e: MiniAppEventLike<RadioGroupItemTapDetail>) => void;
+  handleItemTap: (detail: RadioGroupItemTapDetail) => void;
   /** Get accessible props for an item container */
   getItemProps: (item: {
     value: string;

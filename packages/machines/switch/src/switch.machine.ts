@@ -7,11 +7,7 @@ import {
   setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isNotEmpty, isNotNull } from "@code-ui/utils";
-import type {
-  SwitchMachine,
-  SwitchSchema,
-  SwitchSize,
-} from "./switch.types";
+import type { SwitchMachine, SwitchSchema } from "./switch.types";
 import { defaultSwitchProps } from "./switch.props";
 
 function resolveInitialChecked(prop: PropFn<SwitchSchema>): boolean {
@@ -77,13 +73,6 @@ export const switchMachine: SwitchMachine = createMachine<SwitchSchema>({
       Boolean(prop("readOnly") || computed("formReadOnly")),
     isInteractive: ({ prop, computed }) =>
       !prop("loading") && !computed("isDisabled") && !computed("isReadOnly"),
-    effectiveSize: ({ prop, computed }) => {
-      const rawSize = prop("size");
-      const fieldSize = computed("fieldSize");
-      return rawSize !== "md"
-        ? rawSize
-        : ((fieldSize || rawSize) as SwitchSize);
-    },
   },
 
   watch: ({ prop, state, track }) => {

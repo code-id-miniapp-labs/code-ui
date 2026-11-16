@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import type { InputApi, InputService } from "./input.types";
 import * as dom from "./input.dom";
 
@@ -10,12 +9,7 @@ export function connectInput(service: InputService): InputApi {
   const value = context.get("value");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
-  const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
-  const type = prop("type");
-  const password = prop("password");
-  const placeholder = prop("placeholder");
-  const maxlength = prop("maxlength");
   const name = prop("name");
 
   const isFilled = computed("isFilled");
@@ -33,7 +27,6 @@ export function connectInput(service: InputService): InputApi {
     invalid,
     disabled,
     readOnly,
-    size,
 
     setValue(nextVal: string | number) {
       send({ type: "SET_VALUE", value: nextVal });
@@ -55,31 +48,28 @@ export function connectInput(service: InputService): InputApi {
       send({ type: "INPUT.BLUR" });
     },
 
-    handleInput(
-      event: MiniAppEventLike<{ value: string; cursor?: number }>,
-    ): string | void {
-      const val = event.detail.value;
+    handleInput(nextValue: string, cursor?: number): string | void {
       send({
         type: "INPUT.CHANGE",
-        value: val,
-        cursor: event.detail.cursor,
+        value: nextValue,
+        cursor,
       });
-      return val;
+      return nextValue;
     },
 
-    handleFocus(_event?: MiniAppBaseEventLike) {
+    handleFocus() {
       send({ type: "INPUT.FOCUS" });
     },
 
-    handleBlur(_event?: MiniAppBaseEventLike) {
+    handleBlur() {
       send({ type: "INPUT.BLUR" });
     },
 
-    handleConfirm(event?: MiniAppEventLike<{ value?: string }>) {
-      send({ type: "INPUT.CONFIRM", value: event?.detail?.value ?? value });
+    handleConfirm(nextValue?: string) {
+      send({ type: "INPUT.CONFIRM", value: nextValue ?? value });
     },
 
-    handleClear(_event?: MiniAppBaseEventLike) {
+    handleClear() {
       send({ type: "INPUT.CLEAR" });
     },
 
@@ -105,10 +95,6 @@ export function connectInput(service: InputService): InputApi {
       value,
       focus: isFocused,
       disabled: disabled || readOnly,
-      type,
-      password,
-      placeholder,
-      maxlength,
       "aria-role": "textbox",
       ...(invalid ? { "aria-invalid": true } : {}),
     },

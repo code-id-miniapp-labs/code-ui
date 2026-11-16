@@ -51,3 +51,96 @@ export function compatMiniProgramTransforms(css: string): string {
 
   return result;
 }
+
+const SEMANTIC_UTILITY_RE =
+  /(?:^|[\s,.]|_[a-zA-Z])(?:bg|text|border|ring|divide|outline|fill|stroke|accent|caret|from|via|to)-(primary|secondary|success|warning|danger|info)(?:-(\d{2,3}))?(?:_f(\d+))?(?=$|[\s.,:[>+~{])/g;
+
+const COLOR_PROP_PREFIX_RE =
+  /(background-color|border-color|outline-color|accent-color|caret-color|color|fill|stroke|--tw-ring-color|--tw-shadow-color|--tw-gradient-from|--tw-gradient-via|--tw-gradient-to)\s*:\s*([^;}{]+)(?:;|(?=\s*$))/gi;
+
+const STATIC_RGBA_RE = /rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*[\d.]+)?\s*\)|#[0-9a-fA-F]{3,8}/;
+
+/**
+ * Rewrites compiled Tailwind semantic color utilities (e.g. `bg-primary`,
+ * `bg-primary/10`, `bg-primary-500`) to reference runtime `--ui-*` CSS custom
+ * properties so runtime color switching and dark mode updates take effect
+ * across solid, shade, and alpha-modifier classes.
+ */
+export function compatSemanticColorVariables(css: string): string {
+  if (
+    !css.includes("-primary") &&
+    !css.includes("-secondary") &&
+    !css.includes("-success") &&
+    !css.includes("-warning") &&
+    !css.includes("-danger") &&
+    !css.includes("-info")
+  ) {
+    return css;
+  }
+
+  return css.replace(
+    /([^{}@]+)\{([^{}]*)\}/g,
+    (fullMatch, selector: string, body: string) => {
+      const trimmedSelector = selector.trim();
+      if (
+        !trimmedSelector ||
+        trimmedSelector.startsWith("@") ||
+        trimmedSelector.startsWith(":root") ||
+        trimmedSelector.startsWith(":host") ||
+        trimmedSelector.startsWith("page")
+      ) {
+        return fullMatch;
+      }
+
+      SEMANTIC_UTILITY_RE.lastIndex = 0;
+      const match = SEMANTIC_UTILITY_RE.exec(trimmedSelector);
+      if (!match) return fullMatch;
+
+      const role = match[1];
+      const shade = match[2];
+      const alpha = match[3];
+      if (!role) return fullMatch;
+
+      let changed = false;
+      const nextBody = body.replace(
+        COLOR_PROP_PREFIX_RE,
+        (declMatch, prop: string, rawValue: string) => {
+          const val = rawValue.trim();
+          const hasSemi = declMatch.endsWith(";");
+          const semi = hasSemi ? ";" : "";
+          if (alpha) {
+            if (!STATIC_RGBA_RE.test(val) || val.includes(`--ui-${role}-a`)) {
+              return declMatch;
+            }
+            changed = true;
+            return `${prop}: var(--ui-${role}-a${alpha}, ${val})${semi}`;
+          }
+
+          if (shade) {
+            const paletteVarMatch =
+              /^var\(--color-[a-z0-9-]+-(\d{2,3})(?:,\s*([^)]+))?\)$/.exec(
+                val,
+              );
+            if (paletteVarMatch && paletteVarMatch[1] === shade) {
+              const hexFallback = paletteVarMatch[2]?.trim();
+              changed = true;
+              return hexFallback
+                ? `${prop}: var(--ui-color-${role}-${shade}, ${hexFallback})${semi}`
+                : `${prop}: var(--ui-color-${role}-${shade})${semi}`;
+            }
+            return declMatch;
+          }
+
+          if (val === `var(--color-${role}-500)`) {
+            changed = true;
+            return `${prop}: var(--ui-${role})${semi}`;
+          }
+
+          return declMatch;
+        },
+      );
+
+      return changed ? `${selector}{${nextBody}}` : fullMatch;
+    },
+  );
+}

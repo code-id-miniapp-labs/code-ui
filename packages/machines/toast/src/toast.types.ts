@@ -38,8 +38,27 @@ export interface ToastAction {
   onClick?: (() => void) | undefined;
   color?: string | undefined;
   variant?: string | undefined;
+  size?: string | undefined;
+  icon?: string | undefined;
+  leadingIcon?: string | undefined;
+  trailingIcon?: string | undefined;
+  loading?: boolean | undefined;
+  loadingIcon?: string | undefined;
+  disabled?: boolean | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
   id?: string | undefined;
   closeOnClick?: boolean | undefined;
+}
+
+export interface ToastCloseProps {
+  icon?: string | undefined;
+  color?: string | undefined;
+  variant?: string | undefined;
+  size?: string | undefined;
+  disabled?: boolean | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
 }
 
 export interface ToastProps {
@@ -49,38 +68,12 @@ export interface ToastProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for toast anatomy parts */
-  ui?: ToastUI | undefined;
-  /** Display mode: default (Nuxt UI style) or native (iOS / Android style) */
-  mode?: ToastMode | undefined;
-  /** Color variant of the toast */
-  color?: ToastColor | undefined;
-  /** Style variant of the toast */
-  variant?: ToastVariant | undefined;
-  /** Layout orientation (horizontal or vertical) */
-  orientation?: ToastOrientation | undefined;
-  /** Target placement on screen */
-  placement?: ToastPlacement | undefined;
-  /** Toast title */
-  title?: string | undefined;
-  /** Toast description */
-  description?: string | undefined;
-  /** Custom icon name or path */
-  icon?: string | undefined;
   /** Auto-dismiss duration in ms (0 = persistent) */
   duration?: number | undefined;
-  /** Whether to show countdown progress bar in default mode */
-  progress?: boolean | { color?: string } | undefined;
-  /** Position of the progress bar in default mode ('top' | 'bottom') */
-  progressPosition?: ToastProgressPosition | undefined;
   /** Controlled open state */
   open?: boolean | null | undefined;
   /** Default open state */
   defaultOpen?: boolean | undefined;
-  /** Whether to show close button in default mode */
-  close?: boolean | undefined;
-  /** Custom close icon name */
-  closeIcon?: string | undefined;
   /** Action buttons */
   actions?: ToastAction[] | undefined;
   /** Callback fired on open state change */
@@ -100,24 +93,7 @@ export type ToastEvent =
   | { type: "ANIMATION_END" }
   | { type: "TRIGGER_ACTION"; index: number };
 
-type ToastDefaultedKey =
-  | "open"
-  | "defaultOpen"
-  | "mode"
-  | "color"
-  | "variant"
-  | "orientation"
-  | "placement"
-  | "title"
-  | "description"
-  | "icon"
-  | "duration"
-  | "progress"
-  | "progressPosition"
-  | "close"
-  | "closeIcon"
-  | "actions"
-  | "ui";
+type ToastDefaultedKey = "open" | "defaultOpen" | "duration" | "actions";
 
 export type ToastResolvedProps = Omit<ToastProps, ToastDefaultedKey> & {
   [K in ToastDefaultedKey]-?: Exclude<ToastProps[K], undefined>;
@@ -167,13 +143,6 @@ export interface ToastApi {
   dismissing: boolean;
   /** Whether countdown is paused */
   paused: boolean;
-  /** Actions array pre-computed for WXML rendering */
-  actions: Array<{
-    label: string;
-    index: number;
-    color: string;
-    variant: string;
-  }>;
 
   /** Dismisses the toast */
   dismiss: () => void;

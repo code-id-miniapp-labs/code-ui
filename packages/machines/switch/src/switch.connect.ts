@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type { SwitchApi, SwitchService } from "./switch.types";
 import * as dom from "./switch.dom";
 
@@ -11,7 +10,6 @@ export function connectSwitch(service: SwitchService): SwitchApi {
   const readOnly = computed("isReadOnly");
   const loading = prop("loading");
   const invalid = computed("isInvalid");
-  const size = computed("effectiveSize");
 
   const sharedData = {
     "data-state": currentState,
@@ -39,7 +37,6 @@ export function connectSwitch(service: SwitchService): SwitchApi {
     disabled,
     readOnly,
     invalid,
-    size,
 
     setChecked(nextChecked: boolean) {
       send({ type: "SET_CHECKED", checked: nextChecked });
@@ -53,7 +50,7 @@ export function connectSwitch(service: SwitchService): SwitchApi {
       send({ type: "RESET_VALUE" });
     },
 
-    handleTap(_e?: MiniAppBaseEventLike) {
+    handleTap() {
       send({ type: "TOGGLE" });
     },
 

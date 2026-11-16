@@ -1,8 +1,6 @@
 import type { SwipeCellResolvedProps } from "./swipe-cell.types";
 
 export const defaultSwipeCellProps: SwipeCellResolvedProps = {
-  variant: "plain",
-  size: "md",
   disabled: false,
   opened: null,
   defaultOpened: false,
@@ -14,6 +12,5 @@ export const defaultSwipeCellProps: SwipeCellResolvedProps = {
   duration: 300,
   closeOnActionClick: true,
   closeOnContentClick: true,
-  ui: {},
 };
 

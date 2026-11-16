@@ -7,6 +7,7 @@ export type {
   ToastAction,
   ToastAnatomyPart,
   ToastApi,
+  ToastCloseProps,
   ToastColor,
   ToastComputed,
   ToastContext,

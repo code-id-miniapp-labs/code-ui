@@ -76,19 +76,16 @@ describe.each(consumers)("$name form host migration", ({ create }) => {
 
     first.updateProps({ disabled: true, readOnly: true });
     firstApi.setErrors({ before: ["Server error"] });
-    firstApi.formContext.setFieldState("before", { size: "sm" });
     await flush();
     expect(field.computed("isDisabled")).toBe(true);
     expect(field.computed("isReadOnly")).toBe(true);
     expect(field.computed("isInvalid")).toBe(true);
-    expect(field.computed("effectiveSize")).toBe("sm");
 
     field.updateProps({ name: "after", formContext: secondApi.formContext });
     await flush();
     expect(field.computed("isDisabled")).toBe(false);
     expect(field.computed("isReadOnly")).toBe(false);
     expect(field.computed("isInvalid")).toBe(false);
-    expect(field.computed("effectiveSize")).toBe("md");
     expect(Object.keys(connectForm(first.service).fieldStates)).not.toContain(
       "before",
     );
@@ -144,12 +141,10 @@ describe.each(consumers)("$name form host migration", ({ create }) => {
     await flush();
     first.updateProps({ disabled: true, readOnly: true });
     firstApi.setErrors({ injected: ["Injected error"] });
-    firstApi.formContext.setFieldState("injected", { size: "lg" });
     await flush();
     expect(field.computed("isDisabled")).toBe(true);
     expect(field.computed("isReadOnly")).toBe(true);
     expect(field.computed("isInvalid")).toBe(true);
-    expect(field.computed("effectiveSize")).toBe("lg");
 
     field.updateProps({ form: "second" });
     await flush();
@@ -164,7 +159,6 @@ describe.each(consumers)("$name form host migration", ({ create }) => {
     );
     second.updateProps({ disabled: true, readOnly: true });
     secondApi.setErrors({ injected: ["Second host error"] });
-    secondApi.formContext.setFieldState("injected", { size: "lg" });
     await flush();
     expect(field.computed("isDisabled")).toBe(true);
     expect(field.computed("isReadOnly")).toBe(true);
@@ -178,7 +172,6 @@ describe.each(consumers)("$name form host migration", ({ create }) => {
     expect(field.computed("isDisabled")).toBe(false);
     expect(field.computed("isReadOnly")).toBe(false);
     expect(field.computed("isInvalid")).toBe(false);
-    expect(field.computed("effectiveSize")).toBe("md");
 
     field.updateProps({ formContext: undefined });
     await flush();

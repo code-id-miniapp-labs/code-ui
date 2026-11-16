@@ -1,6 +1,5 @@
 import type { NormalizeProps, PropTypes } from "@code-ui/core";
-import type { MiniAppTouchEventLike } from "@code-ui/utils";
-import type { ButtonApi, ButtonService } from "./button.types";
+import type { ButtonApi, ButtonService, ButtonTapDetail } from "./button.types";
 import * as dom from "./button.dom";
 
 export function connectButton<T extends PropTypes = PropTypes>(
@@ -27,8 +26,8 @@ export function connectButton<T extends PropTypes = PropTypes>(
       send({ type: "SET_DISABLED", disabled: nextDisabled });
     },
 
-    handleTap(event?: MiniAppTouchEventLike) {
-      send({ type: "TAP", event });
+    handleTap(detail?: ButtonTapDetail) {
+      send({ type: "TAP", detail });
     },
 
     rootProps: btn({

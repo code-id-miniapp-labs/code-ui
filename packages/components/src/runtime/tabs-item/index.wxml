@@ -5,14 +5,14 @@
   class="cui-tabs-trigger {{classes.trigger}}"
   aria-role="tab"
   aria-selected="{{tabsItem.isSelected}}"
-  aria-disabled="{{tabsItem.isDisabled}}"
+  aria-disabled="{{tabsItem.disabled}}"
   data-scope="tabs"
   data-part="trigger"
   data-value="{{tabsItem.value}}"
   data-index="{{tabsItem.index}}"
   data-state="{{tabsItem.state}}"
-  data-disabled="{{tabsItem.isDisabled}}"
-  data-orientation="{{tabsItem.orientation}}"
+  data-disabled="{{tabsItem.disabled}}"
+  data-orientation="{{resolvedOrientation}}"
   bindtap="handleTap"
 >
   <!-- Active Indicator (Pill background or Link underline) -->
@@ -20,21 +20,21 @@
     class="cui-tabs-indicator {{classes.indicator}}"
     data-scope="tabs"
     data-part="indicator"
-    data-orientation="{{tabsItem.orientation}}"
+    data-orientation="{{resolvedOrientation}}"
     data-state="{{tabsItem.state}}"
   />
 
-  <view class="relative z-10 flex flex-row items-center justify-center gap-1.5 min-w-0">
-    <slot name="leading" />
-    <c-icon wx:if="{{icon}}" name="{{icon}}" className="cui-tabs-leading {{classes.leading}}" />
+  <view class="{{classes.triggerInner}}">
+    <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
+    <c-icon wx:if="{{icons.leadingIconName}}" name="{{icons.leadingIconName}}" className="cui-tabs-leading {{classes.leading}}" />
 
     <!-- Label -->
     <text wx:if="{{label}}" class="cui-tabs-label {{classes.label}}">{{label}}</text>
     <slot wx:else name="label" />
 
     <!-- Trailing Slot & Trailing Icon -->
-    <slot name="trailing" />
-    <c-icon wx:if="{{trailingIcon}}" name="{{trailingIcon}}" className="cui-tabs-trailing {{classes.trailing}}" />
+    <slot wx:if="{{icons.hasTrailingSlot}}" name="trailing" />
+    <c-icon wx:if="{{icons.trailingIconName}}" name="{{icons.trailingIconName}}" className="cui-tabs-trailing {{classes.trailing}}" />
   </view>
 </view>
 
@@ -49,7 +49,7 @@
   data-part="root"
   data-value="{{tabsItem.value}}"
   data-state="{{tabsItem.state}}"
-  data-disabled="{{tabsItem.isDisabled}}"
+  data-disabled="{{tabsItem.disabled}}"
   hidden="{{!tabsItem.isSelected}}"
 >
   <view class="cui-tabs-item-content {{classes.content}}">

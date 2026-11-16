@@ -1,73 +1,85 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Chip</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Corner notification badges, status indicators, and standalone notification counters.
-    </view>
-  </view>
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Chip"
+    badge="Data Display"
+    subtitle="Corner status dot & counter indicators supporting 9 sizes, 4 positions, inset alignment, content slot & visibility toggle."
+  />
 
-  <view class="px-5 flex flex-col gap-6">
-    <!-- Corner Badges on Buttons -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Attached Badges</view>
-      <view class="text-xs text-neutral-400 mb-5">Number badge or dot attached to components.</view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-chip text="3" color="danger" size="2xl">
-          <c-button variant="outline" color="neutral">Notifications</c-button>
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Interactive Show Toggle & Content Slot -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view class="flex items-center justify-between gap-2">
+        <view>
+          <text class="block text-sm font-semibold text-highlighted">Show Toggle, Counter & Custom Slot</text>
+          <text class="block text-xs text-muted mt-0.5">Dynamically show/hide or replace dot text via slot="content".</text>
+        </view>
+        <c-switch checked="{{ showUnread }}" size="sm" color="primary" bind:change="toggleShow" />
+      </view>
+
+      <view class="flex flex-wrap items-center gap-6 py-2">
+        <c-chip show="{{ showUnread }}" text="{{ unreadCount }}" color="danger" size="lg">
+          <c-button size="sm" color="neutral" variant="soft" leading-icon="i-lucide-bell" label="Inbox" bind:tap="bumpCount" />
         </c-chip>
-        <c-chip text="99+" color="primary" size="2xl">
-          <c-button variant="soft" color="neutral">Messages</c-button>
+
+        <c-chip show="{{ showUnread }}" color="primary" inset="{{ true }}" size="md">
+          <view slot="content">
+            <c-icon name="i-lucide-sparkles" size="xs" color="neutral" />
+          </view>
+          <c-avatar size="lg" color="secondary" text="CU" />
         </c-chip>
-        <c-chip color="success" size="md">
-          <c-button variant="soft" color="neutral">Online Status</c-button>
+
+        <c-chip show="{{ showUnread }}" color="success" size="md" ui="{{ { base: 'animate-pulse ring-2 ring-success/40' } }}">
+          <c-avatar size="lg" text="ON" color="neutral" />
         </c-chip>
       </view>
     </view>
 
-    <!-- Colors -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
-      <view class="text-xs text-neutral-400 mb-4">Semantic badge colors.</view>
-      <view class="flex flex-wrap gap-4 items-center">
-        <c-chip text="Primary" color="primary" standalone="{{true}}" size="2xl" />
-        <c-chip text="Success" color="success" standalone="{{true}}" size="2xl" />
-        <c-chip text="Warning" color="warning" standalone="{{true}}" size="2xl" />
-        <c-chip text="Danger" color="danger" standalone="{{true}}" size="2xl" />
-        <c-chip text="Info" color="info" standalone="{{true}}" size="2xl" />
-        <c-chip text="Neutral" color="neutral" standalone="{{true}}" size="2xl" />
+    <!-- 2. Semantic Colors -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Semantic Colors & Standalone</text>
+        <text class="block text-xs text-muted mt-0.5">All 7 semantic tokens including secondary in overlay & inline standalone mode.</text>
+      </view>
+      <view class="flex flex-wrap items-center gap-4 py-1">
+        <c-chip wx:for="{{ colors }}" wx:key="*this" color="{{ item }}" size="md">
+          <c-button size="xs" variant="outline" color="neutral" icon="i-lucide-mail" />
+        </c-chip>
+      </view>
+      <view class="flex flex-wrap items-center gap-3 pt-2 border-t border-muted">
+        <text class="text-xs text-muted mr-1">Standalone:</text>
+        <c-chip wx:for="{{ colors }}" wx:key="*this" standalone="{{ true }}" color="{{ item }}" size="lg" />
       </view>
     </view>
 
-    <!-- Positions -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Corner Positions</view>
-      <view class="text-xs text-neutral-400 mb-5">top-right, bottom-right, top-left, bottom-left.</view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-chip position="top-right" color="danger" size="md">
-          <c-button size="sm" variant="outline">Top Right</c-button>
-        </c-chip>
-        <c-chip position="bottom-right" color="primary" size="md">
-          <c-button size="sm" variant="outline">Bottom Right</c-button>
-        </c-chip>
-        <c-chip position="top-left" color="warning" size="md">
-          <c-button size="sm" variant="outline">Top Left</c-button>
-        </c-chip>
-        <c-chip position="bottom-left" color="success" size="md">
-          <c-button size="sm" variant="outline">Bottom Left</c-button>
-        </c-chip>
+    <!-- 3. Positions & Inset -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Positions & Inset Corner Alignment</text>
+        <text class="block text-xs text-muted mt-0.5">Four corner anchors with optional inset offset for circular avatars.</text>
+      </view>
+      <view class="flex flex-wrap items-center gap-5 py-1">
+        <view wx:for="{{ positions }}" wx:key="*this" class="flex flex-col items-center gap-1.5">
+          <c-chip position="{{ item }}" inset="{{ true }}" color="primary" size="md">
+            <c-avatar size="lg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Pos{{ item }}" />
+          </c-chip>
+          <text class="text-[10px] font-mono text-dimmed">{{ item }}</text>
+        </view>
       </view>
     </view>
 
-    <!-- Standalone Badges -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Standalone Pills</view>
-      <view class="text-xs text-neutral-400 mb-4">Standalone badge counters and tags.</view>
-      <view class="flex flex-wrap gap-3 items-center">
-        <c-chip text="New" color="primary" size="xl" standalone="{{true}}" />
-        <c-chip text="Beta" color="warning" size="xl" standalone="{{true}}" />
-        <c-chip text="v0.4.0" color="success" size="xl" standalone="{{true}}" />
-        <c-chip text="999+ items" color="neutral" size="2xl" standalone="{{true}}" />
+    <!-- 4. All 9 Sizes (3xs - 3xl) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Size Scale (3xs - 3xl)</text>
+        <text class="block text-xs text-muted mt-0.5">All 9 dot and text chip sizes.</text>
+      </view>
+      <view class="flex flex-wrap items-center gap-4 py-1">
+        <view wx:for="{{ sizes }}" wx:key="*this" class="flex flex-col items-center gap-1.5">
+          <c-chip size="{{ item }}" color="secondary" text="{{ index > 3 ? item : '' }}">
+            <c-button size="xs" variant="outline" color="neutral" icon="i-lucide-box" />
+          </c-chip>
+          <text class="text-[10px] font-mono text-dimmed">{{ item }}</text>
+        </view>
       </view>
     </view>
   </view>

@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./switch.anatomy";
 
 export type SwitchState = "checked" | "unchecked";
@@ -44,8 +44,6 @@ export interface SwitchProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: SwitchUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -56,14 +54,8 @@ export interface SwitchProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the switch is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Semantic color variant */
-  color?: SwitchColor | undefined;
-  /** Size variant */
-  size?: SwitchSize | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: SwitchSize | undefined;
   /** Controlled checked state */
   checked?: boolean | null | undefined;
   /** Default checked state for uncontrolled mode */
@@ -76,16 +68,6 @@ export interface SwitchProps {
   required?: boolean | undefined;
   /** Whether the switch is in loading state */
   loading?: boolean | undefined;
-  /** Label text */
-  label?: string | undefined;
-  /** Description text */
-  description?: string | undefined;
-  /** Icon class to display when checked */
-  checkedIcon?: string | undefined;
-  /** Icon class to display when unchecked */
-  uncheckedIcon?: string | undefined;
-  /** Custom loading icon class */
-  loadingIcon?: string | undefined;
   /** Callback fired when checked state changes */
   onChange?: ((details: SwitchCheckedChangeDetails) => void) | undefined;
 }
@@ -98,17 +80,9 @@ export interface SwitchResolvedProps extends SwitchProps {
   required: boolean;
   invalid: boolean | null;
   loading: boolean;
-  color: SwitchColor;
-  size: SwitchSize;
   value: string;
   name: string;
   form: string;
-  label: string;
-  description: string;
-  checkedIcon: string;
-  uncheckedIcon: string;
-  loadingIcon: string;
-  ui: SwitchUI;
 }
 
 export type SwitchEvent =
@@ -124,14 +98,12 @@ export interface SwitchComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isChecked: boolean;
   isDisabled: boolean;
   isReadOnly: boolean;
   isInteractive: boolean;
-  effectiveSize: SwitchSize;
 }
 
 export interface SwitchRefs {
@@ -167,16 +139,14 @@ export interface SwitchApi {
   readOnly: boolean;
   /** Whether the field is invalid */
   invalid: boolean;
-  /** Effective size */
-  size: SwitchSize;
   /** Set checked state programmatically */
   setChecked(checked: boolean): void;
   /** Toggle checked state */
   toggle(): void;
   /** Reset to initial checked state */
   resetChecked(): void;
-  /** Tap event handler for miniapp */
-  handleTap(e?: MiniAppBaseEventLike): void;
+  /** Tap interaction handler */
+  handleTap(): void;
   /** Props for root container */
   rootProps: Record<string, any>;
   /** Props for switch base/track */

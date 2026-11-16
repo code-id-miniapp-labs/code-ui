@@ -1,12 +1,11 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function dividerTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
@@ -17,10 +16,13 @@ export default function dividerTheme(options: ThemeOptions = {}) {
       label: "shrink-0",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         xs: {
-          container: "text-[10px]",
+          container: "text-2xs",
         },
         sm: {
           container: "text-xs",
@@ -181,12 +183,18 @@ export default function dividerTheme(options: ThemeOptions = {}) {
           border: "border-s-[5px]",
         },
       },
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         class: {
           border: `border-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        class: {
+          border: "border-neutral",
+        },
+      },
     ],
     defaultVariants: {
       color: "neutral",

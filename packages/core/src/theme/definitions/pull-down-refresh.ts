@@ -6,9 +6,9 @@ export default function pullDownRefreshTheme(_options: ThemeOptions = {}) {
       root: "relative block w-full h-full overflow-hidden box-border",
       header: "relative z-10 w-full shrink-0",
       track: "relative flex w-full flex-col will-change-transform",
-      tips: "flex w-full items-center justify-center overflow-hidden text-xs text-neutral-500",
+      tips: "flex w-full items-center justify-center overflow-hidden text-xs text-muted",
       indicator: "mr-1 size-4 shrink-0 animate-spin text-primary",
-      text: "text-xs text-neutral-500",
+      text: "text-xs text-muted",
       content: "w-full",
     },
     variants: {

@@ -46,6 +46,16 @@ Page({
 
     // 7. Colors
     selectedColor: "primary",
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
 
     // 8. Custom Indicator
     customDelivery: "pickup",

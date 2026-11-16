@@ -8,13 +8,7 @@ export const defaultRadioGroupProps: RadioGroupResolvedProps = {
   readOnly: false,
   required: false,
   invalid: null,
-  color: "primary" as const,
-  size: "md" as const,
-  orientation: "vertical" as const,
-  variant: "outline" as const,
   name: "",
   form: "",
-  legend: "",
   items: [],
-  ui: {},
 };

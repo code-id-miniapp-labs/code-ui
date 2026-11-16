@@ -107,8 +107,6 @@ describe("bannerMachine", () => {
     machine.start();
 
     const api = connectBanner(machine.service);
-    expect(api.actions).toHaveLength(1);
-    expect(api.actions[0]?.label).toBe("Learn More");
 
     api.handleAction(0);
     await flush();
@@ -154,41 +152,6 @@ describe("bannerMachine", () => {
     machine.stop();
   });
 
-  it("precomputes action defaults for WXML rendering", () => {
-    const machine = new MiniappMachine(bannerMachine, {
-      actions: [
-        { label: "Action 1", icon: "check", loading: false },
-        { label: "Action 2", loading: true, loadingIcon: "action-spinner" },
-      ],
-    });
-    machine.start();
-
-    const api = connectBanner(machine.service);
-    expect(api.actions).toHaveLength(2);
-    expect(api.actions[0]).toEqual(
-      expect.objectContaining({
-        label: "Action 1",
-        index: 0,
-        icon: "check",
-        loading: false,
-        loadingIcon: "loading",
-        color: "",
-        variant: "ghost",
-        size: "xs",
-      }),
-    );
-
-    expect(api.actions[1]).toEqual(
-      expect.objectContaining({
-        label: "Action 2",
-        loading: true,
-        loadingIcon: "action-spinner",
-      }),
-    );
-
-    machine.stop();
-  });
-
   it("invokes tap and more callbacks", async () => {
     const onTap = vi.fn();
     const onMore = vi.fn();
@@ -222,89 +185,6 @@ describe("bannerMachine", () => {
     expect(diffSnapshot(before, after, "banner")).toBeNull();
 
     machine.stop();
-  });
-
-  describe("badge normalization with c-badge shape", () => {
-    it("returns null badge when badge prop is omitted or empty", () => {
-      const machine = new MiniappMachine(bannerMachine, {});
-      machine.start();
-
-      const api = connectBanner(machine.service);
-      expect(api.badge).toBeNull();
-
-      machine.stop();
-    });
-
-    it("normalizes a string badge into c-badge props shape", () => {
-      const machine = new MiniappMachine(bannerMachine, {
-        badge: "EXCLUSIVE",
-        color: "success",
-        variant: "soft",
-        size: "md",
-      });
-      machine.start();
-
-      const api = connectBanner(machine.service);
-      expect(api.badge).toEqual({
-        label: "EXCLUSIVE",
-        color: "success",
-        variant: "solid",
-        size: "sm",
-        ui: undefined,
-        className: undefined,
-      });
-
-      machine.stop();
-    });
-
-    it("normalizes a badge object matching c-badge shape", () => {
-      const machine = new MiniappMachine(bannerMachine, {
-        badge: {
-          label: "PROMO",
-          color: "danger",
-          variant: "outline",
-          size: "xs",
-          className: "my-badge",
-        },
-      });
-      machine.start();
-
-      const api = connectBanner(machine.service);
-      expect(api.badge).toEqual({
-        label: "PROMO",
-        color: "danger",
-        variant: "outline",
-        size: "xs",
-        ui: undefined,
-        className: "my-badge",
-      });
-
-      machine.stop();
-    });
-
-    it("merges badge and badgeProps", () => {
-      const machine = new MiniappMachine(bannerMachine, {
-        badge: "SALE",
-        badgeProps: {
-          color: "warning",
-          variant: "soft",
-          size: "sm",
-        },
-      });
-      machine.start();
-
-      const api = connectBanner(machine.service);
-      expect(api.badge).toEqual({
-        label: "SALE",
-        color: "warning",
-        variant: "soft",
-        size: "sm",
-        ui: undefined,
-        className: undefined,
-      });
-
-      machine.stop();
-    });
   });
 
   it("cleans up the dismiss timer on stop()", async () => {

@@ -11,8 +11,6 @@ function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 describe("ActionSheet Machine", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -36,8 +34,7 @@ describe("ActionSheet Machine", () => {
       expect(api.open).toBe(false);
       expect(api.visible).toBe(false);
       expect(api.state).toBe("closed");
-      expect(api.items).toEqual([]);
-      expect(api.actions).toEqual([]);
+      expect(api.loadingActionIndex).toBeNull();
 
       machine.stop();
     });
@@ -218,7 +215,6 @@ describe("ActionSheet Machine", () => {
       const onClose = vi.fn();
       const machine = new MiniappMachine(actionSheetMachine, {
         defaultOpen: true,
-        close: true,
         onClose,
       });
       machine.start();
@@ -405,17 +401,13 @@ describe("ActionSheet Machine", () => {
       await flush();
 
       expect(onClick).toHaveBeenCalled();
-      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
-        true,
-      );
+      expect(connectActionSheet(machine.service).loadingActionIndex).toBe(0);
 
       resolvePromise();
       await asyncPromise;
       await flush();
 
-      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
-        false,
-      );
+      expect(connectActionSheet(machine.service).loadingActionIndex).toBeNull();
 
       machine.stop();
     });
@@ -448,17 +440,13 @@ describe("ActionSheet Machine", () => {
           index: 0,
         }),
       );
-      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
-        true,
-      );
+      expect(connectActionSheet(machine.service).loadingActionIndex).toBe(0);
 
       resolvePromise();
       await asyncPromise;
       await flush();
 
-      expect(connectActionSheet(machine.service).actions[0]?.loading).toBe(
-        false,
-      );
+      expect(connectActionSheet(machine.service).loadingActionIndex).toBeNull();
 
       machine.stop();
     });
@@ -490,9 +478,8 @@ describe("ActionSheet Machine", () => {
       });
 
       asMachine.subscribe((service) => {
-        const loading = Boolean(
-          connectActionSheet(service as any).actions[0]?.loading,
-        );
+        const loading =
+          connectActionSheet(service as any).loadingActionIndex === 0;
         btnMachine.updateProps({ loading });
       });
 
@@ -538,19 +525,19 @@ describe("ActionSheet Machine", () => {
       machine.start();
 
       const api = connectActionSheet(machine.service);
-      expect(api.actions[0]?.loading).toBe(false);
+      expect(api.loadingActionIndex).toBeNull();
 
       api.handleAction(0);
       await Promise.resolve();
       const loadingApi = connectActionSheet(machine.service);
-      expect(loadingApi.actions[0]?.loading).toBe(true);
+      expect(loadingApi.loadingActionIndex).toBe(0);
 
       resolvePromise();
       await asyncTask;
       await Promise.resolve();
 
       const settledApi = connectActionSheet(machine.service);
-      expect(settledApi.actions[0]?.loading).toBe(false);
+      expect(settledApi.loadingActionIndex).toBeNull();
 
       machine.stop();
     });
@@ -560,7 +547,6 @@ describe("ActionSheet Machine", () => {
     it("provides correct accessibility and state attributes", () => {
       const machine = new MiniappMachine(actionSheetMachine, {
         defaultOpen: true,
-        close: true,
       });
       machine.start();
 

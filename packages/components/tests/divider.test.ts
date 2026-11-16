@@ -20,7 +20,7 @@ describe("dividerTheme runtime resolution (@code-ui/components)", () => {
     expect(slots.border).toContain("border-neutral");
 
     expect(slots.container).toContain("mx-3");
-    expect(slots.container).toContain("text-_b10px_B");
+    expect(slots.container).toContain("text-2xs");
   });
 
   it("resolves vertical divider with h-full and flex-col", () => {

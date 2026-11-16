@@ -34,6 +34,30 @@ Component(
     },
 
     properties: createProperties(defaultTabsProps, {
+      orientation: {
+        type: String,
+        value: "horizontal",
+      },
+      variant: {
+        type: String,
+        value: "pill",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      fitted: {
+        type: Boolean,
+        value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -46,13 +70,38 @@ Component(
         return Array.isArray(items) && items.length > 0;
       },
 
+      resolvedItems() {
+        const items = this.data.tabs?.items;
+        if (!Array.isArray(items)) return [];
+        const rawItems =
+          Array.isArray(this.data.items) && this.data.items.length > 0
+            ? this.data.items
+            : this.data.childVisualItems;
+        const fallbackUi = this.data.ui;
+        return items.map((item: any, idx: number) => {
+          const raw = Array.isArray(rawItems) ? rawItems[idx] : undefined;
+          const rawObj = raw && typeof raw === "object" ? raw : undefined;
+          return {
+            ...item,
+            label:
+              typeof raw === "string"
+                ? raw
+                : (rawObj?.label ?? String(item.value)),
+            icon: rawObj?.icon,
+            trailingIcon: rawObj?.trailingIcon,
+            content: rawObj?.content,
+            slot: rawObj?.slot,
+            ui: rawObj?.ui ?? fallbackUi,
+          };
+        });
+      },
+
       classes() {
         const {
           orientation,
           variant,
           color,
           size,
-          disabled,
           fitted,
           ui,
           className,
@@ -63,7 +112,7 @@ Component(
           variant,
           color,
           size,
-          disabled,
+          disabled: Boolean(this.data.tabs?.disabled),
           fitted,
         });
 

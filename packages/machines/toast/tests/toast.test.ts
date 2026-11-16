@@ -18,10 +18,7 @@ describe("Toast Machine", () => {
   });
 
   it("initializes in open state by default", () => {
-    const machine = new MiniappMachine(toastMachine, {
-      title: "Notice",
-      description: "Operation successful",
-    });
+    const machine = new MiniappMachine(toastMachine, {});
     machine.start();
 
     expect(machine.state.get()).toBe("open");
@@ -224,8 +221,6 @@ describe("Toast Machine", () => {
     machine.start();
 
     const api = connectToast(machine.service);
-    expect(api.actions).toHaveLength(1);
-    expect(api.actions[0]?.label).toBe("Undo");
 
     api.handleAction(0);
     await flush();
@@ -266,6 +261,62 @@ describe("Toast Machine", () => {
       id: undefined,
     });
     expect(machine.state.get()).toBe("dismissing");
+
+    machine.stop();
+  });
+
+  it("starts auto-dismiss timer when duration updates from 0 to a positive value", async () => {
+    const onDismiss = vi.fn();
+    const machine = new MiniappMachine(toastMachine, {
+      id: "toast-update",
+      open: true,
+      duration: 0,
+      onDismiss,
+    });
+    machine.start();
+
+    vi.advanceTimersByTime(5000);
+    await flush();
+    expect(machine.state.get()).toBe("open");
+    expect(onDismiss).not.toHaveBeenCalled();
+
+    machine.updateProps({ duration: 2000 });
+    await flush();
+
+    vi.advanceTimersByTime(1999);
+    await flush();
+    expect(machine.state.get()).toBe("open");
+
+    vi.advanceTimersByTime(1);
+    await flush();
+    expect(machine.state.get()).toBe("dismissing");
+
+    vi.advanceTimersByTime(250);
+    await flush();
+    expect(machine.state.get()).toBe("closed");
+    expect(onDismiss).toHaveBeenCalledWith({ id: "toast-update" });
+
+    machine.stop();
+  });
+
+  it("clears pending timer when duration updates to 0", async () => {
+    const onDismiss = vi.fn();
+    const machine = new MiniappMachine(toastMachine, {
+      id: "toast-persist",
+      duration: 2000,
+      onDismiss,
+    });
+    machine.start();
+
+    vi.advanceTimersByTime(1000);
+    await flush();
+    machine.updateProps({ duration: 0 });
+    await flush();
+
+    vi.advanceTimersByTime(10000);
+    await flush();
+    expect(machine.state.get()).toBe("open");
+    expect(onDismiss).not.toHaveBeenCalled();
 
     machine.stop();
   });

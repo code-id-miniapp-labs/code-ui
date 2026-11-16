@@ -27,8 +27,8 @@ describe("Accordion Machine", () => {
       const machine = new MiniappMachine(accordionMachine, {
         defaultValue: ["item-1"],
         items: [
-          { value: "item-1", label: "Item 1", content: "Content 1" },
-          { value: "item-2", label: "Item 2", content: "Content 2" },
+          { value: "item-1" },
+          { value: "item-2" },
         ],
       });
       machine.start();
@@ -194,8 +194,8 @@ describe("Accordion Machine", () => {
       const machine = new MiniappMachine(accordionMachine, {
         multiple: true,
         items: [
-          { value: "a", label: "A" },
-          { value: "b", label: "B" },
+          { value: "a" },
+          { value: "b" },
         ],
       });
       machine.start();
@@ -218,8 +218,6 @@ describe("Accordion Machine", () => {
       const machine = new MiniappMachine(accordionMachine, {
         multiple: true,
         collapsible: false,
-        size: "lg",
-        variant: "separated",
       });
       machine.start();
 
@@ -228,8 +226,6 @@ describe("Accordion Machine", () => {
       expect(group.multiple()).toBe(true);
       expect(group.collapsible()).toBe(false);
       expect(group.disabled()).toBe(false);
-      expect(group.size()).toBe("lg");
-      expect(group.variant()).toBe("separated");
 
       group.toggleItem("a");
       await flush();
@@ -249,18 +245,16 @@ describe("Accordion Machine", () => {
     it("reflects controlled prop updates through the facade", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         value: ["1"],
-        size: "md",
       });
       machine.start();
 
       const group = machine.service.refs.get("groupContext");
       expect(group.value()).toEqual(["1"]);
 
-      machine.updateProps({ value: ["2"], size: "sm" });
+      machine.updateProps({ value: ["2"] });
       await flush();
 
       expect(group.value()).toEqual(["2"]);
-      expect(group.size()).toBe("sm");
 
       machine.stop();
     });
@@ -268,8 +262,8 @@ describe("Accordion Machine", () => {
     it("toggles programmatic items through the facade", async () => {
       const machine = new MiniappMachine(accordionMachine, {
         items: [
-          { value: "faq-1", label: "FAQ 1" },
-          { value: "faq-2", label: "FAQ 2" },
+          { value: "faq-1" },
+          { value: "faq-2" },
         ],
         defaultValue: ["faq-1"],
         multiple: true,

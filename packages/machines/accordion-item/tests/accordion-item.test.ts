@@ -11,7 +11,6 @@ describe("AccordionItem Machine", () => {
   it("initializes standalone uncontrolled item", async () => {
     const machine = new MiniappMachine(accordionItemMachine, {
       value: "item-1",
-      label: "Title 1",
     });
     machine.start();
 
@@ -40,8 +39,6 @@ describe("AccordionItem Machine", () => {
       multiple: () => true,
       collapsible: () => true,
       disabled: () => false,
-      size: () => "lg",
-      variant: () => "subtle",
       toggleItem,
       setItemOpen: vi.fn(),
       setValue: vi.fn(),
@@ -57,8 +54,6 @@ describe("AccordionItem Machine", () => {
 
     let api = connectAccordionItem(machine.service);
     expect(api.isOpen).toBe(true);
-    expect(api.size).toBe("lg");
-    expect(api.variant).toBe("subtle");
 
     api.toggle();
     await flush();
@@ -74,8 +69,6 @@ describe("AccordionItem Machine", () => {
       multiple: () => false,
       collapsible: () => true,
       disabled: () => false,
-      size: () => "md",
-      variant: () => "outline",
       toggleItem: vi.fn(),
       setItemOpen,
       setValue: vi.fn(),
@@ -105,7 +98,7 @@ describe("AccordionItem Machine", () => {
     machine.start();
 
     let api = connectAccordionItem(machine.service);
-    expect(api.isDisabled).toBe(true);
+    expect(api.disabled).toBe(true);
 
     api.toggle();
     await flush();
@@ -145,8 +138,6 @@ describe("AccordionItem Machine", () => {
       multiple: () => false,
       collapsible: () => false,
       disabled: () => true,
-      size: () => "md",
-      variant: () => "outline",
       toggleItem: vi.fn(),
       setItemOpen: vi.fn(),
       setValue: vi.fn(),
@@ -161,7 +152,7 @@ describe("AccordionItem Machine", () => {
     machine.start();
 
     const api = connectAccordionItem(machine.service);
-    expect(api.isDisabled).toBe(true);
+    expect(api.disabled).toBe(true);
     expect(api.isCollapsible).toBe(false);
 
     machine.stop();

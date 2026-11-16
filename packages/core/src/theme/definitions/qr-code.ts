@@ -5,7 +5,7 @@ import {
 } from "../../theme";
 
 export default function qrCodeTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
@@ -14,39 +14,24 @@ export default function qrCodeTheme(options: ThemeOptions = {}) {
       pattern: "fill-current",
       overlay:
         "absolute inset-0 m-auto flex items-center justify-center rounded-lg bg-white p-1 shadow-sm",
+      overlayImage: "w-full h-full rounded-sm",
     },
     variants: {
-      color: {
-        ...Object.fromEntries(
-          (colors as readonly string[]).map((color) => [
+      color: Object.assign(
+        Object.fromEntries(
+          colors.map((color) => [
             color,
             {
               root: `text-${color}`,
             },
           ]),
         ),
-        neutral: {
-          root: "text-neutral-900",
+        {
+          neutral: {
+            root: "text-neutral-900",
+          },
         },
-        primary: {
-          root: "text-primary",
-        },
-        secondary: {
-          root: "text-secondary",
-        },
-        success: {
-          root: "text-success",
-        },
-        info: {
-          root: "text-info",
-        },
-        warning: {
-          root: "text-warning",
-        },
-        danger: {
-          root: "text-danger",
-        },
-      },
+      ),
       size: {
         xs: {
           root: "w-24 h-24 p-1.5",

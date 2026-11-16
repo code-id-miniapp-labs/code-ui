@@ -1,12 +1,11 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function switchTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
@@ -17,12 +16,16 @@ export default function switchTheme(options: ThemeOptions = {}) {
       thumb:
         "pointer-events-none rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-out motion-reduce:transition-none flex items-center justify-center translate-y-0",
       icon: "shrink-0 transition-[color,opacity] duration-200 ease-out",
+      loadingIcon: "w-full h-full animate-spin",
       wrapper: "ms-2 flex flex-col justify-center",
-      label: "block font-medium text-neutral-900 leading-snug",
-      description: "text-neutral-500 mt-0.5 leading-snug",
+      label: "block font-medium text-highlighted leading-snug",
+      description: "text-muted mt-0.5 leading-snug",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         xs: {
           base: "w-7 h-4",
@@ -30,7 +33,7 @@ export default function switchTheme(options: ThemeOptions = {}) {
           icon: "w-2.5 h-2.5",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[20rpx]",
+          description: "text-2xs",
         },
         sm: {
           base: "w-8 h-4.5",
@@ -38,7 +41,7 @@ export default function switchTheme(options: ThemeOptions = {}) {
           icon: "w-3 h-3",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[22rpx]",
+          description: "text-2xs",
         },
         md: {
           base: "w-9 h-5",
@@ -77,7 +80,7 @@ export default function switchTheme(options: ThemeOptions = {}) {
           icon: "opacity-100",
         },
         false: {
-          base: "bg-neutral-200",
+          base: "bg-accented",
           thumb: "translate-x-0 rtl:-translate-x-0",
           icon: "opacity-0",
         },
@@ -102,14 +105,22 @@ export default function switchTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
-        checked: true,
+      ...colors.map((color) => ({
+        color,
+        checked: true as const,
         class: {
           base: `bg-${color}`,
           icon: `text-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        checked: true as const,
+        class: {
+          base: "bg-inverted",
+          icon: "text-inverted",
+        },
+      },
       {
         invalid: true,
         checked: true,

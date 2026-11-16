@@ -5,6 +5,7 @@ export const anatomy = /* @__PURE__ */ (() =>
     "root",
     "control",
     "input",
+    "nativeInput",
     "label",
     "separator",
   ))();

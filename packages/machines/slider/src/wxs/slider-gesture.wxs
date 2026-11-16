@@ -37,7 +37,51 @@ function getPercent(point, rect, orientation, inverted) {
   return clamp(percent, 0, 100);
 }
 
-function updateVisuals(state, point) {
+function toVisualPercent(valPercent, inverted) {
+  return inverted ? 100 - valPercent : valPercent;
+}
+
+function toValuePercent(visualPercent, inverted) {
+  return inverted ? 100 - visualPercent : visualPercent;
+}
+
+function applyStyles(state, disableTransition) {
+  var trans = disableTransition ? ' transition: none;' : '';
+  var activeIndex = state.activeIndex || 0;
+  var activePercent = state.currentPercents && state.currentPercents[activeIndex] !== undefined
+    ? state.currentPercents[activeIndex]
+    : 0;
+  var visualPercent = toVisualPercent(activePercent, state.inverted);
+
+  var activeThumb = state.thumbEls && state.thumbEls[activeIndex];
+  if (activeThumb) {
+    var thumbStyle = state.orientation === 'vertical'
+      ? 'bottom: ' + visualPercent + '%; transform: translate(-50%, 50%);' + trans
+      : 'left: ' + visualPercent + '%; transform: translate(-50%, -50%);' + trans;
+    activeThumb.setStyle(thumbStyle);
+  }
+
+  var rangeEl = state.rangeEl;
+  if (rangeEl) {
+    var start = 0;
+    var end = activePercent;
+    if (state.isRange && state.currentPercents.length > 1) {
+      start = Math.min(state.currentPercents[0], state.currentPercents[1]);
+      end = Math.max(state.currentPercents[0], state.currentPercents[1]);
+    }
+    if (state.inverted) {
+      var prevStart = start;
+      start = 100 - end;
+      end = 100 - prevStart;
+    }
+    var rangeStyle = state.orientation === 'vertical'
+      ? 'bottom: ' + start + '%; height: ' + (end - start) + '%;' + trans
+      : 'left: ' + start + '%; width: ' + (end - start) + '%;' + trans;
+    rangeEl.setStyle(rangeStyle);
+  }
+}
+
+function updateVisuals(state, point, disableTransition) {
   var rect = state.rect;
   if (!rect) return;
   var percent = getPercent(point, rect, state.orientation, state.inverted);
@@ -53,34 +97,20 @@ function updateVisuals(state, point) {
 
   var activeIndex = state.activeIndex || 0;
   if (!state.currentPercents) state.currentPercents = [0];
+
+  if (state.isRange && state.currentPercents.length > 1) {
+    var minGap = state.minGapPercent || 0;
+    if (activeIndex === 0) {
+      var maxP0 = Math.max(0, state.currentPercents[1] - minGap);
+      if (percent > maxP0) percent = maxP0;
+    } else if (activeIndex === 1) {
+      var minP1 = Math.min(100, state.currentPercents[0] + minGap);
+      if (percent < minP1) percent = minP1;
+    }
+  }
+
   state.currentPercents[activeIndex] = percent;
-
-  var activeThumb = state.thumbEls && state.thumbEls[activeIndex];
-  if (activeThumb) {
-    var thumbStyle = state.orientation === 'vertical'
-      ? 'bottom: ' + percent + '%; transform: translate(-50%, 50%); transition: none;'
-      : 'left: ' + percent + '%; transform: translate(-50%, -50%); transition: none;';
-    activeThumb.setStyle(thumbStyle);
-  }
-
-  var rangeEl = state.rangeEl;
-  if (rangeEl) {
-    var start = 0;
-    var end = percent;
-    if (state.isRange && state.currentPercents.length > 1) {
-      start = Math.min(state.currentPercents[0], state.currentPercents[1]);
-      end = Math.max(state.currentPercents[0], state.currentPercents[1]);
-    }
-    if (state.inverted) {
-      var prevStart = start;
-      start = 100 - end;
-      end = 100 - prevStart;
-    }
-    var rangeStyle = state.orientation === 'vertical'
-      ? 'bottom: ' + start + '%; height: ' + (end - start) + '%; transition: none;'
-      : 'left: ' + start + '%; width: ' + (end - start) + '%; transition: none;';
-    rangeEl.setStyle(rangeStyle);
-  }
+  applyStyles(state, disableTransition);
 }
 
 function onTouchStart(event, ownerInstance) {
@@ -99,7 +129,10 @@ function onTouchStart(event, ownerInstance) {
   var min = Number(dataset.min !== undefined ? dataset.min : 0);
   var max = Number(dataset.max !== undefined ? dataset.max : 100);
   var step = Number(dataset.step !== undefined ? dataset.step : 1);
+  var minSteps = Number(dataset.minStepsBetweenThumbs !== undefined ? dataset.minStepsBetweenThumbs : 0);
   var isRange = dataset.isRange === true || dataset.isRange === 'true';
+  var range = max - min;
+  var minGapPercent = range > 0 && minSteps > 0 ? ((minSteps * step) / range) * 100 : 0;
 
   state.rect = rect;
   state.orientation = orientation;
@@ -107,6 +140,7 @@ function onTouchStart(event, ownerInstance) {
   state.min = min;
   state.max = max;
   state.step = step;
+  state.minGapPercent = minGapPercent;
   state.isRange = isRange;
   state.isDragging = true;
 
@@ -126,41 +160,44 @@ function onTouchStart(event, ownerInstance) {
   state.thumbEls = thumbEls;
 
   var point = { x: touch.clientX, y: touch.clientY };
-  var activeIndex = 0;
   var percents = dataset.percents || [0];
   if (!percents.length) percents = [0];
 
-  if (rect && isRange && percents.length > 1) {
+  var p0 = percents[0] !== undefined ? Number(percents[0]) : 0;
+  var p1 = percents[1] !== undefined ? Number(percents[1]) : 0;
+  var vp0 = toValuePercent(p0, inverted);
+  var vp1 = toValuePercent(p1, inverted);
+  state.currentPercents = isRange && percents.length > 1 ? [vp0, vp1] : [vp0];
+
+  var activeIndex = 0;
+  var hasKnownIndex = !isRange;
+  var targetDs = event.target && event.target.dataset ? event.target.dataset : null;
+  if (isRange && targetDs && targetDs.index !== undefined && targetDs.index !== '') {
+    activeIndex = Number(targetDs.index);
+    hasKnownIndex = true;
+  } else if (rect && isRange && percents.length > 1) {
     var touchPercent = getPercent(point, rect, orientation, inverted);
-    var p0 = percents[0] || 0;
-    var p1 = percents[1] || 100;
-    if (Math.abs(touchPercent - p1) < Math.abs(touchPercent - p0)) {
+    if (Math.abs(touchPercent - vp1) < Math.abs(touchPercent - vp0)) {
       activeIndex = 1;
     }
+    hasKnownIndex = true;
   }
+
   state.activeIndex = activeIndex;
-  state.currentPercents = [percents[0] || 0, percents[1] !== undefined ? percents[1] : 0];
 
   if (_throttledCallMove && _throttledCallMove.reset) {
     _throttledCallMove.reset();
   }
 
-  if (rangeEl) {
-    rangeEl.setStyle('transition: none;');
-  }
-  for (var j = 0; j < thumbEls.length; j++) {
-    if (thumbEls[j]) {
-      thumbEls[j].setStyle('transition: none;');
-    }
-  }
-
-  if (rect) {
-    updateVisuals(state, point);
+  if (rect && hasKnownIndex) {
+    updateVisuals(state, point, true);
   }
 
   ownerInstance.callMethod('handleTouchStart', {
     clientX: touch.clientX,
-    clientY: touch.clientY
+    clientY: touch.clientY,
+    index: hasKnownIndex ? activeIndex : -1,
+    rect: rect || null
   });
 }
 
@@ -176,7 +213,7 @@ function onTouchMove(event, ownerInstance) {
   }
 
   var point = { x: touch.clientX, y: touch.clientY };
-  updateVisuals(state, point);
+  updateVisuals(state, point, true);
 
   _throttledCallMove(ownerInstance, {
     clientX: touch.clientX,
@@ -189,11 +226,8 @@ function onTouchEnd(event, ownerInstance) {
   if (!state.isDragging) return;
   state.isDragging = false;
 
-  if (state.rangeEl) state.rangeEl.setStyle('');
-  if (state.thumbEls) {
-    for (var i = 0; i < state.thumbEls.length; i++) {
-      if (state.thumbEls[i]) state.thumbEls[i].setStyle('');
-    }
+  if (state.rect && state.currentPercents) {
+    applyStyles(state, false);
   }
 
   ownerInstance.callMethod('handleTouchEnd', {});

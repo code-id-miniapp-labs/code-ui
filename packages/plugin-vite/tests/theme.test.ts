@@ -34,6 +34,10 @@ describe("generateThemeCSS", () => {
     expect(css).toContain("@media (prefers-color-scheme: dark)");
     expect(css).toContain("--ui-primary: var(--ui-color-primary-400);");
     expect(css).toContain('page[data-theme="dark"], .dark');
+    expect(css).toContain("--ui-bg: #ffffff;");
+    expect(css).toContain("--ui-bg: var(--ui-color-neutral-900);");
+    expect(css).toContain('page[data-theme="light"], .light');
+    expect(css).toContain("--ui-primary-a10: rgba(");
   });
 
   it("handles custom palette keywords like blue and rose", () => {
@@ -142,8 +146,19 @@ describe("generateThemeCSS", () => {
   });
 });
 
-import { codeUI, compileComponentTheme } from "../src/index";
-import { buttonTheme, drawerTheme, toastTheme } from "@code-ui/core";
+import {
+  compatSemanticColorVariables,
+  codeUI,
+  compileComponentTheme,
+} from "../src/index";
+import { buttonTheme, defineTheme, drawerTheme } from "@code-ui/core";
+
+const colorModeFixtureTheme = () =>
+  defineTheme({
+    slots: {
+      root: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white",
+    },
+  });
 
 describe("codeUI virtual themes", () => {
   it("compiles button theme with active colors and overrides", () => {
@@ -174,7 +189,7 @@ describe("codeUI virtual themes", () => {
   });
 
   it("keeps light and dark classes for the system color system", () => {
-    const compiled = compileComponentTheme("toast", toastTheme, {
+    const compiled = compileComponentTheme("surfaceFixture", colorModeFixtureTheme, {
       prefix: "cui",
       ui: { colorMode: "system" },
     });
@@ -187,7 +202,7 @@ describe("codeUI virtual themes", () => {
   });
 
   it("strips dark classes for the light color system", () => {
-    const compiled = compileComponentTheme("toast", toastTheme, {
+    const compiled = compileComponentTheme("surfaceFixture", colorModeFixtureTheme, {
       prefix: "cui",
       ui: { colorMode: "light" },
     });
@@ -203,7 +218,7 @@ describe("codeUI virtual themes", () => {
   });
 
   it("compiles only unconditional dark classes for the dark color system", () => {
-    const compiled = compileComponentTheme("toast", toastTheme, {
+    const compiled = compileComponentTheme("surfaceFixture", colorModeFixtureTheme, {
       prefix: "cui",
       ui: { colorMode: "dark" },
     });
@@ -234,10 +249,17 @@ describe("codeUI virtual themes", () => {
     };
 
     const compiled = compileComponentTheme("button", buttonTheme, config);
-    expect(Object.keys(compiled.variants.color)).toEqual(["primary", "danger"]);
+    expect(Object.keys(compiled.variants.color)).toEqual([
+      "primary",
+      "danger",
+      "neutral",
+    ]);
     expect(
       compiled.compoundVariants?.every(
-        (cv: any) => cv.color === "primary" || cv.color === "danger",
+        (cv: any) =>
+          cv.color === "primary" ||
+          cv.color === "danger" ||
+          cv.color === "neutral",
       ),
     ).toBe(true);
   });
@@ -416,7 +438,7 @@ describe("codeUI virtual themes", () => {
     }
   });
 
-  it("includes toast dark classes from the app wrapper dependency scan", () => {
+  it("includes toast classes from the app wrapper dependency scan", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "cui-seed-style-"));
     try {
       fs.mkdirSync(path.join(root, "pages"), { recursive: true });
@@ -431,8 +453,8 @@ describe("codeUI virtual themes", () => {
         () => {},
       );
 
-      expect(result?.code).toContain("dark:bg-neutral-900");
-      expect(result?.code).toContain("dark:border-neutral-800");
+      expect(result?.code).toContain("bg-default");
+      expect(result?.code).toContain("border-default");
       expect(result?.code).toContain("min-w-[120px]");
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
@@ -597,5 +619,38 @@ describe("codeUI virtual themes", () => {
     expect(virtualCode).toContain('"blue": "#3b82f6"');
     expect(virtualCode).toContain('"neutral": "zinc"');
     expect(virtualCode).toContain('"zinc": "#71717a"');
+  });
+
+  it("emits class-based @custom-variant dark for system colorMode", () => {
+    const configManager = new PluginConfigManager({
+      ui: { colorMode: "system" },
+    });
+    const result = transformAppStyle(
+      '@import "tailwindcss";',
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    expect(result?.code).toContain('@custom-variant dark (.dark &, .dark&, [data-theme="dark"] &, [data-theme="dark"]&);');
+  });
+
+  it("rewrites compiled semantic color utilities to runtime --ui-* variables", () => {
+    const input = [
+      ".bg-primary { background-color: var(--color-primary-500); }",
+      ".bg-primary-50 { background-color: var(--color-stone-50, #fafaf9); }",
+      ".bg-primary_f10 { background-color: rgba(121, 113, 107, 0.1); }",
+      ".data-_bfocused_ztrue_B_cring-primary_f20[data-focused=\"true\"] { --tw-ring-color: rgba(121, 113, 107, 0.2); }",
+      ".outline-primary-500_f25 { outline-color: rgba(121, 113, 107, 0.25); }",
+      ".group[data-state=\"active\"] view.group-data-_bstate_zactive_B_cbg-primary-500 { background-color: var(--color-stone-500, #78716c); }",
+    ].join("\n");
+
+    const output = compatSemanticColorVariables(input);
+    expect(output).toContain("background-color: var(--ui-primary);");
+    expect(output).toContain("background-color: var(--ui-color-primary-50, #fafaf9);");
+    expect(output).toContain("background-color: var(--ui-primary-a10, rgba(121, 113, 107, 0.1));");
+    expect(output).toContain("--tw-ring-color: var(--ui-primary-a20, rgba(121, 113, 107, 0.2));");
+    expect(output).toContain("outline-color: var(--ui-primary-a25, rgba(121, 113, 107, 0.25));");
+    expect(output).toContain("background-color: var(--ui-color-primary-500, #78716c);");
   });
 });

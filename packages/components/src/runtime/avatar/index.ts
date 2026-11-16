@@ -78,8 +78,12 @@ Component(
       groupBaseClass: "",
     },
     computed: {
+      resolvedSize() {
+        return this.data.groupSize || this.data.size || "md";
+      },
+
       classes() {
-        const size = this.data.groupSize || this.data.size;
+        const size = this.data.resolvedSize;
         const ui = this.data.ui;
         const color = this.data.color;
         const theme = avatarTheme({

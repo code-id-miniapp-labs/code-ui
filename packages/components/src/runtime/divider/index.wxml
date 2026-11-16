@@ -1,14 +1,14 @@
 <view class="{{classes.root}}">
   <view class="{{classes.border}}" wx:if="{{!hasContent || position === 'center' || position === 'end'}}" />
   <view wx:if="{{hasContent}}" class="{{classes.container}}">
-    <slot name="leading" />
-    <c-icon wx:if="{{leadingIcon}}" className="{{classes.icon}}" name="{{leadingIcon}}" />
+    <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
+    <c-icon wx:elif="{{icons.leadingIconName}}" className="{{classes.icon}}" name="{{icons.leadingIconName}}" />
     <view wx:if="{{label || slots.default}}" class="{{classes.label}}">
       <text wx:if="{{label}}">{{label}}</text>
       <slot wx:else />
     </view>
-    <c-icon wx:if="{{trailingIcon}}" className="{{classes.icon}}" name="{{trailingIcon}}" />
-    <slot name="trailing" />
+    <slot wx:if="{{icons.hasTrailingSlot}}" name="trailing" />
+    <c-icon wx:elif="{{icons.trailingIconName}}" className="{{classes.icon}}" name="{{icons.trailingIconName}}" />
   </view>
   <view class="{{classes.border}}" wx:if="{{hasContent && (position === 'center' || position === 'start')}}" />
 </view>

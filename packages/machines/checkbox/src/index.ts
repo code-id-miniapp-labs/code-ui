@@ -24,4 +24,5 @@ export type {
   CheckboxSize,
   CheckboxState,
   CheckboxUI,
+  CheckboxVariant,
 } from "./checkbox.types";

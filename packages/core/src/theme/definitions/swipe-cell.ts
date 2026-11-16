@@ -6,7 +6,7 @@ export default function swipeCellTheme(_options: ThemeOptions = {}) {
       root: "relative overflow-hidden w-full select-none touch-pan-y box-border",
       wrapper:
         "relative flex flex-row w-full transition-transform duration-300 ease-out will-change-transform box-border",
-      content: "relative z-10 w-full shrink-0 bg-white box-border",
+      content: "relative z-10 w-full shrink-0 bg-default box-border",
       left: "absolute left-0 top-0 bottom-0 z-0 flex flex-row h-full -translate-x-full box-border",
       right: "absolute right-0 top-0 bottom-0 z-0 flex flex-row h-full translate-x-full box-border",
       action:
@@ -18,23 +18,23 @@ export default function swipeCellTheme(_options: ThemeOptions = {}) {
       variant: {
         plain: {
           root: "",
-          content: "bg-white",
+          content: "bg-default",
         },
         outline: {
-          root: "border border-neutral-200 rounded-xl overflow-hidden shadow-xs",
-          content: "bg-white",
+          root: "border border-default rounded-xl overflow-hidden shadow-xs",
+          content: "bg-default",
         },
         subtle: {
-          root: "border border-neutral-200/80 rounded-xl overflow-hidden bg-neutral-50/50",
-          content: "bg-neutral-50/80",
+          root: "border border-default rounded-xl overflow-hidden bg-muted",
+          content: "bg-muted",
         },
         soft: {
-          root: "rounded-xl overflow-hidden bg-neutral-100/60",
-          content: "bg-neutral-100/60",
+          root: "rounded-xl overflow-hidden bg-elevated",
+          content: "bg-elevated",
         },
         separated: {
-          root: "rounded-2xl border border-neutral-200 shadow-xs overflow-hidden",
-          content: "bg-white",
+          root: "rounded-2xl border border-default shadow-xs overflow-hidden",
+          content: "bg-default",
         },
       },
       size: {

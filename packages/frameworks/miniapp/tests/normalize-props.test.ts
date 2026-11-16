@@ -168,7 +168,7 @@ describe("Button machine integration with createMachinePropGetter", () => {
     machine.start();
 
     const api = connectButton(machine.service, normalizeProps);
-    api.handleTap({ type: "tap", detail: { fromUser: true } });
+    api.handleTap({ fromUser: true });
 
     await Promise.resolve();
 

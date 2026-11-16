@@ -55,7 +55,7 @@ export interface CreateMachineBehaviorOptions<
   /**
    * Composable plugins that extend component relations and lifecycle coordination.
    */
-  plugins?: MachinePlugin<T>[];
+  plugins?: Array<MachinePlugin<any, any>>;
 }
 
 /**

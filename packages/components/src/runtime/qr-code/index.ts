@@ -28,6 +28,22 @@ Component(
     },
 
     properties: createProperties(defaultQrCodeProps, {
+      size: {
+        type: String,
+        value: "md",
+      },
+      overlaySrc: {
+        type: String,
+        value: "",
+      },
+      showOverlay: {
+        type: Boolean,
+        value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",

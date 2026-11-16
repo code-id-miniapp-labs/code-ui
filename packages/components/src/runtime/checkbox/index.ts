@@ -7,6 +7,9 @@ import {
   checkboxMachine,
   connectCheckbox,
   defaultCheckboxProps,
+  type CheckboxColor,
+  type CheckboxSize,
+  type CheckboxVariant,
 } from "@code-ui/checkbox";
 import themeConfig from "virtual:cui/theme/checkbox";
 import { tv } from "../../utils/variants";
@@ -33,6 +36,38 @@ Component(
     },
 
     properties: createProperties(defaultCheckboxProps, {
+      color: {
+        type: String,
+        value: "",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      variant: {
+        type: String,
+        value: "",
+      },
+      label: {
+        type: String,
+        value: "",
+      },
+      description: {
+        type: String,
+        value: "",
+      },
+      icon: {
+        type: String,
+        value: "check",
+      },
+      indeterminateIcon: {
+        type: String,
+        value: "minus",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -40,17 +75,34 @@ Component(
     }),
 
     computed: {
+      resolvedSize(): CheckboxSize {
+        return (this.data.size ||
+          this.data.groupSize ||
+          this.data.fieldSize ||
+          "md") as CheckboxSize;
+      },
+
+      resolvedColor(): CheckboxColor {
+        return (this.data.color ||
+          this.data.groupColor ||
+          "primary") as CheckboxColor;
+      },
+
+      resolvedVariant(): CheckboxVariant {
+        return (this.data.variant ||
+          this.data.groupVariant ||
+          "outline") as CheckboxVariant;
+      },
+
       classes() {
         const api = this.data.cCheckbox;
-        const checked = Boolean(api?.checked ?? this.data.checked);
-        const indeterminate = Boolean(
-          api?.indeterminate ?? this.data.indeterminate,
-        );
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
-        const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const variant = api?.variant ?? this.data.variant;
+        const checked = Boolean(api?.checked);
+        const indeterminate = Boolean(api?.indeterminate);
+        const disabled = Boolean(api?.disabled);
+        const isInvalid = Boolean(api?.invalid);
+        const size = this.data.resolvedSize;
+        const color = this.data.resolvedColor;
+        const variant = this.data.resolvedVariant;
         const required = Boolean(this.data.required);
         const ui = this.data.ui;
 
@@ -70,8 +122,8 @@ Component(
     },
 
     methods: {
-      handleTap(e: WechatMiniprogram.CustomEvent) {
-        return getApi(this, "cCheckbox")?.handleTap?.(e);
+      handleTap() {
+        return getApi(this, "cCheckbox")?.handleTap?.();
       },
     },
   }),

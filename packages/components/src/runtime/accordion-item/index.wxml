@@ -5,7 +5,7 @@
   data-part="item"
   data-value="{{cAccordionItem.resolvedValue}}"
   data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
-  data-disabled="{{cAccordionItem.isDisabled}}"
+  data-disabled="{{cAccordionItem.disabled}}"
 >
   <view class="{{classes.header}}" data-scope="accordion" data-part="header">
     <view
@@ -13,18 +13,18 @@
       class="{{classes.trigger}}"
       aria-role="button"
       aria-expanded="{{cAccordionItem.isOpen}}"
-      aria-disabled="{{cAccordionItem.isDisabled}}"
+      aria-disabled="{{cAccordionItem.disabled}}"
       data-scope="accordion"
       data-part="trigger"
       data-value="{{cAccordionItem.resolvedValue}}"
       data-state="{{cAccordionItem.isOpen ? 'open' : 'closed'}}"
-      data-disabled="{{cAccordionItem.isDisabled}}"
+      data-disabled="{{cAccordionItem.disabled}}"
       bind:tap="handleTap"
     >
       <!-- Leading element / icon -->
-      <view wx:if="{{icon || slots.leading}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
-        <slot name="leading" />
-        <c-icon wx:if="{{icon}}" name="{{icon}}" className="{{classes.leadingIcon}}" />
+      <view wx:if="{{icons.isLeading}}" class="{{classes.leading}}" data-scope="accordion" data-part="leading">
+        <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
+        <c-icon wx:elif="{{icons.leadingIconName}}" name="{{icons.leadingIconName}}" className="{{classes.leadingIcon}}" />
       </view>
 
       <!-- Label / Title -->
@@ -38,11 +38,11 @@
       </view>
 
       <!-- Trailing icon / chevron -->
-      <view class="{{classes.trailing}} {{cAccordionItem.isOpen ? 'rotate-180' : ''}}" data-scope="accordion" data-part="trailing">
-        <slot name="trailing" />
+      <view class="{{classes.trailing}}" data-scope="accordion" data-part="trailing">
+        <slot wx:if="{{icons.hasTrailingSlot}}" name="trailing" />
         <c-icon
-          wx:if="{{!slots.trailing}}"
-          name="{{trailingIcon}}"
+          wx:elif="{{icons.trailingIconName}}"
+          name="{{icons.trailingIconName}}"
           className="{{classes.trailingIcon}}"
         />
       </view>

@@ -15,9 +15,13 @@ export const anatomy = /* @__PURE__ */ (() =>
     "icon",
     "buttonArea",
     "close",
+    "closeIcon",
     "more",
+    "moreIcon",
     "actions",
     "action",
+    "actionButton",
+    "actionIcon",
   ))();
 
 export const parts = /* @__PURE__ */ (() => anatomy.build())();

@@ -2,8 +2,8 @@
   <view class="{{classes.container}}" data-scope="switch" data-part="container">
     <view id="{{cSwitch.baseProps.id}}" class="{{classes.base}}" data-scope="switch" data-part="base" data-state="{{cSwitch.state}}" data-checked="{{cSwitch.baseProps['data-checked']}}" data-disabled="{{cSwitch.baseProps['data-disabled']}}" data-readonly="{{cSwitch.baseProps['data-readonly']}}" data-loading="{{cSwitch.baseProps['data-loading']}}" data-invalid="{{cSwitch.baseProps['data-invalid']}}" aria-role="switch" aria-checked="{{cSwitch.baseProps['aria-checked']}}" aria-disabled="{{cSwitch.disabled}}" aria-invalid="{{cSwitch.invalid}}">
       <view class="{{classes.thumb}}" data-scope="switch" data-part="thumb" data-state="{{cSwitch.state}}" data-disabled="{{cSwitch.thumbProps['data-disabled']}}" aria-hidden="true">
-        <slot wx:if="{{loading && slots.loadingIcon}}" name="loadingIcon" />
-        <c-icon wx:elif="{{loading}}" name="{{loadingIcon}}" className="w-full h-full animate-spin" />
+        <slot wx:if="{{icons.leadingLoading && icons.hasLoadingSlot}}" name="loadingIcon" />
+        <c-icon wx:elif="{{icons.leadingLoading}}" name="{{icons.leadingIconName}}" className="{{classes.loadingIcon}}" />
         <c-icon wx:elif="{{cSwitch.checked && checkedIcon}}" name="{{checkedIcon}}" className="{{classes.icon}}" />
         <c-icon wx:elif="{{!cSwitch.checked && uncheckedIcon}}" name="{{uncheckedIcon}}" className="{{classes.icon}}" />
         <slot wx:else name="thumb" />

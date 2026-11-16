@@ -38,10 +38,8 @@ describe("CheckboxGroup Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
       expect(api.items).toHaveLength(3);
-      expect(api.items[0]?.color).toBe("primary");
-      expect(api.items[0]?.variant).toBe("outline");
+      expect(api.items[0]?.value).toBe("apple");
       expect(api.items[0]?.checked).toBe(false);
       expect(api.items[0]?.controlProps["aria-checked"]).toBe(false);
 
@@ -100,13 +98,13 @@ describe("CheckboxGroup Machine", () => {
       machine.start();
 
       const api = connectCheckboxGroup(machine.service);
-      api.handleItemTap({ detail: { value: "cherry" } });
+      api.handleItemTap({ value: "cherry" });
       await flush();
 
       expect(connectCheckboxGroup(machine.service).value).toEqual(["cherry"]);
 
-      // Also support explicit checked flag from child c-checkbox (e.detail.checked)
-      api.handleItemTap({ detail: { value: "banana", checked: true } });
+      // Also support explicit checked flag from child c-checkbox
+      api.handleItemTap({ value: "banana", checked: true });
       await flush();
 
       expect(connectCheckboxGroup(machine.service).value).toEqual([
@@ -207,7 +205,7 @@ describe("CheckboxGroup Machine", () => {
         value: "apple",
         checked: groupApi.items[0]?.checked,
         onChange: ({ value, checked }: any) => {
-          groupApi.handleItemTap({ detail: { value, checked } });
+          groupApi.handleItemTap({ value, checked });
         },
       });
       appleMachine.start();
@@ -217,7 +215,7 @@ describe("CheckboxGroup Machine", () => {
         value: "banana",
         checked: groupApi.items[1]?.checked,
         onChange: ({ value, checked }: any) => {
-          groupApi.handleItemTap({ detail: { value, checked } });
+          groupApi.handleItemTap({ value, checked });
         },
       });
       bananaMachine.start();
@@ -227,7 +225,7 @@ describe("CheckboxGroup Machine", () => {
         value: "cherry",
         checked: groupApi.items[2]?.checked,
         onChange: ({ value, checked }: any) => {
-          groupApi.handleItemTap({ detail: { value, checked } });
+          groupApi.handleItemTap({ value, checked });
         },
       });
       cherryMachine.start();

@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { toastTheme as createToastTheme } from "@code-ui/core";
+import {
+  progressTheme as createProgressTheme,
+  toastTheme as createToastTheme,
+} from "@code-ui/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
 const toastTheme = tv(createToastTheme());
+const progressTheme = tv(createProgressTheme());
 
 describe("toastTheme runtime resolution (@code-ui/components)", () => {
   it.each(["top", "bottom"] as const)(
@@ -32,4 +36,67 @@ describe("toastTheme runtime resolution (@code-ui/components)", () => {
       expect(slots.description.split(" ")).not.toContain("text-neutral-500");
     },
   );
+
+  it.each(["soft", "subtle"] as const)(
+    "keeps opaque bg-default surface under %s variant tint",
+    (variant) => {
+      const slots = resolveSlots(
+        toastTheme({
+          mode: "default",
+          color: "success",
+          variant,
+        }),
+        {},
+        "",
+      );
+
+      expect(slots.root.split(" ")).toContain("bg-default");
+      expect(slots.root.split(" ")).not.toContain("bg-success_f10");
+      expect(slots.tint.split(" ")).toContain("bg-success_f10");
+      expect(slots.iconWrapper.split(" ")).toContain("z-1");
+      expect(slots.wrapper.split(" ")).toContain("z-1");
+    },
+  );
+
+  it("overrides solid progress bar background to white via theme slots", () => {
+    const toastSlots = resolveSlots(
+      toastTheme({
+        mode: "default",
+        color: "primary",
+        variant: "solid",
+      }),
+      {},
+      "",
+    );
+
+    expect(toastSlots.progressRange.split(" ")).toContain("bg-white");
+
+    const progressSlots = resolveSlots(
+      progressTheme({ color: "primary", size: "2xs" }),
+      {
+        root: toastSlots.progressBar,
+        track: toastSlots.progressTrack,
+        range: toastSlots.progressRange,
+      },
+      toastSlots.progressBar,
+    );
+
+    expect(progressSlots.range.split(" ")).toContain("bg-white");
+    expect(progressSlots.range.split(" ")).not.toContain("bg-primary");
+  });
+
+  it("uses contrasting bg-default progress bar for neutral solid toast", () => {
+    const toastSlots = resolveSlots(
+      toastTheme({
+        mode: "default",
+        color: "neutral",
+        variant: "solid",
+      }),
+      {},
+      "",
+    );
+
+    expect(toastSlots.progressRange.split(" ")).toContain("bg-default");
+    expect(toastSlots.progressRange.split(" ")).not.toContain("bg-white");
+  });
 });

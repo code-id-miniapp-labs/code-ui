@@ -4,6 +4,7 @@ export const anatomy = /* @__PURE__ */ (() =>
   createAnatomy("input").parts(
     "root",
     "base",
+    "nativeInput",
     "leading",
     "leadingIcon",
     "trailing",

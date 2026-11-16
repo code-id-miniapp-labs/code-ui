@@ -1,10 +1,6 @@
 import { createMachine } from "@code-ui/core";
 import { isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
-import type {
-  AccordionGroupContext,
-  AccordionSize,
-  AccordionVariant,
-} from "@code-ui/accordion";
+import type { AccordionGroupContext } from "@code-ui/accordion";
 import type {
   AccordionItemMachine,
   AccordionItemParams,
@@ -113,18 +109,6 @@ export const accordionItemMachine: AccordionItemMachine =
       isCollapsible: ({ prop }) => {
         const group = prop("groupContext") as AccordionGroupContext | undefined;
         return group ? group.collapsible() : prop("collapsible");
-      },
-
-      effectiveSize: ({ prop }): AccordionSize => {
-        const group = prop("groupContext") as AccordionGroupContext | undefined;
-        return (prop("size") || group?.size() || "md") as AccordionSize;
-      },
-
-      effectiveVariant: ({ prop }): AccordionVariant => {
-        const group = prop("groupContext") as AccordionGroupContext | undefined;
-        return (prop("variant") ||
-          group?.variant() ||
-          "outline") as AccordionVariant;
       },
     },
 

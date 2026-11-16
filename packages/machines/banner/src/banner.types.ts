@@ -45,14 +45,33 @@ export interface BannerAction {
   label: string;
   onClick?: (() => void) | undefined;
   icon?: string | undefined;
+  leadingIcon?: string | undefined;
+  trailingIcon?: string | undefined;
   loading?: boolean | undefined;
   loadingIcon?: string | undefined;
+  disabled?: boolean | undefined;
   color?: string | undefined;
   variant?: string | undefined;
   size?: string | undefined;
   id?: string | undefined;
   closeOnClick?: boolean | undefined;
   ui?: any | undefined;
+  className?: string | undefined;
+}
+
+export interface BannerButtonProps {
+  label?: string | undefined;
+  icon?: string | undefined;
+  leadingIcon?: string | undefined;
+  trailingIcon?: string | undefined;
+  loading?: boolean | undefined;
+  loadingIcon?: string | undefined;
+  disabled?: boolean | undefined;
+  color?: string | undefined;
+  variant?: string | undefined;
+  size?: string | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
 }
 
 export type BannerBadgeColor =
@@ -85,70 +104,12 @@ export interface BannerProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for banner anatomy parts */
-  ui?: BannerUI | undefined;
   /** Controlled open state */
   open?: boolean | null | undefined;
   /** Default open state (uncontrolled) */
   defaultOpen?: boolean | undefined;
-  /** Color variant of the banner */
-  color?: BannerColor | undefined;
-  /** Style variant of the banner */
-  variant?: BannerVariant | undefined;
-  /** Size of the banner (LINE default or small) */
-  size?: BannerSize | undefined;
-  /** Screen or layout placement (top, bottom, inline) */
-  placement?: BannerPlacement | undefined;
-  /** Display mode (fixed or inline) */
-  mode?: BannerMode | undefined;
-  /** Banner primary title */
-  title?: string | undefined;
-  /** Banner description */
-  description?: string | undefined;
-  /** Small caption displayed above the title */
-  caption?: string | undefined;
-  /** Badge / label displayed above the title, or badge config matching c-badge */
-  badge?: string | BannerBadgeProps | null | undefined;
-  /** Explicit badge props matching c-badge */
-  badgeProps?: BannerBadgeProps | null | undefined;
-  /** Custom icon name or path */
-  icon?: string | undefined;
-  /** Custom icon name for info color */
-  infoIcon?: string | undefined;
-  /** Custom icon name for success color */
-  successIcon?: string | undefined;
-  /** Custom icon name for warning color */
-  warningIcon?: string | undefined;
-  /** Custom icon name for error / danger color */
-  errorIcon?: string | undefined;
-  /** Image source for the optional image area */
-  image?: string | undefined;
-  /** Image placement relative to the content area */
-  imagePosition?: BannerImagePosition | undefined;
-  /** Image box shape when placed beside the content */
-  imageShape?: BannerImageShape | undefined;
-  /** WeChat image mode (aspectFill, aspectFit, widthFix, ...) */
-  imageMode?: string | undefined;
-  /** Whether to show close button */
-  close?: boolean | undefined;
-  /** Alias for close (WeChat MiniProgram convention) */
-  closable?: boolean | undefined;
-  /** Custom close icon name */
-  closeIcon?: string | undefined;
-  /** Whether to show a more / link button */
-  more?: boolean | undefined;
-  /** Custom more icon name */
-  moreIcon?: string | undefined;
   /** Action buttons */
   actions?: BannerAction[] | undefined;
-  /** Native WeChat hover class applied to the root */
-  hoverClass?: string | undefined;
-  /** Manual top offset in px (overrides auto layout offset) */
-  topOffset?: number | null | undefined;
-  /** Manual bottom offset in px (overrides auto layout offset) */
-  bottomOffset?: number | null | undefined;
-  /** Whether to automatically coordinate with app layout insets */
-  autoInset?: boolean | undefined;
   /** Callback fired when the banner is tapped */
   onTap?: ((details: { id?: string | undefined }) => void) | undefined;
   /** Callback fired on open state change */
@@ -176,35 +137,7 @@ export type BannerEvent =
   | { type: "TAP" }
   | { type: "TRIGGER_ACTION"; index: number };
 
-type BannerDefaultedKey =
-  | "open"
-  | "defaultOpen"
-  | "color"
-  | "variant"
-  | "size"
-  | "placement"
-  | "mode"
-  | "title"
-  | "description"
-  | "caption"
-  | "badge"
-  | "badgeProps"
-  | "icon"
-  | "image"
-  | "imagePosition"
-  | "imageShape"
-  | "imageMode"
-  | "close"
-  | "closable"
-  | "closeIcon"
-  | "more"
-  | "moreIcon"
-  | "actions"
-  | "hoverClass"
-  | "topOffset"
-  | "bottomOffset"
-  | "autoInset"
-  | "ui";
+type BannerDefaultedKey = "open" | "defaultOpen" | "actions";
 
 export type BannerResolvedProps = Omit<BannerProps, BannerDefaultedKey> & {
   [K in BannerDefaultedKey]-?: Exclude<BannerProps[K], undefined>;
@@ -246,21 +179,6 @@ export interface BannerApi {
   visible: boolean;
   /** Whether the banner is currently animating out */
   dismissing: boolean;
-  /** Badge configuration pre-computed for c-badge rendering, or null when absent */
-  badge: BannerBadgeProps | null;
-  /** Actions array pre-computed for WXML rendering */
-  actions: Array<{
-    label: string;
-    index: number;
-    icon?: string | undefined;
-    loading: boolean;
-    loadingIcon: string;
-    color: string;
-    variant: string;
-    size: string;
-    closeOnClick: boolean;
-    ui?: any;
-  }>;
 
   /** Dismisses the banner */
   dismiss: () => void;

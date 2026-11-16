@@ -161,6 +161,7 @@ Page({
     // Event Feedback
     lastEvent: "(none)",
     isUploadingMock: false,
+    colors: ["primary", "secondary", "success", "warning", "danger", "info", "neutral"] as const,
   },
 
   // Event Handlers
