@@ -100,6 +100,12 @@ declare module "virtual:cui/theme/input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/modal" {
+  import type { default as modalTheme } from "@code-ui/core/src/theme/definitions/modal";
+  const theme: ReturnType<typeof modalTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/pin-input" {
   import type { default as pinInputTheme } from "@code-ui/core/src/theme/definitions/pin-input";
   const theme: ReturnType<typeof pinInputTheme>;

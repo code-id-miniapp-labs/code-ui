@@ -6,7 +6,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@code-ui/anatomy": resolve(import.meta.dirname, "packages/anatomy/src"),
-      "@code-ui/compiler": resolve(import.meta.dirname, "packages/compiler/src"),
+      "@code-ui/compiler": resolve(
+        import.meta.dirname,
+        "packages/compiler/src",
+      ),
       "@code-ui/context": resolve(import.meta.dirname, "packages/context/src"),
       "@code-ui/core": resolve(import.meta.dirname, "packages/core/src"),
       "@code-ui/utils": resolve(import.meta.dirname, "packages/utils/src"),
@@ -30,10 +33,22 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/banner/src",
       ),
-      "@code-ui/button": resolve(import.meta.dirname, "packages/machines/button/src"),
-      "@code-ui/checkbox": resolve(import.meta.dirname, "packages/machines/checkbox/src"),
-      "@code-ui/checkbox-group": resolve(import.meta.dirname, "packages/machines/checkbox-group/src"),
-      "@code-ui/drawer": resolve(import.meta.dirname, "packages/machines/drawer/src"),
+      "@code-ui/button": resolve(
+        import.meta.dirname,
+        "packages/machines/button/src",
+      ),
+      "@code-ui/checkbox": resolve(
+        import.meta.dirname,
+        "packages/machines/checkbox/src",
+      ),
+      "@code-ui/checkbox-group": resolve(
+        import.meta.dirname,
+        "packages/machines/checkbox-group/src",
+      ),
+      "@code-ui/drawer": resolve(
+        import.meta.dirname,
+        "packages/machines/drawer/src",
+      ),
       "@code-ui/file-upload": resolve(
         import.meta.dirname,
         "packages/machines/file-upload/src",
@@ -46,7 +61,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/form/src/form.context.ts",
       ),
-      "@code-ui/form": resolve(import.meta.dirname, "packages/machines/form/src"),
+      "@code-ui/form": resolve(
+        import.meta.dirname,
+        "packages/machines/form/src",
+      ),
       "@code-ui/form-field": resolve(
         import.meta.dirname,
         "packages/machines/form-field/src",
@@ -54,6 +72,10 @@ export default defineConfig({
       "@code-ui/input": resolve(
         import.meta.dirname,
         "packages/machines/input/src",
+      ),
+      "@code-ui/modal": resolve(
+        import.meta.dirname,
+        "packages/machines/modal/src",
       ),
       "@code-ui/pin-input": resolve(
         import.meta.dirname,

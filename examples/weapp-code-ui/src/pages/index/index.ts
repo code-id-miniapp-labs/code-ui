@@ -284,7 +284,17 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["vertical", "dashed/dotted", "labels"],
   },
 
-  // Feedback & Overlay (5)
+  // Feedback & Overlay (6)
+  {
+    id: "modal",
+    name: "Modal",
+    path: "/pages/modal/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Centered & fullscreen dialog overlay with xs-xl sizes, scrollable modes, slots, alert dialogs & modal forms.",
+    icon: "i-lucide-app-window",
+    highlights: ["alert dialog", "modal form", "fullscreen"],
+  },
   {
     id: "toast",
     name: "Toast",

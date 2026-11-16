@@ -52,11 +52,7 @@ import type {
   CheckboxGroupValueChangeDetails,
   CheckboxGroupVariant,
 } from "@code-ui/checkbox-group";
-import type {
-  DrawerCloseProps,
-  DrawerProps,
-  DrawerUI,
-} from "@code-ui/drawer";
+import type { DrawerCloseProps, DrawerProps, DrawerUI } from "@code-ui/drawer";
 import type {
   FileUploadChangeDetails,
   FileUploadColor,
@@ -92,6 +88,12 @@ import type {
   InputValueChangeDetails,
   InputVariant,
 } from "@code-ui/input";
+import type {
+  ModalCloseProps,
+  ModalOpenChangeDetails,
+  ModalSize,
+  ModalUI,
+} from "@code-ui/modal";
 import type {
   PinInputColor,
   PinInputProps,
@@ -364,6 +366,35 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   onDragStart?: (event: WechatMiniprogram.CustomEvent) => void;
   onDrag?: (event: WechatMiniprogram.CustomEvent) => void;
   onDragEnd?: (event: WechatMiniprogram.CustomEvent) => void;
+}
+
+export interface CuiModalElementProps extends CuiCommonElementProps {
+  ui?: ModalUI;
+  open?: boolean;
+  defaultOpen?: boolean;
+  title?: string;
+  description?: string;
+  overlay?: boolean;
+  scrollable?: boolean;
+  fullscreen?: boolean;
+  transition?: boolean;
+  dismissible?: boolean;
+  closeOnBackdropClick?: boolean;
+  duration?: number;
+  size?: ModalSize;
+  close?: boolean | ModalCloseProps;
+  closeIcon?: string;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<ModalOpenChangeDetails>,
+  ) => void;
+  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onClosePrevent?: (event: WechatMiniprogram.CustomEvent) => void;
+  onEnter?: (event: WechatMiniprogram.CustomEvent) => void;
+  onAfterEnter?: (event: WechatMiniprogram.CustomEvent) => void;
+  onLeave?: (event: WechatMiniprogram.CustomEvent) => void;
+  onAfterLeave?: (event: WechatMiniprogram.CustomEvent) => void;
+  onOverlayTap?: (event: WechatMiniprogram.CustomEvent) => void;
+  onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
 export interface CuiFileUploadElementProps extends CuiCommonElementProps {

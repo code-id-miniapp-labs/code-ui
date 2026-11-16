@@ -1,0 +1,583 @@
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Modal"
+    badge="Feedback"
+    subtitle="Centered & fullscreen dialog overlay with sizes (xs-xl), scrollable modes, slots, alert dialogs, keyboard-aware forms & FSM lifecycle."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Interactive Playground (All Props, Sizes, Scroll, Transitions & Close) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3.5">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Interactive Playground</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Combine size, scroll mode, overlay, dismissal, transition &amp; close button options.
+        </text>
+      </view>
+
+      <!-- Size -->
+      <view class="flex flex-col gap-1.5">
+        <text class="text-[11px] font-mono uppercase text-dimmed">Size (xs - xl)</text>
+        <view class="flex flex-wrap gap-2">
+          <c-button
+            wx:for="{{ sizes }}"
+            wx:key="*this"
+            size="xs"
+            color="{{ pgSize === item ? 'primary' : 'neutral' }}"
+            variant="{{ pgSize === item ? 'solid' : 'outline' }}"
+            label="{{ item }}"
+            data-size="{{ item }}"
+            bind:tap="selectPgSize"
+          />
+        </view>
+      </view>
+
+      <!-- Close Button Mode -->
+      <view class="flex flex-col gap-1.5">
+        <text class="text-[11px] font-mono uppercase text-dimmed">Close Trigger</text>
+        <view class="flex flex-wrap gap-2">
+          <c-button
+            wx:for="{{ closeModes }}"
+            wx:key="id"
+            size="xs"
+            color="{{ pgCloseMode === item.id ? 'secondary' : 'neutral' }}"
+            variant="{{ pgCloseMode === item.id ? 'solid' : 'outline' }}"
+            label="{{ item.label }}"
+            data-mode="{{ item.id }}"
+            bind:tap="selectPgCloseMode"
+          />
+        </view>
+      </view>
+
+      <!-- Duration -->
+      <view class="flex flex-col gap-1.5">
+        <text class="text-[11px] font-mono uppercase text-dimmed">Transition Duration</text>
+        <view class="flex flex-wrap gap-2">
+          <c-button
+            wx:for="{{ durations }}"
+            wx:key="*this"
+            size="xs"
+            color="{{ pgDuration === item ? 'primary' : 'neutral' }}"
+            variant="{{ pgDuration === item ? 'soft' : 'outline' }}"
+            label="{{ item }}ms"
+            data-duration="{{ item }}"
+            bind:tap="selectPgDuration"
+          />
+        </view>
+      </view>
+
+      <!-- Switches -->
+      <view class="flex flex-col gap-2 pt-2 border-t border-muted">
+        <c-switch checked="{{ pgFullscreen }}" size="sm" label="Fullscreen (slide-up + safe area)" bind:change="togglePgFullscreen" />
+        <c-switch checked="{{ pgScrollable }}" size="sm" label="Scrollable Container (outer scroll vs inner scroll-view)" bind:change="togglePgScrollable" />
+        <c-switch checked="{{ pgOverlay }}" size="sm" label="Show Dimmed Overlay" bind:change="togglePgOverlay" />
+        <c-switch checked="{{ pgDismissible }}" size="sm" label="Dismissible on Overlay Tap" bind:change="togglePgDismissible" />
+        <c-switch checked="{{ pgTransition }}" size="sm" label="Animate Enter / Leave Transition" bind:change="togglePgTransition" />
+        <c-switch checked="{{ pgLongContent }}" size="sm" label="Long Scrollable Body (16 items)" bind:change="togglePgLongContent" />
+      </view>
+
+      <c-button block="{{ true }}" color="primary" leading-icon="i-lucide-app-window" label="Open Playground Modal" bind:tap="openPlayground" />
+
+      <view class="grid grid-cols-2 gap-2 pt-1">
+        <c-button size="xs" color="neutral" variant="soft" leading-icon="i-lucide-maximize-2" label="Preset: Fullscreen" bind:tap="openPresetFullscreen" />
+        <c-button size="xs" color="neutral" variant="soft" leading-icon="i-lucide-file-text" label="Preset: Outer Scroll" bind:tap="openPresetOuterScroll" />
+        <c-button size="xs" color="neutral" variant="soft" leading-icon="i-lucide-eye-off" label="Preset: No Overlay" bind:tap="openPresetNoOverlay" />
+        <c-button size="xs" color="neutral" variant="soft" leading-icon="i-lucide-clock" label="Preset: Instant" bind:tap="openPresetInstant" />
+      </view>
+    </view>
+
+    <!-- 2. Alert Modals (Composed via ui + slots) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <view class="flex items-center gap-2">
+          <text class="text-sm font-semibold text-highlighted">Alert Modals</text>
+          <c-badge label="ui + slots" color="warning" variant="soft" size="xs" />
+        </view>
+        <text class="block text-xs text-muted mt-0.5">
+          Alert dialogs composed via ui overrides &amp; slots: confirmation, async destructive guard, single-action notice &amp; strict backdrop.
+        </text>
+      </view>
+
+      <view class="grid grid-cols-2 gap-2.5">
+        <c-button size="sm" color="primary" variant="soft" leading-icon="i-lucide-archive" label="Confirm Alert" bind:tap="openConfirmAlert" />
+        <c-button size="sm" color="danger" variant="soft" leading-icon="i-lucide-trash" label="Destructive Async" bind:tap="openDestructiveAlert" />
+        <c-button size="sm" color="success" variant="soft" leading-icon="i-lucide-circle-check" label="Success Notice" bind:tap="openSuccessAlert" />
+        <c-button size="sm" color="warning" variant="outline" leading-icon="i-lucide-shield-alert" label="Strict Backdrop" bind:tap="openStrictNoticeAlert" />
+      </view>
+    </view>
+
+    <!-- 3. Modal Forms (c-form + Keyboard Avoidance) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <view class="flex items-center gap-2">
+          <text class="text-sm font-semibold text-highlighted">Modal Forms</text>
+          <c-badge label="c-form + Keyboard" color="secondary" variant="soft" size="xs" />
+        </view>
+        <text class="block text-xs text-muted mt-0.5">
+          Validated forms inside c-modal with Input, Picker Select, RadioGroup, Textarea, Switch, PinInput &amp; keyboard height padding.
+        </text>
+      </view>
+
+      <view class="grid grid-cols-2 gap-2.5">
+        <c-button size="sm" color="primary" leading-icon="i-lucide-user-plus" label="Invite Form" bind:tap="openInviteFormModal" />
+        <c-button size="sm" color="secondary" variant="soft" leading-icon="i-lucide-key-round" label="PIN Verify Form" bind:tap="openPinFormModal" />
+      </view>
+
+      <view
+        wx:if="{{ lastFormStatus }}"
+        class="rounded-xl p-3 border {{ lastFormStatus === 'Validation Error' ? 'bg-danger/10 border-danger/30 text-danger' : 'bg-success/10 border-success/30 text-success' }}"
+      >
+        <view class="flex items-center justify-between gap-2">
+          <text class="text-xs font-bold">{{ lastFormType }} · {{ lastFormStatus }}</text>
+        </view>
+        <text class="block text-[11px] font-mono mt-1 break-all">{{ lastFormOutput }}</text>
+      </view>
+    </view>
+
+    <!-- 4. Slots, Trigger & UI Customizations -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Slots, Uncontrolled Trigger &amp; UI</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Covers trigger, title, description, header, body, footer, close, content slots &amp; ui/className styling.
+        </text>
+      </view>
+
+      <!-- Uncontrolled Modal with declarative slot="trigger" -->
+      <c-modal
+        id="trigger-modal"
+        default-open="{{ false }}"
+        size="md"
+        bind:openChange="onUncontrolledOpenChange"
+        bind:close="onModalCloseEvent"
+        bind:enter="onModalEnter"
+        bind:afterEnter="onModalAfterEnter"
+        bind:leave="onModalLeave"
+        bind:afterLeave="onModalAfterLeave"
+      >
+        <view
+          slot="trigger"
+          class="w-full rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2.5 flex items-center justify-between gap-2 active:opacity-80"
+        >
+          <view class="flex items-center gap-2.5 min-w-0">
+            <view class="w-8 h-8 rounded-lg bg-primary text-inverted flex items-center justify-center shrink-0">
+              <c-icon name="i-lucide-mouse-pointer-click" size="sm" />
+            </view>
+            <view class="min-w-0">
+              <text class="block text-xs font-semibold text-highlighted">Uncontrolled slot=&quot;trigger&quot;</text>
+              <text class="block text-[11px] text-muted">Tap to open without open prop (uses title/description/body/close slots)</text>
+            </view>
+          </view>
+          <c-badge label="Trigger" color="primary" variant="soft" size="xs" />
+        </view>
+
+        <view slot="close" class="px-2 py-0.5 rounded-full bg-elevated border border-default">
+          <text class="text-[10px] font-mono font-semibold text-muted">ESC</text>
+        </view>
+
+        <view slot="title" class="flex items-center gap-2">
+          <c-icon name="i-lucide-sparkles" size="sm" color="primary" />
+          <text class="text-base font-semibold text-highlighted">Named Slots Modal</text>
+        </view>
+
+        <view slot="description" class="flex items-center gap-1.5 mt-0.5">
+          <c-badge label="Uncontrolled" color="secondary" variant="soft" size="xs" />
+          <text class="text-xs text-muted">Opened via slot=&quot;trigger&quot; &amp; closed via slot=&quot;close&quot; or API.</text>
+        </view>
+
+        <view slot="body" class="flex flex-col gap-2.5">
+          <view class="p-3 rounded-xl bg-muted border border-muted">
+            <text class="block text-xs font-medium text-highlighted">Named slot=&quot;body&quot;</text>
+            <text class="block text-xs text-muted mt-1 leading-relaxed">
+              This modal omits the controlled open prop and instead uses slot=&quot;trigger&quot;, slot=&quot;title&quot;, slot=&quot;description&quot;, slot=&quot;close&quot;, slot=&quot;body&quot;, and slot=&quot;footer&quot;.
+            </text>
+          </view>
+        </view>
+
+        <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+          <c-button size="sm" color="neutral" variant="outline" label="Close" bind:tap="closeTriggerModalImperative" />
+          <c-button size="sm" color="primary" label="Confirm" bind:tap="confirmTriggerModal" />
+        </view>
+      </c-modal>
+
+      <view class="grid grid-cols-2 gap-2.5">
+        <c-button size="sm" color="primary" variant="outline" label="slot=&quot;content&quot;" bind:tap="openCustomContentModal" />
+        <c-button size="sm" color="secondary" variant="outline" label="slot=&quot;header&quot;" bind:tap="openCustomHeaderModal" />
+        <c-button size="sm" color="neutral" variant="outline" label="Header-Only" bind:tap="openHeaderOnlyModal" />
+        <c-button size="sm" color="neutral" variant="outline" label="No-Footer Full" bind:tap="openNoFooterModal" />
+      </view>
+      <c-button size="sm" color="primary" variant="soft" leading-icon="i-lucide-palette" label="Custom ui &amp; className Theme" bind:tap="openThemedModal" />
+    </view>
+
+    <!-- 5. Imperative useChild() API & Lifecycle Event Inspector -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view class="flex items-center justify-between gap-2">
+        <view>
+          <text class="block text-sm font-semibold text-highlighted">Imperative API &amp; Lifecycle</text>
+          <text class="block text-xs text-muted mt-0.5">Control #imperative-modal via useChild() &amp; inspect events.</text>
+        </view>
+        <c-badge
+          label="{{ imperativeSnap.state || 'closed' }}"
+          color="{{ imperativeSnap.open ? 'success' : 'neutral' }}"
+          variant="soft"
+          size="xs"
+        />
+      </view>
+
+      <view class="bg-muted border border-muted rounded-xl p-3 flex items-center justify-between text-[11px] font-mono">
+        <text class="text-muted">open: {{ imperativeSnap.open ? 'true' : 'false' }}</text>
+        <text class="text-muted">visible: {{ imperativeSnap.visible ? 'true' : 'false' }}</text>
+        <text class="text-highlighted">state: {{ imperativeSnap.state || 'closed' }}</text>
+      </view>
+
+      <view class="flex flex-wrap gap-2">
+        <c-button size="xs" color="primary" label="openModal()" bind:tap="callOpenModal" />
+        <c-button size="xs" color="secondary" variant="soft" label="toggle()" bind:tap="callToggleModal" />
+        <c-button size="xs" color="neutral" variant="outline" label="setOpen(true)" bind:tap="callSetOpenTrue" />
+      </view>
+
+      <view class="pt-2 border-t border-muted flex flex-col gap-2">
+        <view class="flex items-center justify-between">
+          <text class="text-xs font-semibold text-highlighted">Event Log</text>
+          <c-button size="xs" variant="ghost" color="neutral" label="Clear" bind:tap="clearLogs" />
+        </view>
+        <view class="bg-muted border border-muted rounded-xl p-3 flex flex-col gap-1">
+          <text wx:for="{{ eventLogs }}" wx:key="*this" class="text-[11px] font-mono text-toned break-all">{{ item }}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Modal 1: Playground Modal -->
+  <c-modal
+    id="playground-modal"
+    open="{{ playgroundOpen }}"
+    size="{{ pgSize }}"
+    fullscreen="{{ pgFullscreen }}"
+    scrollable="{{ pgScrollable }}"
+    overlay="{{ pgOverlay }}"
+    dismissible="{{ pgDismissible }}"
+    transition="{{ pgTransition }}"
+    duration="{{ pgDuration }}"
+    close="{{ pgCloseProp }}"
+    close-icon="{{ pgCloseIcon }}"
+    title="{{ pgTitle }}"
+    description="{{ pgDescription }}"
+    bind:openChange="onPlaygroundOpenChange"
+    bind:close="onModalCloseEvent"
+    bind:closePrevent="onModalClosePrevent"
+    bind:enter="onModalEnter"
+    bind:afterEnter="onModalAfterEnter"
+    bind:leave="onModalLeave"
+    bind:afterLeave="onModalAfterLeave"
+    bind:overlayTap="onModalOverlayTap"
+    bind:closeTriggerTap="onModalCloseTriggerTap"
+  >
+    <view class="flex flex-col gap-3">
+      <view class="flex flex-wrap gap-1.5">
+        <c-badge label="size: {{ pgSize }}" color="secondary" variant="soft" size="xs" />
+        <c-badge label="scrollable: {{ pgScrollable }}" color="neutral" variant="outline" size="xs" />
+        <c-badge label="fullscreen: {{ pgFullscreen }}" color="neutral" variant="outline" size="xs" />
+        <c-badge label="dismissible: {{ pgDismissible }}" color="{{ pgDismissible ? 'success' : 'warning' }}" variant="soft" size="xs" />
+        <c-badge label="duration: {{ pgDuration }}ms" color="neutral" variant="soft" size="xs" />
+      </view>
+
+      <view wx:if="{{ pgLongContent }}" class="flex flex-col divide-y divide-muted border border-muted rounded-xl overflow-hidden">
+        <view wx:for="{{ longScrollItems }}" wx:key="id" class="p-3 bg-muted/50 text-left">
+          <text class="block text-xs font-semibold text-highlighted">{{ item.title }}</text>
+          <text class="block text-[11px] font-mono text-primary mt-0.5">{{ item.meta }}</text>
+          <text class="block text-xs text-muted mt-1">{{ item.desc }}</text>
+        </view>
+      </view>
+
+      <view wx:else class="p-3 rounded-xl bg-muted border border-muted">
+        <text class="block text-xs text-muted leading-relaxed">
+          {{ pgDismissible ? 'Tap the overlay backdrop, close trigger, or footer button to dismiss.' : 'Overlay dismissal is disabled (dismissible=false). Tapping backdrop fires bind:closePrevent.' }}
+        </text>
+      </view>
+    </view>
+
+    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+      <c-button size="sm" color="neutral" variant="outline" label="Close" bind:tap="closePlayground" />
+      <c-button size="sm" color="primary" label="Confirm" bind:tap="confirmPlayground" />
+    </view>
+  </c-modal>
+
+  <!-- Modal 2: Alert Modals (Composed via ui + slots) -->
+  <c-modal
+    id="alert-modal"
+    open="{{ alertOpen }}"
+    size="{{ alertSize }}"
+    dismissible="{{ alertDismissible }}"
+    close-on-backdrop-click="{{ alertCloseOnBackdrop }}"
+    close="{{ alertClose }}"
+    description="{{ alertDescription }}"
+    ui="{{ alertUi }}"
+    bind:openChange="onAlertOpenChange"
+    bind:close="onModalCloseEvent"
+    bind:closePrevent="onModalClosePrevent"
+    bind:overlayTap="onModalOverlayTap"
+    bind:closeTriggerTap="onModalCloseTriggerTap"
+  >
+    <view slot="title" class="flex flex-col items-center gap-2.5">
+      <view class="w-11 h-11 rounded-full flex items-center justify-center {{ alertIconBoxClass }}">
+        <c-icon name="{{ alertIcon }}" size="lg" color="{{ alertIconColor }}" />
+      </view>
+      <text class="text-base font-semibold tracking-tight text-highlighted leading-snug text-center">{{ alertTitle }}</text>
+    </view>
+
+    <view class="px-3 py-2 rounded-xl bg-muted border border-muted">
+      <text class="text-xs text-muted leading-relaxed">{{ alertBodyNote }}</text>
+    </view>
+
+    <view slot="footer" class="flex items-center justify-center gap-2.5 w-full">
+      <c-button
+        wx:if="{{ alertShowCancel }}"
+        size="sm"
+        color="neutral"
+        variant="outline"
+        disabled="{{ alertSubmitting }}"
+        label="{{ alertCancelLabel }}"
+        bind:tap="closeAlertModal"
+      />
+      <c-button
+        size="sm"
+        color="{{ alertConfirmColor }}"
+        loading="{{ alertSubmitting }}"
+        label="{{ alertConfirmLabel }}"
+        bind:tap="confirmAlertModal"
+      />
+    </view>
+  </c-modal>
+
+  <!-- Modal 3A: Invite Member Modal Form -->
+  <c-modal
+    id="form-modal"
+    open="{{ formModalOpen }}"
+    size="md"
+    dismissible="{{ false }}"
+    scrollable="{{ false }}"
+    title="Invite Team Member"
+    description="c-form validation inside modal with keyboard-height padding."
+    bind:openChange="onFormModalOpenChange"
+    bind:close="onModalCloseEvent"
+    bind:closePrevent="onModalClosePrevent"
+    bind:closeTriggerTap="onModalCloseTriggerTap"
+  >
+    <c-form
+      id="modal-invite-form"
+      validate-on="{{ ['input', 'change', 'blur'] }}"
+      bind:submit="onInviteFormSubmit"
+      bind:error="onInviteFormError"
+    >
+      <view class="flex flex-col gap-3">
+        <c-form-field name="fullName" label="Full Name" required="{{ true }}" rules="{{ nameRules }}">
+          <c-input placeholder="e.g. Alice Wang" leading-icon="i-lucide-user" clearable="{{ true }}" />
+        </c-form-field>
+
+        <c-form-field name="email" label="Work Email" required="{{ true }}" rules="{{ emailRules }}">
+          <c-input placeholder="alice@code-ui.dev" leading-icon="i-lucide-mail" clearable="{{ true }}" />
+        </c-form-field>
+
+        <c-form-field name="role" label="Workspace Role" required="{{ true }}" rules="{{ roleRules }}">
+          <c-select mode="picker" title="Select Workspace Role" items="{{ roleOptions }}" placeholder="Choose role..." leading-icon="i-lucide-shield" />
+        </c-form-field>
+
+        <c-form-field name="access" label="Access Level">
+          <c-radio-group items="{{ accessOptions }}" orientation="horizontal" default-value="editor" />
+        </c-form-field>
+
+        <c-form-field name="notes" label="Welcome Note" hint="Optional">
+          <c-textarea placeholder="Add onboarding instructions..." count="{{ true }}" maxlength="{{ 120 }}" />
+        </c-form-field>
+
+        <c-form-field name="sendInvite">
+          <c-switch default-checked="{{ true }}" label="Send email invitation immediately" />
+        </c-form-field>
+      </view>
+    </c-form>
+
+    <view slot="footer" class="flex items-center justify-between gap-2 w-full">
+      <view class="flex items-center gap-1.5">
+        <c-button size="xs" color="secondary" variant="soft" label="Prefill" bind:tap="fillInviteForm" />
+        <c-button size="xs" color="neutral" variant="ghost" label="Reset" bind:tap="resetInviteForm" />
+      </view>
+      <view class="flex items-center gap-2">
+        <c-button size="sm" color="neutral" variant="outline" disabled="{{ formSubmitting }}" label="Cancel" bind:tap="closeInviteFormModal" />
+        <c-button size="sm" color="primary" loading="{{ formSubmitting }}" leading-icon="i-lucide-send" label="Send Invite" bind:tap="submitInviteForm" />
+      </view>
+    </view>
+  </c-modal>
+
+  <!-- Modal 3B: Security PIN Modal Form -->
+  <c-modal
+    id="pin-modal"
+    open="{{ pinModalOpen }}"
+    size="xs"
+    dismissible="{{ false }}"
+    title="Security Verification"
+    description="Enter your 4-digit authorization PIN to approve transfer."
+    ui="{{ alertUi }}"
+    bind:openChange="onPinModalOpenChange"
+    bind:close="onModalCloseEvent"
+    bind:closePrevent="onModalClosePrevent"
+  >
+    <c-form id="modal-pin-form" bind:submit="onPinFormSubmit" bind:error="onPinFormError">
+      <view class="flex justify-center py-1">
+        <c-form-field name="pin" required="{{ true }}" rules="{{ pinRules }}">
+          <c-pin-input length="{{ 4 }}" mask="{{ true }}" placeholder="○" />
+        </c-form-field>
+      </view>
+    </c-form>
+
+    <view slot="footer" class="flex items-center justify-center gap-2.5 w-full">
+      <c-button size="sm" color="neutral" variant="outline" disabled="{{ pinSubmitting }}" label="Cancel" bind:tap="closePinFormModal" />
+      <c-button size="sm" color="primary" loading="{{ pinSubmitting }}" leading-icon="i-lucide-lock" label="Verify PIN" bind:tap="submitPinForm" />
+    </view>
+  </c-modal>
+
+  <!-- Modal 4A: Custom slot="content" -->
+  <c-modal
+    id="custom-content-modal"
+    open="{{ customContentOpen }}"
+    size="sm"
+    bind:openChange="onCustomContentOpenChange"
+    bind:close="onModalCloseEvent"
+  >
+    <view slot="content" class="flex flex-col">
+      <view class="bg-primary/10 px-5 pt-6 pb-5 flex flex-col items-center text-center border-b border-primary/15">
+        <view class="w-12 h-12 rounded-2xl bg-primary text-inverted flex items-center justify-center shadow-sm mb-3">
+          <c-icon name="i-lucide-rocket" size="lg" />
+        </view>
+        <c-badge label="slot=&quot;content&quot;" color="primary" variant="soft" size="xs" />
+        <text class="block text-base font-bold text-highlighted mt-2">Fully Custom Card Layout</text>
+        <text class="block text-xs text-muted mt-1 leading-relaxed">
+          Replaces default header, close button, body &amp; footer with complete control over modal markup.
+        </text>
+      </view>
+      <view class="p-5 flex flex-col gap-3">
+        <view class="flex items-center gap-2 text-xs text-toned">
+          <c-icon name="i-lucide-check" size="xs" color="success" />
+          <text>Keeps modal overlay, animations &amp; keyboard height intact</text>
+        </view>
+        <view class="flex items-center gap-2 text-xs text-toned">
+          <c-icon name="i-lucide-check" size="xs" color="success" />
+          <text>Ideal for onboarding heroes &amp; promotional dialogs</text>
+        </view>
+        <c-button block="{{ true }}" color="primary" label="Got It" class="mt-1" bind:tap="closeCustomContentModal" />
+      </view>
+    </view>
+  </c-modal>
+
+  <!-- Modal 4B: Custom slot="header" -->
+  <c-modal
+    id="custom-header-modal"
+    open="{{ customHeaderOpen }}"
+    size="md"
+    bind:openChange="onCustomHeaderOpenChange"
+    bind:close="onModalCloseEvent"
+  >
+    <view slot="header" class="flex items-center gap-3 pr-8">
+      <c-avatar size="md" color="primary" text="CU" />
+      <view class="min-w-0">
+        <view class="flex items-center gap-1.5">
+          <text class="text-sm font-bold text-highlighted">Custom Header Slot</text>
+          <c-badge label="Pro" color="secondary" variant="soft" size="xs" />
+        </view>
+        <text class="block text-xs text-muted mt-0.5">Avatar + badge composed inside slot=&quot;header&quot;</text>
+      </view>
+    </view>
+
+    <text class="text-xs text-muted leading-relaxed">
+      Using slot=&quot;header&quot; replaces the default title/description wrapper while keeping automatic close trigger spacing and header divider.
+    </text>
+
+    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+      <c-button size="sm" color="primary" label="Close" bind:tap="closeCustomHeaderModal" />
+    </view>
+  </c-modal>
+
+  <!-- Modal 4C: Header-Only Modal (hasBody=false) -->
+  <c-modal
+    id="header-only-modal"
+    open="{{ headerOnlyOpen }}"
+    size="sm"
+    title="Header-Only Modal"
+    description="No body or default slot was supplied (hasBody=false), so the header omits its bottom divider cleanly."
+    bind:openChange="onHeaderOnlyOpenChange"
+    bind:close="onModalCloseEvent"
+  >
+    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+      <c-button size="sm" color="neutral" variant="outline" label="Dismiss" bind:tap="closeHeaderOnlyModal" />
+      <c-button size="sm" color="primary" label="Continue" bind:tap="closeHeaderOnlyModal" />
+    </view>
+  </c-modal>
+
+  <!-- Modal 4D: No-Footer Fullscreen Modal (hasFooter=false) -->
+  <c-modal
+    id="no-footer-modal"
+    open="{{ noFooterOpen }}"
+    fullscreen="{{ true }}"
+    title="Fullscreen Document Reader"
+    description="No footer slot provided — body receives bottom safe-area inset automatically."
+    bind:openChange="onNoFooterOpenChange"
+    bind:close="onModalCloseEvent"
+  >
+    <view class="flex flex-col divide-y divide-muted">
+      <view wx:for="{{ longScrollItems }}" wx:key="id" class="py-3">
+        <text class="block text-sm font-semibold text-highlighted">{{ item.title }}</text>
+        <text class="block text-xs text-muted mt-1 leading-relaxed">{{ item.desc }}</text>
+      </view>
+    </view>
+  </c-modal>
+
+  <!-- Modal 4E: Custom ui & className Overrides -->
+  <c-modal
+    id="themed-modal"
+    open="{{ themedOpen }}"
+    size="md"
+    title="Themed Slot Overrides"
+    description="Customized overlay, content, header, title, description, body, footer, closeTrigger &amp; className."
+    ui="{{ themedUi }}"
+    class-name="ring-2 ring-primary/25"
+    bind:openChange="onThemedOpenChange"
+    bind:close="onModalCloseEvent"
+  >
+    <view class="flex flex-col gap-2">
+      <text class="text-xs text-muted leading-relaxed">
+        Every anatomy part in modalTheme supports targeted Tailwind class overrides via the ui prop without wrapping components.
+      </text>
+    </view>
+
+    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+      <c-button size="sm" color="primary" label="Awesome" bind:tap="closeThemedModal" />
+    </view>
+  </c-modal>
+
+  <!-- Modal 5: Imperative useChild() Controlled Modal -->
+  <c-modal
+    id="imperative-modal"
+    size="sm"
+    title="Imperative FSM Modal"
+    description="Opened and closed directly through useChild() -> ModalApi methods."
+    bind:openChange="onUncontrolledOpenChange"
+    bind:enter="onModalEnter"
+    bind:afterEnter="onModalAfterEnter"
+    bind:leave="onModalLeave"
+    bind:afterLeave="onModalAfterLeave"
+    bind:close="onModalCloseEvent"
+  >
+    <view class="flex flex-col gap-2.5">
+      <view class="p-3 rounded-xl bg-muted border border-muted font-mono text-[11px] flex flex-col gap-1">
+        <text class="text-muted">api.state: {{ imperativeSnap.state }}</text>
+        <text class="text-muted">api.open: {{ imperativeSnap.open ? 'true' : 'false' }}</text>
+        <text class="text-muted">api.visible: {{ imperativeSnap.visible ? 'true' : 'false' }}</text>
+      </view>
+    </view>
+
+    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+      <c-button size="sm" color="neutral" variant="outline" label="setOpen(false)" bind:tap="callSetOpenFalse" />
+      <c-button size="sm" color="primary" label="closeModal()" bind:tap="callCloseModal" />
+    </view>
+  </c-modal>
+</view>

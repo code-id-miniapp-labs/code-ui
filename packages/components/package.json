@@ -140,6 +140,12 @@
       "require": "./dist/runtime/input/index.js"
     },
     "./input/*": "./dist/runtime/input/*",
+    "./modal": {
+      "types": "./dist/runtime/modal/index.d.ts",
+      "import": "./dist/runtime/modal/index.js",
+      "require": "./dist/runtime/modal/index.js"
+    },
+    "./modal/*": "./dist/runtime/modal/*",
     "./pin-input": {
       "types": "./dist/runtime/pin-input/index.d.ts",
       "import": "./dist/runtime/pin-input/index.js",
@@ -292,6 +298,7 @@
     "@code-ui/form-field": "workspace:*",
     "@code-ui/input": "workspace:*",
     "@code-ui/miniapp": "workspace:*",
+    "@code-ui/modal": "workspace:*",
     "@code-ui/pin-input": "workspace:*",
     "@code-ui/progress": "workspace:*",
     "@code-ui/pull-down-refresh": "workspace:*",

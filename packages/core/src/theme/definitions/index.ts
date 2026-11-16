@@ -19,6 +19,7 @@ export { default as form } from "./form";
 export { default as formField } from "./form-field";
 export { default as icon } from "./icon";
 export { default as input } from "./input";
+export { default as modal } from "./modal";
 export { default as pinInput } from "./pin-input";
 export { default as progress } from "./progress";
 export { default as pullDownRefresh } from "./pull-down-refresh";
