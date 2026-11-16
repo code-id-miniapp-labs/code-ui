@@ -110,7 +110,7 @@
       <view class="p-3.5 rounded-xl bg-muted border border-default">
         <text class="block text-xs font-semibold text-highlighted">Gesture & Safe-Area Support</text>
         <text class="block text-xs text-muted mt-1 leading-relaxed">
-          Top and bottom sheets enable native WXS touch swipe gestures on the grabber bar for smooth resistance and velocity dismissal.
+          All four edges (bottom, top, left, right) enable native WXS touch swipe gestures on the grabber handle for smooth resistance and velocity dismissal.
         </text>
       </view>
     </view>

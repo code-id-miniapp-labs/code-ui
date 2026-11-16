@@ -12,7 +12,7 @@ export default function appTheme(_options: ThemeOptions = {}) {
       scaled: {
         true: {
           root: "bg-black",
-          scaleWrapper: "overflow-hidden rounded-2xl shadow-2xl",
+          scaleWrapper: "overflow-hidden rounded-md shadow-2xl",
         },
         false: {
           root: "bg-default",

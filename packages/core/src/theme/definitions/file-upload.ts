@@ -12,7 +12,7 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
     slots: {
       root: "relative flex flex-col gap-3 w-full",
       dropzone:
-        "relative flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl transition-colors cursor-pointer select-none",
+        "relative flex flex-col items-center justify-center text-center border-2 border-dashed rounded-md transition-colors cursor-pointer select-none",
       icon: "text-dimmed mb-2 shrink-0 flex items-center justify-center",
       iconInner: "w-full h-full",
       loadingIcon: "w-full h-full animate-spin",
@@ -20,7 +20,7 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
       title: "font-medium text-highlighted",
       description: "text-muted",
       fileList: "flex flex-col gap-2 w-full",
-      file: "relative flex items-center gap-3 p-3 rounded-xl border border-default bg-default shadow-xs transition-colors",
+      file: "relative flex items-center gap-3 p-3 rounded-md border border-default bg-default shadow-xs transition-colors",
       fileLeading:
         "relative flex items-center justify-center shrink-0 rounded-lg overflow-hidden bg-elevated",
       fileImage: "absolute inset-0 w-full h-full rounded-lg object-cover block",
@@ -53,8 +53,7 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
       ),
       variant: {
         outline: {
-          dropzone:
-            "border-default bg-muted hover:border-accented",
+          dropzone: "border-default bg-muted hover:border-accented",
           file: "bg-default border-default",
         },
         soft: {
@@ -122,7 +121,7 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
         },
         grid: {
           fileList: "grid grid-cols-2 gap-3 w-full",
-          file: "relative flex flex-col p-2.5 rounded-xl border border-default bg-default shadow-xs transition-colors overflow-hidden",
+          file: "relative flex flex-col p-2.5 rounded-md border border-default bg-default shadow-xs transition-colors overflow-hidden",
           fileLeading:
             "w-full h-24 aspect-video rounded-lg overflow-hidden bg-elevated shrink-0 relative flex items-center justify-center",
           fileTrailing:

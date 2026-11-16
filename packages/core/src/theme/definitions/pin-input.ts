@@ -14,7 +14,7 @@ export default function pinInputTheme(options: ThemeOptions = {}) {
       label: "text-sm font-medium text-highlighted",
       control: "relative inline-flex items-center gap-1.5",
       input:
-        "flex items-center justify-center overflow-hidden min-h-0 box-border p-0 m-0 rounded-lg border text-center font-semibold transition-colors focus:outline-none",
+        "flex items-center justify-center overflow-hidden min-h-0 box-border p-0 m-0 rounded-md border text-center font-semibold transition-colors focus:outline-none",
       nativeInput:
         "w-full min-h-0 bg-transparent border-0 p-0 m-0 text-center font-semibold text-inherit leading-normal focus:outline-none",
       separator: "text-dimmed font-medium select-none px-0.5",
@@ -47,10 +47,12 @@ export default function pinInputTheme(options: ThemeOptions = {}) {
           input: "bg-elevated text-highlighted border-accented",
         },
         ghost: {
-          input: "bg-transparent text-highlighted border-transparent focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
+          input:
+            "bg-transparent text-highlighted border-transparent focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
         none: {
-          input: "bg-transparent text-highlighted border-0 focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
+          input:
+            "bg-transparent text-highlighted border-0 focus:border-transparent focus:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
       },
       size: {

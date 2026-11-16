@@ -7,13 +7,12 @@ export default function actionSheetTheme(_options: ThemeOptions = {}) {
       backdrop:
         "cui-action-sheet-backdrop-enter fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
       content:
-        "cui-action-sheet-content-enter relative z-10 flex flex-col w-full max-h-[85vh] bg-elevated rounded-t-2xl shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden translate-y-0",
+        "cui-action-sheet-content-enter relative z-10 flex flex-col w-full max-h-[85vh] bg-elevated rounded-t-lg shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden translate-y-0",
       header:
         "relative flex flex-col items-center justify-center px-6 py-4 bg-default text-center border-b border-muted shrink-0 w-full box-border",
       title:
         "text-xs font-semibold uppercase tracking-wider text-dimmed text-center leading-snug",
-      description:
-        "text-xs text-muted text-center mt-1 leading-normal",
+      description: "text-xs text-muted text-center mt-1 leading-normal",
       closeTrigger:
         "absolute right-3.5 top-3.5 inline-flex items-center justify-center w-7 h-7 rounded-full bg-elevated text-muted shrink-0 cursor-pointer active:opacity-70 transition-opacity",
       closeButton: "p-0 w-full h-full rounded-full text-inherit",
@@ -27,10 +26,8 @@ export default function actionSheetTheme(_options: ThemeOptions = {}) {
       itemLabel:
         "text-base font-normal text-highlighted text-center leading-snug",
       itemLabelDestructive: "text-danger font-medium",
-      itemDescription:
-        "text-xs text-dimmed text-center mt-1 leading-snug",
-      itemIcon:
-        "w-5 h-5 shrink-0 text-muted pointer-events-none",
+      itemDescription: "text-xs text-dimmed text-center mt-1 leading-snug",
+      itemIcon: "w-5 h-5 shrink-0 text-muted pointer-events-none",
       itemIconDestructive: "text-danger",
       itemLoadingIcon: "animate-spin text-primary",
       gap: "w-full h-2 bg-elevated shrink-0",

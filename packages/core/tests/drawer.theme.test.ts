@@ -18,5 +18,12 @@ describe("drawerTheme (@code-ui/core)", () => {
 
     expect(theme.variants.placement.left.content).toContain("md:max-w-md");
     expect(theme.variants.placement.right.content).toContain("md:max-w-md");
+
+    expect(theme.variants.placement.bottom.grabberBar).toContain("w-12 h-1.5");
+    expect(theme.variants.placement.top.grabberBar).toContain("w-12 h-1.5");
+    expect(theme.variants.placement.left.grabberBar).toContain("w-1.5 h-12");
+    expect(theme.variants.placement.right.grabberBar).toContain("w-1.5 h-12");
+    expect(theme.variants.placement.left.body).toContain("h-0");
+    expect(theme.variants.placement.right.body).toContain("h-0");
   });
 });

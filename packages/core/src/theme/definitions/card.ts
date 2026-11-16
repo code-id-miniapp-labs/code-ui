@@ -3,7 +3,7 @@ import { defineTheme, type ThemeOptions } from "../../theme";
 export default function cardTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
-      root: "rounded-xl overflow-hidden flex flex-col",
+      root: "rounded-md overflow-hidden flex flex-col",
       header: "flex flex-col gap-1 border-b border-default",
       title: "text-base font-semibold text-highlighted",
       description: "text-sm text-muted",

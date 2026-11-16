@@ -10,7 +10,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "relative flex flex-col w-full box-border rounded-lg border transition-colors focus-within:outline-none",
+      root: "relative flex flex-col w-full box-border rounded-md border transition-colors focus-within:outline-none",
       base: "w-full box-border border-0 p-0 m-0 bg-transparent text-highlighted focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed resize-none leading-normal min-h-12",
       placeholder: "text-dimmed",
       leading:

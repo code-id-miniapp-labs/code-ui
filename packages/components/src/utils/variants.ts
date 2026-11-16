@@ -260,7 +260,7 @@ const TEXT_SIZE_RE =
   /^([2-9]?xs|sm|md|base|lg|[2-9]?xl)$|^\[(\d+|length:|var\(--font-size)/;
 const NUM_OR_LEN_RE = /^\d+$|^\[(\d+|length:)/;
 const DIRECT_PREFIX_RE =
-  /^(?:-?([pm][xytrblse]?|space-[xy]|inset(?:-x|-y)?|top|right|bottom|left|start|end|z)|([wh]|min-[wh]|max-[wh]|size|leading|tracking|basis|items|justify|self|content|grid-cols|grid-rows|col-span|row-span|gap(?:-x|-y)?|opacity|overflow(?:-x|-y)?|cursor|select|pointer-events|aspect|shrink|grow|shadow))-/;
+  /^(?:-?([pm][xytrblse]?|space-[xy]|inset(?:-x|-y)?|top|right|bottom|left|start|end|z|translate-[xy])|([wh]|min-[wh]|max-[wh]|size|leading|tracking|basis|items|justify|self|content|grid-cols|grid-rows|col-span|row-span|gap(?:-x|-y)?|opacity|overflow(?:-x|-y)?|cursor|select|pointer-events|aspect|shrink|grow|shadow))-/;
 const ROUNDED_DIR_RE = /^rounded-(tl|tr|bl|br|ss|se|ee|es|t|b|l|r|s|e)(?:-|$)/;
 const BORDER_DIR_RE = /^(t|b|l|r|x|y|s|e)(?:-(.+))?$/;
 const BG_REPEAT_RE = /^(no-)?repeat(-[xy])?$/;

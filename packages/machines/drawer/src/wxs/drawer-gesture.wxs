@@ -70,10 +70,14 @@ function _buildBackdropOpacity(offset, threshold) {
   return 'opacity: ' + rounded + ';';
 }
 
+function _isDismissible(dataset) {
+  return dataset.dismissible !== false && dataset.dismissible !== 'false';
+}
+
 function onTouchStart(event, ownerInstance) {
   var touch   = dom.getTouch(event);
   var dataset = dom.getDataset(event);
-  if (!touch) return;
+  if (!touch || !_isDismissible(dataset)) return;
 
   startX = touch.clientX;
   startY = touch.clientY;
@@ -104,7 +108,7 @@ function onTouchStart(event, ownerInstance) {
 function onTouchMove(event, ownerInstance) {
   var touch   = dom.getTouch(event);
   var dataset = dom.getDataset(event);
-  if (!touch) return;
+  if (!touch || !_isDismissible(dataset)) return;
 
   var placement = dataset.placement || 'bottom';
   var offset    = _computeOffset(touch.clientX, touch.clientY, placement);
@@ -128,6 +132,7 @@ function onTouchMove(event, ownerInstance) {
 function onTouchEnd(event, ownerInstance) {
   var touch   = dom.getChangedTouch(event);
   var dataset = dom.getDataset(event);
+  if (!_isDismissible(dataset)) return;
 
   var placement = dataset.placement || 'bottom';
   var threshold = dataset.threshold || 80;

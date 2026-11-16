@@ -8,7 +8,7 @@ export default function floatingMenuTheme(_options: ThemeOptions = {}) {
       backdrop: "fixed inset-0 z-40 bg-transparent",
       positioner: "z-50 box-border",
       content:
-        "relative w-full rounded-lg bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
+        "relative w-full rounded-md bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
       arrow:
         "absolute w-2.5 h-2.5 bg-default border-default pointer-events-none",
     },

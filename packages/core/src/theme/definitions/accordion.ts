@@ -8,13 +8,13 @@ export default function accordionTheme(_options: ThemeOptions = {}) {
     variants: {
       variant: {
         outline: {
-          root: "border border-default divide-y divide-default rounded-lg overflow-hidden",
+          root: "border border-default divide-y divide-default rounded-md overflow-hidden",
         },
         subtle: {
-          root: "bg-muted divide-y divide-default rounded-lg overflow-hidden",
+          root: "bg-muted divide-y divide-default rounded-md overflow-hidden",
         },
         soft: {
-          root: "bg-elevated divide-y divide-default rounded-lg overflow-hidden",
+          root: "bg-elevated divide-y divide-default rounded-md overflow-hidden",
         },
         plain: {
           root: "divide-y divide-default",
@@ -36,4 +36,3 @@ export default function accordionTheme(_options: ThemeOptions = {}) {
     },
   });
 }
-

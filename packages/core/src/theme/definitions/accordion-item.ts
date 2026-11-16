@@ -51,7 +51,7 @@ export default function accordionItemTheme(_options: ThemeOptions = {}) {
         soft: {},
         plain: {},
         separated: {
-          root: "border border-default rounded-lg shadow-2xs bg-default overflow-hidden",
+          root: "border border-default rounded-md shadow-2xs bg-default overflow-hidden",
         },
       },
       disabled: {
@@ -76,4 +76,3 @@ export default function accordionItemTheme(_options: ThemeOptions = {}) {
     },
   });
 }
-

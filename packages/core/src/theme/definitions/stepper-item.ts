@@ -29,7 +29,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
           root: "flex-col items-center flex-1 min-w-16 shrink-0",
           container: "justify-center w-full",
           separator: "top-1/2 -translate-y-1/2 h-0.5",
-          wrapper: "items-center text-center mt-2 w-full px-0.5",
+          wrapper: "items-center text-center w-full px-0.5",
           title: "text-center",
           description: "text-center",
         },
@@ -49,35 +49,30 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
           icon: "size-2.5",
           title: "text-2xs",
           description: "text-3xs",
-          wrapper: "mt-1",
         },
         sm: {
           trigger: "size-6 text-xs",
           icon: "size-3",
           title: "text-xs",
           description: "text-2xs",
-          wrapper: "mt-1.5",
         },
         md: {
           trigger: "size-7 text-xs",
           icon: "size-3.5",
           title: "text-xs font-semibold",
           description: "text-2xs",
-          wrapper: "mt-2",
         },
         lg: {
           trigger: "size-8 text-sm",
           icon: "size-4",
           title: "text-sm font-semibold",
           description: "text-xs",
-          wrapper: "mt-2.5",
         },
         xl: {
           trigger: "size-10 text-base",
           icon: "size-5",
           title: "text-base font-semibold",
           description: "text-sm",
-          wrapper: "mt-3",
         },
       },
       color: Object.assign(
@@ -116,6 +111,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
         class: {
           separator:
             "start-[calc(50%_+_var(--spacing)_*_3.5)] end-[calc(-50%_+_var(--spacing)_*_3.5)]",
+          wrapper: "mt-1",
         },
       },
       {
@@ -124,6 +120,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
         class: {
           separator:
             "start-[calc(50%_+_var(--spacing)_*_4)] end-[calc(-50%_+_var(--spacing)_*_4)]",
+          wrapper: "mt-1.5",
         },
       },
       {
@@ -132,6 +129,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
         class: {
           separator:
             "start-[calc(50%_+_var(--spacing)_*_5)] end-[calc(-50%_+_var(--spacing)_*_5)]",
+          wrapper: "mt-2",
         },
       },
       {
@@ -140,6 +138,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
         class: {
           separator:
             "start-[calc(50%_+_var(--spacing)_*_5.5)] end-[calc(-50%_+_var(--spacing)_*_5.5)]",
+          wrapper: "mt-2.5",
         },
       },
       {
@@ -148,6 +147,7 @@ export default function stepperItemTheme(options: ThemeOptions = {}) {
         class: {
           separator:
             "start-[calc(50%_+_var(--spacing)_*_7)] end-[calc(-50%_+_var(--spacing)_*_7)]",
+          wrapper: "mt-3",
         },
       },
       {

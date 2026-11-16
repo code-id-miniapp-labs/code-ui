@@ -9,7 +9,7 @@ export default function qrCodeTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "relative inline-flex items-center justify-center rounded-xl bg-white border border-neutral-200 shadow-sm",
+      root: "relative inline-flex items-center justify-center rounded-md bg-white border border-neutral-200 shadow-sm",
       frame: "w-full h-full block",
       pattern: "fill-current",
       overlay:

@@ -8,7 +8,8 @@ export default function swipeCellTheme(_options: ThemeOptions = {}) {
         "relative flex flex-row w-full transition-transform duration-300 ease-out will-change-transform box-border",
       content: "relative z-10 w-full shrink-0 bg-default box-border",
       left: "absolute left-0 top-0 bottom-0 z-0 flex flex-row h-full -translate-x-full box-border",
-      right: "absolute right-0 top-0 bottom-0 z-0 flex flex-row h-full translate-x-full box-border",
+      right:
+        "absolute right-0 top-0 bottom-0 z-0 flex flex-row h-full translate-x-full box-border",
       action:
         "flex flex-row items-center justify-center h-full text-white transition-opacity active:opacity-85 select-none cursor-pointer box-border font-medium",
       actionText: "font-medium leading-none",
@@ -21,19 +22,19 @@ export default function swipeCellTheme(_options: ThemeOptions = {}) {
           content: "bg-default",
         },
         outline: {
-          root: "border border-default rounded-xl overflow-hidden shadow-xs",
+          root: "border border-default rounded-md overflow-hidden shadow-xs",
           content: "bg-default",
         },
         subtle: {
-          root: "border border-default rounded-xl overflow-hidden bg-muted",
+          root: "border border-default rounded-md overflow-hidden bg-muted",
           content: "bg-muted",
         },
         soft: {
-          root: "rounded-xl overflow-hidden bg-elevated",
+          root: "rounded-md overflow-hidden bg-elevated",
           content: "bg-elevated",
         },
         separated: {
-          root: "rounded-2xl border border-default shadow-xs overflow-hidden",
+          root: "rounded-md border border-default shadow-xs overflow-hidden",
           content: "bg-default",
         },
       },

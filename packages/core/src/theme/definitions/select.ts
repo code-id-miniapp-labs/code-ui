@@ -11,7 +11,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative w-full",
-      base: "relative w-full min-h-0 flex items-center justify-between overflow-hidden box-border rounded-lg border text-highlighted transition-colors cursor-pointer select-none focus:outline-none",
+      base: "relative w-full min-h-0 flex items-center justify-between overflow-hidden box-border rounded-md border text-highlighted transition-colors cursor-pointer select-none focus:outline-none",
       leading: "shrink-0 flex items-center justify-center text-dimmed",
       leadingIcon:
         "inline-flex items-center justify-center shrink-0 leading-none",
@@ -32,7 +32,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
       pickerBackdrop:
         "fixed inset-0 bg-black/40 transition-opacity duration-250",
       pickerContent:
-        "relative z-10 flex flex-col w-full bg-default rounded-t-2xl shadow-2xl transition-transform duration-250 ease-out box-border overflow-hidden pb-[env(safe-area-inset-bottom)]",
+        "relative z-10 flex flex-col w-full bg-default rounded-t-md shadow-2xl transition-transform duration-250 ease-out box-border overflow-hidden pb-[env(safe-area-inset-bottom)]",
       pickerHeader:
         "flex items-center justify-between px-4 py-3 border-b border-muted shrink-0 box-border w-full",
       pickerCancel:

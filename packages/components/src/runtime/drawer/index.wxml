@@ -2,25 +2,30 @@
 <view id="{{drawer.rootProps.id}}" class="{{ classes.root }}" data-scope="drawer" data-part="root" data-state="{{drawer.state}}" data-placement="{{placement}}" wx:if="{{drawer.state !== 'closed'}}">
   <view id="{{drawer.backdropProps.id}}" class="{{ classes.backdrop }}" data-scope="drawer" data-part="backdrop" data-state="{{drawer.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleBackdropTap" catchtouchmove="{{gesture.preventTouchMove}}" />
   <view id="{{drawer.contentProps.id}}" class="{{ classes.content }}" data-scope="drawer" data-part="content" data-state="{{drawer.state}}" data-placement="{{placement}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!drawer.open}}" data-keyboard-height="{{drawer.contentProps['data-keyboard-height']}}" style="{{drawer.contentProps.style}}">
-    <view class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{placement}}" data-threshold="{{threshold}}" data-duration="{{duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" data-should-scale="{{shouldScaleBackground}}" data-scale-factor="{{scaleFactor}}" wx:if="{{placement === 'bottom' || placement === 'top'}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
+    <view wx:if="{{placement === 'bottom' || placement === 'right'}}" class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{placement}}" data-dismissible="{{dismissible}}" data-threshold="{{threshold}}" data-duration="{{duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" data-should-scale="{{shouldScaleBackground}}" data-scale-factor="{{scaleFactor}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
       <view class="{{ classes.grabberBar }}" />
     </view>
-    <view class="{{ classes.header }}" catchtouchmove="{{gesture.preventTouchMove}}">
-      <view class="{{ classes.headerContent }}">
-        <slot name="header" />
-      </view>
-      <view wx:if="{{resolvedClose || slots.close}}" class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger">
-        <view wx:if="{{slots.close}}" class="{{ classes.closeButton }}" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
-          <slot name="close" />
+    <view class="{{ classes.container }}" data-scope="drawer" data-part="container">
+      <view class="{{ classes.header }}" catchtouchmove="{{gesture.preventTouchMove}}">
+        <view class="{{ classes.headerContent }}">
+          <slot name="header" />
         </view>
-        <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
+        <view wx:if="{{resolvedClose || slots.close}}" class="{{ classes.closeTrigger }}" data-scope="drawer" data-part="close-trigger">
+          <view wx:if="{{slots.close}}" class="{{ classes.closeButton }}" aria-role="button" aria-label="Close" catchtap="handleCloseTap">
+            <slot name="close" />
+          </view>
+          <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
+        </view>
+      </view>
+      <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" style="box-sizing: border-box; width: 100%;">
+        <slot />
+      </scroll-view>
+      <view wx:if="{{slots.footer}}" class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">
+        <slot name="footer" />
       </view>
     </view>
-    <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}" style="box-sizing: border-box; width: 100%;">
-      <slot />
-    </scroll-view>
-    <view wx:if="{{slots.footer}}" class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">
-      <slot name="footer" />
+    <view wx:if="{{placement === 'top' || placement === 'left'}}" class="{{ classes.grabber }}" data-scope="drawer" data-part="grabber" data-placement="{{placement}}" data-dismissible="{{dismissible}}" data-threshold="{{threshold}}" data-duration="{{duration}}" data-content-id="{{drawer.contentProps.id}}" data-backdrop-id="{{drawer.backdropProps.id}}" data-should-scale="{{shouldScaleBackground}}" data-scale-factor="{{scaleFactor}}" catchtouchstart="{{gesture.onTouchStart}}" catchtouchmove="{{gesture.onTouchMove}}" catchtouchend="{{gesture.onTouchEnd}}" catchtouchcancel="{{gesture.onTouchEnd}}">
+      <view class="{{ classes.grabberBar }}" />
     </view>
   </view>
 </view>

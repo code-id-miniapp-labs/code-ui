@@ -17,6 +17,8 @@ import {
   tabsItemTheme as createTabsItemTheme,
   progressTheme as createProgressTheme,
   fileUploadTheme as createFileUploadTheme,
+  stepperItemTheme as createStepperItemTheme,
+  drawerTheme as createDrawerTheme,
 } from "@code-ui/core";
 import {
   cn,
@@ -37,6 +39,8 @@ const tabsTheme = tv(createTabsTheme());
 const tabsItemTheme = tv(createTabsItemTheme());
 const progressTheme = tv(createProgressTheme());
 const fileUploadTheme = tv(createFileUploadTheme());
+const stepperItemTheme = tv(createStepperItemTheme());
+const drawerTheme = tv(createDrawerTheme());
 import {
   clearThemeCache,
   getResolvedTheme,
@@ -1002,6 +1006,93 @@ describe("avatarTheme resolution", () => {
       expect(slots.root).toContain("custom-root");
       expect(slots.dropzone).toContain("custom-dropzone");
       expect(slots.dropzone).toContain("p-8");
+    });
+  });
+
+  describe("stepperItemTheme resolution", () => {
+    it("applies size-scaled wrapper top margin only in horizontal orientation", () => {
+      const sizeMargins = {
+        xs: "mt-1",
+        sm: "mt-1.5",
+        md: "mt-2",
+        lg: "mt-2.5",
+        xl: "mt-3",
+      } as const;
+
+      for (const [size, expectedMargin] of Object.entries(sizeMargins)) {
+        const horizontal = resolveSlots(
+          stepperItemTheme({ orientation: "horizontal", size }) as any,
+        );
+        expect(horizontal.wrapper).toContain(escapeClass(expectedMargin));
+
+        const vertical = resolveSlots(
+          stepperItemTheme({ orientation: "vertical", size }) as any,
+        );
+        expect(vertical.wrapper).toContain("mt-0");
+        expect(vertical.wrapper).not.toContain(escapeClass(expectedMargin));
+      }
+    });
+  });
+
+  describe("dedupeClasses translate utilities", () => {
+    it("deduplicates translate-x and translate-y independently", () => {
+      expect(dedupeClasses("translate-y-0", "-translate-y-full")).toBe(
+        "-translate-y-full",
+      );
+      expect(dedupeClasses("-translate-x-full", "translate-x-0")).toBe(
+        "translate-x-0",
+      );
+      expect(dedupeClasses("translate-x-0", "-translate-y-full")).toBe(
+        "translate-x-0 -translate-y-full",
+      );
+    });
+  });
+
+  describe("drawerTheme resolution", () => {
+    it("resolves directional grabber bars, side flex layouts, and enter/exit animation classes", () => {
+      const topOpen = resolveSlots(
+        drawerTheme({ placement: "top", open: true }) as any,
+      );
+      expect(topOpen.content).toContain("flex-col");
+      expect(topOpen.content).toContain("cui-drawer-open");
+      expect(topOpen.content).toContain("cui-drawer-enter-top");
+      expect(topOpen.grabber).toContain("w-full");
+      expect(topOpen.grabberBar).toContain(escapeClass("w-12 h-1.5"));
+
+      const topClosed = resolveSlots(
+        drawerTheme({ placement: "top", open: false }) as any,
+      );
+      expect(topClosed.content).toContain("cui-drawer-closed-top");
+      expect(topClosed.content).not.toContain("cui-drawer-open");
+      expect(topClosed.content).not.toContain("cui-drawer-enter-top");
+
+      const leftOpen = resolveSlots(
+        drawerTheme({ placement: "left", open: true }) as any,
+      );
+      expect(leftOpen.content).toContain("flex-row");
+      expect(leftOpen.content).toContain("cui-drawer-enter-left");
+      expect(leftOpen.grabber).toContain("h-full");
+      expect(leftOpen.grabberBar).toContain(escapeClass("w-1.5 h-12"));
+      expect(leftOpen.body).toContain("h-0");
+
+      const leftClosed = resolveSlots(
+        drawerTheme({ placement: "left", open: false }) as any,
+      );
+      expect(leftClosed.content).toContain("cui-drawer-closed-left");
+
+      const rightOpen = resolveSlots(
+        drawerTheme({ placement: "right", open: true }) as any,
+      );
+      expect(rightOpen.content).toContain("flex-row");
+      expect(rightOpen.content).toContain("cui-drawer-enter-right");
+      expect(rightOpen.grabber).toContain("h-full");
+      expect(rightOpen.grabberBar).toContain(escapeClass("w-1.5 h-12"));
+      expect(rightOpen.body).toContain("h-0");
+
+      const rightClosed = resolveSlots(
+        drawerTheme({ placement: "right", open: false }) as any,
+      );
+      expect(rightClosed.content).toContain("cui-drawer-closed-right");
     });
   });
 });
