@@ -609,6 +609,12 @@ export default defineConfig({
               minSize: 0,
             },
             {
+              name: "behaviors/select",
+              test: /[\\/]behaviors[\\/]select/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
+            },
+            {
               name: "behaviors/radio",
               test: /[\\/]behaviors[\\/]radio/,
               includeDependenciesRecursively: false,

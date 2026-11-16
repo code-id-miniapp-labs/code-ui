@@ -1,0 +1,27 @@
+import type { SelectResolvedProps } from "./select.types";
+
+export const defaultSelectProps: SelectResolvedProps = {
+  value: null,
+  defaultValue: null,
+  open: null,
+  defaultOpen: false,
+  mode: "default",
+  multiple: false,
+  items: [],
+  childItems: [],
+  valueKey: "value",
+  labelKey: "label",
+  descriptionKey: "description",
+  disabledKey: "disabled",
+  disabled: false,
+  readOnly: false,
+  required: false,
+  invalid: null,
+  fieldDisabled: false,
+  name: "",
+  form: "",
+  closeOnSelect: null,
+  closeOnBackdropClick: true,
+  clearable: false,
+  duration: 150,
+};

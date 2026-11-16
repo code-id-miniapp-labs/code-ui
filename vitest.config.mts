@@ -38,6 +38,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/file-upload/src",
       ),
+      "@code-ui/floating-menu": resolve(
+        import.meta.dirname,
+        "packages/machines/floating-menu/src",
+      ),
       "@code-ui/form/context": resolve(
         import.meta.dirname,
         "packages/machines/form/src/form.context.ts",
@@ -74,6 +78,14 @@ export default defineConfig({
       "@code-ui/radio-group": resolve(
         import.meta.dirname,
         "packages/machines/radio-group/src",
+      ),
+      "@code-ui/select": resolve(
+        import.meta.dirname,
+        "packages/machines/select/src",
+      ),
+      "@code-ui/select-item": resolve(
+        import.meta.dirname,
+        "packages/machines/select-item/src",
       ),
       "@code-ui/slider": resolve(
         import.meta.dirname,

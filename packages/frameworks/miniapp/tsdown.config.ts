@@ -11,6 +11,7 @@ export default defineConfig({
     "src/behaviors/stepper.ts",
     "src/behaviors/accordion.ts",
     "src/behaviors/tabs.ts",
+    "src/behaviors/select.ts",
     "src/behaviors/app.ts",
     "src/behaviors/theme.ts",
     "src/behaviors/avatar-group.ts",

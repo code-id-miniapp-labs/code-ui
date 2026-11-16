@@ -17,6 +17,7 @@
     "pages/slider/index",
     "pages/checkbox/index",
     "pages/radio/index",
+    "pages/select/index",
     "pages/form/index",
     "pages/use-child/index",
     "pages/textarea/index",
