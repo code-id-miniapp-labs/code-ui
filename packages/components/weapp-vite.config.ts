@@ -208,16 +208,60 @@ function wxmlPathPatchPlugin(): Plugin {
   };
 }
 const WXS_RESERVED = new Set([
-  "break", "case", "catch", "continue", "default", "delete", "do", "else",
-  "false", "finally", "for", "function", "if", "in", "instanceof", "new",
-  "null", "return", "switch", "this", "throw", "true", "try", "typeof",
-  "undefined", "var", "void", "while", "arguments", "module", "exports",
-  "require", "Math", "Number", "String", "Boolean", "Array", "Object",
-  "Date", "JSON", "RegExp", "parseInt", "parseFloat", "isNaN", "isFinite",
-  "getDate", "getRegExp", "console", "Infinity", "NaN",
+  "break",
+  "case",
+  "catch",
+  "continue",
+  "default",
+  "delete",
+  "do",
+  "else",
+  "false",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "in",
+  "instanceof",
+  "new",
+  "null",
+  "return",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "typeof",
+  "undefined",
+  "var",
+  "void",
+  "while",
+  "arguments",
+  "module",
+  "exports",
+  "require",
+  "Math",
+  "Number",
+  "String",
+  "Boolean",
+  "Array",
+  "Object",
+  "Date",
+  "JSON",
+  "RegExp",
+  "parseInt",
+  "parseFloat",
+  "isNaN",
+  "isFinite",
+  "getDate",
+  "getRegExp",
+  "console",
+  "Infinity",
+  "NaN",
 ]);
 
-const WXS_IDENT_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$";
+const WXS_IDENT_CHARS =
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$";
 
 function minifyWxs(source: string): string {
   type Tok = { k: "s" | "i" | "o"; v: string };
@@ -281,7 +325,8 @@ function minifyWxs(source: string): string {
       i++;
       while (i < n && /[0-9a-fA-FxX._eE+-]/.test(source[i] ?? "")) {
         const c = source[i] ?? "";
-        if ((c === "+" || c === "-") && !/[eE]/.test(num[num.length - 1] ?? "")) break;
+        if ((c === "+" || c === "-") && !/[eE]/.test(num[num.length - 1] ?? ""))
+          break;
         num += c;
         i++;
       }
@@ -291,14 +336,31 @@ function minifyWxs(source: string): string {
     // Multi-char operators
     const three = source.slice(i, i + 3);
     const two = source.slice(i, i + 2);
-    if (three === "===" || three === "!==" || three === ">>>" || three === "<<=" || three === ">>=") {
+    if (
+      three === "===" ||
+      three === "!==" ||
+      three === ">>>" ||
+      three === "<<=" ||
+      three === ">>="
+    ) {
       tokens.push({ k: "o", v: three });
       i += 3;
     } else if (
-      two === "==" || two === "!=" || two === "<=" || two === ">=" ||
-      two === "&&" || two === "||" || two === "++" || two === "--" ||
-      two === "+=" || two === "-=" || two === "*=" || two === "/=" ||
-      two === "%=" || two === "<<" || two === ">>"
+      two === "==" ||
+      two === "!=" ||
+      two === "<=" ||
+      two === ">=" ||
+      two === "&&" ||
+      two === "||" ||
+      two === "++" ||
+      two === "--" ||
+      two === "+=" ||
+      two === "-=" ||
+      two === "*=" ||
+      two === "/=" ||
+      two === "%=" ||
+      two === "<<" ||
+      two === ">>"
     ) {
       tokens.push({ k: "o", v: two });
       i += 2;
@@ -472,9 +534,23 @@ function syncWxsFiles(): Plugin {
   };
 }
 
+function externalVirtualCui(): Plugin {
+  return {
+    name: "cui:external-virtual",
+    enforce: "pre",
+    resolveId(id) {
+      if (id.startsWith("virtual:cui/")) {
+        return { id, external: true };
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     codeUI({ autoImport: false }),
+    externalVirtualCui(),
     cleanDist(),
     wxmlPathPatchPlugin(),
     syncWxsFiles(),
@@ -501,6 +577,7 @@ export default defineConfig({
     //   },
     // },
     rolldownOptions: {
+      preserveEntrySignatures: "allow-extension",
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
@@ -511,42 +588,67 @@ export default defineConfig({
             {
               name: "alien-signals",
               test: /[\\/]alien-signals[\\/]/,
+              includeDependenciesRecursively: false,
             },
             {
               name: "behaviors/stepper",
               test: /[\\/]behaviors[\\/]stepper/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/accordion",
               test: /[\\/]behaviors[\\/]accordion/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/tabs",
               test: /[\\/]behaviors[\\/]tabs/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/radio",
               test: /[\\/]behaviors[\\/]radio/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/checkbox",
               test: /[\\/]behaviors[\\/]checkbox/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/form",
               test: /[\\/]behaviors[\\/]form|[\\/]machines[\\/]form[\\/]dist[\\/]context\.|[\\/]context[\\/]dist[\\/]/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/app",
               test: /[\\/]behaviors[\\/]app/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
+            },
+            {
+              name: "behaviors/theme",
+              test: /[\\/]behaviors[\\/]theme/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/avatar-group",
               test: /[\\/]behaviors[\\/]avatar-group/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
             {
               name: "behaviors/toast",
               test: /[\\/]behaviors[\\/]toast/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
             },
           ],
         },

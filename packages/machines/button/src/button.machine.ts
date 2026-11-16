@@ -162,30 +162,27 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         }
       },
       executeTapHandler: ({ prop, event }) => {
-        const rawEvent = "event" in event ? event.event : undefined;
-        prop("onTap")?.(rawEvent);
+        const detail = "detail" in event ? event.detail : undefined;
+        prop("onTap")?.(detail);
       },
       executeAsyncHandler: ({ prop, event, send, context }) => {
-        const rawEvent = "event" in event ? event.event : undefined;
+        const rawDetail = "detail" in event ? event.detail : undefined;
 
         context.set("internalLoading", true);
 
-        const detail = rawEvent?.detail as
-          | {
-              promise?: Promise<any> | undefined;
-              setPromise?: ((promise: Promise<any>) => void) | undefined;
-            }
-          | undefined;
-        let capturedPromise: Promise<any> | undefined = detail?.promise;
-        if (detail && typeof detail === "object") {
-          const origSetPromise = detail.setPromise;
-          detail.setPromise = (p: Promise<any>) => {
-            capturedPromise = p;
-            origSetPromise?.(p);
-          };
-        }
+        const detail: Record<string, any> =
+          rawDetail && typeof rawDetail === "object" ? { ...rawDetail } : {};
+        let capturedPromise: Promise<any> | undefined = detail.promise;
+        const origSetPromise =
+          typeof detail.setPromise === "function"
+            ? (detail.setPromise as (promise: Promise<any>) => void)
+            : undefined;
+        detail.setPromise = (p: Promise<any>) => {
+          capturedPromise = p;
+          origSetPromise?.(p);
+        };
 
-        const result = prop("onTap")?.(rawEvent);
+        const result = prop("onTap")?.(detail);
         const promise = isPromise(result) ? result : capturedPromise;
 
         if (isPromise(promise)) {

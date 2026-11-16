@@ -8,6 +8,7 @@ export type {
   ActionSheetActionDetails,
   ActionSheetAnatomyPart,
   ActionSheetApi,
+  ActionSheetCloseProps,
   ActionSheetComputed,
   ActionSheetContext,
   ActionSheetEffect,

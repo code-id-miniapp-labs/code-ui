@@ -9,6 +9,7 @@ Page({
     color: "primary",
     colorOptions: [
       "primary",
+      "secondary",
       "neutral",
       "success",
       "warning",
@@ -16,7 +17,7 @@ Page({
       "info",
     ],
     size: "md",
-    sizeOptions: ["xs", "sm", "md", "lg"],
+    sizeOptions: ["xs", "sm", "md", "lg", "xl"],
 
     // 2. Data-Driven Steps
     dataStep: 0,
@@ -115,5 +116,10 @@ Page({
   selectSize(e: WechatMiniprogram.CustomEvent) {
     const size = e.currentTarget.dataset.size;
     if (size) this.setData({ size });
+  },
+
+  jumpToStepTwo() {
+    this.stepperChild?.api?.setStep?.(2);
+    this.setData({ activeStep: 2 });
   },
 });

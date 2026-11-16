@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./pull-down-refresh.anatomy";
 
 export type PullDownRefreshState =
@@ -49,8 +49,6 @@ export interface PullDownRefreshProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for pull-down-refresh anatomy parts */
-  ui?: PullDownRefreshUI | undefined;
   /** Whether pull-to-refresh is disabled */
   disabled?: boolean | undefined;
   /** Controlled refreshing state (`true` while refreshing) */
@@ -69,20 +67,6 @@ export interface PullDownRefreshProps {
   loadingTexts?: string[] | undefined;
   /** Transition duration in ms for snap and collapse animations */
   duration?: number | undefined;
-  /** Whether the scroll-view shows a scrollbar */
-  showScrollbar?: boolean | undefined;
-  /** Whether tapping the status bar / double tapping the title scrolls back to top */
-  enableBackToTop?: boolean | undefined;
-  /** An element id to scroll into view */
-  scrollIntoView?: string | undefined;
-  /** Distance from the top at which `scrolltoupper` fires */
-  upperThreshold?: number | undefined;
-  /** Distance from the bottom at which `scrolltolower` fires */
-  lowerThreshold?: number | undefined;
-  /** Whether scrolling changes are animated */
-  scrollWithAnimation?: boolean | undefined;
-  /** Custom loading Icon */
-  loadingIcon?: string | undefined;
   /** Callback fired when the refreshing state changes */
   onChange?: ((details: PullDownRefreshChangeDetails) => void) | undefined;
   /**
@@ -182,15 +166,7 @@ type PullDownRefreshDefaultedKey =
   | "refreshTimeout"
   | "successDuration"
   | "loadingTexts"
-  | "duration"
-  | "showScrollbar"
-  | "enableBackToTop"
-  | "scrollIntoView"
-  | "upperThreshold"
-  | "lowerThreshold"
-  | "scrollWithAnimation"
-  | "loadingIcon"
-  | "ui";
+  | "duration";
 
 export type PullDownRefreshResolvedProps = Omit<
   PullDownRefreshProps,
@@ -258,10 +234,8 @@ export interface PullDownRefreshApi {
   refresh(): void;
   /** Finish refreshing and show the success message before collapsing */
   close(): void;
-  /** Handle scroll events from the scroll-view */
-  handleScroll(
-    event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
-  ): void;
+  /** Handle scroll metrics */
+  handleScroll(detail: PullDownRefreshScrollDetails): void;
   /** Handle the scroll-view reaching the top */
   handleScrollToUpper(): void;
   /** Handle the scroll-view reaching the bottom */

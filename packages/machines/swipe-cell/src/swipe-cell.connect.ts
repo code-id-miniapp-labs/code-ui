@@ -107,17 +107,7 @@ export function connectSwipeCell(service: SwipeCellService): SwipeCellApi {
     },
 
     handleActionTap(ev: SwipeCellActionTapEvent) {
-      let side: SwipeSide | undefined;
-      let index: number | undefined;
-
-      if ("currentTarget" in ev && ev.currentTarget?.dataset) {
-        side = ev.currentTarget.dataset.side;
-        index = Number(ev.currentTarget.dataset.index);
-      } else if ("side" in ev && "index" in ev) {
-        side = ev.side;
-        index = ev.index;
-      }
-
+      const { side, index } = ev;
       if (!side || index === undefined || Number.isNaN(index)) return;
       send({ type: "ACTION_CLICK", side, index });
     },

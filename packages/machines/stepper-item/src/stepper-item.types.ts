@@ -5,14 +5,7 @@ import type {
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { MiniAppComponent } from "@code-ui/utils";
-import type {
-  StepperColor,
-  StepperGroupContext,
-  StepperOrientation,
-  StepperSize,
-  StepperStatus,
-  StepperVariant,
-} from "@code-ui/stepper";
+import type { StepperGroupContext, StepperStatus } from "@code-ui/stepper";
 import type { anatomy } from "./stepper-item.anatomy";
 
 export type StepperItemState = StepperStatus;
@@ -28,21 +21,12 @@ export interface StepperItemProps {
   component?: MiniAppComponent | undefined;
   groupContext?: StepperGroupContext | undefined;
   groupIndex?: number | undefined;
-  ui?: StepperItemUI | undefined;
   index?: number | null | undefined;
-  title?: string | undefined;
-  description?: string | undefined;
-  icon?: string | undefined;
-  completedIcon?: string | undefined;
   disabled?: boolean | undefined;
   completed?: boolean | null | undefined;
   status?: StepperStatus | "" | undefined;
   value?: string | number | undefined;
   isLast?: boolean | null | undefined;
-  orientation?: StepperOrientation | "" | undefined;
-  color?: StepperColor | "" | undefined;
-  size?: StepperSize | "" | undefined;
-  variant?: StepperVariant | "" | undefined;
   onTap?:
     | ((details: {
         index: number;
@@ -56,19 +40,10 @@ export type StepperItemDefaultedKey =
   | "stepperId"
   | "index"
   | "isLast"
-  | "title"
-  | "description"
-  | "icon"
-  | "completedIcon"
   | "disabled"
   | "completed"
   | "status"
-  | "value"
-  | "orientation"
-  | "color"
-  | "size"
-  | "variant"
-  | "ui";
+  | "value";
 
 export type StepperItemResolvedProps = Omit<
   StepperItemProps,
@@ -89,10 +64,6 @@ export interface StepperItemComputed {
   isUpcoming: boolean;
   isDisabled: boolean;
   status: StepperStatus;
-  effectiveOrientation: StepperOrientation;
-  effectiveColor: StepperColor;
-  effectiveSize: StepperSize;
-  effectiveVariant: StepperVariant;
 }
 
 export interface StepperItemSchema extends MachineSchema {
@@ -120,11 +91,7 @@ export interface StepperItemApi {
   isCompleted: boolean;
   isCurrent: boolean;
   isUpcoming: boolean;
-  isDisabled: boolean;
-  orientation: StepperOrientation;
-  color: StepperColor;
-  size: StepperSize;
-  variant: StepperVariant;
+  disabled: boolean;
   handleTap: () => void;
   itemProps: Record<string, any>;
   triggerProps: Record<string, any>;

@@ -11,6 +11,17 @@ Page({
     controlledValue: "",
     lineCount: 1,
     lastEvent: "none",
+    variants: ["outline", "soft", "subtle", "ghost", "none"] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
 
     titleRules: [
       { required: true, message: "Feedback title is required" },

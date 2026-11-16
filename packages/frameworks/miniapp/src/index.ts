@@ -21,6 +21,28 @@ export {
 } from "./behavior";
 export type { CreateMachineBehaviorOptions } from "./behavior";
 export type { MachinePlugin } from "./plugin";
+export type {
+  MiniappBehaviorRef,
+  CodeUiComponentInstance,
+  BaseComponentData,
+  FormParentInstance,
+  FormFieldWrapperInstance,
+  FormFieldInstance,
+  RadioGroupInstance,
+  RadioItemInstance,
+  CheckboxGroupInstance,
+  CheckboxItemInstance,
+  AccordionInstance,
+  AccordionItemInstance,
+  StepperInstance,
+  StepperItemInstance,
+  TabsInstance,
+  TabsItemInstance,
+  AvatarGroupInstance,
+  AvatarItemInstance,
+  AppOwnerInstance,
+  ToastOwnerInstance,
+} from "./behaviors/types";
 
 export {
   wxButtonBehavior,
@@ -128,6 +150,26 @@ export type {
   WithAppScaleOptions,
   WithAppInsetOptions,
 } from "./behaviors/app";
+export {
+  resolveThemePaletteHex,
+  buildThemeCssVars,
+  getAppTheme,
+  setAppTheme,
+  setAppColorMode,
+  toggleAppColorMode,
+  setAppThemeColors,
+  resetAppTheme,
+  subscribeAppTheme,
+  createAppThemeBehavior,
+} from "./behaviors/theme";
+export type {
+  AppColorMode,
+  ResolvedThemeMode,
+  AppThemeColors,
+  AppThemeConfig,
+  AppThemeState,
+  AppThemeListener,
+} from "./behaviors/theme";
 export { bindable } from "./bindable";
 export { batch } from "./batch";
 export {

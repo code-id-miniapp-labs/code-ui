@@ -40,7 +40,10 @@ import {
   resolveTreeShakeOptions,
 } from "./core/config";
 import { cleanKeyframes, cleanKeyframesInDir } from "./core/keyframes";
-import { compatMiniProgramTransforms } from "./core/transforms";
+import {
+  compatMiniProgramTransforms,
+  compatSemanticColorVariables,
+} from "./core/transforms";
 import { transformAppStyle } from "./core/style-inject";
 import { handleTreeShake } from "./core/tree-shake";
 import {
@@ -98,7 +101,10 @@ export {
   mergeConfig,
   serializeConfig,
 } from "./core/utils";
-export { compatMiniProgramTransforms } from "./core/transforms";
+export {
+  compatMiniProgramTransforms,
+  compatSemanticColorVariables,
+} from "./core/transforms";
 
 function isVirtualTarget(id: string): boolean {
   return (
@@ -192,7 +198,6 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
   let server: ViteDevServer | null = null;
   let viteConfigObj: ResolvedConfig | null = null;
   let projectRoot = process.cwd();
-  const cleanedBundleCssPaths = new Set<string>();
 
   return {
     name: "code-ui:vite",
@@ -393,7 +398,6 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
     generateBundle: {
       order: "post",
       handler(_options, bundle) {
-        cleanedBundleCssPaths.clear();
         const outDir = viteConfigObj?.build?.outDir || "dist";
         const distRoot = path.resolve(projectRoot, outDir);
         const typedBundle = bundle as unknown as OutputBundleLike;
@@ -428,10 +432,9 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
             isBundleAsset(item) &&
             typeof item.source === "string"
           ) {
-            item.source = compatMiniProgramTransforms(
-              cleanKeyframes(item.source),
+            item.source = compatSemanticColorVariables(
+              compatMiniProgramTransforms(cleanKeyframes(item.source)),
             );
-            cleanedBundleCssPaths.add(path.resolve(distRoot, fileName));
           }
         }
       },
@@ -450,8 +453,7 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         appWrapperOpts,
       );
       handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
-      cleanKeyframesInDir(distRoot, cleanedBundleCssPaths);
-      cleanedBundleCssPaths.clear();
+      cleanKeyframesInDir(distRoot);
     },
   };
 }

@@ -33,6 +33,30 @@ Component(
     },
 
     properties: createProperties(defaultFormFieldProps, {
+      description: {
+        type: String,
+        value: "",
+      },
+      help: {
+        type: String,
+        value: "",
+      },
+      helperText: {
+        type: String,
+        value: "",
+      },
+      hint: {
+        type: String,
+        value: "",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -40,10 +64,12 @@ Component(
     }),
 
     computed: {
+      displayHelp() {
+        return this.data.help || this.data.helperText;
+      },
+
       classes() {
-        const disabled = this.data.formField
-          ? this.data.formField.disabled
-          : this.data.disabled;
+        const disabled = Boolean(this.data.formField?.disabled);
 
         const themeFns = formFieldTheme({
           size: this.data.size,

@@ -2,21 +2,17 @@ import type { ProgressApi, ProgressService } from "./progress.types";
 import * as dom from "./progress.dom";
 
 export function connectProgress(service: ProgressService): ProgressApi {
-  const { state, send, context, computed, prop, scope } = service;
+  const { state, send, context, computed, scope } = service;
 
   const value = context.get("value");
   const min = context.get("min");
   const max = context.get("max");
-  const orientation = prop("orientation");
-  const type = prop("type");
 
   const isIndeterminate = computed("isIndeterminate");
   const percent = computed("percent");
   const isComplete = computed("isComplete");
   const progressState = computed("progressState");
   const valueAsString = computed("valueAsString");
-  const rangeStyle = computed("rangeStyle");
-  const circleStyle = computed("circleStyle");
 
   return {
     state: state.get(),
@@ -28,9 +24,6 @@ export function connectProgress(service: ProgressService): ProgressApi {
     isIndeterminate,
     isComplete,
     valueAsString,
-    orientation,
-    type,
-    circleStyle,
 
     setValue(nextValue: number | null) {
       send({ type: "SET_VALUE", value: nextValue });
@@ -48,7 +41,6 @@ export function connectProgress(service: ProgressService): ProgressApi {
     rootProps: {
       id: dom.getRootId(scope),
       "data-state": progressState,
-      "data-orientation": orientation,
       "aria-role": "progressbar",
       "aria-valuemin": min,
       "aria-valuemax": max,
@@ -66,12 +58,10 @@ export function connectProgress(service: ProgressService): ProgressApi {
 
     rangeProps: {
       id: dom.getRangeId(scope),
-      style: rangeStyle,
     },
 
     circleProps: {
       id: dom.getCircleId(scope),
-      style: circleStyle,
     },
   };
 }

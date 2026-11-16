@@ -1,4 +1,3 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   RadioGroupApi,
   RadioGroupItem,
@@ -15,9 +14,6 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const size = computed("effectiveSize");
-  const defaultColor = prop("color");
-  const defaultVariant = prop("variant");
 
   const getItemProps = (item: {
     value: string;
@@ -69,18 +65,14 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
 
   const rawItems: (string | RadioGroupItemRaw)[] = prop("items");
   const items: RadioGroupItem[] = rawItems.map((raw) => {
-    const item = typeof raw === "string" ? { value: raw, label: raw } : raw;
+    const item = typeof raw === "string" ? { value: raw } : raw;
     const itemValue = item.value;
     const itemChecked = currentValue === itemValue;
     const itemDisabled = Boolean(disabled || item.disabled);
-    const result: RadioGroupItem = {
+    return {
       value: itemValue,
-      label: String(item.label ?? itemValue),
-      description: String(item.description ?? ""),
       disabled: itemDisabled,
       checked: itemChecked,
-      color: item.color ?? defaultColor,
-      variant: item.variant ?? defaultVariant,
       itemProps: getItemProps({ value: itemValue, disabled: itemDisabled }),
       controlProps: getItemControlProps({
         value: itemValue,
@@ -91,8 +83,6 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
         disabled: itemDisabled,
       }),
     };
-    if (item.ui) result.ui = item.ui;
-    return result;
   });
 
   return {
@@ -106,10 +96,9 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     disabled,
     readOnly,
     invalid,
-    size,
     items,
-    handleItemTap: (e: MiniAppEventLike<RadioGroupItemTapDetail>) => {
-      send({ type: "SET_VALUE", value: e.detail.value });
+    handleItemTap: (detail: RadioGroupItemTapDetail) => {
+      send({ type: "SET_VALUE", value: detail.value });
     },
     getItemProps,
     getItemControlProps,

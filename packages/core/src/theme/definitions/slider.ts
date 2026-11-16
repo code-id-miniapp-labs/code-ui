@@ -1,33 +1,37 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function sliderTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
       root: "relative inline-flex flex-col gap-1.5 w-full select-none touch-none",
       wrapper: "flex items-center justify-between",
-      label: "block font-medium text-neutral-900 leading-snug",
-      valueText: "text-neutral-500 font-medium tabular-nums",
+      label: "block font-medium text-highlighted leading-snug",
+      valueText: "text-muted font-medium tabular-nums",
       control: "relative flex items-center cursor-pointer",
-      track: "relative bg-neutral-200 rounded-full grow overflow-hidden",
+      track: "relative bg-accented rounded-full grow overflow-hidden",
       range: "absolute rounded-full transition-all duration-75",
       thumb:
         "absolute rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center justify-center transition-[transform,shadow] duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       markerGroup: "absolute inset-0 pointer-events-none",
       marker:
-        "absolute flex flex-col items-center -translate-x-1/2 text-neutral-400 font-medium",
-      markerTick: "w-1 h-1 rounded-full bg-neutral-300",
+        "absolute flex flex-col items-center -translate-x-1/2 text-dimmed font-medium",
+      markerTick: "w-1 h-1 rounded-full bg-default",
+      markerTickActive: "bg-white/90",
       markerLabel: "mt-2 tabular-nums select-none",
+      markerLabelActive: "text-default font-semibold",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         xs: {
           control: "h-4",
@@ -35,7 +39,7 @@ export default function sliderTheme(options: ThemeOptions = {}) {
           thumb: "w-3 h-3",
           label: "text-xs",
           valueText: "text-xs",
-          marker: "text-[20rpx]",
+          marker: "text-2xs",
         },
         sm: {
           control: "h-4.5",
@@ -43,7 +47,7 @@ export default function sliderTheme(options: ThemeOptions = {}) {
           thumb: "w-3.5 h-3.5",
           label: "text-xs",
           valueText: "text-xs",
-          marker: "text-[22rpx]",
+          marker: "text-2xs",
         },
         md: {
           control: "h-5",
@@ -128,14 +132,22 @@ export default function sliderTheme(options: ThemeOptions = {}) {
           root: "pr-6 pb-0",
         },
       },
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
-        invalid: false,
+      ...colors.map((color) => ({
+        color,
+        invalid: false as const,
         class: {
           range: `bg-${color}`,
           thumb: `focus-visible:ring-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        invalid: false as const,
+        class: {
+          range: "bg-inverted",
+          thumb: "focus-visible:ring-inverted",
+        },
+      },
       {
         invalid: true,
         class: {

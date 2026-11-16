@@ -1,42 +1,13 @@
+import type { MiniAppRect } from "@code-ui/utils";
 import * as dom from "./slider.dom";
 import type {
   SliderApi,
   SliderMarkerSnapshot,
   SliderPoint,
-  SliderPointerEvent,
   SliderService,
   SliderThumbSnapshot,
 } from "./slider.types";
 import { getValueAsPercent } from "./slider.utils";
-
-function extractPoint(
-  e: SliderPointerEvent | undefined,
-): SliderPoint | null {
-  if (!e) return null;
-  if ("x" in e && "y" in e && typeof e.x === "number" && typeof e.y === "number") {
-    return { x: e.x, y: e.y };
-  }
-  if (
-    "clientX" in e &&
-    "clientY" in e &&
-    typeof e.clientX === "number" &&
-    typeof e.clientY === "number"
-  ) {
-    return { x: e.clientX, y: e.clientY };
-  }
-  if (
-    "detail" in e &&
-    e.detail &&
-    typeof e.detail.x === "number" &&
-    typeof e.detail.y === "number"
-  ) {
-    return { x: e.detail.x, y: e.detail.y };
-  }
-  if ("touches" in e && Array.isArray(e.touches) && e.touches[0]) {
-    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  }
-  return null;
-}
 
 export function connectSlider(service: SliderService): SliderApi {
   const { context, computed, prop, refs, scope, state } = service;
@@ -148,9 +119,6 @@ export function connectSlider(service: SliderService): SliderApi {
     invalid: isInvalid,
     dragging: isDragging,
     isRange,
-    orientation,
-    inverted,
-    size: computed("effectiveSize"),
     activeThumbIndex,
     thumbs,
     thumbIds,
@@ -188,22 +156,25 @@ export function connectSlider(service: SliderService): SliderApi {
       service.send({ type: "RESET_VALUE" });
     },
 
-    handleTouchStart(e?: SliderPointerEvent) {
-      const point = extractPoint(e);
-      if (point) service.send({ type: "POINTER_DOWN", point });
+    handleTouchStart(
+      point?: SliderPoint,
+      initialRect?: MiniAppRect,
+      index?: number,
+    ) {
+      if (point) {
+        service.send({ type: "POINTER_DOWN", point, rect: initialRect, index });
+      }
     },
 
-    handleTouchMove(e?: SliderPointerEvent) {
-      const point = extractPoint(e);
+    handleTouchMove(point?: SliderPoint) {
       if (point) service.send({ type: "POINTER_MOVE", point });
     },
 
-    handleTouchEnd(_e?: SliderPointerEvent) {
+    handleTouchEnd() {
       service.send({ type: "POINTER_UP" });
     },
 
-    handleTap(e?: SliderPointerEvent) {
-      const point = extractPoint(e);
+    handleTap(point?: SliderPoint) {
       if (point) service.send({ type: "TAP", point });
     },
   };

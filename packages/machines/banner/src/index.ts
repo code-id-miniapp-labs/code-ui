@@ -11,6 +11,7 @@ export type {
   BannerBadgeProps,
   BannerBadgeSize,
   BannerBadgeVariant,
+  BannerButtonProps,
   BannerColor,
   BannerComputed,
   BannerContext,

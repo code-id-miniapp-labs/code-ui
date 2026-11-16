@@ -37,13 +37,7 @@ export const tabsItemMachine: TabsItemMachine = createMachine<TabsItemSchema>({
       const group = prop("groupContext");
       return Boolean(prop("disabled") || group?.disabled());
     },
-    color: ({ prop }) => prop("groupContext")?.color() ?? prop("color"),
-    fitted: ({ prop }) => prop("groupContext")?.fitted() ?? prop("fitted"),
-    orientation: ({ prop }) =>
-      prop("groupContext")?.orientation() ?? prop("orientation"),
     index: ({ prop }) => prop("index") ?? prop("groupIndex") ?? 0,
-    size: ({ prop }) => prop("groupContext")?.size() ?? prop("size"),
-    variant: ({ prop }) => prop("groupContext")?.variant() ?? prop("variant"),
   },
 
   watch({ track, computed, state }) {

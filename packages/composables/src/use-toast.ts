@@ -8,6 +8,7 @@ import {
 } from "@code-ui/miniapp/behaviors/toast";
 import type {
   ToastAction,
+  ToastCloseProps,
   ToastEntry,
   ToastSlotName,
   ToastUI,
@@ -26,8 +27,7 @@ export interface ToastOptions {
   duration?: number | undefined;
   progress?: boolean | { color?: string } | undefined;
   progressPosition?: "top" | "bottom" | undefined;
-  close?: boolean | undefined;
-  closeIcon?: string | undefined;
+  close?: boolean | ToastCloseProps | undefined;
   actions?: ToastAction[] | undefined;
   ui?: ToastUI | undefined;
   className?: string | undefined;
@@ -161,4 +161,10 @@ export function useToast(
   };
 }
 
-export type { ToastAction, ToastEntry, ToastSlotName, ToastUI };
+export type {
+  ToastAction,
+  ToastCloseProps,
+  ToastEntry,
+  ToastSlotName,
+  ToastUI,
+};

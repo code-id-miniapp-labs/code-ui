@@ -8,6 +8,10 @@ interface FormRef {
 
 Page({
   data: {
+    formDisabled: false,
+    validateOn: ["input", "change", "blur"] as ("input" | "change" | "blur")[],
+    validateOnMode: "live" as "live" | "submit",
+
     usernameRules: [
       { required: true, message: "Username is required" },
       { minLength: 3, message: "Username must be at least 3 characters" },
@@ -21,12 +25,38 @@ Page({
       { exactLength: 4, message: "PIN must be exactly 4 digits" },
       { numeric: true, message: "PIN must contain digits only" },
     ],
+    transferPinRules: [
+      { required: true, message: "Enter all 6 digits" },
+      { exactLength: 6, message: "Must be 6 digits" },
+    ],
+    topicsRules: [
+      {
+        validator: (val: unknown) => {
+          const arr = Array.isArray(val) ? val : [];
+          return arr.length >= 1 || "Pick at least one topic of interest";
+        },
+      },
+    ],
+    roleRules: [{ required: true, message: "Please choose your workspace role" }],
     termsRules: [
       {
         required: true,
         message: "You must accept the Terms of Service to register",
       },
     ],
+
+    roleItems: [
+      { value: "developer", label: "Developer" },
+      { value: "designer", label: "Designer" },
+      { value: "pm", label: "Product Manager" },
+    ],
+    topicItems: [
+      { value: "components", label: "UI Components" },
+      { value: "fsm", label: "State Machines" },
+      { value: "theming", label: "Runtime Theming" },
+    ],
+    fieldSizes: ["xs", "sm", "md", "lg", "xl"] as const,
+
     newsletterControlled: true,
     formStatus: "",
     formMessage: "",
@@ -44,6 +74,23 @@ Page({
     return this.selectComponent("#transfer-form") as FormRef | null;
   },
 
+  getPreferencesForm(): FormRef | null {
+    return this.selectComponent("#preferences-form") as FormRef | null;
+  },
+
+  toggleFormDisabled(e: WechatMiniprogram.CustomEvent<{ checked?: boolean }>) {
+    this.setData({ formDisabled: Boolean(e.detail?.checked) });
+  },
+
+  toggleValidateOn(e: WechatMiniprogram.TouchEvent) {
+    const mode = e.currentTarget.dataset?.mode as "live" | "submit" | undefined;
+    if (!mode) return;
+    this.setData({
+      validateOnMode: mode,
+      validateOn: mode === "live" ? ["input", "change", "blur"] : [],
+    });
+  },
+
   submitRegistration() {
     this.getRegistrationForm()?.submit?.();
   },
@@ -58,23 +105,16 @@ Page({
   },
 
   onNewsletterChange(e: WechatMiniprogram.CustomEvent) {
-    this.setData({
-      newsletterControlled: e.detail.checked,
-    });
+    this.setData({ newsletterControlled: Boolean(e.detail?.checked) });
   },
 
   toggleNewsletterControlled() {
-    this.setData({
-      newsletterControlled: !this.data.newsletterControlled,
-    });
+    this.setData({ newsletterControlled: !this.data.newsletterControlled });
   },
 
   clearRegistrationErrors() {
     this.getRegistrationForm()?.resetValidation?.();
-    this.setData({
-      formStatus: "",
-      formMessage: "",
-    });
+    this.setData({ formStatus: "", formMessage: "" });
   },
 
   setPredefined() {
@@ -82,38 +122,41 @@ Page({
       username: "alice_w",
       email: "alice@example.com",
       pin: "2026",
+      role: "developer",
+      topics: ["components", "theming"],
+      satisfaction: 85,
       terms: true,
       newsletter: true,
     });
     this.setData({
       newsletterControlled: true,
       formStatus: "Info",
-      formMessage: "Pre-filled with valid data including accepted terms.",
+      formMessage: "Pre-filled all form fields with valid data.",
     });
   },
 
   simulateServerError() {
     this.getRegistrationForm()?.setErrors?.({
-      email: "This email address is already taken by another account",
+      email: "This email address is already registered",
       pin: "This PIN is too common, choose another one",
     });
     this.setData({
       formStatus: "Server Validation Error",
-      formMessage: "Injected backend error bag into fields.",
+      formMessage: "Injected backend errors into Email & PIN fields.",
     });
   },
 
   handleRegistrationSubmit(e: WechatMiniprogram.CustomEvent) {
     this.setData({
       formStatus: "Success",
-      formMessage: `Submitted valid data: ${JSON.stringify(e.detail.values)}`,
+      formMessage: `Submitted: ${JSON.stringify(e.detail.values)}`,
     });
   },
 
   handleRegistrationError(e: WechatMiniprogram.CustomEvent) {
     this.setData({
       formStatus: "Validation Failed",
-      formMessage: `Errors detected in ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
+      formMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
     });
   },
 
@@ -123,28 +166,21 @@ Page({
 
   resetTransfer() {
     this.getTransferForm()?.reset?.();
-    this.setData({
-      transferStatus: "",
-      transferMessage: "",
-    });
+    this.setData({ transferStatus: "", transferMessage: "" });
   },
 
   handleTransferSubmit(e: WechatMiniprogram.CustomEvent) {
     this.setData({
       transferStatus: "Success",
-      transferMessage: `Authorized transfer with PIN: ${e.detail.values?.transferPin}`,
+      transferMessage: `Authorized with PIN: ${e.detail.values?.transferPin}`,
     });
   },
 
   handleTransferError() {
     this.setData({
       transferStatus: "Error",
-      transferMessage: "Please enter your 6-digit authorization PIN.",
+      transferMessage: "Please enter all 6 digits.",
     });
-  },
-
-  getPreferencesForm(): FormRef | null {
-    return this.selectComponent("#preferences-form") as FormRef | null;
   },
 
   submitPreferences() {
@@ -153,10 +189,7 @@ Page({
 
   resetPreferences() {
     this.getPreferencesForm()?.reset?.();
-    this.setData({
-      preferencesStatus: "",
-      preferencesMessage: "",
-    });
+    this.setData({ preferencesStatus: "", preferencesMessage: "" });
   },
 
   setHighSecurityPreferences() {
@@ -175,7 +208,7 @@ Page({
   handlePreferencesSubmit(e: WechatMiniprogram.CustomEvent) {
     this.setData({
       preferencesStatus: "Saved",
-      preferencesMessage: `Preferences updated: ${JSON.stringify(e.detail.values)}`,
+      preferencesMessage: `Preferences: ${JSON.stringify(e.detail.values)}`,
     });
   },
 });

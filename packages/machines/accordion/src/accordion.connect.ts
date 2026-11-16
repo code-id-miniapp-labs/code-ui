@@ -27,7 +27,7 @@ export function connectAccordion(service: AccordionService): AccordionApi {
       : undefined;
     return {
       isOpen: value.includes(valStr),
-      isDisabled: disabled || Boolean(item?.disabled),
+      disabled: disabled || Boolean(item?.disabled),
     };
   };
 
@@ -72,7 +72,7 @@ export function connectAccordion(service: AccordionService): AccordionApi {
   }): Record<string, any> => {
     const val = String(props.value);
     const st = getItemState(val);
-    return buildItemProps(val, st.isOpen, st.isDisabled);
+    return buildItemProps(val, st.isOpen, st.disabled);
   };
 
   const getTriggerProps = (props: {
@@ -81,7 +81,7 @@ export function connectAccordion(service: AccordionService): AccordionApi {
   }): Record<string, any> => {
     const val = String(props.value);
     const st = getItemState(val);
-    return buildTriggerProps(val, st.isOpen, st.isDisabled);
+    return buildTriggerProps(val, st.isOpen, st.disabled);
   };
 
   const getContentProps = (props: {
@@ -101,14 +101,8 @@ export function connectAccordion(service: AccordionService): AccordionApi {
         return {
           index,
           value: valStr,
-          label: item.label ?? "",
-          description: item.description ?? "",
-          content: item.content ?? "",
-          icon: item.icon ?? "",
-          trailingIcon: item.trailingIcon ?? "chevronDown",
           isOpen: open,
-          isDisabled: isItemDisabled,
-          ui: item.ui,
+          disabled: isItemDisabled,
           itemProps: buildItemProps(valStr, open, isItemDisabled),
         };
       })

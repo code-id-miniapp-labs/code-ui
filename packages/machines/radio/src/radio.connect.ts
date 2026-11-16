@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type { RadioApi, RadioService } from "./radio.types";
 import * as dom from "./radio.dom";
 
@@ -9,9 +8,6 @@ export function connectRadio(service: RadioService): RadioApi {
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const size = computed("effectiveSize");
-  const color = computed("effectiveColor");
-  const variant = computed("effectiveVariant");
   const dataState = checked ? "checked" : "unchecked";
   const indicatorId = dom.getIndicatorId(scope);
 
@@ -20,10 +16,7 @@ export function connectRadio(service: RadioService): RadioApi {
     disabled,
     readOnly,
     invalid,
-    size,
-    color,
-    variant,
-    handleTap: (_e?: MiniAppBaseEventLike) => {
+    handleTap: () => {
       send({ type: "SELECT" });
     },
     rootProps: {

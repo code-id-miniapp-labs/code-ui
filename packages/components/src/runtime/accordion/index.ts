@@ -34,6 +34,18 @@ Component(
     },
 
     properties: createProperties(defaultAccordionProps, {
+      size: {
+        type: String,
+        value: "md",
+      },
+      variant: {
+        type: String,
+        value: "outline",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -46,8 +58,27 @@ Component(
         return Array.isArray(items) && items.length > 0;
       },
 
+      resolvedItems() {
+        const apiItems = this.data.accordion?.items ?? [];
+        const rawItems = this.data.items ?? [];
+        const fallbackUi = this.data.ui || {};
+
+        return apiItems.map((apiItem: any, idx: number) => {
+          const item = rawItems[idx] ?? {};
+          return {
+            ...apiItem,
+            label: item.label ?? "",
+            description: item.description ?? "",
+            content: item.content ?? "",
+            icon: item.icon ?? "",
+            trailingIcon: item.trailingIcon ?? "chevronDown",
+            ui: item.ui || fallbackUi,
+          };
+        });
+      },
+
       classes() {
-        const disabled = Boolean(this.data.disabled);
+        const disabled = Boolean(this.data.accordion?.disabled);
         const variant = this.data.variant;
         const ui = this.data.ui;
 
@@ -61,8 +92,10 @@ Component(
     },
 
     methods: {
-      handleItemClick(e: MiniAppEventLike<{ value: string | number }>) {
-        getApi(this, "accordion")?.toggle?.(e.detail.value);
+      handleItemClick(e: MiniAppEventLike<{ value?: string | number }>) {
+        if (e?.detail?.value !== undefined) {
+          getApi(this, "accordion")?.toggle?.(e.detail.value);
+        }
       },
       setValue(val: string | number | (string | number)[]) {
         return getApi(this, "accordion")?.setValue?.(val);

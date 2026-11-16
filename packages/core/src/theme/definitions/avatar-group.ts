@@ -11,19 +11,19 @@ export default function avatarGroupTheme(_options: ThemeOptions = {}) {
       size: {
         "3xs": {
           base: "ring -me-0.5",
-          counter: "text-[14rpx] ps-0.5",
+          counter: "text-3xs ps-0.5",
         },
         "2xs": {
           base: "ring -me-0.5",
-          counter: "text-[16rpx] ps-0.5",
+          counter: "text-3xs ps-0.5",
         },
         xs: {
           base: "ring -me-0.5",
-          counter: "text-[18rpx] ps-0.5",
+          counter: "text-3xs ps-0.5",
         },
         sm: {
           base: "ring-2 -me-1",
-          counter: "text-[20rpx] ps-0.5",
+          counter: "text-2xs ps-0.5",
         },
         md: {
           base: "ring-2 -me-1.5",

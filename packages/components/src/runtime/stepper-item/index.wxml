@@ -1,6 +1,6 @@
-<view id="{{cStepperItem.itemProps.id}}" class="cui-stepper-item {{classes.root}}" data-scope="stepper" data-part="item" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}" data-orientation="{{cStepperItem.orientation}}" data-disabled="{{cStepperItem.isDisabled}}">
+<view id="{{cStepperItem.itemProps.id}}" class="cui-stepper-item {{classes.root}}" data-scope="stepper" data-part="item" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}" data-orientation="{{resolvedOrientation}}" data-disabled="{{cStepperItem.disabled}}">
   <view class="{{classes.container}}" data-scope="stepper" data-part="container">
-    <view id="{{cStepperItem.triggerProps.id}}" class="{{classes.trigger}}" aria-role="tab" aria-selected="{{cStepperItem.isCurrent}}" aria-disabled="{{cStepperItem.isDisabled}}" data-scope="stepper" data-part="trigger" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}" data-orientation="{{cStepperItem.orientation}}" data-disabled="{{cStepperItem.isDisabled}}" catch:tap="handleTap">
+    <view id="{{cStepperItem.triggerProps.id}}" class="{{classes.trigger}}" aria-role="tab" aria-selected="{{cStepperItem.isCurrent}}" aria-disabled="{{cStepperItem.disabled}}" data-scope="stepper" data-part="trigger" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}" data-orientation="{{resolvedOrientation}}" data-disabled="{{cStepperItem.disabled}}" catch:tap="handleTap">
       <view class="{{classes.indicator}}" aria-hidden="true" data-scope="stepper" data-part="indicator" data-index="{{cStepperItem.index}}" data-state="{{cStepperItem.status}}">
         <block wx:if="{{cStepperItem.isCompleted}}">
           <slot name="completed-indicator" />
@@ -15,7 +15,7 @@
         </block>
       </view>
     </view>
-    <view wx:if="{{!cStepperItem.isLast}}" class="{{classes.separator}}" aria-role="separator" aria-orientation="{{cStepperItem.orientation}}" data-scope="stepper" data-part="separator" data-index="{{cStepperItem.index}}" data-orientation="{{cStepperItem.orientation}}" data-state="{{cStepperItem.isCompleted ? 'completed' : 'incomplete'}}" />
+    <view wx:if="{{!cStepperItem.isLast}}" class="{{classes.separator}}" aria-role="separator" aria-orientation="{{resolvedOrientation}}" data-scope="stepper" data-part="separator" data-index="{{cStepperItem.index}}" data-orientation="{{resolvedOrientation}}" data-state="{{cStepperItem.isCompleted ? 'completed' : 'incomplete'}}" />
   </view>
   <view class="{{classes.wrapper}}" data-scope="stepper" data-part="wrapper" catch:tap="handleTap">
     <view wx:if="{{title}}" class="{{classes.title}}" data-scope="stepper" data-part="title" data-state="{{cStepperItem.status}}">

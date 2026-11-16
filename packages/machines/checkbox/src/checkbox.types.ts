@@ -11,7 +11,7 @@ import type {
   FormValidateOn,
 } from "@code-ui/form";
 import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox.anatomy";
 
 export type CheckboxState = "checked" | "unchecked" | "indeterminate";
@@ -51,8 +51,6 @@ export interface CheckboxProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: CheckboxUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Live reactive state of the parent checkbox group */
@@ -65,16 +63,8 @@ export interface CheckboxProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the checkbox is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Semantic color variant */
-  color?: CheckboxColor | undefined;
-  /** Size variant */
-  size?: CheckboxSize | undefined;
-  /** Visual variant (outline or card) */
-  variant?: CheckboxVariant | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: CheckboxSize | undefined;
   /** Controlled checked state */
   checked?: boolean | null | undefined;
   /** Default checked state for uncontrolled mode */
@@ -89,14 +79,6 @@ export interface CheckboxProps {
   readOnly?: boolean | undefined;
   /** Whether the checkbox is required in a form */
   required?: boolean | undefined;
-  /** Label text */
-  label?: string | undefined;
-  /** Description text */
-  description?: string | undefined;
-  /** Icon name / class / path when checked (defaults to 'check') */
-  icon?: string | undefined;
-  /** Icon name / class / path when indeterminate (defaults to 'minus') */
-  indeterminateIcon?: string | undefined;
   /** Callback fired when checked state changes */
   onChange?: ((details: CheckboxCheckedChangeDetails) => void) | undefined;
 }
@@ -110,17 +92,9 @@ export interface CheckboxResolvedProps extends CheckboxProps {
   readOnly: boolean;
   required: boolean;
   invalid: boolean | null;
-  color: CheckboxColor;
-  size: CheckboxSize;
-  variant: CheckboxVariant;
   value: string;
   name: string;
   form: string;
-  label: string;
-  description: string;
-  icon: string;
-  indeterminateIcon: string;
-  ui: CheckboxUI;
 }
 
 export type CheckboxEvent =
@@ -137,7 +111,6 @@ export interface CheckboxComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
 
   isChecked: boolean;
   isIndeterminate: boolean;
@@ -145,9 +118,6 @@ export interface CheckboxComputed {
   isDisabled: boolean;
   isInvalid: boolean;
   isReadOnly: boolean;
-  effectiveSize: CheckboxSize;
-  effectiveColor: CheckboxColor;
-  effectiveVariant: CheckboxVariant;
 }
 
 export interface CheckboxRefs {
@@ -187,12 +157,6 @@ export interface CheckboxApi {
   readOnly: boolean;
   /** Whether the field is invalid */
   invalid: boolean;
-  /** Effective size */
-  size: CheckboxSize;
-  /** Effective color */
-  color: CheckboxColor;
-  /** Effective visual variant */
-  variant: CheckboxVariant;
   /** Set checked state programmatically */
   setChecked(checked: boolean): void;
   /** Set indeterminate state programmatically */
@@ -201,8 +165,8 @@ export interface CheckboxApi {
   toggle(): void;
   /** Reset to initial checked state */
   resetChecked(): void;
-  /** Tap event handler for miniapp */
-  handleTap(e?: MiniAppBaseEventLike): void;
+  /** Tap interaction handler */
+  handleTap(): void;
   /** Props for root container */
   rootProps: Record<string, any>;
   /** Props for checkbox base box */

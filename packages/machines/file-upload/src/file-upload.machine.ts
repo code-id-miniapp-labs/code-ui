@@ -10,7 +10,6 @@ import type {
   FileUploadFile,
   FileUploadMachine,
   FileUploadSchema,
-  FileUploadSize,
 } from "./file-upload.types";
 import { defaultFileUploadProps } from "./file-upload.props";
 import {
@@ -239,8 +238,6 @@ export const fileUploadMachine: FileUploadMachine =
       fileCount: ({ context }) => context.get("files").length,
       isUploading: ({ prop, state }) =>
         prop("uploading") || state.matches("uploading"),
-      effectiveSize: ({ prop, computed }) =>
-        (computed("fieldSize") || prop("size") || "md") as FileUploadSize,
     },
 
     watch: ({ prop, state, track }) => {

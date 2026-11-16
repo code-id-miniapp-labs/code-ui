@@ -31,7 +31,6 @@ describe("Textarea Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
       expect(api.rootProps["data-state"]).toBe("idle");
       expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.textareaProps["data-focused"]).toBe("false");
@@ -113,9 +112,7 @@ describe("Textarea Machine", () => {
       machine.start();
 
       const api = connectTextarea(machine.service);
-      const returnedVal = api.handleInput({
-        detail: { value: "Line 1\nLine 2" },
-      });
+      const returnedVal = api.handleInput("Line 1\nLine 2");
       await flush();
 
       expect(returnedVal).toBe("Line 1\nLine 2");
@@ -142,14 +139,14 @@ describe("Textarea Machine", () => {
       let api = connectTextarea(machine.service);
       expect(api.state).toBe("idle");
 
-      api.handleFocus({});
+      api.handleFocus();
       await flush();
 
       api = connectTextarea(machine.service);
       expect(api.state).toBe("focused");
       expect(triggerEvent).toHaveBeenCalledWith("focus", { value: "" });
 
-      api.handleBlur({});
+      api.handleBlur();
       await flush();
 
       api = connectTextarea(machine.service);
@@ -171,7 +168,7 @@ describe("Textarea Machine", () => {
       machine.start();
 
       const api = connectTextarea(machine.service);
-      api.handleConfirm({ detail: { value: "multi\nline" } });
+      api.handleConfirm("multi\nline");
       await flush();
 
       expect(triggerEvent).toHaveBeenCalledWith("confirm", {
@@ -196,9 +193,7 @@ describe("Textarea Machine", () => {
       const api = connectTextarea(machine.service);
 
       // WeChat subpixel bug case: empty textarea reporting height: 23, lineHeight: 22.8571, lineCount: 2
-      api.handleLineChange({
-        detail: { height: 23, lineCount: 2, lineHeight: 22.8571 },
-      });
+      api.handleLineChange({ height: 23, lineCount: 2, lineHeight: 22.8571 });
       await flush();
 
       expect(triggerEvent).toHaveBeenCalledWith("linechange", {
@@ -216,9 +211,7 @@ describe("Textarea Machine", () => {
       api.setValue("Line 1\nLine 2");
       await flush();
       const updatedApi = connectTextarea(machine.service);
-      updatedApi.handleLineChange({
-        detail: { height: 46, lineCount: 2, lineHeight: 22.8571 },
-      });
+      updatedApi.handleLineChange({ height: 46, lineCount: 2, lineHeight: 22.8571 });
       await flush();
 
       expect(triggerEvent).toHaveBeenCalledWith("linechange", {
@@ -378,9 +371,7 @@ describe("Textarea Machine", () => {
       expect(register).toHaveBeenCalledWith(
         expect.objectContaining({ name: "bio" }),
       );
-      connectTextarea(machine.service).handleInput({
-        detail: { value: "updated" },
-      });
+      connectTextarea(machine.service).handleInput("updated");
       await flush();
       expect(notify).toHaveBeenCalledWith(
         "input",
@@ -404,9 +395,9 @@ describe("Textarea Machine", () => {
         formContext: host,
       });
       machine.start();
-      connectTextarea(machine.service).handleFocus({});
+      connectTextarea(machine.service).handleFocus();
       await flush();
-      connectTextarea(machine.service).handleBlur({});
+      connectTextarea(machine.service).handleBlur();
       await flush();
       expect(notify).toHaveBeenCalledWith(
         "focus",
@@ -420,7 +411,7 @@ describe("Textarea Machine", () => {
       form.stop();
     });
 
-    it("derives wrapper disabled and size from the form host", async () => {
+    it("derives wrapper disabled from the form host", async () => {
       const form = new MiniappMachine(formMachine, {});
       form.start();
       const host = connectForm(form.service).formContext;
@@ -430,14 +421,12 @@ describe("Textarea Machine", () => {
       });
       machine.start();
       await flush();
-      host.setFieldState("bio", { disabled: true, size: "sm" });
+      host.setFieldState("bio", { disabled: true });
       await flush();
       expect(connectTextarea(machine.service).disabled).toBe(true);
-      expect(connectTextarea(machine.service).size).toBe("sm");
-      host.setFieldState("bio", { disabled: false, size: "lg" });
+      host.setFieldState("bio", { disabled: false });
       await flush();
       expect(connectTextarea(machine.service).disabled).toBe(false);
-      expect(connectTextarea(machine.service).size).toBe("lg");
       machine.stop();
       form.stop();
     });
@@ -494,7 +483,7 @@ describe("Textarea Machine", () => {
       expect(textareaApi.invalid).toBe(false);
 
       // Input invalid short value
-      textareaApi.handleInput({ detail: { value: "Hi" } });
+      textareaApi.handleInput("Hi");
       await flush();
 
       const submitResult = await formApi.submit();

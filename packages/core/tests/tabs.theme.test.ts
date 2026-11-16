@@ -25,17 +25,21 @@ describe("tabsTheme (@code-ui/core)", () => {
     const theme = tabsTheme();
     expect(theme.variants.variant.pill).toBeDefined();
     expect(theme.variants.variant.link).toBeDefined();
-    expect(theme.variants.variant.pill.list).toContain("bg-neutral-100");
+    expect(theme.variants.variant.pill.list).toContain("bg-elevated");
     expect(theme.variants.variant.link.list).toContain("border-b");
   });
 
   it("supports orientation styles", () => {
     const theme = tabsTheme();
     expect(theme.variants.orientation.horizontal.root).toContain("flex-col");
+    expect(theme.variants.orientation.horizontal.list).toContain("inline-flex");
     expect(theme.variants.orientation.horizontal.list).toContain("flex-row");
+    expect(theme.variants.orientation.horizontal.list).toContain("min-w-full");
     expect(theme.variants.orientation.horizontal.list).toContain("shrink-0");
-    expect(theme.variants.orientation.horizontal.list).not.toContain("inline-flex");
+    expect(theme.variants.fitted.true.list).toContain("flex");
+    expect(theme.variants.fitted.true.list).toContain("w-full");
     expect(theme.variants.orientation.vertical.root).toContain("flex-row");
+    expect(theme.variants.orientation.vertical.list).toContain("flex");
   });
 
   it("supports size variants", () => {

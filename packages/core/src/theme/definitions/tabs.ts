@@ -4,27 +4,29 @@ export default function tabsTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "w-full flex gap-3",
+      scroll: "cui-tabs-scroll w-full shrink-0",
+      itemWrapper: "flex flex-row",
       list: "relative flex group flex-nowrap whitespace-nowrap box-border",
       content: "focus:outline-none flex-1 min-w-0",
     },
     variants: {
       variant: {
         pill: {
-          list: "bg-neutral-100 rounded-xl p-1 gap-1",
+          list: "bg-elevated rounded-xl p-1 gap-1",
         },
         link: {
-          list: "border-b border-neutral-200 gap-5 p-0",
+          list: "border-b border-default gap-5 p-0",
         },
       },
       orientation: {
         horizontal: {
           root: "flex-col",
-          list: "flex-row items-center min-w-full shrink-0",
+          list: "inline-flex flex-row items-center align-top min-w-full shrink-0",
           content: "w-full",
         },
         vertical: {
           root: "flex-row items-start gap-4",
-          list: "flex-col items-stretch shrink-0",
+          list: "flex flex-col items-stretch shrink-0",
         },
       },
       size: {
@@ -42,9 +44,12 @@ export default function tabsTheme(_options: ThemeOptions = {}) {
       },
       fitted: {
         true: {
-          list: "w-full min-w-full",
+          list: "flex w-full min-w-full",
+          itemWrapper: "flex-1 min-w-0",
         },
-        false: {},
+        false: {
+          itemWrapper: "shrink-0",
+        },
       },
     },
     compoundVariants: [
@@ -87,7 +92,7 @@ export default function tabsTheme(_options: ThemeOptions = {}) {
         variant: "link",
         orientation: "vertical",
         class: {
-          list: "border-b-0 border-r border-neutral-200 gap-1 p-0",
+          list: "border-b-0 border-r border-default gap-1 p-0",
         },
       },
     ],

@@ -45,21 +45,3 @@
   -webkit-animation: cui-action-sheet-fade-in 300ms ease-out;
   animation: cui-action-sheet-fade-in 300ms ease-out;
 }
-
-button[data-part="item"] {
-  margin: 0;
-  padding: 0;
-  border-radius: 0;
-  font-size: inherit;
-  font-weight: normal;
-  line-height: normal;
-  background-color: transparent;
-  color: inherit;
-  text-align: center;
-}
-
-button[data-part="item"]::after {
-  display: none;
-  border: none;
-}
-

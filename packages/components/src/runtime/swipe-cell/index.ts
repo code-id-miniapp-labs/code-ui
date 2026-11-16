@@ -1,3 +1,4 @@
+import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -9,7 +10,6 @@ import {
   swipeCellMachine,
   connectSwipeCell,
   defaultSwipeCellProps,
-  type SwipeCellActionTapEvent,
   type SwipeCellApi,
   type SwipeSide,
 } from "@code-ui/swipe-cell";
@@ -35,6 +35,18 @@ Component(
     },
 
     properties: createProperties(defaultSwipeCellProps, {
+      variant: {
+        type: String,
+        value: "plain",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -44,7 +56,7 @@ Component(
     computed: {
       classes() {
         const api = this.data.swipeCell;
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const disabled = Boolean(api?.disabled);
         const variant = this.data.variant;
         const size = this.data.size;
         const ui = this.data.ui;
@@ -84,8 +96,14 @@ Component(
         getApi<SwipeCellApi>(this, "swipeCell")?.handleContentTap();
       },
 
-      handleActionTap(ev: SwipeCellActionTapEvent) {
-        getApi<SwipeCellApi>(this, "swipeCell")?.handleActionTap(ev);
+      handleActionTap(
+        e: MiniAppBaseEventLike<{ side?: SwipeSide; index?: number | string }>,
+      ) {
+        const side = e?.currentTarget?.dataset?.side as SwipeSide | undefined;
+        const rawIndex = e?.currentTarget?.dataset?.index;
+        const index = rawIndex !== undefined ? Number(rawIndex) : NaN;
+        if (!side || Number.isNaN(index)) return;
+        getApi<SwipeCellApi>(this, "swipeCell")?.handleActionTap({ side, index });
       },
 
       open(side?: SwipeSide) {

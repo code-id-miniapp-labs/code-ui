@@ -1,9 +1,20 @@
 Page({
   data: {
     controlledValue: "Hello Code UI",
-    clearableValue: "Click ✕ to clear",
+    clearableValue: "Tap clear icon to reset",
     passwordValue: "secret123",
     lastEvent: "None",
+    variants: ["outline", "soft", "subtle", "ghost", "none"] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
   },
 
   onControlledInput(e: WechatMiniprogram.CustomEvent) {
@@ -28,21 +39,15 @@ Page({
   },
 
   onClearableChange(e: WechatMiniprogram.CustomEvent) {
-    this.setData({
-      clearableValue: e.detail.value,
-    });
+    this.setData({ clearableValue: e.detail.value });
   },
 
   onInputFocus(e: WechatMiniprogram.CustomEvent) {
-    this.setData({
-      lastEvent: `focused (val: "${e.detail.value || ""}")`,
-    });
+    this.setData({ lastEvent: `focused ("${e.detail.value || ""}")` });
   },
 
   onInputBlur(e: WechatMiniprogram.CustomEvent) {
-    this.setData({
-      lastEvent: `blurred (val: "${e.detail.value || ""}")`,
-    });
+    this.setData({ lastEvent: `blurred ("${e.detail.value || ""}")` });
   },
 
   onInputClear() {

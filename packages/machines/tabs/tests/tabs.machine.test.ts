@@ -36,7 +36,6 @@ describe("Tabs Machine", () => {
       expect(api.items.length).toBe(3);
       expect(api.items[0]?.isSelected).toBe(true);
       expect(api.items[1]?.isSelected).toBe(false);
-      expect(api.items[0]?.label).toBe("Account");
       expect(api.items[0]?.value).toBe("Account");
 
       machine.stop();
@@ -46,8 +45,8 @@ describe("Tabs Machine", () => {
       const machine = new MiniappMachine(tabsMachine, {
         defaultValue: "password",
         items: [
-          { label: "Account", value: "account" },
-          { label: "Password", value: "password" },
+          { value: "account" },
+          { value: "password" },
         ],
       });
       machine.start();
@@ -63,8 +62,8 @@ describe("Tabs Machine", () => {
     it("skips disabled item when defaulting active tab", () => {
       const machine = new MiniappMachine(tabsMachine, {
         items: [
-          { label: "Tab 1", value: "tab1", disabled: true },
-          { label: "Tab 2", value: "tab2" },
+          { value: "tab1", disabled: true },
+          { value: "tab2" },
         ],
       });
       machine.start();
@@ -82,8 +81,8 @@ describe("Tabs Machine", () => {
       const onChange = vi.fn();
       const machine = new MiniappMachine(tabsMachine, {
         items: [
-          { label: "Account", value: "account" },
-          { label: "Password", value: "password" },
+          { value: "account" },
+          { value: "password" },
         ],
         onChange,
       });
@@ -109,8 +108,8 @@ describe("Tabs Machine", () => {
       const machine = new MiniappMachine(tabsMachine, {
         defaultValue: "account",
         items: [
-          { label: "Account", value: "account" },
-          { label: "Disabled Tab", value: "disabled", disabled: true },
+          { value: "account" },
+          { value: "disabled", disabled: true },
         ],
         onChange,
       });
@@ -133,8 +132,8 @@ describe("Tabs Machine", () => {
         disabled: true,
         defaultValue: "account",
         items: [
-          { label: "Account", value: "account" },
-          { label: "Password", value: "password" },
+          { value: "account" },
+          { value: "password" },
         ],
         onChange,
       });
@@ -157,8 +156,8 @@ describe("Tabs Machine", () => {
       const machine = new MiniappMachine(tabsMachine, {
         value: "account",
         items: [
-          { label: "Account", value: "account" },
-          { label: "Password", value: "password" },
+          { value: "account" },
+          { value: "password" },
         ],
       });
       machine.start();
@@ -180,8 +179,8 @@ describe("Tabs Machine", () => {
       const machine = new MiniappMachine(tabsMachine, {
         value: "account",
         childItems: [
-          { label: "Account", value: "account" },
-          { label: "Security", value: "security" },
+          { value: "account" },
+          { value: "security" },
         ],
       });
       machine.start();
@@ -201,22 +200,12 @@ describe("Tabs Machine", () => {
   describe("Group Context", () => {
     it("exposes live getters and dispatches selection intents", async () => {
       const machine = new MiniappMachine(tabsMachine, {
-        orientation: "vertical",
-        variant: "link",
-        color: "danger",
-        size: "lg",
-        fitted: true,
         items: ["Tab 1", "Tab 2"],
       });
       machine.start();
 
       const group = machine.service.refs.get("groupContext");
       expect(group.value()).toBe("Tab 1");
-      expect(group.orientation()).toBe("vertical");
-      expect(group.variant()).toBe("link");
-      expect(group.color()).toBe("danger");
-      expect(group.size()).toBe("lg");
-      expect(group.fitted()).toBe(true);
 
       group.select("Tab 2");
       await flush();
@@ -304,9 +293,9 @@ describe("Tabs Machine", () => {
     it("skips disabled tabs during navigation", async () => {
       const machine = new MiniappMachine(tabsMachine, {
         items: [
-          { label: "Tab 1", value: "tab1" },
-          { label: "Tab 2", value: "tab2", disabled: true },
-          { label: "Tab 3", value: "tab3" },
+          { value: "tab1" },
+          { value: "tab2", disabled: true },
+          { value: "tab3" },
         ],
       });
       machine.start();
@@ -379,8 +368,8 @@ describe("Tabs Machine", () => {
       const machine = new MiniappMachine(tabsMachine, {
         id: "demo",
         items: [
-          { label: "Account", value: "account", icon: "user", content: "Account info" },
-          { label: "Security", value: "security" },
+          { value: "account" },
+          { value: "security" },
         ],
       });
       machine.start();
@@ -388,10 +377,8 @@ describe("Tabs Machine", () => {
       const api = connectTabs(machine.service);
 
       expect(api.rootProps.id).toBe("tb-demo-r");
-      expect(api.rootProps["data-orientation"]).toBe("horizontal");
 
       expect(api.listProps["aria-role"]).toBe("tablist");
-      expect(api.listProps["aria-orientation"]).toBe("horizontal");
 
       const item0 = api.items[0];
       expect(item0).toBeDefined();

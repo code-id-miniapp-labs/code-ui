@@ -24,12 +24,9 @@ describe("Progress Machine", () => {
       expect(api.valueAsString).toBe("");
       expect(api.min).toBe(0);
       expect(api.max).toBe(100);
-      expect(api.orientation).toBe("horizontal");
-      expect(api.type).toBe("linear");
 
       expect(api.rootProps["aria-valuenow"]).toBeUndefined();
       expect(api.rootProps["data-state"]).toBe("indeterminate");
-      expect(api.rangeProps.style).toBe("");
 
       machine.stop();
     });
@@ -50,7 +47,6 @@ describe("Progress Machine", () => {
       expect(api.valueAsString).toBe("40%");
       expect(api.rootProps["aria-valuenow"]).toBe(40);
       expect(api.rootProps["data-state"]).toBe("loading");
-      expect(api.rangeProps.style).toBe("width: 40%;");
 
       machine.stop();
     });
@@ -66,7 +62,6 @@ describe("Progress Machine", () => {
       expect(api.percent).toBe(100);
       expect(api.isComplete).toBe(true);
       expect(api.rootProps["data-state"]).toBe("complete");
-      expect(api.rangeProps.style).toBe("width: 100%;");
 
       machine.stop();
     });
@@ -82,61 +77,6 @@ describe("Progress Machine", () => {
       const api = connectProgress(machine.service);
       expect(api.percent).toBe(50);
       expect(api.valueAsString).toBe("50%");
-      expect(api.rangeProps.style).toBe("width: 50%;");
-
-      machine.stop();
-    });
-
-    it("handles vertical orientation correctly in range style", () => {
-      const machine = new MiniappMachine(progressMachine, {
-        value: 65,
-        orientation: "vertical",
-      });
-      machine.start();
-
-      const api = connectProgress(machine.service);
-      expect(api.orientation).toBe("vertical");
-      expect(api.rangeProps.style).toBe("height: 65%;");
-      expect(api.rootProps["data-orientation"]).toBe("vertical");
-
-      machine.stop();
-    });
-  });
-
-  describe("Circular Progress Computations", () => {
-    it("generates CSS variables in circleStyle for pure CSS circular progress", () => {
-      const machine = new MiniappMachine(progressMachine, {
-        value: 60,
-        type: "circular",
-        color: "primary",
-        strokeWidth: 6,
-      });
-      machine.start();
-
-      const api = connectProgress(machine.service);
-      expect(api.type).toBe("circular");
-      expect(api.circleStyle).toContain("--cui-progress-percent: 60%;");
-      expect(api.circleStyle).toContain("--cui-progress-stroke-width: 6px;");
-      expect(api.circleProps.style).toContain("--cui-progress-percent: 60%;");
-
-      machine.stop();
-    });
-
-    it("uses 25% arc in indeterminate circular progress", () => {
-      const machine = new MiniappMachine(progressMachine, {
-        type: "circular",
-        trackColor: "#eee",
-        color: "#16a34a",
-        inverted: true,
-      });
-      machine.start();
-
-      const api = connectProgress(machine.service);
-      expect(api.isIndeterminate).toBe(true);
-      expect(api.circleStyle).toContain("--cui-progress-percent: 25%;");
-      expect(api.circleStyle).toContain("--cui-progress-track-color: #eee;");
-      expect(api.circleStyle).toContain("color: #16a34a;");
-      expect(api.circleStyle).toContain("transform: scaleX(-1);");
 
       machine.stop();
     });

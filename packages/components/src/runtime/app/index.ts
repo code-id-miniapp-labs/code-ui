@@ -8,6 +8,8 @@ import {
 import type { AppMetrics } from "@code-ui/miniapp/behaviors/app";
 import { createToastHostBehavior } from "@code-ui/miniapp/behaviors/toast";
 import type { ToastEntry } from "@code-ui/miniapp/behaviors/toast";
+import { createAppThemeBehavior } from "@code-ui/miniapp/behaviors/theme";
+import type { ResolvedThemeMode } from "@code-ui/miniapp/behaviors/theme";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";
@@ -27,6 +29,7 @@ const appHostBehavior = createAppHostBehavior({
   extractBottomBarHeight,
 });
 const toastHostBehavior = createToastHostBehavior();
+const appThemeBehavior = createAppThemeBehavior();
 
 const relations: Record<string, any> = {};
 setupAppRelations(relations, "parent");
@@ -36,6 +39,7 @@ Component(
     behaviors: [
       cuiAppParentBehavior,
       appHostBehavior,
+      appThemeBehavior,
       toastHostBehavior,
       computedBehavior,
     ],
@@ -81,6 +85,10 @@ Component(
         type: Boolean,
         value: true,
       },
+      colorMode: {
+        type: String,
+        value: "",
+      },
     },
 
     data: {
@@ -93,9 +101,17 @@ Component(
       detectedTopBarHeight: 0,
       detectedBottomBarHeight: 0,
       gestureScaleStyle: "",
+      themeMode: "light" as ResolvedThemeMode,
+      themeCssVars: "",
     },
 
     computed: {
+      effectiveThemeMode(): ResolvedThemeMode {
+        const override = this.data.colorMode;
+        if (override === "dark" || override === "light") return override;
+        return this.data.themeMode || "light";
+      },
+
       classes() {
         const scaled = this.data.scaled;
         const themeFns = appTheme({ scaled });
@@ -104,6 +120,12 @@ Component(
           this.data.ui,
           this.data.className,
         );
+        const override = this.data.colorMode;
+        const mode: ResolvedThemeMode =
+          override === "dark" || override === "light"
+            ? override
+            : this.data.themeMode || "light";
+        resolved.root = `${resolved.root} ${mode}`.trim();
         if (scaled) {
           const bg =
             this.data.hostScaleBackground || this.data.scaleBackground;
@@ -148,7 +170,18 @@ Component(
             ? `background-color:${bg};`
             : "";
 
-        return buildRootCssVars(layout, m, topInset, bottomInset, bgStyle);
+        const baseStyle = buildRootCssVars(
+          layout,
+          m,
+          topInset,
+          bottomInset,
+          bgStyle,
+        );
+        const themeVars = this.data.themeCssVars || "";
+        if (!themeVars) return baseStyle;
+        return baseStyle
+          ? `${baseStyle.endsWith(";") ? baseStyle : `${baseStyle};`}${themeVars}`
+          : themeVars;
       },
     },
   }),

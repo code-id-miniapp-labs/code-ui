@@ -7,6 +7,7 @@ import {
   pinInputMachine,
   connectPinInput,
   defaultPinInputProps,
+  type PinInputSize,
 } from "@code-ui/pin-input";
 import themeConfig from "virtual:cui/theme/pin-input";
 import { tv } from "../../utils/variants";
@@ -33,10 +34,30 @@ Component(
         type: String,
         value: "",
       },
+      variant: {
+        type: String,
+        value: "outline",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      highlight: {
+        type: Boolean,
+        value: false,
+      },
       separator: {
         type: Boolean,
         optionalTypes: [Number, Array],
         value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
       },
       className: {
         type: String,
@@ -45,11 +66,15 @@ Component(
     }),
 
     computed: {
+      resolvedSize(): PinInputSize {
+        return (this.data.size || this.data.fieldSize || "md") as PinInputSize;
+      },
+
       classes() {
         const api = this.data.pinInput;
-        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const size = api?.size ?? this.data.size;
+        const isInvalid = Boolean(api?.invalid);
+        const disabled = Boolean(api?.disabled);
+        const size = this.data.resolvedSize;
         const variant = this.data.variant;
         const color = this.data.color;
         const highlight = Boolean(this.data.highlight);
@@ -70,21 +95,32 @@ Component(
 
     methods: {
       handleInput(
-        e: MiniAppEventLike<{ value: string }, { index: number }>,
+        e: MiniAppEventLike<{ value: string }, { index: number | string }>,
       ) {
-        return getApi(this, "pinInput")?.handleInput(e);
+        const raw = e?.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : 0;
+        return getApi(this, "pinInput")?.handleInput(
+          e?.detail?.value ?? "",
+          Number.isNaN(index) ? 0 : index,
+        );
       },
 
-      handleFocus(e: MiniAppBaseEventLike<{ index: number }>) {
-        getApi(this, "pinInput")?.handleFocus(e);
+      handleFocus(e: MiniAppBaseEventLike<{ index: number | string }>) {
+        const raw = e?.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : 0;
+        getApi(this, "pinInput")?.handleFocus(Number.isNaN(index) ? 0 : index);
       },
 
-      handleBlur(e: MiniAppBaseEventLike<{ index: number }>) {
-        getApi(this, "pinInput")?.handleBlur(e);
+      handleBlur(e: MiniAppBaseEventLike<{ index: number | string }>) {
+        const raw = e?.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : -1;
+        getApi(this, "pinInput")?.handleBlur(Number.isNaN(index) ? -1 : index);
       },
 
-      handleTap(e: MiniAppBaseEventLike<{ index: number }>) {
-        getApi(this, "pinInput")?.handleTap?.(e);
+      handleTap(e: MiniAppBaseEventLike<{ index: number | string }>) {
+        const raw = e?.currentTarget?.dataset?.index;
+        const index = raw !== undefined ? Number(raw) : 0;
+        getApi(this, "pinInput")?.handleTap?.(Number.isNaN(index) ? 0 : index);
       },
     },
   }),

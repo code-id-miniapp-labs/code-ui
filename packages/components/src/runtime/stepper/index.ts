@@ -31,6 +31,26 @@ Component(
     },
 
     properties: createProperties(defaultStepperProps, {
+      orientation: {
+        type: String,
+        value: "horizontal",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      variant: {
+        type: String,
+        value: "subtle",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -41,6 +61,25 @@ Component(
       hasItems() {
         const items = this.data.items;
         return Array.isArray(items) && items.length > 0;
+      },
+
+      resolvedItems() {
+        const steps = this.data.stepper?.steps;
+        if (!Array.isArray(steps)) return [];
+        const rawItems = Array.isArray(this.data.items) ? this.data.items : [];
+        const fallbackUi = this.data.ui;
+        return steps.map((step: any, idx: number) => {
+          const raw = rawItems[idx];
+          const rawObj = raw && typeof raw === "object" ? raw : undefined;
+          return {
+            ...step,
+            title: rawObj?.title ?? "",
+            description: rawObj?.description ?? "",
+            icon: rawObj?.icon ?? "",
+            completedIcon: rawObj?.completedIcon ?? "",
+            ui: rawObj?.ui ?? fallbackUi,
+          };
+        });
       },
 
       classes() {

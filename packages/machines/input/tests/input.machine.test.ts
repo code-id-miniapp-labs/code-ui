@@ -29,7 +29,6 @@ describe("Input Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
       expect(api.rootProps["data-state"]).toBe("idle");
       expect(api.rootProps["data-disabled"]).toBe("false");
       expect(api.inputProps["data-focused"]).toBe("false");
@@ -105,9 +104,7 @@ describe("Input Machine", () => {
       machine.start();
 
       const api = connectInput(machine.service);
-      const returnedVal = api.handleInput({
-        detail: { value: "test@example.com" },
-      });
+      const returnedVal = api.handleInput("test@example.com");
       await flush();
 
       expect(returnedVal).toBe("test@example.com");
@@ -133,14 +130,14 @@ describe("Input Machine", () => {
       let api = connectInput(machine.service);
       expect(api.state).toBe("idle");
 
-      api.handleFocus({});
+      api.handleFocus();
       await flush();
 
       api = connectInput(machine.service);
       expect(api.state).toBe("focused");
       expect(triggerEvent).toHaveBeenCalledWith("focus", { value: "" });
 
-      api.handleBlur({});
+      api.handleBlur();
       await flush();
 
       api = connectInput(machine.service);
@@ -162,7 +159,7 @@ describe("Input Machine", () => {
       machine.start();
 
       const api = connectInput(machine.service);
-      api.handleConfirm({ detail: { value: "search term" } });
+      api.handleConfirm("search term");
       await flush();
 
       expect(triggerEvent).toHaveBeenCalledWith("confirm", {
@@ -316,9 +313,7 @@ describe("Input Machine", () => {
       expect(register).toHaveBeenCalledWith(
         expect.objectContaining({ name: "email" }),
       );
-      connectInput(machine.service).handleInput({
-        detail: { value: "updated" },
-      });
+      connectInput(machine.service).handleInput("updated");
       await flush();
       expect(notify).toHaveBeenCalledWith(
         "input",
@@ -342,9 +337,9 @@ describe("Input Machine", () => {
         formContext: host,
       });
       machine.start();
-      connectInput(machine.service).handleFocus({});
+      connectInput(machine.service).handleFocus();
       await flush();
-      connectInput(machine.service).handleBlur({});
+      connectInput(machine.service).handleBlur();
       await flush();
       expect(notify).toHaveBeenCalledWith(
         "focus",
@@ -358,7 +353,7 @@ describe("Input Machine", () => {
       form.stop();
     });
 
-    it("derives wrapper disabled and size from the form host", async () => {
+    it("derives wrapper disabled from the form host", async () => {
       const form = new MiniappMachine(formMachine, {});
       form.start();
       const host = connectForm(form.service).formContext;
@@ -368,14 +363,12 @@ describe("Input Machine", () => {
       });
       machine.start();
       await flush();
-      host.setFieldState("email", { disabled: true, size: "sm" });
+      host.setFieldState("email", { disabled: true });
       await flush();
       expect(connectInput(machine.service).disabled).toBe(true);
-      expect(connectInput(machine.service).size).toBe("sm");
-      host.setFieldState("email", { disabled: false, size: "lg" });
+      host.setFieldState("email", { disabled: false });
       await flush();
       expect(connectInput(machine.service).disabled).toBe(false);
-      expect(connectInput(machine.service).size).toBe("lg");
       machine.stop();
       form.stop();
     });
@@ -447,7 +440,7 @@ describe("Input Machine", () => {
       expect(inputApi.invalid).toBe(true);
 
       // Now set a valid value
-      inputApi.handleInput({ detail: { value: "test@domain.com" } });
+      inputApi.handleInput("test@domain.com");
       await flush();
 
       const result2 = await formApi.validate();

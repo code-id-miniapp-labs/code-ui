@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./form.anatomy";
 
 export type FormState =
@@ -132,9 +132,7 @@ export interface FormHostContext {
   disabled(): boolean;
   readOnly(): boolean;
   errors(name: string): string[];
-  fieldState(
-    name: string,
-  ): { disabled?: boolean | undefined; size?: string | undefined } | undefined;
+  fieldState(name: string): { disabled?: boolean | undefined } | undefined;
   register(field: FormFieldRegistration): () => void;
   unregister(name: string, id?: string): void;
   notify(
@@ -142,10 +140,7 @@ export interface FormHostContext {
     payload: { name: string; value?: any; id?: string | undefined },
   ): void;
   setFieldRules(name: string, getRules: () => FormRule[]): void;
-  setFieldState(
-    name: string,
-    state: { disabled?: boolean | undefined; size?: string | undefined },
-  ): void;
+  setFieldState(name: string, state: { disabled?: boolean | undefined }): void;
 }
 
 export type FormAnatomyPart = AnatomyPartName<typeof anatomy>;
@@ -161,8 +156,6 @@ export interface FormProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes */
-  ui?: FormUI | undefined;
   /** Initial / controlled form values map */
   value?: Record<string, any> | null | undefined;
   /** Default form values map */
@@ -192,8 +185,6 @@ export interface FormProps {
   disabled?: boolean | undefined;
   /** Set all fields inside the form to read-only */
   readOnly?: boolean | undefined;
-  /** Whether to render a built-in error summary list at the bottom of the form */
-  showErrors?: boolean | undefined;
   /** Callback fired when form validation succeeds on submit */
   onSubmit?: ((details: FormSubmitDetails) => any) | undefined;
   /** Callback fired when form validation fails on submit */
@@ -297,9 +288,7 @@ export type FormDefaultedKey =
   | "scrollToError"
   | "scrollOffset"
   | "disabled"
-  | "readOnly"
-  | "showErrors"
-  | "ui";
+  | "readOnly";
 
 export type FormResolvedProps = Omit<FormProps, FormDefaultedKey> & {
   [K in FormDefaultedKey]-?: Exclude<FormProps[K], undefined>;
@@ -376,10 +365,6 @@ export interface FormApi {
   isSubmitting: boolean;
   /** Number of times submit has been triggered */
   submitCount: number;
-  /** Whether the form is disabled */
-  disabled: boolean;
-  /** Whether the form is read-only */
-  readOnly: boolean;
   /** Stable reactive facade shared with descendant fields. */
   formContext: FormHostContext;
   /** Validate all registered fields or specific field(s) */
@@ -417,12 +402,12 @@ export interface FormApi {
   focusFirstError(): boolean;
   /** Scroll the viewport to the first field that currently has a validation error */
   scrollToFirstError(): Promise<boolean>;
-  /** Native MiniApp bindsubmit handler */
+  /** Submit with optional form field values */
   handleSubmit(
-    e?: MiniAppEventLike<{ value?: Record<string, any> }>,
+    values?: Record<string, any>,
   ): Promise<FormValidationResult>;
-  /** Native MiniApp bindreset handler */
-  handleReset(e?: MiniAppEventLike<Record<string, any>>): void;
+  /** Reset handler */
+  handleReset(): void;
   /** Root container props */
   rootProps: Record<string, any>;
 }

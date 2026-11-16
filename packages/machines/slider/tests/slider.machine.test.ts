@@ -359,25 +359,22 @@ describe("Slider Machine", () => {
 
       const api = connectSlider(machine.service);
 
-      // WXS calls handleTouchStart({ clientX: 40, clientY: 10 })
-      await api.handleTouchStart({ clientX: 40, clientY: 10 });
+      await api.handleTouchStart({ x: 40, y: 10 });
       await flush();
       expect(machine.state.get()).toBe("dragging");
       expect(machine.computed("value")).toBe(20);
 
-      // WXS calls handleTouchMove({ clientX: 160, clientY: 10 })
-      api.handleTouchMove({ clientX: 160, clientY: 10 });
+      api.handleTouchMove({ x: 160, y: 10 });
       await flush();
       expect(machine.computed("value")).toBe(80);
 
-      // WXS calls handleTouchEnd()
       api.handleTouchEnd();
       await flush();
       expect(machine.state.get()).toBe("idle");
       expect(machine.computed("value")).toBe(80);
 
       // Tap at x: 100 (50%)
-      await api.handleTap({ clientX: 100, clientY: 10 });
+      await api.handleTap({ x: 100, y: 10 });
       await flush();
       expect(machine.computed("value")).toBe(50);
 
@@ -608,6 +605,90 @@ describe("Slider Machine", () => {
 
       sliderM.stop();
       formM.stop();
+    });
+
+    it("resolves right thumb accurately when RECT.RESOLVED runs after POINTER_DOWN without cached rect", async () => {
+      const queries: Array<(rect: any) => void> = [];
+      const comp = {
+        setData: vi.fn(),
+        triggerEvent: vi.fn(),
+        createSelectorQuery: () => {
+          let pendingCb: ((rect: any) => void) | undefined;
+          return {
+            select: () => ({
+              boundingClientRect: (cb: any) => {
+                pendingCb = cb;
+                return {
+                  exec: () => {
+                    if (pendingCb) queries.push(pendingCb);
+                  },
+                };
+              },
+            }),
+            exec: () => {},
+          };
+        },
+      };
+      const onChange = vi.fn();
+      const machine = new MiniappMachine(sliderMachine, {
+        component: comp,
+        defaultValue: [20, 80],
+        min: 0,
+        max: 100,
+        minStepsBetweenThumbs: 10,
+        onChange,
+      });
+      machine.start();
+      machine.send({ type: "READY" });
+      await flush();
+
+      // Pointer down near right thumb (85% -> x: 170 on 200 width) before rect is resolved
+      machine.send({
+        type: "POINTER_DOWN",
+        point: { x: 170, y: 10 },
+      });
+      await flush();
+
+      // Simulate deferred boundingClientRect resolution on POINTER_DOWN
+      const lastCb = queries[queries.length - 1];
+      lastCb?.({ left: 0, top: 0, width: 200, height: 20 });
+      await flush();
+
+      expect(machine.context.get("activeThumbIndex")).toBe(1);
+      // Right thumb moves to 85; left thumb stays untouched at 20!
+      expect(machine.computed("value")).toEqual([20, 85]);
+
+      machine.stop();
+    });
+
+    it("respects inverted coordinates for connect percent, rangeStyle, and pointer drag", async () => {
+      const machine = new MiniappMachine(sliderMachine, {
+        defaultValue: 25,
+        inverted: true,
+        min: 0,
+        max: 100,
+      });
+      machine.start();
+
+      let api = connectSlider(machine.service);
+      // Inverted: value 25 fills 75% -> 100% visually, thumb sits at 75%
+      expect(api.thumbs[0]?.percent).toBe(75);
+      expect(api.rangeStyle).toBe("left: 75%; width: 25%;");
+
+      // Pointer at visual 25% (x: 50 on 200 width) => inverted value = 75
+      machine.send({
+        type: "POINTER_DOWN",
+        point: { x: 50, y: 10 },
+        rect: { left: 0, top: 0, width: 200, height: 20 } as any,
+      });
+      await flush();
+
+      api = connectSlider(machine.service);
+      expect(api.value).toBe(75);
+      expect(api.thumbs[0]?.percent).toBe(25);
+      expect(api.rangeStyle).toBe("left: 25%; width: 75%;");
+
+      machine.stop();
     });
   });
 });

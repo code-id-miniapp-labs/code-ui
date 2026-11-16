@@ -33,6 +33,42 @@ Component(
     },
 
     properties: createProperties(defaultStepperItemProps, {
+      title: {
+        type: String,
+        value: "",
+      },
+      description: {
+        type: String,
+        value: "",
+      },
+      icon: {
+        type: String,
+        value: "",
+      },
+      completedIcon: {
+        type: String,
+        value: "check",
+      },
+      orientation: {
+        type: String,
+        value: "",
+      },
+      color: {
+        type: String,
+        value: "",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      variant: {
+        type: String,
+        value: "",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -40,13 +76,25 @@ Component(
     }),
 
     computed: {
+      resolvedColor() {
+        return this.data.color || this.data.groupColor || "primary";
+      },
+
+      resolvedSize() {
+        return this.data.size || this.data.groupSize || "md";
+      },
+
+      resolvedOrientation() {
+        return this.data.orientation || this.data.groupOrientation || "horizontal";
+      },
+
       classes() {
         const api = this.data.cStepperItem;
         const themeFns = stepperItemTheme({
-          color: api ? api.color : this.data.color || "primary",
-          size: api ? api.size : this.data.size || "md",
-          orientation: api ? api.orientation : this.data.orientation || "horizontal",
-          disabled: api ? api.isDisabled : this.data.disabled,
+          color: this.data.resolvedColor,
+          size: this.data.resolvedSize,
+          orientation: this.data.resolvedOrientation,
+          disabled: Boolean(api?.disabled),
         });
 
         return resolveSlots(themeFns, this.data.ui, this.data.className);

@@ -1,10 +1,12 @@
 <view wx:if="{{actionSheet.visible}}" id="{{actionSheet.rootProps.id}}" class="{{classes.root}}" data-scope="action-sheet" data-part="root" data-state="{{actionSheet.state}}" catchtouchmove="noop">
   <view id="{{actionSheet.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="action-sheet" data-part="backdrop" data-state="{{actionSheet.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleBackdropTap" />
   <view id="{{actionSheet.contentProps.id}}" class="{{classes.content}}" data-scope="action-sheet" data-part="content" data-state="{{actionSheet.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!actionSheet.open}}">
-    <view wx:if="{{title || description || close || slots.title || slots.description || slots.close}}" class="{{classes.header}}" data-scope="action-sheet" data-part="header">
-      <view wx:if="{{close || slots.close}}" id="{{actionSheet.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="action-sheet" data-part="close-trigger" aria-role="button" aria-label="Close" catchtap="handleCloseTriggerTap">
-        <slot wx:if="{{slots.close}}" name="close" />
-        <c-icon wx:else name="{{closeIcon}}" className="w-4 h-4" />
+    <view wx:if="{{title || description || resolvedClose || slots.title || slots.description || slots.close}}" class="{{classes.header}}" data-scope="action-sheet" data-part="header">
+      <view wx:if="{{resolvedClose || slots.close}}" id="{{actionSheet.closeTriggerProps.id}}" class="{{classes.closeTrigger}}" data-scope="action-sheet" data-part="close-trigger">
+        <view wx:if="{{slots.close}}" class="{{classes.closeButton}}" aria-role="button" aria-label="Close" catchtap="handleCloseTriggerTap">
+          <slot name="close" />
+        </view>
+        <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTriggerTap" />
       </view>
       <view wx:if="{{title}}" class="{{classes.title}}" data-scope="action-sheet" data-part="title">
         {{title}}
@@ -17,17 +19,17 @@
     </view>
     <slot wx:else name="header" />
     <view class="{{classes.body}}" data-scope="action-sheet" data-part="body">
-      <block wx:if="{{actionSheet.items.length > 0}}">
-        <button wx:for="{{actionSheet.items}}" wx:key="key" class="{{classes.item}} {{item.className}}" style="{{item.style}}" data-scope="action-sheet" data-part="item" data-index="{{index}}" aria-role="button" aria-disabled="{{item.disabled ? 'true' : 'false'}}" aria-busy="{{item.loading ? 'true' : 'false'}}" disabled="{{item.disabled}}" open-type="{{item.openType}}" hover-class="opacity-70" catchtap="handleItemTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
+      <block wx:if="{{resolvedItems.length > 0}}">
+        <button wx:for="{{resolvedItems}}" wx:key="key" class="{{item.disabled ? disabledClasses.item : classes.item}} {{item.className}}" style="{{item.style}}" data-scope="action-sheet" data-part="item" data-index="{{index}}" data-disabled="{{item.disabled ? 'true' : 'false'}}" data-loading="{{item.loading ? 'true' : 'false'}}" aria-role="button" aria-disabled="{{item.disabled ? 'true' : 'false'}}" aria-busy="{{item.loading ? 'true' : 'false'}}" plain="{{item.openType && item.disabled ? true : false}}" disabled="{{item.openType ? item.disabled : false}}" open-type="{{item.openType}}" hover-class="{{item.disabled || item.loading ? 'none' : classes.itemHover}}" catchtap="handleItemTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
           <view class="{{classes.itemText}}" data-scope="action-sheet" data-part="item-text">
-            <view class="{{classes.itemTitle}}" data-scope="action-sheet" data-part="item-title">
-              <c-icon wx:if="{{item.loading}}" name="{{item.loadingIcon}}" className="{{classes.itemIcon}} animate-spin text-primary" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
-              <c-icon wx:elif="{{item.icon}}" name="{{item.icon}}" className="{{classes.itemIcon}} {{item.destructive ? 'text-red-500 dark:text-red-400' : ''}}" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
-              <view class="{{classes.itemLabel}} {{item.destructive ? 'text-red-500 dark:text-red-400 font-medium' : ''}}" data-scope="action-sheet" data-part="item-label">
+            <view class="{{item.disabled ? disabledClasses.itemTitle : classes.itemTitle}}" data-scope="action-sheet" data-part="item-title">
+              <c-icon wx:if="{{item.loading}}" name="{{item.loadingIcon}}" className="{{classes.itemIcon}} {{classes.itemLoadingIcon}}" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
+              <c-icon wx:elif="{{item.icon}}" name="{{item.icon}}" className="{{classes.itemIcon}} {{item.destructive ? classes.itemIconDestructive : ''}}" data-scope="action-sheet" data-part="item-icon" aria-hidden="true" />
+              <view class="{{classes.itemLabel}} {{item.destructive ? classes.itemLabelDestructive : ''}}" data-scope="action-sheet" data-part="item-label">
                 {{item.label}}
               </view>
             </view>
-            <view wx:if="{{item.description}}" class="{{classes.itemDescription}}" data-scope="action-sheet" data-part="item-description">
+            <view wx:if="{{item.description}}" class="{{item.disabled ? disabledClasses.itemDescription : classes.itemDescription}}" data-scope="action-sheet" data-part="item-description">
               {{item.description}}
             </view>
           </view>
@@ -35,15 +37,12 @@
       </block>
       <slot wx:else />
     </view>
-    <block wx:if="{{actionSheet.actions.length > 0}}">
+    <block wx:if="{{resolvedActions.length > 0}}">
       <view class="{{classes.gap}}" data-scope="action-sheet" data-part="gap" />
       <view id="{{actionSheet.actionsProps.id}}" class="{{classes.actions}}" data-scope="action-sheet" data-part="actions">
-        <block wx:for="{{actionSheet.actions}}" wx:key="index">
-          <view class="{{classes.action}}" data-scope="action-sheet" data-part="action" data-index="{{index}}">
-            <c-button data-index="{{index}}" block="{{true}}" ui="{{item.ui}}" variant="{{item.variant}}" color="{{item.color}}" size="{{item.size}}" loading="{{item.loading}}" disabled="{{item.disabled}}" openType="{{item.openType}}" className="{{item.className}}" catch:tap="handleActionTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact">
-              <c-icon wx:if="{{item.icon}}" slot="icon" name="{{item.icon}}" className="w-4 h-4" />
-              {{item.label}}
-            </c-button>
+        <block wx:for="{{resolvedActions}}" wx:key="index">
+          <view class="{{classes.action}}" data-scope="action-sheet" data-part="action" data-index="{{item.index}}">
+            <c-button data-index="{{item.index}}" block="{{true}}" label="{{item.label}}" icon="{{item.icon || ''}}" leading-icon="{{item.leadingIcon || ''}}" trailing-icon="{{item.trailingIcon || ''}}" loading="{{item.loading}}" loading-icon="{{item.loadingIcon}}" color="{{item.color}}" variant="{{item.variant}}" size="{{item.size}}" disabled="{{item.disabled}}" open-type="{{item.openType}}" ui="{{item.ui}}" className="{{item.className}}" catch:tap="handleActionTap" bindgetphonenumber="handleGetPhoneNumber" bindchooseavatar="handleChooseAvatar" bindcontact="handleContact" />
           </view>
         </block>
       </view>

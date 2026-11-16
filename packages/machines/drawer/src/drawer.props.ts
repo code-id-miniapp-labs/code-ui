@@ -11,5 +11,4 @@ export const defaultDrawerProps: DrawerResolvedProps = {
   shouldScaleBackground: false,
   scaleFactor: 0.94,
   scaleBackground: "bg-black",
-  ui: {},
 };

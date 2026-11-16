@@ -9,7 +9,7 @@
 >
   <block wx:if="{{hasItems}}">
     <c-accordion-item
-      wx:for="{{accordion.items}}"
+      wx:for="{{resolvedItems}}"
       wx:key="value"
       class="cui-accordion-item"
       id="{{item.itemProps.id}}"
@@ -18,13 +18,15 @@
       description="{{item.description}}"
       content="{{item.content}}"
       icon="{{item.icon}}"
-      trailingIcon="{{item.trailingIcon}}"
-      disabled="{{item.isDisabled}}"
+      trailing-icon="{{item.trailingIcon}}"
+      disabled="{{item.disabled}}"
       open="{{item.isOpen}}"
+      collapsible="{{collapsible}}"
       size="{{size}}"
       variant="{{variant}}"
-      ui="{{item.ui || ui}}"
+      ui="{{item.ui}}"
       data-value="{{item.value}}"
+      bind:change="handleItemClick"
     />
   </block>
   <slot wx:else />

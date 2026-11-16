@@ -14,7 +14,7 @@ describe("@code-ui/core color generation", () => {
   it("includes all standard semantic colors in DEFAULT_THEME_COLORS", () => {
     expect(DEFAULT_THEME_COLORS).toEqual([
       "primary",
-      "neutral",
+      "secondary",
       "danger",
       "success",
       "warning",
@@ -26,7 +26,7 @@ describe("@code-ui/core color generation", () => {
     const variants = createColorVariants();
     expect(Object.keys(variants)).toEqual([
       "primary",
-      "neutral",
+      "secondary",
       "danger",
       "success",
       "warning",
@@ -155,7 +155,15 @@ describe("@code-ui/core color generation", () => {
     });
     const icon = iconTheme();
     expect(Object.keys(icon.slots)).toEqual(["root"]);
-    expect(icon.variants).toEqual({});
+    expect(Object.keys(icon.variants.size)).toEqual([
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ]);
+    expect(icon.variants.color.primary.root).toBe("text-primary");
+    expect(icon.variants.spin.true.root).toBe("animate-spin");
     expect(getIcons().check).toBe("i-lucide-check");
     expect(getIcon("check")).toBe("i-lucide-check");
     expect(getIcon("minus")).toBe("i-lucide-minus");
@@ -219,6 +227,7 @@ describe("@code-ui/core color generation", () => {
     const input = inputTheme();
     expect(input.slots).toHaveProperty("root");
     expect(input.slots).toHaveProperty("base");
+    expect(input.slots).toHaveProperty("nativeInput");
     expect(input.slots).toHaveProperty("leading");
     expect(input.slots).toHaveProperty("trailing");
     expect(input.slots).toHaveProperty("leadingIcon");

@@ -5,7 +5,7 @@ import {
 } from "../../theme";
 
 export default function checkboxTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
@@ -16,23 +16,30 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
         "flex items-center justify-center w-full h-full text-white transition-opacity duration-150 ease-out select-none pointer-events-none",
       icon: "w-full h-full select-none pointer-events-none",
       wrapper: "ms-2 flex flex-col justify-center select-none min-w-0",
-      label: "block font-medium text-neutral-900 leading-snug select-none",
-      description: "block mt-0.5 text-neutral-500 leading-snug select-none",
+      label: "block font-medium text-highlighted leading-snug select-none",
+      description: "block mt-0.5 text-muted leading-snug select-none",
     },
     variants: {
       variant: {
         outline: {},
         card: {
-          root: "p-3 rounded-xl border border-neutral-200 bg-white shadow-xs transition-all w-full",
+          root: "p-3 rounded-xl border border-default bg-default shadow-xs transition-all w-full",
         },
       },
-      color: Object.fromEntries(
-        (colors as readonly string[]).map((color) => [
-          color,
-          {
-            base: `border-${color} bg-${color} text-white`,
+      color: Object.assign(
+        Object.fromEntries(
+          colors.map((color) => [
+            color,
+            {
+              base: `border-${color} bg-${color} text-white`,
+            },
+          ]),
+        ),
+        {
+          neutral: {
+            base: "border-inverted bg-inverted text-inverted",
           },
-        ]),
+        },
       ),
       size: {
         xs: {
@@ -41,7 +48,7 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
           icon: "text-xs",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[20rpx]",
+          description: "text-2xs",
         },
         sm: {
           base: "w-4 h-4 rounded-xs",
@@ -49,10 +56,10 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
           icon: "text-xs",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[22rpx]",
+          description: "text-2xs",
         },
         md: {
-          base: "w-4.5 h-4.5 rounded",
+          base: "w-4.5 h-4.5 rounded-sm",
           indicator: "w-3.5 h-3.5",
           icon: "text-sm",
           wrapper: "text-sm",
@@ -60,7 +67,7 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
           description: "text-xs",
         },
         lg: {
-          base: "w-5 h-5 rounded",
+          base: "w-5 h-5 rounded-sm",
           indicator: "w-4 h-4",
           icon: "text-base",
           wrapper: "text-base",
@@ -114,28 +121,53 @@ export default function checkboxTheme(options: ThemeOptions = {}) {
         indeterminate: false,
         invalid: false,
         class: {
-          base: "border-neutral-300 bg-white",
+          base: "border-accented bg-default",
           indicator: "opacity-0",
         },
       },
-      ...(colors as readonly string[]).flatMap((color) => [
+      {
+        checked: false,
+        indeterminate: false,
+        invalid: true,
+        class: {
+          base: `border-${errorColor} bg-default`,
+          indicator: "opacity-0",
+        },
+      },
+      ...colors.flatMap((color) => [
         {
           variant: "card" as const,
-          color: color as (typeof colors)[number],
-          checked: true,
+          color,
+          checked: true as const,
           class: {
             root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
           },
         },
         {
           variant: "card" as const,
-          color: color as (typeof colors)[number],
-          indeterminate: true,
+          color,
+          indeterminate: true as const,
           class: {
             root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
           },
         },
       ]),
+      {
+        variant: "card" as const,
+        color: "neutral" as const,
+        checked: true as const,
+        class: {
+          root: "border-inverted bg-elevated ring-1 ring-inverted",
+        },
+      },
+      {
+        variant: "card" as const,
+        color: "neutral" as const,
+        indeterminate: true as const,
+        class: {
+          root: "border-inverted bg-elevated ring-1 ring-inverted",
+        },
+      },
       {
         invalid: true,
         checked: true,

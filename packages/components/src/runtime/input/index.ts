@@ -1,13 +1,19 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-ui/utils";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
 import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
-import { inputMachine, connectInput, defaultInputProps } from "@code-ui/input";
+import {
+  inputMachine,
+  connectInput,
+  defaultInputProps,
+  type InputSize,
+} from "@code-ui/input";
 import themeConfig from "virtual:cui/theme/input";
 import { tv } from "../../utils/variants";
 
@@ -32,6 +38,102 @@ Component(
     },
 
     properties: createProperties(defaultInputProps, {
+      type: {
+        type: String,
+        value: "text",
+      },
+      variant: {
+        type: String,
+        value: "outline",
+      },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      highlight: {
+        type: Boolean,
+        value: false,
+      },
+      password: {
+        type: Boolean,
+        value: false,
+      },
+      placeholder: {
+        type: String,
+        value: "",
+      },
+      placeholderClass: {
+        type: String,
+        value: "",
+      },
+      placeholderStyle: {
+        type: String,
+        value: "",
+      },
+      clearIcon: {
+        type: String,
+        value: "close",
+      },
+      loading: {
+        type: Boolean,
+        value: false,
+      },
+      loadingIcon: {
+        type: String,
+        value: "loading",
+      },
+      leadingIcon: {
+        type: String,
+        value: "",
+      },
+      trailingIcon: {
+        type: String,
+        value: "",
+      },
+      maxlength: {
+        type: Number,
+        value: 140,
+      },
+      cursorSpacing: {
+        type: Number,
+        value: 0,
+      },
+      confirmType: {
+        type: String,
+        value: "done",
+      },
+      confirmHold: {
+        type: Boolean,
+        value: false,
+      },
+      cursor: {
+        type: Number,
+        value: -1,
+      },
+      selectionStart: {
+        type: Number,
+        value: -1,
+      },
+      selectionEnd: {
+        type: Number,
+        value: -1,
+      },
+      adjustPosition: {
+        type: Boolean,
+        value: true,
+      },
+      holdKeyboard: {
+        type: Boolean,
+        value: false,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -39,23 +141,33 @@ Component(
     }),
 
     computed: {
+      resolvedSize(): InputSize {
+        return (this.data.size || this.data.fieldSize || "md") as InputSize;
+      },
+
+      icons() {
+        return useComponentIcons({
+          leadingIcon: this.data.leadingIcon,
+          trailingIcon: this.data.trailingIcon,
+          loading: Boolean(this.data.loading),
+          loadingIcon: this.data.loadingIcon,
+          loadingPlacement: "trailing",
+          slots: this.data.slots,
+        });
+      },
+
       classes() {
         const api = this.data.input;
+        const icons = this.data.icons;
         const themeFns = inputTheme({
           variant: this.data.variant,
           color: this.data.color,
-          size: api?.size ?? (this.data.size || "md"),
+          size: this.data.resolvedSize,
           highlight: Boolean(this.data.highlight),
-          invalid: Boolean(api?.invalid ?? this.data.invalid),
-          disabled: Boolean(api?.disabled ?? this.data.disabled),
-          leading: Boolean(this.data.slots.leading || this.data.leadingIcon),
-          trailing: Boolean(
-            this.data.slots.trailing ||
-              this.data.trailingIcon ||
-              api?.isClearable ||
-              this.data.loading ||
-              this.data.slots.loadingIcon,
-          ),
+          invalid: Boolean(api?.invalid),
+          disabled: Boolean(api?.disabled),
+          leading: icons.isLeading,
+          trailing: Boolean(icons.isTrailing || api?.isClearable),
         });
         return resolveSlots(themeFns, this.data.ui, this.data.className);
       },
@@ -63,23 +175,26 @@ Component(
 
     methods: {
       handleInput(e: MiniAppEventLike<{ value: string; cursor?: number }>) {
-        return getApi(this, "input")?.handleInput?.(e);
+        return getApi(this, "input")?.handleInput?.(
+          e?.detail?.value ?? "",
+          e?.detail?.cursor,
+        );
       },
 
-      handleFocus(e: MiniAppBaseEventLike) {
-        getApi(this, "input")?.handleFocus?.(e);
+      handleFocus() {
+        getApi(this, "input")?.handleFocus?.();
       },
 
-      handleBlur(e: MiniAppBaseEventLike) {
-        getApi(this, "input")?.handleBlur?.(e);
+      handleBlur() {
+        getApi(this, "input")?.handleBlur?.();
       },
 
       handleConfirm(e: MiniAppEventLike<{ value?: string }>) {
-        getApi(this, "input")?.handleConfirm?.(e);
+        getApi(this, "input")?.handleConfirm?.(e?.detail?.value);
       },
 
-      handleClear(e: MiniAppBaseEventLike) {
-        getApi(this, "input")?.handleClear?.(e);
+      handleClear() {
+        getApi(this, "input")?.handleClear?.();
       },
 
       handleKeyboardHeightChange(e: MiniAppEventLike<Record<string, any>>) {

@@ -73,8 +73,6 @@ export interface QrCodeProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for qr-code anatomy parts */
-  ui?: QrCodeUI | undefined;
   /** The payload string/URL to encode into the QR code */
   value?: string | null | undefined;
   /** Initial value when uncontrolled */
@@ -87,14 +85,8 @@ export interface QrCodeProps {
   encoding?: QrCodeEncodingOptions | undefined;
   /** Pixel size multiplier per QR module (used for SVG viewBox calculations) */
   pixelSize?: number | undefined;
-  /** Size variant of the QR code */
-  size?: QrCodeSize | undefined;
   /** Color theme of the QR code pattern */
   color?: QrCodeColor | undefined;
-  /** Optional center logo/image source URL */
-  overlaySrc?: string | undefined;
-  /** Whether to render the center overlay slot when no overlaySrc is provided */
-  showOverlay?: boolean | undefined;
   /** Callback fired when encoded value changes */
   onChange?: ((details: QrCodeValueChangeDetails) => void) | undefined;
 }
@@ -106,11 +98,7 @@ export type QrCodeDefaultedKey =
   | "border"
   | "encoding"
   | "pixelSize"
-  | "size"
-  | "color"
-  | "overlaySrc"
-  | "showOverlay"
-  | "ui";
+  | "color";
 
 export type QrCodeResolvedProps = Omit<QrCodeProps, QrCodeDefaultedKey> & {
   [K in QrCodeDefaultedKey]-?: Exclude<QrCodeProps[K], undefined>;
@@ -134,8 +122,6 @@ export interface QrCodeComputed {
   border: number;
   resolvedEncoding: QrCodeEncodingOptions;
   pixelSize: number;
-  overlaySrc: string;
-  showOverlay: boolean;
   encoded: QrCodeGenerateResult;
   path: string;
   viewBoxSize: number;
@@ -184,10 +170,6 @@ export interface QrCodeApi {
   border: number;
   /** Resolved encoding options */
   encoding: QrCodeEncodingOptions;
-  /** Optional center logo/image source URL */
-  overlaySrc: string;
-  /** Whether center overlay slot is visible */
-  showOverlay: boolean;
   /** Data URL (`data:image/svg+xml;utf8,...`) for image rendering or export */
   dataUrl: string;
 

@@ -1,30 +1,36 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function progressTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
       root: "relative select-none",
-      track: "overflow-hidden rounded-full bg-neutral-200 transition-colors",
+      header: "flex items-center justify-between mb-1.5 w-full",
+      track: "overflow-hidden rounded-full bg-accented transition-colors",
       range: "rounded-full transition-all duration-300 ease-out",
-      label: "font-medium text-neutral-900",
+      label: "font-medium text-highlighted",
       valueText:
-        "font-medium text-neutral-500 tabular-nums leading-none text-center",
+        "font-medium text-muted tabular-nums leading-none text-center",
       view: "relative inline-flex items-center justify-center",
       circle:
         "overflow-visible block box-border rounded-full transition-all duration-300 ease-out",
-      circleTrack: "text-neutral-200 stroke-current",
+      circleTrack: "text-accented stroke-current",
       circleRange:
         "transition-[stroke-dashoffset] duration-300 ease-out stroke-current",
+      circleOverlay:
+        "absolute inset-0 flex items-center justify-center pointer-events-none",
+      circleContent: "absolute inset-0 flex items-center justify-center",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         "2xs": {
           track: "h-1",
@@ -118,13 +124,20 @@ export default function progressTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         class: {
-          range: color === "neutral" ? "bg-neutral-900 dark:bg-white" : `bg-${color}`,
-          circleRange: color === "neutral" ? "text-neutral-900 dark:text-white" : `text-${color}`,
+          range: `bg-${color}`,
+          circleRange: `text-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        class: {
+          range: "bg-inverted",
+          circleRange: "text-highlighted",
+        },
+      },
       {
         color: "error" as any,
         class: {

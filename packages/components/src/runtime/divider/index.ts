@@ -1,4 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
 import themeConfig from "virtual:cui/theme/divider";
@@ -60,6 +61,13 @@ Component(
     },
     behaviors: [computedBehavior],
     computed: {
+      icons() {
+        return useComponentIcons({
+          leadingIcon: this.data.leadingIcon,
+          trailingIcon: this.data.trailingIcon,
+          slots: this.data.slots,
+        });
+      },
       classes() {
         const ui = this.data.ui;
         const color = this.data.color;
@@ -79,13 +87,11 @@ Component(
         return resolveSlots(theme, ui, localClass);
       },
       hasContent() {
-        return !!(
+        return Boolean(
           this.data.slots.default ||
-          this.data.slots.leading ||
-          this.data.slots.trailing ||
-          this.data.label ||
-          this.data.leadingIcon ||
-          this.data.trailingIcon
+            this.data.label ||
+            this.data.icons.isLeading ||
+            this.data.icons.isTrailing,
         );
       },
     },

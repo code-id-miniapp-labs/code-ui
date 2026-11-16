@@ -1,7 +1,7 @@
 /* Progress scoped animations & stripes */
 @keyframes progress-stripes {
   from {
-    background-position: 32rpx 0;
+    background-position: calc(var(--spacing, 8rpx) * 4) 0;
   }
   to {
     background-position: 0 0;
@@ -47,7 +47,7 @@
     transparent 75%,
     transparent 100%
   ) !important;
-  background-size: 32rpx 32rpx !important;
+  background-size: calc(var(--spacing, 8rpx) * 4) calc(var(--spacing, 8rpx) * 4) !important;
   background-repeat: repeat !important;
 }
 
@@ -68,15 +68,15 @@
   -webkit-mask: radial-gradient(
     farthest-side,
     transparent 0,
-    transparent calc(100% - var(--cui-progress-stroke-width, 8rpx)),
-    #000 calc(100% - var(--cui-progress-stroke-width, 8rpx) + 0.5px),
+    transparent calc(100% - var(--cui-progress-stroke-width, var(--spacing, 8rpx))),
+    #000 calc(100% - var(--cui-progress-stroke-width, var(--spacing, 8rpx)) + 0.5px),
     #000 100%
   );
   mask: radial-gradient(
     farthest-side,
     transparent 0,
-    transparent calc(100% - var(--cui-progress-stroke-width, 8rpx)),
-    #000 calc(100% - var(--cui-progress-stroke-width, 8rpx) + 0.5px),
+    transparent calc(100% - var(--cui-progress-stroke-width, var(--spacing, 8rpx))),
+    #000 calc(100% - var(--cui-progress-stroke-width, var(--spacing, 8rpx)) + 0.5px),
     #000 100%
   );
 }

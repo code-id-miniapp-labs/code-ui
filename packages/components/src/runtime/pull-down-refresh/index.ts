@@ -34,6 +34,38 @@ Component(
     },
 
     properties: createProperties(defaultPullDownRefreshProps, {
+      showScrollbar: {
+        type: Boolean,
+        value: true,
+      },
+      enableBackToTop: {
+        type: Boolean,
+        value: true,
+      },
+      scrollIntoView: {
+        type: String,
+        value: "",
+      },
+      upperThreshold: {
+        type: Number,
+        value: 50,
+      },
+      lowerThreshold: {
+        type: Number,
+        value: 50,
+      },
+      scrollWithAnimation: {
+        type: Boolean,
+        value: false,
+      },
+      loadingIcon: {
+        type: String,
+        value: "loading",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -44,7 +76,7 @@ Component(
       classes() {
         const api = this.data.pullDownRefresh;
         const status = api?.statusKey ?? "idle";
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
+        const disabled = Boolean(api?.disabled);
 
         const themeFns = pullDownRefreshTheme({
           status,
@@ -78,7 +110,7 @@ Component(
         event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
       ) {
         getApi<PullDownRefreshApi>(this, "pullDownRefresh")?.handleScroll(
-          event,
+          event?.detail ?? {},
         );
       },
 

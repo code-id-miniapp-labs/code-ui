@@ -1,20 +1,22 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function chipTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
       root: "relative inline-flex items-center justify-center shrink-0",
-      base: "rounded-full ring-2 ring-white flex items-center justify-center text-white font-medium leading-none whitespace-nowrap",
+      base: "rounded-full ring-2 ring-bg flex items-center justify-center text-white font-medium leading-none whitespace-nowrap",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         "3xs": {
           base: "h-[4px] min-w-[4px] text-[4px]",
@@ -76,12 +78,18 @@ export default function chipTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         class: {
           base: `bg-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        class: {
+          base: "bg-neutral",
+        },
+      },
       {
         position: "top-right",
         inset: false,

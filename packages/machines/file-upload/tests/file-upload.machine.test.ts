@@ -19,7 +19,6 @@ import {
   stopActiveAudio,
   validateFiles,
 } from "../src";
-import { defaultFileUploadProps } from "../src/file-upload.props";
 import type { FileUploadFile } from "../src/file-upload.types";
 
 function flush(): Promise<void> {
@@ -366,9 +365,7 @@ describe("FileUpload Machine", () => {
       let api = connectFileUpload(machine.service);
       expect(api.files[0]?.thumbFailed).toBe(false);
 
-      api.handleImageError({
-        currentTarget: { dataset: { index: 0 } },
-      } as any);
+      api.handleImageError(0);
       await flush();
 
       api = connectFileUpload(machine.service);
@@ -791,16 +788,6 @@ describe("FileUpload Machine", () => {
       expect(isVideoFile(undefined, "image.jpg")).toBe(false);
     });
 
-    it("has configurable icon props in defaultFileUploadProps", () => {
-      expect(defaultFileUploadProps.icon).toBe("upload");
-      expect(defaultFileUploadProps.loadingIcon).toBe("loading");
-      expect(defaultFileUploadProps.deleteIcon).toBe("close");
-      expect(defaultFileUploadProps.fileIcon).toBe("file");
-      expect(defaultFileUploadProps.imageIcon).toBe("image");
-      expect(defaultFileUploadProps.videoIcon).toBe("video");
-      expect(defaultFileUploadProps.audioIcon).toBe("audio");
-    });
-
     it("extracts file extensions correctly", () => {
       expect(getFileExtension("photo.jpg")).toBe(".jpg");
       expect(getFileExtension("archive.tar.gz")).toBe(".gz");
@@ -927,25 +914,6 @@ describe("FileUpload Machine", () => {
       expect(res.accepted[0]?.name).toBe("first.pdf");
       expect(res.rejected.length).toBe(1);
       expect(res.rejected[0]?.reason).toBe("max-files-exceeded");
-    });
-
-    it("accepts custom icon configurations", () => {
-      const machine = new MiniappMachine(fileUploadMachine, {
-        icon: "cloud-upload",
-        loadingIcon: "custom-loading",
-        deleteIcon: "trash",
-        fileIcon: "doc",
-        imageIcon: "photo",
-        videoIcon: "film",
-      });
-      machine.start();
-      expect(machine.prop("icon")).toBe("cloud-upload");
-      expect(machine.prop("loadingIcon")).toBe("custom-loading");
-      expect(machine.prop("deleteIcon")).toBe("trash");
-      expect(machine.prop("fileIcon")).toBe("doc");
-      expect(machine.prop("imageIcon")).toBe("photo");
-      expect(machine.prop("videoIcon")).toBe("film");
-      machine.stop();
     });
   });
 });

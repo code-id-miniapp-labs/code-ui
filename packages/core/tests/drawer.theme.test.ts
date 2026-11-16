@@ -1,0 +1,22 @@
+import { describe, expect, it } from "vitest";
+import { drawerTheme } from "../src";
+
+describe("drawerTheme (@code-ui/core)", () => {
+  it("keeps top and bottom placements full-width while constraining side drawers", () => {
+    const theme = drawerTheme();
+
+    expect(theme.slots.headerContent).toContain("min-w-0");
+    expect(theme.slots.footer).toContain(
+      "pb-[calc(var(--spacing)_*_3_+_env(safe-area-inset-bottom))]",
+    );
+    expect(theme.slots.footer).not.toContain("0.75rem");
+
+    expect(theme.variants.placement.bottom.content).toContain("w-full");
+    expect(theme.variants.placement.bottom.content).not.toContain("md:max-w-");
+    expect(theme.variants.placement.top.content).toContain("w-full");
+    expect(theme.variants.placement.top.content).not.toContain("md:max-w-");
+
+    expect(theme.variants.placement.left.content).toContain("md:max-w-md");
+    expect(theme.variants.placement.right.content).toContain("md:max-w-md");
+  });
+});

@@ -578,29 +578,20 @@ describe("Pin Input Machine", () => {
       const api = connectPinInput(machine.service);
       expect(api.inputs[3]?.inputProps?.maxlength).toBe(2);
 
-      const res1 = api.handleInput({
-        currentTarget: { dataset: { index: 3 } },
-        detail: { value: "22" },
-      });
+      const res1 = api.handleInput("22", 3);
       await flush();
 
       expect(res1).toBe("2");
       expect(machine.context.get("value")).toEqual(["2", "2", "2", "2"]);
 
-      const res2 = api.handleInput({
-        currentTarget: { dataset: { index: 3 } },
-        detail: { value: "222" },
-      });
+      const res2 = api.handleInput("222", 3);
       await flush();
 
       expect(res2).toBe("2");
       expect(machine.context.get("value")).toEqual(["2", "2", "2", "2"]);
 
       // User types a different number '5' in the last box
-      const res3 = api.handleInput({
-        currentTarget: { dataset: { index: 3 } },
-        detail: { value: "25" },
-      });
+      const res3 = api.handleInput("25", 3);
       await flush();
 
       expect(res3).toBe("5");
@@ -610,8 +601,8 @@ describe("Pin Input Machine", () => {
     });
   });
 
-  describe("FormField & Form Cascading (Disabled and Size)", () => {
-    it("derives wrapper disabled and size from the form host", async () => {
+  describe("FormField & Form Cascading (Disabled)", () => {
+    it("derives wrapper disabled from the form host", async () => {
       const form = new MiniappMachine(formMachine, {});
       form.start();
       const host = connectForm(form.service).formContext;
@@ -621,42 +612,17 @@ describe("Pin Input Machine", () => {
       });
       machine.start();
       await flush();
-      host.setFieldState("otp", { disabled: true, size: "sm" });
+      host.setFieldState("otp", { disabled: true });
       await flush();
       expect(connectPinInput(machine.service).disabled).toBe(true);
-      expect(connectPinInput(machine.service).size).toBe("sm");
-      host.setFieldState("otp", { disabled: false, size: "lg" });
+      host.setFieldState("otp", { disabled: false });
       await flush();
       expect(connectPinInput(machine.service).disabled).toBe(false);
-      expect(connectPinInput(machine.service).size).toBe("lg");
       machine.stop();
       form.stop();
     });
 
-    it("derives wrapper disabled and size from the form host with explicit size priority", async () => {
-      const form = new MiniappMachine(formMachine, {});
-      form.start();
-      const host = connectForm(form.service).formContext;
-      const machine = new MiniappMachine(pinInputMachine, {
-        name: "otp",
-        formContext: host,
-        size: "lg",
-      });
-      machine.start();
-      await flush();
-      host.setFieldState("otp", { disabled: true, size: "sm" });
-      await flush();
-      expect(connectPinInput(machine.service).disabled).toBe(true);
-      expect(connectPinInput(machine.service).size).toBe("lg");
-      host.setFieldState("otp", { disabled: false, size: "lg" });
-      await flush();
-      expect(connectPinInput(machine.service).disabled).toBe(false);
-      expect(connectPinInput(machine.service).size).toBe("lg");
-      machine.stop();
-      form.stop();
-    });
-
-    it("supports direct fieldDisabled and fieldSize props from WeChat relations", async () => {
+    it("supports direct fieldDisabled prop from WeChat relations", async () => {
       const machine = new MiniappMachine(pinInputMachine, {
         name: "otp",
       });
@@ -664,23 +630,20 @@ describe("Pin Input Machine", () => {
 
       let api = connectPinInput(machine.service);
       expect(api.disabled).toBe(false);
-      expect(api.size).toBe("md");
 
       // Relations bridge updates child props directly
-      machine.updateProps({ fieldDisabled: true, fieldSize: "sm" });
+      machine.updateProps({ fieldDisabled: true });
       await flush();
 
       api = connectPinInput(machine.service);
       expect(api.disabled).toBe(true);
-      expect(api.size).toBe("sm");
 
       // Reset
-      machine.updateProps({ fieldDisabled: false, fieldSize: "lg" });
+      machine.updateProps({ fieldDisabled: false });
       await flush();
 
       api = connectPinInput(machine.service);
       expect(api.disabled).toBe(false);
-      expect(api.size).toBe("lg");
 
       machine.stop();
     });

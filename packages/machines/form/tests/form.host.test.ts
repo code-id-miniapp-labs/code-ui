@@ -44,20 +44,19 @@ describe("reactive form host", () => {
     expect(form.api().formContext).toBe(form.host);
     expect(form.host.fieldState("email")).toBeUndefined();
     form.machine.updateProps({ disabled: true, readOnly: true });
-    form.host.setFieldState("email", { disabled: false, size: "lg" });
+    form.host.setFieldState("email", { disabled: false });
     await flush();
     form.api().setErrors({ email: "Server error" });
     expect(snapshots.at(-1)).toEqual([
       true,
       true,
       ["Server error"],
-      { disabled: false, size: "lg" },
+      { disabled: false },
     ]);
-    form.host.setFieldState("email", { disabled: undefined, size: undefined });
+    form.host.setFieldState("email", { disabled: undefined });
     await flush();
     expect(form.host.fieldState("email")).toEqual({
       disabled: undefined,
-      size: undefined,
     });
     form.api().clearErrors();
     expect(form.host.errors("email")).toEqual([]);

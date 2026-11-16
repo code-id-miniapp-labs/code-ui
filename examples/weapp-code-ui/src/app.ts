@@ -1,4 +1,11 @@
+import { initExampleTheme, syncNavigationBarTheme } from "./utils/theme";
+
 App({
   globalData: {},
-  onLaunch() {},
+  onLaunch() {
+    initExampleTheme();
+  },
+  onShow() {
+    syncNavigationBarTheme();
+  },
 });

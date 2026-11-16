@@ -1,47 +1,93 @@
 import type { MachinePlugin } from "../plugin";
+import {
+  collectUniqueChildren,
+  createBehaviorRef,
+  createRelationOption,
+  patchInheritedData,
+  resolveInstanceId,
+  resolveParentNode,
+  resolveServiceRef,
+} from "./inherit";
+import type {
+  AccordionInstance,
+  AccordionItemInstance,
+  AccordionVisualData,
+  MiniappBehaviorRef,
+} from "./types";
 
-let accCounter = 0;
-const getComponentId = (inst: any, explicitId?: string): string =>
-  explicitId || (inst.__cuiAccId ||= `cui-accordion-${++accCounter}`);
+function getAccordionVisuals(
+  group: AccordionInstance | null | undefined,
+): AccordionVisualData {
+  return {
+    groupSize: group?.data?.size || "",
+    groupVariant: group?.data?.variant || "",
+  };
+}
+
+const EMPTY_ACCORDION_VISUALS: AccordionVisualData = {
+  groupSize: "",
+  groupVariant: "",
+};
 
 /**
  * Shared Behavior reference for `<c-accordion>` / `<cui-accordion>` parent components.
- * Used as relations.target to link descendant <c-accordion-item> components natively.
+ * Used as `relations.target` to link descendant `<c-accordion-item>` components natively.
  */
-export const cuiAccordionBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-export const cuiAccordionParentBehavior: any = cuiAccordionBehavior;
+export const cuiAccordionBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({});
+export const cuiAccordionParentBehavior: MiniappBehaviorRef =
+  cuiAccordionBehavior;
 
-export function syncAccordionChildren(group: any) {
-  const service = group.__codeUiMachine?.service;
-  const groupContext = service?.refs?.get?.("groupContext");
-  const relationChildren =
-    typeof group.getRelationNodes === "function"
-      ? group.getRelationNodes("cuiAccordionChild")
+const cuiAccordionObserverBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    lifetimes: {
+      created(this: AccordionInstance) {
+        this.__codeUiIsAccordion = true;
+      },
+    },
+    observers: {
+      "size, variant"(this: AccordionInstance) {
+        syncAccordionChildren(this);
+      },
+      items(this: AccordionInstance) {
+        syncAccordionChildren(this);
+        Promise.resolve().then(() => {
+          syncAccordionChildren(this);
+        });
+      },
+    },
+  });
+
+function resolveAccordionParent(
+  instance: AccordionItemInstance,
+): AccordionInstance | undefined {
+  const relationParent = resolveParentNode<AccordionInstance>(
+    instance,
+    instance.__codeUiPendingAccordion,
+    "cuiAccordionParent",
+  );
+  if (relationParent) return relationParent;
+  const owner =
+    typeof instance.selectOwnerComponent === "function"
+      ? (instance.selectOwnerComponent() as AccordionInstance | null | undefined)
       : undefined;
-  const templateChildren =
-    typeof group.selectAllComponents === "function"
-      ? group.selectAllComponents("c-accordion-item, .cui-accordion-item")
-      : undefined;
-  const childrenSet = new Set<any>();
-  if (Array.isArray(relationChildren)) {
-    for (const c of relationChildren) childrenSet.add(c);
-  }
-  if (Array.isArray(group.__codeUiAccordionChildren)) {
-    for (const c of group.__codeUiAccordionChildren) childrenSet.add(c);
-  }
-  if (Array.isArray(templateChildren)) {
-    for (const c of templateChildren) childrenSet.add(c);
-  }
-  const children = Array.from(childrenSet);
+  return owner?.__codeUiIsAccordion ? owner : undefined;
+}
+
+export function syncAccordionChildren(group: AccordionInstance): void {
+  const groupContext = resolveServiceRef(group, "groupContext");
+  const children = collectUniqueChildren<AccordionItemInstance>(
+    group,
+    "cuiAccordionChild",
+    group.__codeUiAccordionChildren,
+    "c-accordion-item, .cui-accordion-item",
+  );
 
   const total = children.length;
-  if (group.__codeUiMachine) {
-    group.__codeUiMachine.updateProps({ linkedCount: total });
-  }
+  group.__codeUiMachine?.updateProps({ linkedCount: total });
 
-  const groupId = group.id || getComponentId(group);
-  group.__codeUiId = groupId;
+  const groupId = resolveInstanceId(group, "cui-accordion");
+  const visuals = getAccordionVisuals(group);
 
   for (let i = 0; i < total; i++) {
     const child = children[i];
@@ -49,39 +95,43 @@ export function syncAccordionChildren(group: any) {
     child.__codeUiPendingAccordion = group;
     child.__codeUiAccordionIndex = i;
     child.__codeUiAccordionId = groupId;
-    if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({
-        accordionId: groupId,
-        groupContext,
-        groupIndex: i,
-      });
-    }
+    patchInheritedData<AccordionVisualData>(child, visuals);
+    child.__codeUiMachine?.updateProps({
+      accordionId: groupId,
+      groupContext,
+      groupIndex: i,
+    });
   }
 }
 
-export function linkAccordionItemToParent(group: any, item: any) {
-  group.__codeUiAccordionChildren = group.__codeUiAccordionChildren || [];
-  if (!group.__codeUiAccordionChildren.includes(item)) {
-    group.__codeUiAccordionChildren.push(item);
+export function linkAccordionItemToParent(
+  group: AccordionInstance,
+  item: AccordionItemInstance,
+): void {
+  const children = (group.__codeUiAccordionChildren ||= []);
+  if (!children.includes(item)) {
+    children.push(item);
   }
   item.__codeUiPendingAccordion = group;
   syncAccordionChildren(group);
 }
 
-export function unlinkAccordionItemFromParent(group: any, item: any) {
+export function unlinkAccordionItemFromParent(
+  group: AccordionInstance,
+  item: AccordionItemInstance,
+): void {
   if (Array.isArray(group.__codeUiAccordionChildren)) {
     group.__codeUiAccordionChildren = group.__codeUiAccordionChildren.filter(
-      (c: any) => c !== item,
+      (c) => c !== item,
     );
   }
   item.__codeUiPendingAccordion = undefined;
-  if (item.__codeUiMachine) {
-    item.__codeUiMachine.updateProps({
-      accordionId: undefined,
-      groupContext: undefined,
-      groupIndex: undefined,
-    });
-  }
+  patchInheritedData<AccordionVisualData>(item, EMPTY_ACCORDION_VISUALS);
+  item.__codeUiMachine?.updateProps({
+    accordionId: undefined,
+    groupContext: undefined,
+    groupIndex: undefined,
+  });
   syncAccordionChildren(group);
 }
 
@@ -89,109 +139,106 @@ export function unlinkAccordionItemFromParent(group: any, item: any) {
  * Shared Behavior reference for `<c-accordion-item>` child components.
  * Automatically links to ancestor `<c-accordion>`.
  */
-export const cuiAccordionItemBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiAccordionParent: {
-            type: "ancestor",
-            target: cuiAccordionBehavior,
-            linked(this: any, target: any) {
-              linkAccordionItemToParent(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkAccordionItemFromParent(target, this);
-            },
-          },
+export const cuiAccordionItemBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    data: { ...EMPTY_ACCORDION_VISUALS },
+    relations: {
+      cuiAccordionParent: {
+        type: "ancestor",
+        target: cuiAccordionBehavior,
+        linked(this: AccordionItemInstance, target: AccordionInstance) {
+          linkAccordionItemToParent(target, this);
         },
-      })
-    : {};
+        unlinked(this: AccordionItemInstance, target: AccordionInstance) {
+          unlinkAccordionItemFromParent(target, this);
+        },
+      },
+    },
+  });
 
 export function setupAccordionRelations(
   relations: Record<string, WechatMiniprogram.Component.RelationOption>,
   options: { accordion?: boolean; accordionItem?: boolean },
-) {
+): void {
   if (options.accordion) {
-    relations.cuiAccordionChild = {
+    relations.cuiAccordionChild = createRelationOption<
+      AccordionInstance,
+      AccordionItemInstance
+    >({
       type: "descendant",
       target: cuiAccordionItemBehavior,
-      linked(this: any, target: any) {
+      linked(this: AccordionInstance, target: AccordionItemInstance) {
         linkAccordionItemToParent(this, target);
       },
-      unlinked(this: any, target: any) {
+      unlinked(this: AccordionInstance, target: AccordionItemInstance) {
         unlinkAccordionItemFromParent(this, target);
       },
-    };
+    });
   }
   if (options.accordionItem) {
-    relations.cuiAccordionParent = {
+    relations.cuiAccordionParent = createRelationOption<
+      AccordionItemInstance,
+      AccordionInstance
+    >({
       type: "ancestor",
       target: cuiAccordionBehavior,
-      linked(this: any, target: any) {
+      linked(this: AccordionItemInstance, target: AccordionInstance) {
         linkAccordionItemToParent(target, this);
       },
-      unlinked(this: any, target: any) {
+      unlinked(this: AccordionItemInstance, target: AccordionInstance) {
         unlinkAccordionItemFromParent(target, this);
       },
-    };
+    });
   }
 }
 
 export function handleAccordionAttached(
-  instance: any,
-  initialProps: Record<string, any>,
+  instance: AccordionItemInstance,
+  initialProps: Record<string, unknown>,
   options: { accordion?: boolean; accordionItem?: boolean },
-) {
-  if (options.accordionItem) {
-    const parent =
-      instance.__codeUiPendingAccordion ??
-      (typeof instance.getRelationNodes === "function"
-        ? instance.getRelationNodes("cuiAccordionParent")?.[0]
-        : undefined);
-    if (parent) {
-      const pService = parent.__codeUiMachine?.service;
-      const groupContext = pService?.refs?.get?.("groupContext");
-      if (groupContext) {
-        initialProps.groupContext = groupContext;
-      }
-      if (instance.__codeUiAccordionIndex !== undefined) {
-        initialProps.groupIndex = instance.__codeUiAccordionIndex;
-      }
-      const aid =
-        instance.__codeUiAccordionId ??
-        parent.data?.id ??
-        parent.id ??
-        parent.__codeUiId;
-      if (aid !== undefined) {
-        initialProps.accordionId = aid;
-      }
-    }
+): void {
+  if (options.accordion) {
+    (instance as unknown as AccordionInstance).__codeUiIsAccordion = true;
+  }
+  if (!options.accordionItem) return;
+  const parent = resolveAccordionParent(instance);
+  if (!parent) return;
+  instance.__codeUiPendingAccordion = parent;
+
+  patchInheritedData<AccordionVisualData>(instance, getAccordionVisuals(parent));
+  const groupContext = resolveServiceRef(parent, "groupContext");
+  if (groupContext !== undefined) {
+    initialProps.groupContext = groupContext;
+  }
+  if (instance.__codeUiAccordionIndex !== undefined) {
+    initialProps.groupIndex = instance.__codeUiAccordionIndex;
+  }
+  const aid = instance.__codeUiAccordionId ?? resolveInstanceId(parent);
+  if (aid !== undefined) {
+    initialProps.accordionId = aid;
   }
 }
 
 export function handleAccordionMachineStarted(
-  instance: any,
+  instance: AccordionInstance,
   options: { accordion?: boolean; accordionItem?: boolean },
-) {
+): void {
   if (options.accordion) {
     syncAccordionChildren(instance);
   }
 }
 
 export function handleAccordionReady(
-  instance: any,
+  instance: AccordionInstance | AccordionItemInstance,
   options: { accordion?: boolean; accordionItem?: boolean },
-) {
+): void {
   if (options.accordion) {
-    syncAccordionChildren(instance);
+    syncAccordionChildren(instance as AccordionInstance);
   }
-  if (
-    options.accordionItem &&
-    typeof instance.getRelationNodes === "function"
-  ) {
-    const parents = instance.getRelationNodes("cuiAccordionParent");
-    if (parents && parents.length > 0) {
-      linkAccordionItemToParent(parents[0], instance);
+  if (options.accordionItem) {
+    const parent = resolveAccordionParent(instance as AccordionItemInstance);
+    if (parent) {
+      linkAccordionItemToParent(parent, instance as AccordionItemInstance);
     }
   }
 }
@@ -199,15 +246,22 @@ export function handleAccordionReady(
 export function withAccordion(): MachinePlugin {
   return {
     name: "accordion",
-    behaviors: [cuiAccordionBehavior],
+    behaviors: [cuiAccordionBehavior, cuiAccordionObserverBehavior],
     setupRelations(relations) {
       setupAccordionRelations(relations, { accordion: true });
     },
+    onAttached(instance, initialProps) {
+      handleAccordionAttached(instance as AccordionItemInstance, initialProps, {
+        accordion: true,
+      });
+    },
     onMachineStarted(instance) {
-      handleAccordionMachineStarted(instance, { accordion: true });
+      handleAccordionMachineStarted(instance as AccordionInstance, {
+        accordion: true,
+      });
     },
     onReady(instance) {
-      handleAccordionReady(instance, { accordion: true });
+      handleAccordionReady(instance as AccordionInstance, { accordion: true });
     },
   };
 }
@@ -217,10 +271,14 @@ export function withAccordionItem(): MachinePlugin {
     name: "accordion-item",
     behaviors: [cuiAccordionItemBehavior],
     onAttached(instance, initialProps) {
-      handleAccordionAttached(instance, initialProps, { accordionItem: true });
+      handleAccordionAttached(instance as AccordionItemInstance, initialProps, {
+        accordionItem: true,
+      });
     },
     onReady(instance) {
-      handleAccordionReady(instance, { accordionItem: true });
+      handleAccordionReady(instance as AccordionItemInstance, {
+        accordionItem: true,
+      });
     },
   };
 }

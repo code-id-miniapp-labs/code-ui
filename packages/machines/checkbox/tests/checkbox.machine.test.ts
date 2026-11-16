@@ -26,8 +26,6 @@ describe("Checkbox Machine", () => {
       expect(api.disabled).toBe(false);
       expect(api.readOnly).toBe(false);
       expect(api.invalid).toBe(false);
-      expect(api.size).toBe("md");
-      expect(api.variant).toBe("outline");
       expect(api.rootProps["data-state"]).toBe("unchecked");
       expect(api.rootProps["data-checked"]).toBe("false");
       expect(api.baseProps["aria-checked"]).toBe(false);

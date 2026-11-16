@@ -8,11 +8,6 @@ export const defaultStepperProps: StepperResolvedProps = {
   count: 0,
   linkedCount: 0,
   linear: false,
-  orientation: "horizontal",
-  color: "primary",
-  size: "md",
-  variant: "subtle",
   disabled: false,
   items: [],
-  ui: {},
 };

@@ -34,8 +34,6 @@ export const accordionMachine: AccordionMachine =
         multiple: () => prop("multiple"),
         collapsible: () => prop("collapsible"),
         disabled: () => prop("disabled"),
-        size: () => prop("size"),
-        variant: () => prop("variant"),
         toggleItem: (value) => send({ type: "VALUE.TOGGLE", value }),
         setItemOpen: (value, open) =>
           send({ type: "ITEM.SET_OPEN", value, open }),

@@ -3,8 +3,7 @@
   <slot wx:elif="{{slots.label}}" name="label" />
   <view class="{{classes.control}}" data-scope="pin-input" data-part="control" data-disabled="{{pinInput.disabled}}" data-invalid="{{pinInput.invalid}}">
     <block wx:for="{{pinInput.inputs}}" wx:key="index">
-      <input
-        id="{{item.inputProps.id}}"
+      <view
         class="{{classes.input}}"
         data-scope="pin-input"
         data-part="input"
@@ -15,20 +14,28 @@
         data-readonly="{{pinInput.readOnly}}"
         data-invalid="{{pinInput.invalid}}"
         data-complete="{{pinInput.isValueComplete}}"
-        value="{{item.inputProps.value}}"
-        focus="{{item.inputProps.focus}}"
-        disabled="{{item.inputProps.disabled}}"
-        type="{{item.inputProps.type}}"
-        password="{{item.inputProps.password}}"
-        placeholder="{{item.inputProps.placeholder}}"
-        maxlength="{{item.inputProps.maxlength}}"
-        aria-label="{{item.inputProps['aria-label']}}"
-        aria-invalid="{{pinInput.invalid}}"
-        bindinput="handleInput"
-        bindfocus="handleFocus"
-        bindblur="handleBlur"
         bindtap="handleTap"
-      />
+      >
+        <input
+          id="{{item.inputProps.id}}"
+          class="{{classes.nativeInput}}"
+          data-scope="pin-input"
+          data-part="native-input"
+          data-index="{{item.index}}"
+          value="{{item.inputProps.value}}"
+          focus="{{item.inputProps.focus}}"
+          disabled="{{item.inputProps.disabled}}"
+          type="{{item.inputProps.type}}"
+          password="{{item.inputProps.password}}"
+          placeholder="{{item.inputProps.placeholder}}"
+          maxlength="{{item.inputProps.maxlength}}"
+          aria-label="{{item.inputProps['aria-label']}}"
+          aria-invalid="{{pinInput.invalid}}"
+          bindinput="handleInput"
+          bindfocus="handleFocus"
+          bindblur="handleBlur"
+        />
+      </view>
       <text
         wx:if="{{item.hasSeparator}}"
         class="{{classes.separator}}"

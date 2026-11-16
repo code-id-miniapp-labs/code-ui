@@ -9,6 +9,25 @@ import { defaultToastProps } from "./toast.props";
 
 const DISMISS_ANIMATION_DURATION = 200;
 
+function scheduleDismissTimer(
+  refs: ToastParams["refs"],
+  prop: ToastParams["prop"],
+  send: ToastParams["send"],
+): void {
+  clearAutoDismissTimer(refs);
+  const duration = prop("duration");
+  if (duration <= 0) return;
+
+  const remaining = refs.get("remainingTime") ?? duration;
+  refs.set("startedAt", Date.now());
+
+  const timer = setTimeout(() => {
+    send({ type: "DISMISS" });
+  }, remaining);
+
+  refs.set("timer", timer);
+}
+
 function clearAutoDismissTimer(refs: ToastParams["refs"]): void {
   const timer = refs.get("timer");
   if (timer !== undefined) {
@@ -65,7 +84,15 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
     isDismissing: ({ state }) => state.hasTag("dismissing"),
   },
 
-  watch: ({ prop, state, track }) => {
+  watch: ({ prop, state, track, refs, send }) => {
+    track([() => prop("duration")], () => {
+      refs.set("remainingTime", undefined);
+      refs.set("startedAt", undefined);
+      clearAutoDismissTimer(refs);
+      if (state.matches("open")) {
+        scheduleDismissTimer(refs, prop, send);
+      }
+    });
     track([() => prop("open")], () => {
       const controlledOpen = prop("open");
       if (!isNotNull(controlledOpen)) return;
@@ -175,17 +202,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
 
     effects: {
       manageDismissTimer: ({ send, prop, refs }) => {
-        const duration = prop("duration");
-        if (duration <= 0) return () => {};
-
-        const remaining = refs.get("remainingTime") ?? duration;
-        refs.set("startedAt", Date.now());
-
-        const timer = setTimeout(() => {
-          send({ type: "DISMISS" });
-        }, remaining);
-
-        refs.set("timer", timer);
+        scheduleDismissTimer(refs, prop, send);
 
         return () => {
           clearAutoDismissTimer(refs);

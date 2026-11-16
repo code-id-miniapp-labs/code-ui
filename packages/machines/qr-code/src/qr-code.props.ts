@@ -7,9 +7,5 @@ export const defaultQrCodeProps: QrCodeResolvedProps = {
   border: 0,
   encoding: {},
   pixelSize: 10,
-  size: "md",
   color: "neutral",
-  overlaySrc: "",
-  showOverlay: false,
-  ui: {},
 };

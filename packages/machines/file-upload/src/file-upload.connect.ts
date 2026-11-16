@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import type {
   FileUploadApi,
   FileUploadFile,
@@ -21,14 +20,6 @@ export {
   isVideoFile,
   isAudioFile,
 } from "./file-upload.utils";
-
-function getEventIndex(
-  event: MiniAppBaseEventLike<{ index: number }> | undefined,
-  fallback = -1,
-): number {
-  const raw = event?.currentTarget?.dataset?.index;
-  return raw !== undefined ? Number(raw) : fallback;
-}
 
 export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const { state, send, context, computed, prop, scope } = service;
@@ -135,8 +126,7 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     removeFile: (idOrIndex: string | number) => {
       send({ type: "REMOVE_FILE", idOrIndex });
     },
-    handleRemove: (event: MiniAppBaseEventLike<{ index: number }>) => {
-      const index = getEventIndex(event);
+    handleRemove: (index: number) => {
       if (index >= 0) {
         send({ type: "REMOVE_FILE", index });
       }
@@ -144,20 +134,17 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     previewFile: (idOrIndex: string | number) => {
       send({ type: "PREVIEW_FILE", idOrIndex });
     },
-    handlePreview: (event: MiniAppBaseEventLike<{ index: number }>) => {
-      const index = getEventIndex(event);
+    handlePreview: (index: number) => {
       if (index >= 0) {
         send({ type: "PREVIEW_FILE", idOrIndex: index });
       }
     },
-    handleFileClick: (event: MiniAppBaseEventLike<{ index: number }>) => {
-      const index = getEventIndex(event);
+    handleFileClick: (index: number) => {
       if (index >= 0) {
         send({ type: "FILE_CLICK", index });
       }
     },
-    handleImageError: (event: MiniAppBaseEventLike<{ index: number }>) => {
-      const index = getEventIndex(event);
+    handleImageError: (index: number) => {
       if (index >= 0) {
         send({ type: "IMAGE_ERROR", index });
       }

@@ -33,6 +33,18 @@ Component(
     },
 
     properties: createProperties(defaultProgressProps, {
+      orientation: { type: String, value: "horizontal" },
+      type: { type: String, value: "linear" },
+      size: { type: String, value: "md" },
+      color: { type: String, value: "primary" },
+      trackColor: { type: String, value: "#e5e7eb" },
+      striped: { type: Boolean, value: false },
+      animated: { type: Boolean, value: false },
+      animation: { type: String, value: "carousel" },
+      inverted: { type: Boolean, value: false },
+      circleRadius: { type: Number, value: 42 },
+      strokeWidth: { type: Number, value: 8 },
+      ui: { type: Object, value: {} },
       className: { type: String, value: "" },
       label: { type: String, value: "" },
       showValue: { type: Boolean, value: false },
@@ -57,6 +69,34 @@ Component(
         });
 
         return resolveSlots(themeFns, this.data.ui, this.data.className);
+      },
+
+      rangeStyle() {
+        const api = this.data.progress;
+        const indeterminate = Boolean(api?.isIndeterminate);
+        if (indeterminate) return "";
+        const percent = api ? api.percent : 0;
+        const axis = this.data.orientation === "horizontal" ? "width" : "height";
+        return `${axis}: ${percent}%;`;
+      },
+
+      circleStyle() {
+        const api = this.data.progress;
+        const indeterminate = Boolean(api?.isIndeterminate);
+        const rawPercent = api ? api.percent : 0;
+        const percent = indeterminate
+          ? 25
+          : Math.max(0, Math.min(100, rawPercent));
+        const color = this.data.color;
+        const strokeWidth = this.data.strokeWidth;
+        const trackColor = this.data.trackColor;
+        let style = `--cui-progress-percent: ${percent}%; --cui-progress-stroke-width: ${strokeWidth}px;`;
+        if (trackColor) style += ` --cui-progress-track-color: ${trackColor};`;
+        if (typeof color === "string" && /^(#|rgb|hsl|oklch)/.test(color)) {
+          style += ` color: ${color};`;
+        }
+        if (this.data.inverted) style += " transform: scaleX(-1);";
+        return style;
       },
     },
 

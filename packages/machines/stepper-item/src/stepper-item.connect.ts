@@ -11,12 +11,8 @@ export function connectStepperItem(
   const isCompleted = computed("isCompleted");
   const isCurrent = computed("isCurrent");
   const isUpcoming = computed("isUpcoming");
-  const isDisabled = computed("isDisabled");
+  const disabled = computed("isDisabled");
   const status = computed("status");
-  const orientation = computed("effectiveOrientation");
-  const color = computed("effectiveColor");
-  const size = computed("effectiveSize");
-  const variant = computed("effectiveVariant");
 
   const rawVal = prop("value");
   const value = rawVal !== "" ? rawVal : index;
@@ -31,11 +27,7 @@ export function connectStepperItem(
     isCompleted,
     isCurrent,
     isUpcoming,
-    isDisabled,
-    orientation,
-    color,
-    size,
-    variant,
+    disabled,
     handleTap: () => send({ type: "TAP" }),
     itemProps: {
       id: getRootId(scope, index, stepperId),

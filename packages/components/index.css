@@ -1,10 +1,84 @@
 @import "./keyframes.wxss";
 
 @theme {
-  --color-bg: var(--ui-bg, var(--color-white, #ffffff));
-  --color-elevated: var(--color-neutral-100);
-  --color-accented: var(--color-neutral-200);
-  --color-inverted: var(--color-neutral-900);
+  --text-3xs: 0.5625rem;
+  --text-3xs--line-height: 1.4;
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 1.4;
+}
+
+@theme inline {
+  --color-bg: var(--ui-bg, #ffffff);
+  --color-elevated: var(--ui-bg-elevated);
+  --color-accented: var(--ui-bg-accented);
+  --color-inverted: var(--ui-bg-inverted);
+
+  --background-color-default: var(--ui-bg);
+  --background-color-muted: var(--ui-bg-muted);
+  --background-color-elevated: var(--ui-bg-elevated);
+  --background-color-accented: var(--ui-bg-accented);
+  --background-color-inverted: var(--ui-bg-inverted);
+
+  --text-color-dimmed: var(--ui-text-dimmed);
+  --text-color-muted: var(--ui-text-muted);
+  --text-color-toned: var(--ui-text-toned);
+  --text-color-default: var(--ui-text);
+  --text-color-highlighted: var(--ui-text-highlighted);
+  --text-color-inverted: var(--ui-text-inverted);
+  --text-color-accented: var(--ui-border-accented);
+
+  --border-color-default: var(--ui-border);
+  --border-color-muted: var(--ui-border-muted);
+  --border-color-accented: var(--ui-border-accented);
+  --border-color-inverted: var(--ui-border-inverted);
+
+  --ring-color-bg: var(--ui-bg);
+  --ring-color-default: var(--ui-border);
+  --ring-color-accented: var(--ui-border-accented);
+  --ring-color-inverted: var(--ui-border-inverted);
+
+  --divide-color-default: var(--ui-border);
+  --divide-color-muted: var(--ui-border-muted);
+  --divide-color-accented: var(--ui-border-accented);
+}
+
+@media (min-width: 48rem) {
+  :root,
+  page,
+  :host,
+  .tw-root,
+  wx-root-portal-content {
+    --spacing: 4px;
+    --container-3xs: 256px;
+    --container-2xs: 288px;
+    --container-xs: 320px;
+    --container-sm: 384px;
+    --container-md: 448px;
+    --container-lg: 512px;
+    --container-xl: 576px;
+    --container-2xl: 672px;
+    --text-3xs: 9px;
+    --text-2xs: 10px;
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-base: 16px;
+    --text-lg: 18px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+    --text-3xl: 30px;
+    --text-4xl: 36px;
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-3xl: 24px;
+  }
+
+  page {
+    font-size: var(--text-base);
+  }
 }
 
 
@@ -37,5 +111,12 @@ button::after {
 button:not([size="mini"]) {
   width: auto !important;
   margin: 0 !important;
+}
+
+button:not([size="mini"]):not([data-part="item"]) {
   min-height: 0 !important;
+}
+
+button.w-full {
+  width: 100% !important;
 }

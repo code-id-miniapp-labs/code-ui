@@ -6,13 +6,8 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
 
   const value = computed("resolvedValue");
   const isSelected = computed("isSelected");
-  const isDisabled = computed("isDisabled");
+  const disabled = computed("isDisabled");
   const tabsId = prop("tabsId");
-  const orientation = computed("orientation");
-  const variant = computed("variant");
-  const color = computed("color");
-  const size = computed("size");
-  const fitted = computed("fitted");
   const index = computed("index");
   const stateValue = state.get();
   const stateAttr = isSelected ? "active" : "inactive";
@@ -40,12 +35,7 @@ export function connectTabsItem(service: TabsItemService): TabsItemApi {
     state: stateValue,
     value,
     isSelected,
-    isDisabled,
-    orientation,
-    variant,
-    color,
-    size,
-    fitted,
+    disabled,
     index,
 
     select: () => send({ type: "SELECT" }),

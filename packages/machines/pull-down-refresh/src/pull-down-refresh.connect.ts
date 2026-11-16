@@ -1,6 +1,6 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   PullDownRefreshApi,
+  PullDownRefreshScrollDetails,
   PullDownRefreshService,
 } from "./pull-down-refresh.types";
 import * as dom from "./pull-down-refresh.dom";
@@ -58,13 +58,11 @@ export function connectPullDownRefresh(
       send({ type: "CLOSE" });
     },
 
-    handleScroll(
-      event: MiniAppEventLike<{ scrollTop: number; scrollLeft: number }>,
-    ) {
+    handleScroll(detail: PullDownRefreshScrollDetails) {
       send({
         type: "SCROLL",
-        scrollTop: Number(event.detail.scrollTop),
-        scrollLeft: Number(event.detail.scrollLeft),
+        scrollTop: Number(detail.scrollTop),
+        scrollLeft: Number(detail.scrollLeft),
       });
     },
 

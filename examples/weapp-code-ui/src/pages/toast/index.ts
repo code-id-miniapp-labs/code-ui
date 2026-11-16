@@ -1,59 +1,139 @@
 import { useToast } from "@code-ui/composables";
 
-const toast = useToast({
-  max: 2,
-});
+const toast = useToast({ max: 2 });
 
 Page({
-  data: {},
+  data: {
+    variants: ["outline", "solid", "soft", "subtle"] as const,
+    placements: ["top", "center", "bottom"] as const,
+    activeVariant: "outline" as "outline" | "solid" | "soft" | "subtle",
+    activePlacement: "top" as "top" | "center" | "bottom",
+    lastActionLog: "None",
+  },
+
+  onSelectVariant(e: WechatMiniprogram.TouchEvent) {
+    const variant = e.currentTarget.dataset?.variant as
+      | "outline"
+      | "solid"
+      | "soft"
+      | "subtle"
+      | undefined;
+    if (!variant) return;
+    this.setData({ activeVariant: variant });
+    toast.show({
+      title: `Variant: ${variant}`,
+      description: `Displayed in ${this.data.activePlacement} placement.`,
+      color: "primary",
+      variant,
+      placement: this.data.activePlacement,
+      icon: "i-lucide-palette",
+    });
+  },
+
+  onSelectPlacement(e: WechatMiniprogram.TouchEvent) {
+    const placement = e.currentTarget.dataset?.placement as
+      | "top"
+      | "center"
+      | "bottom"
+      | undefined;
+    if (!placement) return;
+    this.setData({ activePlacement: placement });
+    toast.show({
+      title: `Placement: ${placement}`,
+      description: "Toast queue supports stacking & placement alignment.",
+      color: "secondary",
+      variant: this.data.activeVariant,
+      placement,
+      icon: "i-lucide-bell",
+    });
+  },
 
   showDefaultPrimary() {
     toast.show({
-      title: "Event added to calendar",
-      description: "This event is scheduled for Mar 19, 2027.",
+      title: "Event scheduled",
+      description: "Added to your workspace calendar.",
       icon: "i-lucide-calendar",
-      color: "neutral",
-      mode: "default",
+      color: "primary",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
+    });
+  },
+
+  showDefaultSecondary() {
+    toast.show({
+      title: "Theme synced",
+      description: "Secondary accent applied to notifications.",
+      icon: "i-lucide-sparkles",
+      color: "secondary",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
     });
   },
 
   showDefaultSuccess() {
-    console.log();
     toast.success("Profile saved successfully", {
       description: "Your settings have been synced to the server.",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
     });
   },
 
   showDefaultError() {
     toast.error("Upload failed", {
       description: "File size exceeds 10MB limit.",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
     });
   },
 
   showDefaultWarning() {
-    toast.warning("Network connection unstable", {
+    toast.warning("Connection unstable", {
       description: "Retrying in 5 seconds...",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
     });
   },
 
   showDefaultInfo() {
     toast.info("Scheduled maintenance", {
       description: "Server restart tonight at 02:00 UTC.",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
+    });
+  },
+
+  showHorizontalPill() {
+    toast.show({
+      title: "Copied link to clipboard",
+      icon: "i-lucide-check",
+      color: "success",
+      variant: "soft",
+      orientation: "horizontal",
+      placement: "bottom",
+      actions: [
+        {
+          label: "Open",
+          color: "success",
+          variant: "outline",
+          onClick: () => this.setData({ lastActionLog: "Clicked Open on horizontal pill" }),
+        },
+      ],
     });
   },
 
   showWithAction() {
     toast.show({
-      title: "Conversation moved to trash",
-      mode: "default",
+      title: "Conversation archived",
+      description: "Tap Undo to restore this thread.",
+      color: "neutral",
+      variant: this.data.activeVariant,
+      placement: this.data.activePlacement,
       actions: [
         {
           label: "Undo",
           color: "primary",
           variant: "outline",
-          onClick: () => {
-            console.log("mabarin");
-          },
+          onClick: () => this.setData({ lastActionLog: "Undo tapped at " + new Date().toLocaleTimeString() }),
         },
       ],
     });
@@ -61,13 +141,54 @@ Page({
 
   showProgressTop() {
     toast.show({
-      title: "Top Progress Bar",
-      description: "Progress indicator positioned at the top edge.",
+      title: "Top Progress Timer",
+      description: "progressPosition=\"top\" counting down.",
       icon: "i-lucide-arrow-down-to-line",
       color: "primary",
+      variant: this.data.activeVariant,
       progressPosition: "top",
       duration: 4000,
     });
+  },
+
+  showNoProgress() {
+    toast.show({
+      title: "Clean Notification",
+      description: "Timer bar hidden via progress: false.",
+      icon: "i-lucide-info",
+      color: "info",
+      progress: false,
+      duration: 3000,
+    });
+  },
+
+  showPersistentUpdate() {
+    const id = toast.show({
+      title: "Uploading package (0%)",
+      description: "Preparing bundle artifacts...",
+      icon: "i-lucide-loader-circle",
+      color: "primary",
+      duration: 0,
+      close: false,
+      ui: { icon: "animate-spin" },
+    });
+    setTimeout(() => {
+      toast.update(id, {
+        title: "Uploading package (60%)",
+        description: "Syncing compressed assets...",
+      });
+    }, 900);
+    setTimeout(() => {
+      toast.update(id, {
+        title: "Upload complete!",
+        description: "All assets published safely.",
+        icon: "i-lucide-circle-check",
+        color: "success",
+        duration: 2000,
+        close: true,
+        ui: { icon: "" },
+      });
+    }, 1800);
   },
 
   showNativeSuccess() {
@@ -76,17 +197,7 @@ Page({
       icon: "check",
       mode: "native",
       placement: "center",
-      duration: 2500,
-    });
-  },
-
-  showNativeError() {
-    toast.show({
-      title: "Failed",
-      icon: "close",
-      mode: "native",
-      placement: "center",
-      duration: 2500,
+      duration: 2200,
     });
   },
 
@@ -96,43 +207,17 @@ Page({
       icon: "loading",
       mode: "native",
       placement: "center",
-      duration: 2500,
-      ui: {
-        icon: "animate-spin",
-      },
+      duration: 0,
+      ui: { icon: "animate-spin" },
     });
     setTimeout(() => {
       toast.update(id, {
         title: "Loaded!",
         icon: "check",
         duration: 1500,
-        ui: {
-          icon: "text-red-500",
-        },
+        ui: { icon: "text-success" },
       });
-    }, 1500);
-  },
-
-  showNativeBottomPill() {
-    toast.show({
-      title: "Link copied to clipboard",
-      icon: "check",
-      mode: "native",
-      orientation: "horizontal",
-      placement: "bottom",
-      duration: 2500,
-    });
-  },
-
-  showNativeTopPill() {
-    toast.show({
-      title: "Muted notifications",
-      icon: "info",
-      mode: "native",
-      orientation: "horizontal",
-      placement: "top",
-      duration: 2500,
-    });
+    }, 1400);
   },
 
   clearAllToasts() {

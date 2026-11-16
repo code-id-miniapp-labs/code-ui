@@ -1,23 +1,26 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
-  createColorCompoundVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function buttonTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
       root: "inline-flex font-sans rounded-md items-center justify-center font-medium select-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 transition-colors appearance-none",
       label: "truncate",
       icon: "shrink-0",
+      iconInner: "w-full h-full block",
       spinner: "shrink-0",
+      spinnerIcon: "w-full h-full animate-spin",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       variant: {
         solid: {
           root: "",
@@ -32,7 +35,7 @@ export default function buttonTheme(options: ThemeOptions = {}) {
           root: "",
         },
         secondary: {
-          root: "bg-neutral-100 text-neutral-900 active:bg-neutral-200",
+          root: "bg-elevated text-highlighted active:bg-accented",
         },
       },
       size: {
@@ -79,20 +82,62 @@ export default function buttonTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...createColorCompoundVariants(colors, {
-        solid: (color) => ({
+      ...colors.map((color) => ({
+        color,
+        variant: "solid" as const,
+        class: {
           root: `bg-${color} text-white border active:bg-${color}/90`,
-        }),
-        outline: (color) => ({
+        },
+      })),
+      {
+        color: "neutral" as const,
+        variant: "solid" as const,
+        class: {
+          root: "bg-neutral text-white border active:bg-neutral/90",
+        },
+      },
+      ...colors.map((color) => ({
+        color,
+        variant: "outline" as const,
+        class: {
           root: `border border-${color} text-${color} active:bg-${color}/10`,
-        }),
-        ghost: (color) => ({
+        },
+      })),
+      {
+        color: "neutral" as const,
+        variant: "outline" as const,
+        class: {
+          root: "border border-neutral text-neutral active:bg-neutral/10",
+        },
+      },
+      ...colors.map((color) => ({
+        color,
+        variant: "ghost" as const,
+        class: {
           root: `text-${color} active:bg-${color}/10`,
-        }),
-        soft: (color) => ({
+        },
+      })),
+      {
+        color: "neutral" as const,
+        variant: "ghost" as const,
+        class: {
+          root: "text-neutral active:bg-neutral/10",
+        },
+      },
+      ...colors.map((color) => ({
+        color,
+        variant: "soft" as const,
+        class: {
           root: `bg-${color}/10 text-${color} border-transparent active:bg-${color}/20`,
-        }),
-      }),
+        },
+      })),
+      {
+        color: "neutral" as const,
+        variant: "soft" as const,
+        class: {
+          root: "bg-neutral/10 text-neutral border-transparent active:bg-neutral/20",
+        },
+      },
     ],
     defaultVariants: {
       variant: "solid",

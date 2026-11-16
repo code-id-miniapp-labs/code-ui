@@ -1,29 +1,36 @@
 import type { MachineSchema } from "@code-ui/core";
 import type { MiniappMachine } from "./machine";
+import type {
+  CodeUiComponentInstance,
+  MiniappBehaviorRef,
+} from "./behaviors/types";
 
-export interface MachinePlugin<T extends MachineSchema = any> {
+export interface MachinePlugin<
+  T extends MachineSchema = MachineSchema,
+  TInstance extends CodeUiComponentInstance<any, any> = CodeUiComponentInstance<any, any>,
+> {
   name: string;
 
   /** Extra WeChat native behaviors to include (e.g. 'wx://form-field') */
-  behaviors?: any[];
+  behaviors?: MiniappBehaviorRef[];
 
   /** Setup WeChat component relations */
-  setupRelations?: (
+  setupRelations?(
     relations: Record<string, WechatMiniprogram.Component.RelationOption>,
-  ) => void;
+  ): void;
 
   /** Hook before machine is instantiated; can mutate initialProps (e.g. inject formContext) */
-  onAttached?: (instance: any, initialProps: Record<string, any>) => void;
+  onAttached?(instance: TInstance, initialProps: Record<string, unknown>): void;
 
   /** Hook immediately after machine is created and assigned to instance */
-  onMachineStarted?: (instance: any, machine: MiniappMachine<T>) => void;
+  onMachineStarted?(instance: TInstance, machine: MiniappMachine<T>): void;
 
   /** Hook on WeChat ready lifetime */
-  onReady?: (instance: any) => void;
+  onReady?(instance: TInstance): void;
 
   /** Hook when observed props change */
-  onPropChanged?: (instance: any, propKey: string, val: any) => void;
+  onPropChanged?(instance: TInstance, propKey: string, val: unknown): void;
 
   /** Hook on WeChat detached lifetime */
-  onDetached?: (instance: any) => void;
+  onDetached?(instance: TInstance): void;
 }

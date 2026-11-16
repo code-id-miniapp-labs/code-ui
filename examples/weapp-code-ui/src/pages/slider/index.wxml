@@ -1,136 +1,124 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Slider</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Continuous and stepped range selection supporting single thumb, dual-thumb range, markers, and form integration.
-    </view>
-  </view>
-  <view class="px-5 flex flex-col gap-6">
-    <!-- 1. Controlled Single Slider -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Single Thumb (Controlled)</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Syncs numeric value between page and state machine.
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Slider"
+    badge="Form"
+    subtitle="WXS 60fps range & single-value slider with vertical mode, inverted tracks, marks, slots & FormField support."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Single & Range Controlled -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-4">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Controlled Single & Range Sliders</text>
+        <text class="block text-xs text-muted mt-0.5">Last event: {{ lastEvent }}</text>
       </view>
-      <view class="flex flex-col gap-4">
-        <c-slider value="{{singleValue}}" label="Volume" showValue="{{true}}" bind:change="onSingleChange" />
-        <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
-          <text class="text-neutral-500">Current Value:</text>
-          <text class="font-bold text-neutral-900">{{singleValue}}</text>
+
+      <c-slider
+        label="Brightness"
+        show-value="{{ true }}"
+        value="{{ singleValue }}"
+        color="primary"
+        bind:change="onSingleChange"
+      />
+      <view class="flex gap-2">
+        <c-button size="xs" variant="soft" color="primary" label="Set to 70" bind:tap="setSingleTo70" />
+      </view>
+
+      <view class="pt-2 border-t border-muted">
+        <c-slider
+          label="Price Range ($)"
+          show-value="{{ true }}"
+          value="{{ rangeValue }}"
+          min-steps-between-thumbs="{{ 10 }}"
+          color="secondary"
+          bind:change="onRangeChange"
+        />
+      </view>
+    </view>
+
+    <!-- 2. Steps, Marks, Custom Bounds & Inverted -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-4">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Steps, Scale Marks, Bounds & Inverted</text>
+        <text class="block text-xs text-muted mt-0.5">Discrete steps with labeled marks, min=10/max=50 bounds & reversed fill.</text>
+      </view>
+
+      <c-slider label="Temperature" show-value="{{ true }}" default-value="{{ stepValue }}" step="{{ 25 }}" marks="{{ marks }}" color="warning" />
+      <c-slider label="Bounded Range (10 to 50, step 5)" show-value="{{ true }}" min="{{ 10 }}" max="{{ 50 }}" step="{{ 5 }}" default-value="{{ 30 }}" color="info" />
+      <c-slider label="Inverted Track (Right-to-Left)" show-value="{{ true }}" default-value="{{ invertedValue }}" inverted="{{ true }}" color="danger" />
+    </view>
+
+    <!-- 3. Vertical Orientation & Custom Slots -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-4">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Vertical Orientation & Custom Slots</text>
+        <text class="block text-xs text-muted mt-0.5">Vertical mixer channels plus label, value & thumb custom slots.</text>
+      </view>
+
+      <view class="flex items-center justify-around h-44 py-2">
+        <view class="h-full flex flex-col items-center gap-2">
+          <c-slider orientation="vertical" default-value="{{ 70 }}" color="primary" size="sm" />
+          <text class="text-[11px] text-dimmed">Bass</text>
         </view>
-        <view class="text-xs text-neutral-400">
-          Last event:
-          <text class="font-mono text-neutral-700">{{lastEvent}}</text>
+        <view class="h-full flex flex-col items-center gap-2">
+          <c-slider orientation="vertical" default-value="{{ 45 }}" color="secondary" size="md" />
+          <text class="text-[11px] text-dimmed">Mid</text>
         </view>
-        <view class="flex gap-2 pt-1">
-          <c-button size="sm" variant="outline" color="primary" bind:tap="setSingleTo70">
-            Set to 70
-          </c-button>
-        </view>
-      </view>
-    </view>
-    <!-- 2. Dual-Thumb Range Slider -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Range Slider (Dual Thumbs)</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Select a minimum and maximum range interval.
-      </view>
-      <view class="flex flex-col gap-4">
-        <c-slider value="{{rangeValue}}" label="Price Range ($)" showValue="{{true}}" bind:change="onRangeChange" />
-        <view class="flex items-center justify-between text-xs bg-neutral-50 p-2.5 rounded-xl border border-neutral-200">
-          <text class="text-neutral-500">Interval:</text>
-          <text class="font-bold text-neutral-900">{{rangeValue[0]}} - {{rangeValue[1]}}</text>
+        <view class="h-full flex flex-col items-center gap-2">
+          <c-slider orientation="vertical" default-value="{{ 85 }}" color="success" size="lg" />
+          <text class="text-[11px] text-dimmed">Master</text>
         </view>
       </view>
-    </view>
-    <!-- 3. Steps & Markers -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Steps & Markers</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Snapping step increments with customized tick markers.
-      </view>
-      <view class="flex flex-col gap-4">
-        <c-slider defaultValue="{{50}}" step="{{25}}" marks="{{marks}}" label="Temperature" showValue="{{true}}" />
-      </view>
-    </view>
-    <!-- 4. Sizes -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
-      <view class="text-xs text-neutral-400 mb-4">xs, sm, md, lg, xl</view>
-      <view class="flex flex-col gap-5">
-        <c-slider size="xs" label="Size xs" defaultValue="{{20}}" />
-        <c-slider size="sm" label="Size sm" defaultValue="{{35}}" />
-        <c-slider size="md" label="Size md (default)" defaultValue="{{50}}" />
-        <c-slider size="lg" label="Size lg" defaultValue="{{65}}" />
-        <c-slider size="xl" label="Size xl" defaultValue="{{80}}" />
-      </view>
-    </view>
-    <!-- 5. Colors -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Colors</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        primary, success, warning, danger, info, neutral
-      </view>
-      <view class="flex flex-col gap-4">
-        <c-slider color="primary" label="Primary" defaultValue="{{60}}" />
-        <c-slider color="success" label="Success" defaultValue="{{70}}" />
-        <c-slider color="warning" label="Warning" defaultValue="{{50}}" />
-        <c-slider color="danger" label="Danger" defaultValue="{{80}}" />
-        <c-slider color="info" label="Info" defaultValue="{{40}}" />
-        <c-slider color="neutral" label="Neutral" defaultValue="{{55}}" />
-      </view>
-    </view>
-    <!-- 6. States -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Disabled & Invalid States</view>
-      <view class="text-xs text-neutral-400 mb-4">Non-interactive and error indicators.</view>
-      <view class="flex flex-col gap-4">
-        <c-slider disabled="{{true}}" label="Disabled" defaultValue="{{40}}" />
-        <c-slider invalid="{{true}}" label="Invalid Validation" defaultValue="{{25}}" />
-      </view>
-    </view>
-    <!-- 7. Form & Validation Integration -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Form & Validation Integration</view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Connected with c-form and c-form-field. Supports validation rules, programmatic reset, field errors, and submit payloads.
-      </view>
-      <c-form id="slider-demo-form" focusOnError="{{true}}" showErrors="{{true}}" bind:submit="handleFormSubmit" bind:error="handleFormError">
-        <view class="flex flex-col gap-5">
-          <!-- 1. Controlled Slider in Form with Min Validation Rule -->
-          <c-form-field name="budget" label="Campaign Budget ($)" description="Minimum budget required is $40 (starts at $25 to demonstrate validation)" rules="{{budgetRules}}" required="{{true}}">
-            <c-slider name="budget" value="{{formBudgetValue}}" min="{{0}}" max="{{100}}" step="{{5}}" color="primary" showValue="{{true}}" bind:change="onFormBudgetChange" />
-          </c-form-field>
-          <view class="flex items-center justify-between text-xs bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-200">
-            <text class="text-neutral-500">Page State (formBudgetValue):</text>
-            <text class="font-bold font-mono text-neutral-900">${{formBudgetValue}}</text>
+
+      <view class="pt-3 border-t border-muted">
+        <c-slider default-value="{{ 60 }}" color="primary" size="lg">
+          <view slot="label" class="flex items-center gap-1.5">
+            <c-icon name="i-lucide-sliders" size="xs" color="primary" />
+            <text class="text-xs font-semibold text-highlighted">Audio Gain</text>
           </view>
-          <view class="flex gap-2">
-            <c-button variant="soft" color="primary" size="xs" bind:tap="setFormBudgetTo80">
-              Set to $80 (Valid) via Page State
-            </c-button>
+          <view slot="value">
+            <c-badge label="Custom Slot" size="xs" color="secondary" variant="soft" />
           </view>
-          <!-- 2. Dual-Thumb Range Slider in Form -->
-          <c-form-field name="ageBracket" label="Target Audience Age Bracket" description="Dual-thumb range selection within a form field">
-            <c-slider name="ageBracket" defaultValue="{{[25, 60]}}" min="{{18}}" max="{{80}}" color="info" showValue="{{true}}" />
-          </c-form-field>
-          <!-- Action Buttons -->
-          <view class="flex flex-wrap gap-2 pt-2 border-t border-neutral-100">
-            <c-button variant="solid" color="primary" size="sm" bind:tap="submitSliderForm">
-              Submit Form
-            </c-button>
-            <c-button variant="outline" color="neutral" size="sm" bind:tap="resetSliderForm">
-              Reset Form
-            </c-button>
-          </view>
-          <!-- Feedback Status Card -->
-          <view wx:if="{{formStatus}}" class="px-3.5 py-2.5 rounded-xl text-xs {{formStatus === 'Success' ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-red-50 text-red-900 border border-red-200'}}">
-            <view class="font-bold mb-0.5">{{formStatus}}</view>
-            <view class="font-mono text-2xs break-all">{{formMessage}}</view>
-          </view>
-        </view>
+        </c-slider>
+      </view>
+    </view>
+
+    <!-- 4. Colors, Sizes & States -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Colors, Sizes & States</text>
+        <text class="block text-xs text-muted mt-0.5">All 7 colors, xs-xl sizes, disabled, readOnly & invalid states.</text>
+      </view>
+      <view class="flex flex-col gap-3">
+        <c-slider wx:for="{{ colors }}" wx:key="*this" default-value="{{ 50 + index * 5 }}" color="{{ item }}" />
+      </view>
+      <view class="flex flex-col gap-3 pt-2 border-t border-muted">
+        <c-slider wx:for="{{ sizes }}" wx:key="*this" default-value="{{ 65 }}" size="{{ item }}" color="primary" />
+      </view>
+      <view class="flex flex-col gap-3 pt-2 border-t border-muted">
+        <c-slider label="Disabled" default-value="{{ 40 }}" disabled="{{ true }}" />
+        <c-slider label="Read-Only" default-value="{{ 75 }}" read-only="{{ true }}" />
+        <c-slider label="Invalid" default-value="{{ 20 }}" invalid="{{ true }}" />
+      </view>
+    </view>
+
+    <!-- 5. Form Validation -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Form & Budget Validation</text>
+        <text class="block text-xs text-muted mt-0.5">Requires minimum campaign budget of $40.</text>
+      </view>
+      <c-form id="slider-demo-form" bind:submit="handleFormSubmit" bind:error="handleFormError">
+        <c-form-field name="budget" label="Daily Budget ($40 min)" required="{{ true }}" rules="{{ budgetRules }}">
+          <c-slider value="{{ formBudgetValue }}" show-value="{{ true }}" bind:change="onFormBudgetChange" />
+        </c-form-field>
       </c-form>
+      <view class="flex flex-wrap gap-2">
+        <c-button size="xs" color="primary" label="Submit" bind:tap="submitSliderForm" />
+        <c-button size="xs" color="secondary" variant="soft" label="Set $80" bind:tap="setFormBudgetTo80" />
+        <c-button size="xs" color="neutral" variant="outline" label="Reset" bind:tap="resetSliderForm" />
+      </view>
+      <text wx:if="{{ formStatus }}" class="text-xs text-muted">{{ formStatus }}: {{ formMessage }}</text>
     </view>
   </view>
 </view>

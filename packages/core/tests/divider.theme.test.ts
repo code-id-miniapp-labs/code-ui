@@ -47,7 +47,7 @@ describe("dividerTheme (@code-ui/core)", () => {
 
   it("supports sizes for container typography", () => {
     const theme = dividerTheme();
-    expect(theme.variants.size.xs.container).toBe("text-[10px]");
+    expect(theme.variants.size.xs.container).toBe("text-2xs");
     expect(theme.variants.size.sm.container).toBe("text-xs");
     expect(theme.variants.size.md.container).toBe("text-sm");
     expect(theme.variants.size.lg.container).toBe("text-base");
@@ -56,13 +56,19 @@ describe("dividerTheme (@code-ui/core)", () => {
 
   it("creates color variants for default theme colors", () => {
     const theme = dividerTheme();
-    expect(Object.keys(theme.variants.color)).toEqual(DEFAULT_THEME_COLORS);
+    expect(Object.keys(theme.variants.color)).toEqual([
+      ...DEFAULT_THEME_COLORS,
+      "neutral",
+    ]);
   });
 
   it("creates custom color variants when colors option is provided", () => {
     const customColors = ["custom-red", "custom-blue"] as const;
     const theme = dividerTheme({ colors: customColors });
-    expect(Object.keys(theme.variants.color)).toEqual(customColors);
+    expect(Object.keys(theme.variants.color)).toEqual([
+      ...customColors,
+      "neutral",
+    ]);
 
     const hasCustomRedBorder = theme.compoundVariants.some(
       (cv) => cv.color === "custom-red" && cv.class?.border === "border-custom-red",

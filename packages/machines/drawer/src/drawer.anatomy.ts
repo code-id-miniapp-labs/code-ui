@@ -10,8 +10,11 @@ export const anatomy = /* @__PURE__ */ (() =>
     "title",
     "description",
     "closeTrigger",
+    "closeButton",
+    "closeIcon",
     "grabber",
     "header",
+    "headerContent",
     "body",
     "footer",
   ))();

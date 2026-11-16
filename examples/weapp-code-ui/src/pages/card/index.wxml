@@ -1,55 +1,85 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Card</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      Surface containers with style header, body, and footer slots.
-    </view>
-  </view>
-  <view class="px-5 flex flex-col gap-6">
-    <!-- Variants -->
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Card"
+    badge="Data Display"
+    subtitle="Surface containers supporting outline, soft, subtle & solid variants with header, default, footer & ui slots."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. All 4 Variants -->
     <view class="flex flex-col gap-3">
-      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">Variants</view>
-      <c-card variant="outline" title="Outline Card" description="Default surface with neutral border.">
-        <text class="text-xs text-neutral-600">This is the body content of the outline card.</text>
+      <text class="text-xs font-semibold uppercase tracking-wider text-dimmed px-1">Card Variants</text>
+
+      <c-card variant="outline">
+        <view slot="header" class="flex items-center justify-between">
+          <text class="text-sm font-semibold text-highlighted">Outline Variant</text>
+          <c-badge label="Default" color="primary" variant="soft" size="xs" />
+        </view>
+        <text class="text-xs text-muted">Standard elevated surface with clean 1px border and semantic dividers.</text>
       </c-card>
-      <c-card variant="soft" title="Soft Card" description="Tinted background with subtle contrast.">
-        <text class="text-xs text-neutral-600">Soft card surface body content.</text>
+
+      <c-card variant="soft">
+        <view slot="header">
+          <text class="text-sm font-semibold text-highlighted">Soft Variant</text>
+        </view>
+        <text class="text-xs text-muted">Muted elevated fill ideal for grouped sections without heavy outlines.</text>
       </c-card>
-      <c-card variant="subtle" title="Subtle Card" description="Muted surface with light border.">
-        <text class="text-xs text-neutral-600">Subtle card surface body content.</text>
+
+      <c-card variant="subtle">
+        <view slot="header">
+          <text class="text-sm font-semibold text-highlighted">Subtle Variant</text>
+        </view>
+        <text class="text-xs text-muted">Soft fill combined with a subtle hairline border.</text>
       </c-card>
-      <c-card variant="solid" title="Solid Card" description="High-contrast dark card surface.">
-        <text class="text-xs text-neutral-300">Solid card surface body content.</text>
+
+      <c-card variant="solid">
+        <view slot="header">
+          <text class="text-sm font-semibold">Solid Variant</text>
+        </view>
+        <text class="text-xs opacity-85">High-contrast inverted surface pairing well with callout highlights.</text>
       </c-card>
     </view>
-    <!-- Sizes -->
+
+    <!-- 2. Rich Header + Body + Footer Composition -->
     <view class="flex flex-col gap-3">
-      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
-        Sizes (sm, md, lg)
-      </view>
-      <c-card size="sm" title="Small Card" description="Compact padding and typography.">
-        <text class="text-xs text-neutral-600">Compact content</text>
+      <text class="text-xs font-semibold uppercase tracking-wider text-dimmed px-1">Full Slot Composition & UI Overrides</text>
+
+      <c-card variant="outline">
+        <view slot="header" class="flex items-center justify-between gap-3">
+          <view class="flex items-center gap-2.5 min-w-0">
+            <c-avatar size="sm" color="primary" text="CU" />
+            <view class="min-w-0">
+              <text class="block text-sm font-semibold text-highlighted">Release v2.4 Ready</text>
+              <text class="block text-[11px] text-muted">Deployment summary · 2 mins ago</text>
+            </view>
+          </view>
+          <c-badge label="Production" color="success" variant="soft" size="xs" />
+        </view>
+
+        <view class="flex flex-col gap-2.5">
+          <text class="text-xs text-muted leading-relaxed">
+            Semantic dark-mode tokens and runtime CSS palette generation compiled across 36 components.
+          </text>
+          <c-progress value="{{ 100 }}" color="success" size="xs" show-value="{{ true }}" />
+        </view>
+
+        <view slot="footer" class="flex items-center justify-end gap-2">
+          <c-button size="xs" color="neutral" variant="outline" label="View Logs" bind:tap="onCardAction" />
+          <c-button size="xs" color="primary" label="Deploy Now" bind:tap="onCardAction" />
+        </view>
       </c-card>
-      <c-card size="md" title="Medium Card" description="Standard comfortable padding.">
-        <text class="text-xs text-neutral-600">Standard content</text>
-      </c-card>
-      <c-card size="lg" title="Large Card" description="Spacious padding and larger title.">
-        <text class="text-xs text-neutral-600">Spacious content</text>
-      </c-card>
-    </view>
-    <!-- Header & Footer Slots -->
-    <view class="flex flex-col gap-3">
-      <view class="text-xs font-bold text-neutral-400 uppercase tracking-wider px-1">
-        Header & Footer Slots
-      </view>
-      <c-card title="Interactive Card" description="Card with action buttons in the footer slot.">
-        <text class="text-xs text-neutral-600">
-          This card demonstrates custom footer slot actions like Confirm and Cancel buttons.
-        </text>
-        <view slot="footer" class="flex justify-end gap-2">
-          <c-button variant="outline" color="neutral" size="sm">Cancel</c-button>
-          <c-button variant="solid" color="primary" size="sm">Save</c-button>
+
+      <c-card
+        variant="outline"
+        ui="{{ { root: 'border-primary/40 ring-2 ring-primary/15', header: 'bg-primary/5', footer: 'bg-elevated/60' } }}"
+      >
+        <view slot="header" class="flex items-center gap-2">
+          <c-icon name="i-lucide-sparkles" size="sm" color="primary" />
+          <text class="text-sm font-semibold text-highlighted">Custom UI Slots Styling</text>
+        </view>
+        <text class="text-xs text-muted">Each part (root, header, body, footer) can be customized independently via ui.</text>
+        <view slot="footer">
+          <text class="text-[11px] text-dimmed">Styled via ui.header + ui.footer</text>
         </view>
       </c-card>
     </view>

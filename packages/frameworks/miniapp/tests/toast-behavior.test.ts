@@ -145,20 +145,27 @@ describe("toast behavior", () => {
     ]);
   });
 
-  it("defaults closeIcon to 'close' when omitted on ToastEntry", () => {
+  it("defaults close to true and accepts close subcomponent props", () => {
     const host = { __wxWebviewId__: "default-close-icon-host" };
     registerToastHost(host);
 
     addToast({ title: "Closable toast" }, host);
     const [entry] = getToasts(host);
-    expect(entry?.closeIcon).toBe("close");
+    expect(entry?.close).toBe(true);
 
     addToast(
-      { title: "Custom close icon", closeIcon: "i-tabler-x", placement: "bottom" },
+      {
+        title: "Custom close button",
+        close: { icon: "i-tabler-x", color: "neutral" },
+        placement: "bottom",
+      },
       host,
     );
     const entries = getToasts(host);
-    expect(entries[1]?.closeIcon).toBe("i-tabler-x");
+    expect(entries[1]?.close).toEqual({
+      icon: "i-tabler-x",
+      color: "neutral",
+    });
   });
 });
 

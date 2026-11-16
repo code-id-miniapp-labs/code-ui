@@ -10,11 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type {
-  MiniAppBaseEventLike,
-  MiniAppComponent,
-  MiniAppEventLike,
-} from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./pin-input.anatomy";
 
 export type PinInputType = "numeric" | "alphanumeric" | "alphabetic";
@@ -55,8 +51,6 @@ export interface PinInputProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: PinInputUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -65,18 +59,8 @@ export interface PinInputProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the input is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Visual variant */
-  variant?: PinInputVariant | undefined;
-  /** Semantic color */
-  color?: PinInputColor | undefined;
-  /** Size variant */
-  size?: PinInputSize | "" | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: PinInputSize | undefined;
-  /** Highlight all inputs with color ring */
-  highlight?: boolean | undefined;
   /** Number of inputs (PIN length) */
   length?: number | undefined;
   /** Controlled value array or string */
@@ -149,7 +133,6 @@ export interface PinInputComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   valueAsString: string;
@@ -157,7 +140,6 @@ export interface PinInputComputed {
   isEmpty: boolean;
   isFilled: boolean;
   isDisabled: boolean;
-  effectiveSize: PinInputSize;
   isInteractive: boolean;
   isReadOnly: boolean;
 }
@@ -172,10 +154,6 @@ type PinInputDefaultedKey =
   | "invalid"
   | "length"
   | "type"
-  | "variant"
-  | "color"
-  | "size"
-  | "highlight"
   | "name"
   | "mask"
   | "placeholder"
@@ -186,8 +164,7 @@ type PinInputDefaultedKey =
   | "blurOnComplete"
   | "selectOnFocus"
   | "separator"
-  | "separatorChar"
-  | "ui";
+  | "separatorChar";
 
 export type PinInputResolvedProps = Omit<PinInputProps, PinInputDefaultedKey> & {
   [K in PinInputDefaultedKey]-?: Exclude<PinInputProps[K], undefined>;
@@ -239,8 +216,6 @@ export interface PinInputApi {
   disabled: boolean;
   /** Whether the field is read-only (via Form or direct prop) */
   readOnly: boolean;
-  /** Effective size variant */
-  size: PinInputSize;
   /** Index of currently focused input (-1 if none) */
   focusedIndex: number;
   /** List of cell descriptors ready for wx:for loop */
@@ -253,16 +228,14 @@ export interface PinInputApi {
   resetValue(): void;
   /** Focus specific input cell */
   focus(index?: number): void;
-  /** MiniProgram bindinput handler */
-  handleInput(
-    e: MiniAppEventLike<{ value: string }, { index: number }>,
-  ): string | void;
-  /** MiniProgram bindfocus handler */
-  handleFocus(e?: MiniAppBaseEventLike<{ index: number }>): void;
-  /** MiniProgram bindblur handler */
-  handleBlur(e?: MiniAppBaseEventLike<{ index: number }>): void;
-  /** MiniProgram bindtap handler */
-  handleTap?(e?: MiniAppBaseEventLike<{ index: number }>): void;
+  /** Handle input character update for cell */
+  handleInput(value: string, index?: number): string | void;
+  /** Handle focus interaction for cell */
+  handleFocus(index?: number): void;
+  /** Handle blur interaction */
+  handleBlur(index?: number): void;
+  /** Handle tap interaction for cell */
+  handleTap?(index?: number): void;
   /** Get props for indexed input element */
   getInputProps(index: number): Record<string, any>;
   /** Get props for root container */

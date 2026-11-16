@@ -13,12 +13,7 @@ function makeGroupContext(
 ): TabsGroupContext {
   return {
     value: () => "home",
-    orientation: () => "horizontal",
-    variant: () => "pill",
-    color: () => "primary",
-    size: () => "md",
     disabled: () => false,
-    fitted: () => false,
     select: vi.fn(),
     setValue: vi.fn(),
     next: vi.fn(),
@@ -42,8 +37,7 @@ describe("TabsItem Machine", () => {
     expect(api.state).toBe("inactive");
     expect(api.value).toBe("account");
     expect(api.isSelected).toBe(false);
-    expect(api.isDisabled).toBe(false);
-    expect(api.fitted).toBe(false);
+    expect(api.disabled).toBe(false);
 
     machine.stop();
   });
@@ -93,7 +87,7 @@ describe("TabsItem Machine", () => {
       disabled: true,
     });
     machine1.start();
-    expect(connectTabsItem(machine1.service).isDisabled).toBe(true);
+    expect(connectTabsItem(machine1.service).disabled).toBe(true);
     machine1.stop();
 
     const machine2 = new MiniappMachine(tabsItemMachine, {
@@ -101,7 +95,7 @@ describe("TabsItem Machine", () => {
       groupContext: makeGroupContext({ disabled: () => true }),
     });
     machine2.start();
-    expect(connectTabsItem(machine2.service).isDisabled).toBe(true);
+    expect(connectTabsItem(machine2.service).disabled).toBe(true);
     machine2.stop();
   });
 
@@ -118,29 +112,6 @@ describe("TabsItem Machine", () => {
     await flush();
 
     expect(select).toHaveBeenCalledWith("profile");
-    machine.stop();
-  });
-
-  it("resolves presentational values from the group context", () => {
-    const machine = new MiniappMachine(tabsItemMachine, {
-      value: "profile",
-      groupContext: makeGroupContext({
-        orientation: () => "vertical",
-        variant: () => "link",
-        color: () => "danger",
-        size: () => "lg",
-        fitted: () => true,
-      }),
-    });
-    machine.start();
-
-    const api = connectTabsItem(machine.service);
-    expect(api.orientation).toBe("vertical");
-    expect(api.variant).toBe("link");
-    expect(api.color).toBe("danger");
-    expect(api.size).toBe("lg");
-    expect(api.fitted).toBe(true);
-
     machine.stop();
   });
 

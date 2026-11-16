@@ -1,9 +1,15 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
 import { withRadioItem } from "@code-ui/miniapp/behaviors/radio";
 import { resolveSlots } from "../../utils/ui";
-import { radioMachine, connectRadio, defaultRadioProps } from "@code-ui/radio";
+import {
+  radioMachine,
+  connectRadio,
+  defaultRadioProps,
+  type RadioColor,
+  type RadioSize,
+  type RadioVariant,
+} from "@code-ui/radio";
 import themeConfig from "virtual:cui/theme/radio";
 import { tv } from "../../utils/variants";
 
@@ -29,6 +35,30 @@ Component(
     },
 
     properties: createProperties(defaultRadioProps, {
+      color: {
+        type: String,
+        value: "",
+      },
+      size: {
+        type: String,
+        value: "",
+      },
+      variant: {
+        type: String,
+        value: "",
+      },
+      label: {
+        type: String,
+        value: "",
+      },
+      description: {
+        type: String,
+        value: "",
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",
@@ -36,14 +66,32 @@ Component(
     }),
 
     computed: {
+      resolvedSize(): RadioSize {
+        return (this.data.size ||
+          this.data.groupSize ||
+          "md") as RadioSize;
+      },
+
+      resolvedColor(): RadioColor {
+        return (this.data.color ||
+          this.data.groupColor ||
+          "primary") as RadioColor;
+      },
+
+      resolvedVariant(): RadioVariant {
+        return (this.data.variant ||
+          this.data.groupVariant ||
+          "outline") as RadioVariant;
+      },
+
       classes() {
         const api = this.data.cRadio;
-        const checked = Boolean(api?.checked ?? this.data.checked);
-        const disabled = Boolean(api?.disabled ?? this.data.disabled);
-        const isInvalid = Boolean(api?.invalid ?? this.data.invalid);
-        const size = api?.size ?? this.data.size;
-        const color = api?.color ?? this.data.color;
-        const variant = api?.variant ?? this.data.variant;
+        const checked = Boolean(api?.checked);
+        const disabled = Boolean(api?.disabled);
+        const isInvalid = Boolean(api?.invalid);
+        const size = this.data.resolvedSize;
+        const color = this.data.resolvedColor;
+        const variant = this.data.resolvedVariant;
         const ui = this.data.ui;
 
         const themeFns = radioTheme({
@@ -60,8 +108,8 @@ Component(
     },
 
     methods: {
-      handleTap(e: MiniAppBaseEventLike) {
-        return getApi(this, "cRadio")?.handleTap?.(e);
+      handleTap() {
+        return getApi(this, "cRadio")?.handleTap?.();
       },
     },
   }),

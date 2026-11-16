@@ -1,6 +1,12 @@
-import { defineTheme, type ThemeOptions } from "../../theme";
+import {
+  DEFAULT_THEME_COLORS,
+  defineTheme,
+  type ThemeOptions,
+} from "../../theme";
 
-export default function avatarTheme(_options: ThemeOptions = {}) {
+export default function avatarTheme(options: ThemeOptions = {}) {
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
+
   return defineTheme({
     slots: {
       root: "relative overflow-hidden inline-flex items-center justify-center shrink-0 select-none rounded-full align-middle",
@@ -9,51 +15,33 @@ export default function avatarTheme(_options: ThemeOptions = {}) {
       icon: "shrink-0",
     },
     variants: {
-      color: {
-        primary: {
-          root: "bg-primary/10",
-          fallback: "text-primary",
-          icon: "text-primary",
+      color: Object.assign(
+        Object.fromEntries(
+          colors.map((color) => [
+            color,
+            {
+              root: `bg-${color}/10`,
+              fallback: `text-${color}`,
+              icon: `text-${color}`,
+            },
+          ]),
+        ),
+        {
+          neutral: {
+            root: "bg-elevated",
+            fallback: "text-muted",
+            icon: "text-muted",
+          },
         },
-        secondary: {
-          root: "bg-secondary/10",
-          fallback: "text-secondary",
-          icon: "text-secondary",
-        },
-        success: {
-          root: "bg-success/10",
-          fallback: "text-success",
-          icon: "text-success",
-        },
-        info: {
-          root: "bg-info/10",
-          fallback: "text-info",
-          icon: "text-info",
-        },
-        warning: {
-          root: "bg-warning/10",
-          fallback: "text-warning",
-          icon: "text-warning",
-        },
-        danger: {
-          root: "bg-danger/10",
-          fallback: "text-danger",
-          icon: "text-danger",
-        },
-        neutral: {
-          root: "bg-elevated",
-          fallback: "text-muted",
-          icon: "text-muted",
-        },
-      },
+      ),
       size: {
         "3xs": {
           root: "size-4",
-          fallback: "text-[8rpx]",
+          fallback: "text-[length:calc(var(--spacing)_*_2)]",
         },
         "2xs": {
           root: "size-5",
-          fallback: "text-[10rpx]",
+          fallback: "text-3xs",
         },
         xs: {
           root: "size-6",

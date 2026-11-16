@@ -2,6 +2,62 @@ import { signal } from "alien-signals";
 import { isMiniApp, queryRect } from "@code-ui/utils";
 import { nextTick } from "../machine";
 import type { MachinePlugin } from "../plugin";
+import type { TypedRelationOption } from "./inherit";
+import type {
+  AppOwnerData,
+  AppOwnerInstance,
+  MiniappBehaviorRef,
+  RectLike,
+} from "./types";
+
+function createBehaviorRef(
+  definition: Record<string, unknown>,
+): MiniappBehaviorRef {
+  return typeof Behavior !== "undefined"
+    ? (
+        Behavior as unknown as (
+          options: Record<string, unknown>,
+        ) => MiniappBehaviorRef
+      )(definition)
+    : ({} as unknown as MiniappBehaviorRef);
+}
+
+function createRelationOption<
+  TThis extends AppOwnerInstance,
+  TTarget extends AppOwnerInstance,
+>(
+  option: TypedRelationOption<TThis, TTarget>,
+): WechatMiniprogram.Component.RelationOption {
+  return option as unknown as WechatMiniprogram.Component.RelationOption;
+}
+
+function resolvePageId(instance?: AppOwnerInstance | null): string | undefined {
+  if (!instance) return undefined;
+  try {
+    if (typeof instance.getPageId === "function") {
+      const pid = instance.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+    if (
+      instance.__wxWebviewId__ !== undefined &&
+      instance.__wxWebviewId__ !== null &&
+      String(instance.__wxWebviewId__) !== ""
+    ) {
+      return String(instance.__wxWebviewId__);
+    }
+    if (typeof instance.__page__?.getPageId === "function") {
+      const pid = instance.__page__.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+    if (typeof instance.$page?.getPageId === "function") {
+      const pid = instance.$page.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+  } catch {
+    // Ignore errors when reading platform page IDs
+  }
+  return undefined;
+}
 
 export type AppSignal<T> = ReturnType<typeof signal<T>>;
 
@@ -58,7 +114,7 @@ export interface PageAppSignals {
 }
 
 interface HostRecord {
-  instance: any;
+  instance: AppOwnerInstance;
   pageId: string;
   adapter?: AppHostAdapter | undefined;
   signals: PageAppSignals;
@@ -80,6 +136,10 @@ interface AppRegistry {
   orderCounter: number;
 }
 
+interface AppGlobalScope {
+  __CODE_UI_APP_REGISTRY__?: AppRegistry | undefined;
+}
+
 const globalScope = (
   typeof globalThis !== "undefined"
     ? globalThis
@@ -88,7 +148,7 @@ const globalScope = (
       : typeof global !== "undefined"
         ? global
         : {}
-) as any;
+) as AppGlobalScope;
 
 if (!globalScope.__CODE_UI_APP_REGISTRY__) {
   globalScope.__CODE_UI_APP_REGISTRY__ = {
@@ -106,11 +166,14 @@ const hostByInstance = appRegistry.hostByInstance;
 const pageSignals = appRegistry.pageSignals;
 const pending = appRegistry.pending;
 
-export function linkAppChildToParent(parent: any, child: any): void {
+export function linkAppChildToParent(
+  parent: AppOwnerInstance | null | undefined,
+  child: AppOwnerInstance | null | undefined,
+): void {
   if (!parent || !child) return;
   child.__cuiAppParent = parent;
   if (!parent.__cuiAppChildren) {
-    parent.__cuiAppChildren = new Set<any>();
+    parent.__cuiAppChildren = new Set<AppOwnerInstance>();
   }
   parent.__cuiAppChildren.add(child);
 
@@ -127,11 +190,13 @@ export function linkAppChildToParent(parent: any, child: any): void {
         changed = true;
       }
     }
+    const registeredSize = child.__cuiRegisteredSize ?? 0;
+    const registeredBannerSize = child.__cuiRegisteredBannerSize ?? 0;
     const insetSize =
-      child.__cuiRegisteredSize > 0
-        ? child.__cuiRegisteredSize
-        : child.__cuiRegisteredBannerSize > 0
-          ? child.__cuiRegisteredBannerSize
+      registeredSize > 0
+        ? registeredSize
+        : registeredBannerSize > 0
+          ? registeredBannerSize
           : 0;
     const insetId = child.__cuiInsetId ?? child.__cuiBannerInsetId;
     const insetEdge =
@@ -150,7 +215,10 @@ export function linkAppChildToParent(parent: any, child: any): void {
   }
 }
 
-export function unlinkAppChildFromParent(parent: any, child: any): void {
+export function unlinkAppChildFromParent(
+  parent: AppOwnerInstance | null | undefined,
+  child: AppOwnerInstance | null | undefined,
+): void {
   if (!child) return;
   if (child.__cuiAppParent === parent) {
     child.__cuiAppParent = undefined;
@@ -172,65 +240,69 @@ export function unlinkAppChildFromParent(parent: any, child: any): void {
   }
 }
 
-export const cuiAppParentBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
+export const cuiAppParentBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({});
 
-export const cuiAppChildBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiAppParent: {
-            type: "ancestor",
-            target: cuiAppParentBehavior,
-            linked(this: any, target: any) {
-              linkAppChildToParent(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkAppChildFromParent(target, this);
-            },
-          },
+export const cuiAppChildBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    relations: {
+      cuiAppParent: {
+        type: "ancestor",
+        target: cuiAppParentBehavior,
+        linked(this: AppOwnerInstance, target: AppOwnerInstance) {
+          linkAppChildToParent(target, this);
         },
-      })
-    : {};
+        unlinked(this: AppOwnerInstance, target: AppOwnerInstance) {
+          unlinkAppChildFromParent(target, this);
+        },
+      },
+    },
+  });
 
 export function setupAppRelations(
   relations: Record<string, WechatMiniprogram.Component.RelationOption>,
   role: "parent" | "child",
   handlers?: {
-    linked?: (target: any) => void;
-    unlinked?: (target: any) => void;
+    linked?: (target: AppOwnerInstance) => void;
+    unlinked?: (target: AppOwnerInstance) => void;
   },
-) {
+): void {
   if (role === "parent") {
-    relations.cuiAppChild = {
+    relations.cuiAppChild = createRelationOption<
+      AppOwnerInstance,
+      AppOwnerInstance
+    >({
       type: "descendant",
       target: cuiAppChildBehavior,
-      linked(this: any, target: any) {
+      linked(this: AppOwnerInstance, target: AppOwnerInstance) {
         linkAppChildToParent(this, target);
         handlers?.linked?.(target);
       },
-      unlinked(this: any, target: any) {
+      unlinked(this: AppOwnerInstance, target: AppOwnerInstance) {
         unlinkAppChildFromParent(this, target);
         handlers?.unlinked?.(target);
       },
-    };
+    });
   } else {
-    relations.cuiAppParent = {
+    relations.cuiAppParent = createRelationOption<
+      AppOwnerInstance,
+      AppOwnerInstance
+    >({
       type: "ancestor",
       target: cuiAppParentBehavior,
-      linked(this: any, target: any) {
+      linked(this: AppOwnerInstance, target: AppOwnerInstance) {
         linkAppChildToParent(target, this);
         handlers?.linked?.(target);
       },
-      unlinked(this: any, target: any) {
+      unlinked(this: AppOwnerInstance, target: AppOwnerInstance) {
         unlinkAppChildFromParent(target, this);
         handlers?.unlinked?.(target);
       },
-    };
+    });
   }
 }
 
-export function getPageAppSignals(instance: any): PageAppSignals {
+export function getPageAppSignals(instance: object): PageAppSignals {
   let sigs = pageSignals.get(instance);
   if (!sigs) {
     sigs = {
@@ -242,27 +314,24 @@ export function getPageAppSignals(instance: any): PageAppSignals {
   return sigs;
 }
 
-function readDirectPageId(obj: any): string | undefined {
+function readDirectPageId(
+  obj: AppOwnerInstance | null | undefined,
+): string | undefined {
   if (!obj) return undefined;
-  for (const target of [obj, obj.__page__, obj.$page]) {
-    if (!target) continue;
-    if (typeof target.getPageId === "function") {
-      const id = target.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    const wv = target.__wxWebviewId__;
-    if (wv !== undefined && wv !== null && wv !== "") return String(wv);
-  }
+  const resolved = resolvePageId(obj);
+  if (resolved !== undefined) return resolved;
   const pid = obj.pageId;
   return pid !== undefined && pid !== null && pid !== ""
     ? String(pid)
     : undefined;
 }
 
-function getPageIdOf(instance: any): string | undefined {
+function getPageIdOf(
+  instance: AppOwnerInstance | null | undefined,
+): string | undefined {
   if (!instance) return undefined;
   try {
-    let cur = instance;
+    let cur: AppOwnerInstance | null | undefined = instance;
     for (let depth = 0; cur && depth <= 10; depth++) {
       const id = readDirectPageId(cur);
       if (id !== undefined) return id;
@@ -278,7 +347,7 @@ function getPageIdOf(instance: any): string | undefined {
 function getTopPageId(): string | undefined {
   if (typeof getCurrentPages !== "function") return undefined;
   try {
-    const pages = getCurrentPages();
+    const pages = getCurrentPages() as unknown as AppOwnerInstance[];
     const top = pages[pages.length - 1];
     return getPageIdOf(top);
   } catch {
@@ -308,7 +377,7 @@ function findActiveHost(): HostRecord | undefined {
   return best ?? hosts[hosts.length - 1];
 }
 
-function resolveHost(owner?: any): HostRecord | undefined {
+function resolveHost(owner?: AppOwnerInstance | null): HostRecord | undefined {
   if (owner) {
     const own = hostByInstance.get(owner);
     if (own) return own;
@@ -320,11 +389,12 @@ function resolveHost(owner?: any): HostRecord | undefined {
 
     if (typeof owner.getRelationNodes === "function") {
       try {
-        let parents = owner.getRelationNodes("cuiAppParent");
+        let parents = owner.getRelationNodes<AppOwnerInstance>("cuiAppParent");
         if ((!parents || parents.length === 0) && cuiAppParentBehavior) {
-          parents = owner.getRelationNodes(cuiAppParentBehavior);
+          parents =
+            owner.getRelationNodes<AppOwnerInstance>(cuiAppParentBehavior);
         }
-        if (parents && parents.length > 0) {
+        if (parents && parents.length > 0 && parents[0]) {
           const parentHost = hostByInstance.get(parents[0]);
           if (parentHost) return parentHost;
         }
@@ -340,11 +410,14 @@ function resolveHost(owner?: any): HostRecord | undefined {
   return findActiveHost();
 }
 
-function pendingKeyFor(owner?: any): string {
+function pendingKeyFor(owner?: AppOwnerInstance | null): string {
   return (owner && getPageIdOf(owner)) || ACTIVE_KEY;
 }
 
-function withHost(owner: any, op: PendingOp): void {
+function withHost(
+  owner: AppOwnerInstance | null | undefined,
+  op: PendingOp,
+): void {
   const host = resolveHost(owner);
   if (host) {
     op(host);
@@ -406,7 +479,10 @@ function notify(host: HostRecord): void {
   host.adapter?.onChange?.(state);
 }
 
-export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
+export function registerAppHost(
+  instance: AppOwnerInstance,
+  adapter?: AppHostAdapter,
+): void {
   if (hostByInstance.has(instance)) return;
   const signals = getPageAppSignals(instance);
   const record: HostRecord = {
@@ -431,11 +507,13 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
           background: child.__cuiScaleBackground,
         });
       }
+      const registeredSize = child.__cuiRegisteredSize ?? 0;
+      const registeredBannerSize = child.__cuiRegisteredBannerSize ?? 0;
       const insetSize =
-        child.__cuiRegisteredSize > 0
-          ? child.__cuiRegisteredSize
-          : child.__cuiRegisteredBannerSize > 0
-            ? child.__cuiRegisteredBannerSize
+        registeredSize > 0
+          ? registeredSize
+          : registeredBannerSize > 0
+            ? registeredBannerSize
             : 0;
       const insetId = child.__cuiInsetId ?? child.__cuiBannerInsetId;
       const insetEdge =
@@ -455,7 +533,7 @@ export function registerAppHost(instance: any, adapter?: AppHostAdapter): void {
   notify(record);
 }
 
-export function unregisterAppHost(instance: any): void {
+export function unregisterAppHost(instance: AppOwnerInstance): void {
   const record = hostByInstance.get(instance);
   if (!record) return;
   hostByInstance.delete(instance);
@@ -473,18 +551,23 @@ export function unregisterAppHost(instance: any): void {
   }
 }
 
-export function setAppHostVisible(instance: any, visible: boolean): void {
+export function setAppHostVisible(
+  instance: AppOwnerInstance,
+  visible: boolean,
+): void {
   const record = hostByInstance.get(instance);
   if (!record) return;
   record.visible = visible;
   if (visible) record.order = ++appRegistry.orderCounter;
 }
 
-export function getAppHost(owner?: any): any {
+export function getAppHost(
+  owner?: AppOwnerInstance | null,
+): AppOwnerInstance | undefined {
   return resolveHost(owner)?.instance;
 }
 
-export function getAppState(owner?: any): AppHostState {
+export function getAppState(owner?: AppOwnerInstance | null): AppHostState {
   const host = resolveHost(owner);
   return host
     ? getState(host)
@@ -494,14 +577,20 @@ export function getAppState(owner?: any): AppHostState {
       };
 }
 
-export function requestAppScale(owner: any, request: AppScaleRequest): void {
+export function requestAppScale(
+  owner: AppOwnerInstance | null | undefined,
+  request: AppScaleRequest,
+): void {
   withHost(owner, (host) => {
     host.scales.set(request.id, { ...request });
     notify(host);
   });
 }
 
-export function releaseAppScale(owner: any, id: string): void {
+export function releaseAppScale(
+  owner: AppOwnerInstance | null | undefined,
+  id: string,
+): void {
   const host = resolveHost(owner);
   if (!host) {
     const key = pendingKeyFor(owner);
@@ -516,77 +605,95 @@ export function releaseAppScale(owner: any, id: string): void {
   if (host.scales.delete(id)) notify(host);
 }
 
-export function isAppScaled(owner?: any): boolean {
+export function isAppScaled(owner?: AppOwnerInstance | null): boolean {
   const host = resolveHost(owner);
   return host ? host.scales.size > 0 : false;
 }
 
-export function notifyScaleGestureStart(owner: any): void {
+export function notifyScaleGestureStart(owner?: AppOwnerInstance | null): void {
   const host = resolveHost(owner);
   if (!host) return;
-  if (typeof host.instance?.startScaleGesture === "function") {
-    host.instance.startScaleGesture();
-  }
+  host.instance?.startScaleGesture?.();
 }
 
-export function notifyScaleGestureProgress(owner: any, progress: number): void {
+export function notifyScaleGestureProgress(
+  owner: AppOwnerInstance | null | undefined,
+  progress: number,
+): void {
   const host = resolveHost(owner);
   if (!host) return;
-  if (typeof host.instance?.applyScaleProgress === "function") {
-    host.instance.applyScaleProgress(progress);
-  }
+  host.instance?.applyScaleProgress?.(progress);
 }
 
-export function notifyScaleGestureEnd(owner: any, passed: boolean): void {
+export function notifyScaleGestureEnd(
+  owner: AppOwnerInstance | null | undefined,
+  passed: boolean,
+): void {
   const host = resolveHost(owner);
   if (!host) return;
-  if (typeof host.instance?.endScaleGesture === "function") {
-    host.instance.endScaleGesture(passed);
+  host.instance?.endScaleGesture?.(passed);
+}
+
+export type ScaleGestureOwner =
+  | AppOwnerInstance
+  | (WechatMiniprogram.Component.InstanceProperties & {
+      data?: Record<string, any> | undefined;
+    });
+
+export function notifyScaleGestureDragStart(owner: ScaleGestureOwner): void {
+  const target = owner as AppOwnerInstance;
+  target.__cuiScaleDragging = true;
+  if (target.data?.shouldScaleBackground) {
+    notifyScaleGestureStart(target);
   }
 }
 
-export function notifyScaleGestureDragStart(owner: any): void {
-  owner.__cuiScaleDragging = true;
-  if (owner.data?.shouldScaleBackground) {
-    notifyScaleGestureStart(owner);
-  }
-}
+export function notifyScaleGestureDragMove(
+  owner: ScaleGestureOwner,
+  offset: number,
+): void {
+  const target = owner as AppOwnerInstance;
+  if (!target.data?.shouldScaleBackground || !target.__cuiScaleDragging) return;
+  target.__cuiScaleDragOffset = offset;
 
-export function notifyScaleGestureDragMove(owner: any, offset: number): void {
-  if (!owner.data?.shouldScaleBackground || !owner.__cuiScaleDragging) return;
-  owner.__cuiScaleDragOffset = offset;
-
-  if (!owner.__cuiScaleDragRafPending) {
-    owner.__cuiScaleDragRafPending = true;
+  if (!target.__cuiScaleDragRafPending) {
+    target.__cuiScaleDragRafPending = true;
     const schedule =
       typeof wx !== "undefined" && typeof wx.nextTick === "function"
         ? wx.nextTick
         : (fn: () => void) => fn();
 
     schedule(() => {
-      owner.__cuiScaleDragRafPending = false;
-      if (owner.__cuiScaleDragging) {
-        const threshold = owner.data?.threshold || 80;
+      target.__cuiScaleDragRafPending = false;
+      if (target.__cuiScaleDragging) {
+        const threshold = target.data?.threshold || 80;
         const maxDistance = Math.max(threshold * 1.5, 120);
         const progress = Math.min(
           1,
-          Math.max(0, (owner.__cuiScaleDragOffset ?? 0) / maxDistance),
+          Math.max(0, (target.__cuiScaleDragOffset ?? 0) / maxDistance),
         );
-        notifyScaleGestureProgress(owner, progress);
+        notifyScaleGestureProgress(target, progress);
       }
     });
   }
 }
 
-export function notifyScaleGestureDragEnd(owner: any, passed: boolean): void {
-  owner.__cuiScaleDragging = false;
-  owner.__cuiScaleDragRafPending = false;
-  if (owner.data?.shouldScaleBackground) {
-    notifyScaleGestureEnd(owner, passed);
+export function notifyScaleGestureDragEnd(
+  owner: ScaleGestureOwner,
+  passed: boolean,
+): void {
+  const target = owner as AppOwnerInstance;
+  target.__cuiScaleDragging = false;
+  target.__cuiScaleDragRafPending = false;
+  if (target.data?.shouldScaleBackground) {
+    notifyScaleGestureEnd(target, passed);
   }
 }
 
-export function registerInset(owner: any, entry: AppInsetEntry): void {
+export function registerInset(
+  owner: AppOwnerInstance | null | undefined,
+  entry: AppInsetEntry,
+): void {
   withHost(owner, (host) => {
     const prev = host.insets.get(entry.id);
     if (prev && prev.edge === entry.edge && prev.size === entry.size) return;
@@ -595,7 +702,10 @@ export function registerInset(owner: any, entry: AppInsetEntry): void {
   });
 }
 
-export function unregisterInset(owner: any, id: string): void {
+export function unregisterInset(
+  owner: AppOwnerInstance | null | undefined,
+  id: string,
+): void {
   withHost(owner, (host) => {
     if (!host.insets.delete(id)) return;
     notify(host);
@@ -606,13 +716,21 @@ export interface WithAppScaleOptions {
   idPrefix?: string;
 }
 
-export function withAppScale(
-  options: WithAppScaleOptions = {},
-): MachinePlugin {
+interface MachineStateLike {
+  matches?: (value: string) => boolean;
+  hasTag?: (tag: string) => boolean;
+}
+
+interface MachineWithSubscribeLike {
+  service?: { state?: MachineStateLike | undefined } | undefined;
+  subscribe?: (fn: () => void) => () => void;
+}
+
+export function withAppScale(options: WithAppScaleOptions = {}): MachinePlugin {
   let scaleCounter = 0;
   const syncInstanceScale = (
-    instance: any,
-    machine: any,
+    instance: AppOwnerInstance,
+    machine: MachineWithSubscribeLike,
     propKey?: string,
   ) => {
     const props = instance.data;
@@ -629,11 +747,12 @@ export function withAppScale(
       !isClosedOrClosing &&
       Boolean(
         isExplicitOpen ||
-          state?.hasTag?.("open") ||
-          state?.matches?.("open") ||
-          state?.matches?.("dragging"),
+        state?.hasTag?.("open") ||
+        state?.matches?.("open") ||
+        state?.matches?.("dragging"),
       );
-    const scaleId = instance.__cuiScaleId;
+    const scaleId = instance.__cuiScaleId ?? "";
+    if (!scaleId) return;
     if (shouldScale !== Boolean(instance.__cuiScaled)) {
       instance.__cuiScaled = shouldScale;
       instance.__cuiScaleFactor = props?.scaleFactor;
@@ -657,44 +776,71 @@ export function withAppScale(
       });
     }
   };
+  const observerBehavior = createBehaviorRef({
+    observers: {
+      "shouldScaleBackground, scaleFactor, scaleBackground"(
+        this: AppOwnerInstance,
+      ) {
+        if (this.__codeUiMachine) {
+          syncInstanceScale(
+            this,
+            this.__codeUiMachine as MachineWithSubscribeLike,
+            "scale",
+          );
+        }
+      },
+    },
+  });
   return {
     name: "scale-background",
-    behaviors: [cuiAppChildBehavior],
+    behaviors: [cuiAppChildBehavior, observerBehavior],
     setupRelations(relations) {
       setupAppRelations(relations, "child");
     },
     onAttached(instance) {
-      instance.__cuiScaleId = `${options.idPrefix ?? "scale"}:${++scaleCounter}`;
-      instance.__cuiScaled = false;
+      const owner = instance as AppOwnerInstance;
+      owner.__cuiScaleId = `${options.idPrefix ?? "scale"}:${++scaleCounter}`;
+      owner.__cuiScaled = false;
     },
     onMachineStarted(instance, machine) {
-      const check = () => syncInstanceScale(instance, machine);
-      instance.__cuiScaleUnsub = machine.subscribe(check);
+      const owner = instance as AppOwnerInstance;
+      const check = () =>
+        syncInstanceScale(
+          owner,
+          machine as unknown as MachineWithSubscribeLike,
+        );
+      owner.__cuiScaleUnsub = machine.subscribe(check);
       check();
     },
     onPropChanged(instance, propKey) {
+      const owner = instance as AppOwnerInstance;
       if (
         (propKey === "shouldScaleBackground" ||
           propKey === "scaleFactor" ||
           propKey === "scaleBackground" ||
           propKey === "open") &&
-        instance.__codeUiMachine
+        owner.__codeUiMachine
       ) {
-        syncInstanceScale(instance, instance.__codeUiMachine, propKey);
+        syncInstanceScale(
+          owner,
+          owner.__codeUiMachine as MachineWithSubscribeLike,
+          propKey,
+        );
       }
     },
     onDetached(instance) {
-      if (instance.__cuiScaleDragging) {
-        instance.__cuiScaleDragging = false;
-        instance.__cuiScaleDragRafPending = false;
-        if (instance.data?.shouldScaleBackground) {
-          notifyScaleGestureEnd(instance, false);
+      const owner = instance as AppOwnerInstance;
+      if (owner.__cuiScaleDragging) {
+        owner.__cuiScaleDragging = false;
+        owner.__cuiScaleDragRafPending = false;
+        if (owner.data?.shouldScaleBackground) {
+          notifyScaleGestureEnd(owner, false);
         }
       }
-      instance.__cuiScaleUnsub?.();
-      if (instance.__cuiScaled) {
-        releaseAppScale(instance, instance.__cuiScaleId);
-        instance.__cuiScaled = false;
+      owner.__cuiScaleUnsub?.();
+      if (owner.__cuiScaled && owner.__cuiScaleId) {
+        releaseAppScale(owner, owner.__cuiScaleId);
+        owner.__cuiScaled = false;
       }
     },
   };
@@ -703,47 +849,51 @@ export function withAppScale(
 export interface WithAppInsetOptions {
   edge?: AppInsetEdge;
   idPrefix?: string;
-  isStack?: (props: any) => boolean;
+  isStack?: (props: AppOwnerData | undefined) => boolean;
 }
 
-export function withAppInset(options: WithAppInsetOptions = {}): any {
-  if (typeof Behavior === "undefined") return {};
+export function withAppInset(
+  options: WithAppInsetOptions = {},
+): MiniappBehaviorRef {
   let insetCounter = 0;
   const edge = options.edge ?? "top";
-  const relations: Record<string, any> = {};
+  const relations: Record<string, WechatMiniprogram.Component.RelationOption> =
+    {};
   setupAppRelations(relations, "child");
-  return Behavior({
+  return createBehaviorRef({
     behaviors: [cuiAppChildBehavior],
     relations,
     lifetimes: {
-      attached(this: any) {
+      attached(this: AppOwnerInstance) {
         this.__cuiInsetId = `${options.idPrefix ?? "inset"}:${++insetCounter}`;
         this.__cuiInsetEdge = edge;
         this.__cuiRegisteredSize = 0;
       },
-      detached(this: any) {
-        if (this.__cuiRegisteredSize > 0) {
+      detached(this: AppOwnerInstance) {
+        if ((this.__cuiRegisteredSize ?? 0) > 0 && this.__cuiInsetId) {
           unregisterInset(this, this.__cuiInsetId);
           this.__cuiRegisteredSize = 0;
         }
       },
     },
     methods: {
-      setAppInset(this: any, size: number) {
+      setAppInset(this: AppOwnerInstance, size: number) {
         const props = this.data;
         const isStack = options.isStack
           ? options.isStack(props)
           : props?.mode !== "overlay";
+        const insetId = this.__cuiInsetId;
+        if (!insetId) return;
         if (!isStack || size <= 0) {
-          if (this.__cuiRegisteredSize > 0) {
-            unregisterInset(this, this.__cuiInsetId);
+          if ((this.__cuiRegisteredSize ?? 0) > 0) {
+            unregisterInset(this, insetId);
             this.__cuiRegisteredSize = 0;
           }
           return;
         }
         this.__cuiRegisteredSize = size;
         registerInset(this, {
-          id: this.__cuiInsetId,
+          id: insetId,
           edge,
           size,
         });
@@ -761,7 +911,10 @@ export function withAppBannerInset(
 ): MachinePlugin {
   let bannerCounter = 0;
 
-  const syncBanner = (instance: any, machine: any) => {
+  const syncBanner = (
+    instance: AppOwnerInstance,
+    machine: MachineWithSubscribeLike,
+  ) => {
     const props = instance.data;
     const state = machine.service?.state;
     const isClosedOrClosing =
@@ -781,9 +934,8 @@ export function withAppBannerInset(
     const autoInset = props?.autoInset !== false;
     const mode =
       props?.mode || (props?.placement === "inline" ? "inline" : "fixed");
-    const edge: AppInsetEdge =
-      props?.placement === "bottom" ? "bottom" : "top";
-    const bannerId = instance.__cuiBannerInsetId;
+    const edge: AppInsetEdge = props?.placement === "bottom" ? "bottom" : "top";
+    const bannerId = instance.__cuiBannerInsetId ?? "";
 
     if (!isOpen || !autoInset || mode === "inline") {
       instance.__cuiBannerHeight = 0;
@@ -791,7 +943,7 @@ export function withAppBannerInset(
         clearTimeout(instance.__cuiMeasureRetryTimer);
         instance.__cuiMeasureRetryTimer = null;
       }
-      if (instance.__cuiRegisteredBannerSize > 0) {
+      if ((instance.__cuiRegisteredBannerSize ?? 0) > 0 && bannerId) {
         unregisterInset(instance, bannerId);
         instance.__cuiRegisteredBannerSize = 0;
         instance.__cuiRegisteredBannerEdge = undefined;
@@ -809,7 +961,7 @@ export function withAppBannerInset(
     }
 
     if (height <= 0) {
-      if (instance.__cuiRegisteredBannerSize > 0) {
+      if ((instance.__cuiRegisteredBannerSize ?? 0) > 0 && bannerId) {
         unregisterInset(instance, bannerId);
         instance.__cuiRegisteredBannerSize = 0;
         instance.__cuiRegisteredBannerEdge = undefined;
@@ -822,7 +974,8 @@ export function withAppBannerInset(
     if (
       (instance.__cuiRegisteredBannerEdge !== edge ||
         instance.__cuiRegisteredBannerSize !== height) &&
-      instance.__cuiRegisteredBannerSize > 0
+      (instance.__cuiRegisteredBannerSize ?? 0) > 0 &&
+      bannerId
     ) {
       unregisterInset(instance, bannerId);
     }
@@ -833,22 +986,29 @@ export function withAppBannerInset(
     instance.__cuiInsetEdge = edge;
     instance.__cuiRegisteredSize = height;
 
-    registerInset(instance, {
-      id: bannerId,
-      edge,
-      size: height,
-    });
+    if (bannerId) {
+      registerInset(instance, {
+        id: bannerId,
+        edge,
+        size: height,
+      });
+    }
   };
 
-  const measureBanner = (instance: any, retry = 0) => {
+  const measureBanner = (instance: AppOwnerInstance, retry = 0) => {
     const canQuery =
       typeof instance?.createSelectorQuery === "function" || isMiniApp();
     if (!canQuery) return;
 
-    queryRect(".cui-banner-root", instance)
+    queryRect(
+      ".cui-banner-root",
+      instance as unknown as WechatMiniprogram.Component.TrivialInstance,
+    )
       .then((res) => {
         const props = instance.data;
-        const state = instance.__codeUiMachine?.service?.state;
+        const state = (
+          instance.__codeUiMachine as MachineWithSubscribeLike | undefined
+        )?.service?.state;
         const isClosedOrClosing =
           state?.matches?.("closed") ||
           state?.matches?.("closing") ||
@@ -867,10 +1027,13 @@ export function withAppBannerInset(
             if (instance.__cuiMeasureRetryTimer) {
               clearTimeout(instance.__cuiMeasureRetryTimer);
             }
-            instance.__cuiMeasureRetryTimer = setTimeout(() => {
-              instance.__cuiMeasureRetryTimer = null;
-              measureBanner(instance, retry + 1);
-            }, 30 * (retry + 1));
+            instance.__cuiMeasureRetryTimer = setTimeout(
+              () => {
+                instance.__cuiMeasureRetryTimer = null;
+                measureBanner(instance, retry + 1);
+              },
+              30 * (retry + 1),
+            );
           }
           return;
         }
@@ -884,7 +1047,10 @@ export function withAppBannerInset(
         ) {
           instance.__cuiBannerHeight = height;
           if (instance.__codeUiMachine) {
-            syncBanner(instance, instance.__codeUiMachine);
+            syncBanner(
+              instance,
+              instance.__codeUiMachine as MachineWithSubscribeLike,
+            );
           }
         }
       })
@@ -901,7 +1067,7 @@ export function withAppBannerInset(
       });
   };
 
-  const scheduleMeasure = (instance: any) => {
+  const scheduleMeasure = (instance: AppOwnerInstance) => {
     if (instance.__cuiMeasureRetryTimer) {
       clearTimeout(instance.__cuiMeasureRetryTimer);
       instance.__cuiMeasureRetryTimer = null;
@@ -921,79 +1087,101 @@ export function withAppBannerInset(
     });
   };
 
+  const observerBehavior = createBehaviorRef({
+    observers: {
+      "placement, mode, autoInset, size, title, description, caption, badge, actions, image, more, close"(
+        this: AppOwnerInstance,
+      ) {
+        if (!this.__cuiBannerInsetId) return;
+        scheduleMeasure(this);
+        if (this.__codeUiMachine) {
+          syncBanner(this, this.__codeUiMachine as MachineWithSubscribeLike);
+        }
+      },
+    },
+  });
+
   return {
     name: "banner-layout-inset",
-    behaviors: [cuiAppChildBehavior],
+    behaviors: [cuiAppChildBehavior, observerBehavior],
     setupRelations(relations) {
       setupAppRelations(relations, "child");
     },
     onAttached(instance) {
-      instance.__cuiBannerInsetId = `${options.idPrefix ?? "banner"}:${++bannerCounter}`;
-      instance.__cuiRegisteredBannerSize = 0;
-      instance.__cuiRegisteredBannerEdge = undefined;
-      instance.__cuiBannerHeight = 0;
-      instance.__cuiLastKnownHeight = 0;
-      instance.__cuiBannerMeasureQueued = false;
-      instance.__cuiBannerMeasureNeedsRerun = false;
-      instance.__cuiMeasureRetryTimer = null;
+      const owner = instance as AppOwnerInstance;
+      owner.__cuiBannerInsetId = `${options.idPrefix ?? "banner"}:${++bannerCounter}`;
+      owner.__cuiRegisteredBannerSize = 0;
+      owner.__cuiRegisteredBannerEdge = undefined;
+      owner.__cuiBannerHeight = 0;
+      owner.__cuiLastKnownHeight = 0;
+      owner.__cuiBannerMeasureQueued = false;
+      owner.__cuiBannerMeasureNeedsRerun = false;
+      owner.__cuiMeasureRetryTimer = null;
     },
     onMachineStarted(instance, machine) {
-      instance.__cuiBannerUnsub = machine.subscribe(() => {
-        const state = machine.service?.state;
+      const owner = instance as AppOwnerInstance;
+      owner.__cuiBannerUnsub = machine.subscribe(() => {
+        const state = machine.service?.state as MachineStateLike | undefined;
         const isOpen = state?.hasTag?.("open") || state?.matches?.("open");
         if (isOpen) {
           if (
-            Number(instance.__cuiBannerHeight || 0) <= 0 &&
-            Number(instance.__cuiLastKnownHeight || 0) > 0
+            Number(owner.__cuiBannerHeight || 0) <= 0 &&
+            Number(owner.__cuiLastKnownHeight || 0) > 0
           ) {
-            instance.__cuiBannerHeight = Number(instance.__cuiLastKnownHeight);
+            owner.__cuiBannerHeight = Number(owner.__cuiLastKnownHeight);
           }
-          scheduleMeasure(instance);
+          scheduleMeasure(owner);
         }
-        syncBanner(instance, machine);
+        syncBanner(owner, machine as unknown as MachineWithSubscribeLike);
       });
-      syncBanner(instance, machine);
+      syncBanner(owner, machine as unknown as MachineWithSubscribeLike);
     },
     onReady(instance) {
-      scheduleMeasure(instance);
+      scheduleMeasure(instance as AppOwnerInstance);
     },
     onPropChanged(instance, propKey, val) {
+      const owner = instance as AppOwnerInstance;
       if (propKey === "open") {
         if (val) {
-          if (Number(instance.__cuiLastKnownHeight || 0) > 0) {
-            instance.__cuiBannerHeight = Number(instance.__cuiLastKnownHeight);
-            if (instance.__codeUiMachine) {
-              syncBanner(instance, instance.__codeUiMachine);
+          if (Number(owner.__cuiLastKnownHeight || 0) > 0) {
+            owner.__cuiBannerHeight = Number(owner.__cuiLastKnownHeight);
+            if (owner.__codeUiMachine) {
+              syncBanner(
+                owner,
+                owner.__codeUiMachine as MachineWithSubscribeLike,
+              );
             }
           }
-        } else {
-          if (instance.__codeUiMachine) {
-            syncBanner(instance, instance.__codeUiMachine);
-          }
+        } else if (owner.__codeUiMachine) {
+          syncBanner(owner, owner.__codeUiMachine as MachineWithSubscribeLike);
         }
       }
-      scheduleMeasure(instance);
-      if (instance.__codeUiMachine) {
-        syncBanner(instance, instance.__codeUiMachine);
+      scheduleMeasure(owner);
+      if (owner.__codeUiMachine) {
+        syncBanner(owner, owner.__codeUiMachine as MachineWithSubscribeLike);
       }
     },
     onDetached(instance) {
-      instance.__cuiBannerUnsub?.();
-      instance.__cuiBannerUnsub = undefined;
-      instance.__cuiBannerMeasureQueued = false;
-      instance.__cuiBannerMeasureNeedsRerun = false;
-      if (instance.__cuiMeasureRetryTimer) {
-        clearTimeout(instance.__cuiMeasureRetryTimer);
-        instance.__cuiMeasureRetryTimer = null;
+      const owner = instance as AppOwnerInstance;
+      owner.__cuiBannerUnsub?.();
+      owner.__cuiBannerUnsub = undefined;
+      owner.__cuiBannerMeasureQueued = false;
+      owner.__cuiBannerMeasureNeedsRerun = false;
+      if (owner.__cuiMeasureRetryTimer) {
+        clearTimeout(owner.__cuiMeasureRetryTimer);
+        owner.__cuiMeasureRetryTimer = null;
       }
-      if (instance.__cuiRegisteredBannerSize > 0) {
-        unregisterInset(instance, instance.__cuiBannerInsetId);
-        instance.__cuiRegisteredBannerSize = 0;
-        instance.__cuiRegisteredBannerEdge = undefined;
-        instance.__cuiRegisteredSize = 0;
-        instance.__cuiInsetEdge = undefined;
+      if (
+        (owner.__cuiRegisteredBannerSize ?? 0) > 0 &&
+        owner.__cuiBannerInsetId
+      ) {
+        unregisterInset(owner, owner.__cuiBannerInsetId);
+        owner.__cuiRegisteredBannerSize = 0;
+        owner.__cuiRegisteredBannerEdge = undefined;
+        owner.__cuiRegisteredSize = 0;
+        owner.__cuiInsetEdge = undefined;
       }
-      instance.__cuiBannerHeight = 0;
+      owner.__cuiBannerHeight = 0;
     },
   };
 }
@@ -1083,17 +1271,22 @@ export function refreshAppMetrics(): AppMetrics {
 
 export interface AppHostBehaviorOptions {
   detectBars: (
-    appInstance: any,
-    cb: (result: { topRect: any; bottomRect: any }) => void,
+    appInstance: AppOwnerInstance,
+    cb: (result: {
+      topRect?: RectLike | null | undefined;
+      bottomRect?: RectLike | null | undefined;
+    }) => void,
   ) => void;
-  extractTopBarHeight: (rect?: any) => number;
-  extractBottomBarHeight: (rect?: any) => number;
+  extractTopBarHeight: (rect?: RectLike | null) => number;
+  extractBottomBarHeight: (rect?: RectLike | null) => number;
 }
 
-function attachPageAppRef(instance: any): void {
+function attachPageAppRef(instance: AppOwnerInstance): void {
   if (typeof getCurrentPages !== "function") return;
   try {
-    const pages = getCurrentPages();
+    const pages = getCurrentPages() as unknown as Array<
+      AppOwnerInstance | undefined
+    >;
     const topPage = pages && pages[pages.length - 1];
     if (topPage) {
       topPage.__cuiApp = instance;
@@ -1108,25 +1301,25 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
 
   return Behavior({
     lifetimes: {
-      attached(this: any) {
+      attached(this: AppOwnerInstance) {
         this.__cuiAppAttached = true;
         registerAppHost(this, {
-          onChange: (state: AppHostState) => this.applyHostState(state),
+          onChange: (state: AppHostState) => this.applyHostState?.(state),
         });
         attachPageAppRef(this);
       },
 
-      detached(this: any) {
+      detached(this: AppOwnerInstance) {
         this.__cuiAppAttached = false;
         unregisterAppHost(this);
       },
 
-      ready(this: any) {
-        this.detectCustomBars();
+      ready(this: AppOwnerInstance) {
+        this.detectCustomBars?.();
         if (typeof wx !== "undefined" && typeof wx.nextTick === "function") {
           wx.nextTick(() => {
             if (this.__cuiAppAttached) {
-              this.detectCustomBars();
+              this.detectCustomBars?.();
             }
           });
         }
@@ -1134,25 +1327,25 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
     },
 
     pageLifetimes: {
-      show(this: any) {
+      show(this: AppOwnerInstance) {
         attachPageAppRef(this);
         setAppHostVisible(this, true);
-        this.detectCustomBars();
+        this.detectCustomBars?.();
       },
-      hide(this: any) {
+      hide(this: AppOwnerInstance) {
         setAppHostVisible(this, false);
       },
-      resize(this: any) {
+      resize(this: AppOwnerInstance) {
         refreshAppMetrics();
-        this.detectCustomBars();
+        this.detectCustomBars?.();
       },
     },
 
     methods: {
       noop() {},
 
-      detectCustomBars(this: any) {
-        if (!this.data.autoDetectBars) return;
+      detectCustomBars(this: AppOwnerInstance) {
+        if (!this.data?.autoDetectBars) return;
         if (
           typeof wx === "undefined" ||
           typeof wx.createSelectorQuery !== "function"
@@ -1160,26 +1353,29 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
           return;
         }
         try {
-          const applyRects = (topRect: any, bottomRect: any) => {
+          const applyRects = (
+            topRect?: RectLike | null,
+            bottomRect?: RectLike | null,
+          ) => {
             if (!this.__cuiAppAttached) return;
-            const patch: Record<string, any> = {};
+            const patch: Record<string, unknown> = {};
 
             if (topRect && typeof topRect.height === "number") {
               const topHeight = extractTopBarHeight(topRect);
-              if (topHeight !== this.data.detectedTopBarHeight) {
+              if (topHeight !== this.data?.detectedTopBarHeight) {
                 patch.detectedTopBarHeight = topHeight;
               }
             }
 
             if (bottomRect && typeof bottomRect.height === "number") {
               const bottomHeight = extractBottomBarHeight(bottomRect);
-              if (bottomHeight !== this.data.detectedBottomBarHeight) {
+              if (bottomHeight !== this.data?.detectedBottomBarHeight) {
                 patch.detectedBottomBarHeight = bottomHeight;
               }
             }
 
             if (Object.keys(patch).length > 0) {
-              this.setData(patch);
+              this.setData?.(patch);
             }
           };
 
@@ -1191,11 +1387,11 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
         }
       },
 
-      startScaleGesture(this: any) {
+      startScaleGesture(this: AppOwnerInstance) {
         this._lastScaleProgress = undefined;
       },
 
-      applyScaleProgress(this: any, progress: number) {
+      applyScaleProgress(this: AppOwnerInstance, progress: number) {
         const lastP = this._lastScaleProgress ?? -1;
         if (
           Math.abs(progress - lastP) < 0.008 &&
@@ -1206,12 +1402,13 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
         }
         this._lastScaleProgress = progress;
 
-        const factor = this.data.hostScaleFactor || this.data.scaleFactor;
+        const factor =
+          this.data?.hostScaleFactor || this.data?.scaleFactor || 0.94;
         const currentScale = factor + (1 - factor) * progress;
         const currentRadius = Math.round(16 * (1 - progress));
         const currentTopFactor = Math.max(0, 1 - progress);
 
-        this.setData({
+        this.setData?.({
           gestureScaleStyle:
             `transform: scale(${Math.round(currentScale * 1000) / 1000}) translateY(calc(var(--cui-top-offset) * ${Math.round(currentTopFactor * 1000) / 1000})); ` +
             `border-radius: ${currentRadius}px; ` +
@@ -1219,41 +1416,44 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
         });
       },
 
-      endScaleGesture(this: any, passed: boolean) {
+      endScaleGesture(this: AppOwnerInstance, passed: boolean) {
         this._lastScaleProgress = undefined;
-        const patch: Record<string, any> = { gestureScaleStyle: "" };
+        const patch: Record<string, unknown> = { gestureScaleStyle: "" };
         if (passed) {
           patch.scaled = false;
         }
-        this.setData(patch);
+        this.setData?.(patch);
       },
 
-      applyHostState(this: any, state: AppHostState) {
-        const patch: Record<string, any> = {};
+      applyHostState(this: AppOwnerInstance, state: AppHostState) {
+        const patch: Record<string, unknown> = {};
         if (state.scale) {
           const wantScaled = Boolean(state.scale.scaled);
-          if (wantScaled !== Boolean(this.data.scaled)) {
+          if (wantScaled !== Boolean(this.data?.scaled)) {
             patch.scaled = wantScaled;
           }
-          if (state.scale.factor !== this.data.hostScaleFactor) {
+          if (state.scale.factor !== this.data?.hostScaleFactor) {
             patch.hostScaleFactor = state.scale.factor;
           }
-          if (state.scale.background !== this.data.hostScaleBackground) {
+          if (state.scale.background !== this.data?.hostScaleBackground) {
             patch.hostScaleBackground = state.scale.background ?? "";
           }
         }
         if (
-          state.insets.top !== this.data.topInset ||
-          state.insets.bottom !== this.data.bottomInset
+          state.insets.top !== this.data?.topInset ||
+          state.insets.bottom !== this.data?.bottomInset
         ) {
           patch.topInset = state.insets.top;
           patch.bottomInset = state.insets.bottom;
         }
         if (Object.keys(patch).length > 0) {
-          this.setData(patch);
+          this.setData?.(patch);
         }
-        if (this.data.autoDetectBars && this.data.detectedTopBarHeight === 0) {
-          this.detectCustomBars();
+        if (
+          this.data?.autoDetectBars &&
+          this.data?.detectedTopBarHeight === 0
+        ) {
+          this.detectCustomBars?.();
         }
       },
     },

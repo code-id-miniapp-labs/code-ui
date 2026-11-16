@@ -29,10 +29,6 @@ export interface StepperGroupContext {
   readonly step: () => number;
   readonly count: () => number;
   readonly linear: () => boolean;
-  readonly orientation: () => StepperOrientation;
-  readonly color: () => StepperColor;
-  readonly size: () => StepperSize;
-  readonly variant: () => StepperVariant;
   readonly disabled: () => boolean;
 
   setStep: (step: number) => void;
@@ -53,31 +49,20 @@ export interface StepperStepChangeDetails {
 
 export interface StepperItem {
   id?: string | undefined;
-  title?: string | undefined;
-  description?: string | undefined;
-  icon?: string | undefined;
-  completedIcon?: string | undefined;
   disabled?: boolean | undefined;
   value?: string | number | undefined;
-  ui?: Record<string, any> | undefined;
-  [key: string]: any;
 }
 
 export interface StepItemComputed {
   index: number;
   value: string | number;
-  title: string;
-  description: string;
-  icon: string;
-  completedIcon: string;
   status: StepperStatus;
   isCurrent: boolean;
   isCompleted: boolean;
   isUpcoming: boolean;
-  isDisabled: boolean;
+  disabled: boolean;
   isFirst: boolean;
   isLast: boolean;
-  ui: Record<string, any>;
   itemProps: Record<string, any>;
 }
 
@@ -88,8 +73,6 @@ export interface StepperProps {
   ids?: Record<string, any> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes */
-  ui?: StepperUI | undefined;
   /** Controlled active step index (0-based) */
   step?: number | null | undefined;
   /** Controlled active step alias */
@@ -104,14 +87,6 @@ export interface StepperProps {
   linkedCount?: number | undefined;
   /** Whether progression must be strictly sequential */
   linear?: boolean | undefined;
-  /** Layout orientation */
-  orientation?: StepperOrientation | undefined;
-  /** Semantic color variant */
-  color?: StepperColor | undefined;
-  /** Size variant */
-  size?: StepperSize | undefined;
-  /** Visual variant */
-  variant?: StepperVariant | undefined;
   /** Whether the entire stepper is disabled */
   disabled?: boolean | undefined;
   /** Step items rendered in data-driven mode */
@@ -132,13 +107,8 @@ export type StepperDefaultedKey =
   | "count"
   | "linkedCount"
   | "linear"
-  | "orientation"
-  | "color"
-  | "size"
-  | "variant"
   | "disabled"
-  | "items"
-  | "ui";
+  | "items";
 
 export type StepperResolvedProps = Omit<StepperProps, StepperDefaultedKey> & {
   [K in StepperDefaultedKey]-?: Exclude<StepperProps[K], undefined>;

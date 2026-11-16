@@ -272,9 +272,5 @@ export function createFormFieldComputed(fallbackId: string) {
         prop("fieldDisabled") ||
           resolveFormHost(prop, refs)?.fieldState(key(prop, scope))?.disabled,
       ),
-    fieldSize: ({ prop, refs, scope }: any): string =>
-      prop("fieldSize") ||
-      resolveFormHost(prop, refs)?.fieldState(key(prop, scope))?.size ||
-      "",
   };
 }

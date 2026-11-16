@@ -245,4 +245,23 @@ describe("bannerTheme runtime resolution (@code-ui/components)", () => {
     expect(slots.actions).toContain("divide-x");
     expect(slots.action).toContain("flex-1");
   });
+
+  it.each(["soft", "subtle"] as const)(
+    "keeps opaque bg-default root under %s variant tint in fixed mode",
+    (variant) => {
+      const slots = resolveSlots(
+        bannerTheme({
+          placement: "top",
+          mode: "fixed",
+          color: "primary",
+          variant,
+        }),
+        {},
+        "",
+      );
+
+      expect(slots.root.split(" ")).toContain("bg-default");
+      expect(slots.background.split(" ")).toContain("bg-primary_f10");
+    },
+  );
 });

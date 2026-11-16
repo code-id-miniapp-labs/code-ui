@@ -1,7 +1,15 @@
 import type { AnatomyPartName, ComponentUI } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent, MiniAppTouchEventLike } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./button.anatomy";
+
+export interface ButtonTapDetail {
+  x?: number | undefined;
+  y?: number | undefined;
+  promise?: Promise<any> | undefined;
+  setPromise?: ((promise: Promise<any>) => void) | undefined;
+  [key: string]: any;
+}
 export type ButtonVariant =
   | "solid"
   | "outline"
@@ -30,42 +38,27 @@ export interface ButtonProps {
   ids?: Record<string, string> | undefined;
   /** The MiniApp component instance */
   component?: MiniAppComponent | undefined;
-  /** Custom UI slot classes for button anatomy parts */
-  ui?: ButtonUI | undefined;
   /** Whether the button is disabled */
   disabled?: boolean | undefined;
   /** Whether the button is in a loading state */
   loading?: boolean | undefined;
-  /** Visual variant of the button */
-  variant?: ButtonVariant | undefined;
-  /** Color theme of the button */
-  color?: ButtonColor | undefined;
-  /** Size variant of the button */
-  size?: ButtonSize | undefined;
-  /** Whether the button spans full container width */
-  block?: boolean | undefined;
   /** Whether to automatically handle async promise loading */
   loadingAuto?: boolean | undefined;
   /** Duration in ms to auto-reset from success or error back to idle */
   autoResetDuration?: number | undefined;
   /** Callback fired on button tap */
-  onTap?: ((event?: MiniAppTouchEventLike) => void | Promise<any>) | undefined;
+  onTap?: ((detail?: ButtonTapDetail) => void | Promise<any>) | undefined;
 }
 
 export interface ButtonResolvedProps extends ButtonProps {
   disabled: boolean;
   loading: boolean;
-  variant: ButtonVariant;
-  color: ButtonColor;
-  size: ButtonSize;
-  block: boolean;
   loadingAuto: boolean;
   autoResetDuration: number;
-  ui: ButtonUI;
 }
 
 export type ButtonEvent =
-  | { type: "TAP"; event?: MiniAppTouchEventLike | undefined }
+  | { type: "TAP"; detail?: ButtonTapDetail | undefined }
   | { type: "SET_LOADING"; loading: boolean }
   | { type: "SET_DISABLED"; disabled: boolean }
   | { type: "RESOLVE" }
@@ -115,8 +108,8 @@ export interface ButtonApi {
 
   /** Set disabled state manually */
   setDisabled(disabled: boolean): void;
-  /** Dispatch tap event */
-  handleTap(event?: MiniAppTouchEventLike): void;
+  /** Dispatch tap interaction */
+  handleTap(detail?: ButtonTapDetail): void;
 
   /** WXML data & attributes for Root <button> */
   rootProps: Record<string, any>;

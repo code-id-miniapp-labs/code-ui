@@ -8,8 +8,10 @@ import {
   withAppScale,
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
+import { resolveTriggerButtonProps } from "../../utils/subcomponent";
 
 import {
+  type DrawerCloseProps,
   drawerMachine,
   connectDrawer,
   defaultDrawerProps,
@@ -47,6 +49,21 @@ Component(
     },
 
     computed: {
+      resolvedClose() {
+        const classes = this.data.classes as Record<string, string> | undefined;
+        return resolveTriggerButtonProps<DrawerCloseProps>(
+          this.data.close as boolean | DrawerCloseProps | null | undefined,
+          {
+            icon: "close",
+            color: "neutral",
+            variant: "ghost",
+            size: "xs",
+            ui: { icon: classes?.closeIcon ?? "" },
+          },
+          classes?.closeButton,
+        );
+      },
+
       classes() {
         const api = this.data.drawer;
         const placement = this.data.placement;
@@ -63,6 +80,14 @@ Component(
     },
 
     properties: createProperties(defaultDrawerProps, {
+      close: {
+        type: null,
+        value: true,
+      },
+      ui: {
+        type: Object,
+        value: {},
+      },
       className: {
         type: String,
         value: "",

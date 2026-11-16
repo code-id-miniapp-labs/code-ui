@@ -1,43 +1,78 @@
 import type { MachinePlugin } from "../plugin";
+import {
+  createBehaviorRef,
+  createRelationOption,
+  patchInheritedData,
+  resolveInstanceId,
+  resolveParentNode,
+  resolveServiceRef,
+} from "./inherit";
+import type {
+  MiniappBehaviorRef,
+  StepperInstance,
+  StepperItemInstance,
+  StepperVisualData,
+} from "./types";
 
-let stepCounter = 0;
-const getComponentId = (inst: any, explicitId?: string): string =>
-  explicitId || (inst.__cuiStepId ||= `cui-${++stepCounter}`);
+function getStepperVisuals(
+  group: StepperInstance | null | undefined,
+): StepperVisualData {
+  return {
+    groupOrientation: group?.data?.orientation || "",
+    groupColor: group?.data?.color || "",
+    groupSize: group?.data?.size || "",
+    groupVariant: group?.data?.variant || "",
+  };
+}
+
+const EMPTY_STEPPER_VISUALS: StepperVisualData = {
+  groupOrientation: "",
+  groupColor: "",
+  groupSize: "",
+  groupVariant: "",
+};
 
 /**
  * Shared Behavior reference for `<c-stepper>` parent components.
- * Used as relations.target to link descendant <c-stepper-item> components natively.
+ * Used as `relations.target` to link descendant `<c-stepper-item>` components natively.
  */
-export const cuiStepperBehavior: any =
-  typeof Behavior !== "undefined" ? Behavior({}) : {};
-export const cuiStepperParentBehavior: any = cuiStepperBehavior;
+export const cuiStepperBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({});
+export const cuiStepperParentBehavior: MiniappBehaviorRef = cuiStepperBehavior;
 
-export function syncStepperChildren(group: any) {
-  const service = group.__codeUiMachine?.service;
-  const groupContext = service?.refs?.get?.("groupContext");
+const cuiStepperObserverBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    observers: {
+      "orientation, color, size, variant"(this: StepperInstance) {
+        syncStepperChildren(this);
+      },
+    },
+  });
+
+export function syncStepperChildren(group: StepperInstance): void {
+  const groupContext = resolveServiceRef(group, "groupContext");
   const relationChildren =
     typeof group.getRelationNodes === "function"
-      ? group.getRelationNodes("cuiStepperChild")
+      ? group.getRelationNodes<StepperItemInstance>("cuiStepperChild")
       : undefined;
   const templateChildren =
     typeof group.selectAllComponents === "function"
-      ? group.selectAllComponents("c-stepper-item, .cui-stepper-item")
+      ? group.selectAllComponents<StepperItemInstance>(
+          "c-stepper-item, .cui-stepper-item",
+        )
       : undefined;
-  const children: any[] =
+  const children: StepperItemInstance[] =
     Array.isArray(relationChildren) && relationChildren.length > 0
       ? relationChildren
       : Array.isArray(templateChildren) && templateChildren.length > 0
         ? templateChildren
-        : group.__codeUiStepperChildren || [];
+        : (group.__codeUiStepperChildren ?? []);
   const total = children.length;
 
-  if (group.__codeUiMachine) {
-    group.__codeUiMachine.updateProps({ linkedCount: total });
-  }
+  group.__codeUiMachine?.updateProps({ linkedCount: total });
 
-  const groupId =
-    group.data?.id || group.id || group.__codeUiId || getComponentId(group);
-  group.__codeUiId = groupId;
+  const groupId = resolveInstanceId(group, "cui");
+  const visuals = getStepperVisuals(group);
 
   for (let i = 0; i < total; i++) {
     const child = children[i];
@@ -45,39 +80,43 @@ export function syncStepperChildren(group: any) {
     child.__codeUiPendingStepper = group;
     child.__codeUiStepperIndex = i;
     child.__codeUiStepperId = groupId;
-    if (child.__codeUiMachine) {
-      child.__codeUiMachine.updateProps({
-        stepperId: groupId,
-        groupContext,
-        groupIndex: i,
-      });
-    }
+    patchInheritedData<StepperVisualData>(child, visuals);
+    child.__codeUiMachine?.updateProps({
+      stepperId: groupId,
+      groupContext,
+      groupIndex: i,
+    });
   }
 }
 
-export function linkStepperItemToParentGroup(group: any, item: any) {
-  group.__codeUiStepperChildren = group.__codeUiStepperChildren || [];
-  if (!group.__codeUiStepperChildren.includes(item)) {
-    group.__codeUiStepperChildren.push(item);
+export function linkStepperItemToParentGroup(
+  group: StepperInstance,
+  item: StepperItemInstance,
+): void {
+  const children = (group.__codeUiStepperChildren ||= []);
+  if (!children.includes(item)) {
+    children.push(item);
   }
   item.__codeUiPendingStepper = group;
   syncStepperChildren(group);
 }
 
-export function unlinkStepperItemFromParentGroup(group: any, item: any) {
+export function unlinkStepperItemFromParentGroup(
+  group: StepperInstance,
+  item: StepperItemInstance,
+): void {
   if (Array.isArray(group.__codeUiStepperChildren)) {
     group.__codeUiStepperChildren = group.__codeUiStepperChildren.filter(
-      (c: any) => c !== item,
+      (c) => c !== item,
     );
   }
   item.__codeUiPendingStepper = undefined;
-  if (item.__codeUiMachine) {
-    item.__codeUiMachine.updateProps({
-      stepperId: undefined,
-      groupContext: undefined,
-      groupIndex: undefined,
-    });
-  }
+  patchInheritedData<StepperVisualData>(item, EMPTY_STEPPER_VISUALS);
+  item.__codeUiMachine?.updateProps({
+    stepperId: undefined,
+    groupContext: undefined,
+    groupIndex: undefined,
+  });
   syncStepperChildren(group);
 }
 
@@ -85,94 +124,107 @@ export function unlinkStepperItemFromParentGroup(group: any, item: any) {
  * Shared Behavior reference for `<c-stepper-item>` child components.
  * Automatically links to ancestor `<c-stepper>`.
  */
-export const cuiStepperItemBehavior: any =
-  typeof Behavior !== "undefined"
-    ? Behavior({
-        relations: {
-          cuiStepperParent: {
-            type: "ancestor",
-            target: cuiStepperBehavior,
-            linked(this: any, target: any) {
-              linkStepperItemToParentGroup(target, this);
-            },
-            unlinked(this: any, target: any) {
-              unlinkStepperItemFromParentGroup(target, this);
-            },
-          },
+export const cuiStepperItemBehavior: MiniappBehaviorRef =
+  /* @__PURE__ */ createBehaviorRef({
+    data: { ...EMPTY_STEPPER_VISUALS },
+    relations: {
+      cuiStepperParent: {
+        type: "ancestor",
+        target: cuiStepperBehavior,
+        linked(this: StepperItemInstance, target: StepperInstance) {
+          linkStepperItemToParentGroup(target, this);
         },
-      })
-    : {};
+        unlinked(this: StepperItemInstance, target: StepperInstance) {
+          unlinkStepperItemFromParentGroup(target, this);
+        },
+      },
+    },
+  });
 
 export function setupStepperRelations(
   relations: Record<string, WechatMiniprogram.Component.RelationOption>,
   options: { stepper?: boolean; stepperItem?: boolean },
-) {
+): void {
   if (options.stepper) {
-    relations.cuiStepperChild = {
+    relations.cuiStepperChild = createRelationOption<
+      StepperInstance,
+      StepperItemInstance
+    >({
       type: "descendant",
       target: cuiStepperItemBehavior,
-      linked(this: any, target: any) {
+      linked(this: StepperInstance, target: StepperItemInstance) {
         linkStepperItemToParentGroup(this, target);
       },
-      unlinked(this: any, target: any) {
+      unlinked(this: StepperInstance, target: StepperItemInstance) {
         unlinkStepperItemFromParentGroup(this, target);
       },
-    };
+    });
+  }
+  if (options.stepperItem) {
+    relations.cuiStepperParent = createRelationOption<
+      StepperItemInstance,
+      StepperInstance
+    >({
+      type: "ancestor",
+      target: cuiStepperBehavior,
+      linked(this: StepperItemInstance, target: StepperInstance) {
+        linkStepperItemToParentGroup(target, this);
+      },
+      unlinked(this: StepperItemInstance, target: StepperInstance) {
+        unlinkStepperItemFromParentGroup(target, this);
+      },
+    });
   }
 }
 
 export function handleStepperAttached(
-  instance: any,
-  initialProps: Record<string, any>,
+  instance: StepperItemInstance,
+  initialProps: Record<string, unknown>,
   options: { stepper?: boolean; stepperItem?: boolean },
-) {
-  if (options.stepperItem) {
-    const parent =
-      instance.__codeUiPendingStepper ??
-      (typeof instance.getRelationNodes === "function"
-        ? instance.getRelationNodes("cuiStepperParent")?.[0]
-        : undefined);
-    if (parent) {
-      const pService = parent.__codeUiMachine?.service;
-      const groupContext = pService?.refs?.get?.("groupContext");
-      if (groupContext) {
-        initialProps.groupContext = groupContext;
-      }
-      if (instance.__codeUiStepperIndex !== undefined) {
-        initialProps.groupIndex = instance.__codeUiStepperIndex;
-      }
-      const sid =
-        instance.__codeUiStepperId ??
-        parent.data?.id ??
-        parent.id ??
-        parent.__codeUiId;
-      if (sid !== undefined) {
-        initialProps.stepperId = sid;
-      }
-    }
+): void {
+  if (!options.stepperItem) return;
+  const parent = resolveParentNode<StepperInstance>(
+    instance,
+    instance.__codeUiPendingStepper,
+    "cuiStepperParent",
+  );
+  if (!parent) return;
+
+  patchInheritedData<StepperVisualData>(instance, getStepperVisuals(parent));
+  const groupContext = resolveServiceRef(parent, "groupContext");
+  if (groupContext !== undefined) {
+    initialProps.groupContext = groupContext;
+  }
+  if (instance.__codeUiStepperIndex !== undefined) {
+    initialProps.groupIndex = instance.__codeUiStepperIndex;
+  }
+  const sid = instance.__codeUiStepperId ?? resolveInstanceId(parent);
+  if (sid !== undefined) {
+    initialProps.stepperId = sid;
   }
 }
 
 export function handleStepperMachineStarted(
-  instance: any,
+  instance: StepperInstance,
   options: { stepper?: boolean; stepperItem?: boolean },
-) {
+): void {
   if (options.stepper) {
     syncStepperChildren(instance);
   }
 }
 
 export function handleStepperReady(
-  instance: any,
+  instance: StepperInstance | StepperItemInstance,
   options: { stepper?: boolean; stepperItem?: boolean },
-) {
+): void {
   if (options.stepper) {
-    syncStepperChildren(instance);
+    syncStepperChildren(instance as StepperInstance);
   }
   if (options.stepperItem && typeof instance.getRelationNodes === "function") {
-    const parents = instance.getRelationNodes("cuiStepperParent");
-    if (parents && parents.length > 0) {
-      linkStepperItemToParentGroup(parents[0], instance);
+    const parents =
+      instance.getRelationNodes<StepperInstance>("cuiStepperParent");
+    if (parents && parents.length > 0 && parents[0]) {
+      linkStepperItemToParentGroup(parents[0], instance as StepperItemInstance);
     }
   }
 }
@@ -180,15 +232,17 @@ export function handleStepperReady(
 export function withStepper(): MachinePlugin {
   return {
     name: "stepper",
-    behaviors: [cuiStepperBehavior],
+    behaviors: [cuiStepperBehavior, cuiStepperObserverBehavior],
     setupRelations(relations) {
       setupStepperRelations(relations, { stepper: true });
     },
     onMachineStarted(instance) {
-      handleStepperMachineStarted(instance, { stepper: true });
+      handleStepperMachineStarted(instance as StepperInstance, {
+        stepper: true,
+      });
     },
     onReady(instance) {
-      handleStepperReady(instance, { stepper: true });
+      handleStepperReady(instance as StepperInstance, { stepper: true });
     },
   };
 }
@@ -201,10 +255,14 @@ export function withStepperItem(): MachinePlugin {
       setupStepperRelations(relations, { stepperItem: true });
     },
     onAttached(instance, initialProps) {
-      handleStepperAttached(instance, initialProps, { stepperItem: true });
+      handleStepperAttached(instance as StepperItemInstance, initialProps, {
+        stepperItem: true,
+      });
     },
     onReady(instance) {
-      handleStepperReady(instance, { stepperItem: true });
+      handleStepperReady(instance as StepperItemInstance, {
+        stepperItem: true,
+      });
     },
   };
 }

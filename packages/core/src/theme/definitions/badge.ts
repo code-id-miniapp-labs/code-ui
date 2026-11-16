@@ -1,12 +1,11 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function badgeTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
@@ -16,15 +15,18 @@ export default function badgeTheme(options: ThemeOptions = {}) {
       trailing: "shrink-0",
     },
     variants: {
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         xs: {
           root: "px-1 py-0.5 gap-1.5 rounded-sm",
-          text: "text-[8px]/3",
+          text: "text-3xs/3",
         },
         sm: {
-          root: "text-[10px]/3 px-1.5 py-1 gap-1.5 rounded-sm",
-          text: "text-[10px]/3",
+          root: "text-2xs/3 px-1.5 py-1 gap-1.5 rounded-sm",
+          text: "text-2xs/3",
         },
         md: {
           root: "px-2 py-1 gap-1.5 rounded-md",
@@ -52,27 +54,48 @@ export default function badgeTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         variant: "solid" as const,
         class: {
           root: `bg-${color}`,
         },
       })),
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      {
+        color: "neutral" as const,
+        variant: "solid" as const,
+        class: {
+          root: "bg-neutral",
+        },
+      },
+      ...colors.map((color) => ({
+        color,
         variant: "outline" as const,
         class: {
           root: `border-${color} text-${color}`,
         },
       })),
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      {
+        color: "neutral" as const,
+        variant: "outline" as const,
+        class: {
+          root: "border-neutral text-neutral",
+        },
+      },
+      ...colors.map((color) => ({
+        color,
         variant: "soft" as const,
         class: {
           root: `bg-${color}/20 text-${color}`,
         },
       })),
+      {
+        color: "neutral" as const,
+        variant: "soft" as const,
+        class: {
+          root: "bg-neutral/20 text-neutral",
+        },
+      },
     ],
     defaultVariants: {
       color: "primary",

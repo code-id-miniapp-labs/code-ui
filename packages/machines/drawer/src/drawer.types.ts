@@ -19,6 +19,16 @@ export interface OpenChangeDetails {
   open: boolean;
 }
 
+export interface DrawerCloseProps {
+  icon?: string | undefined;
+  color?: string | undefined;
+  variant?: string | undefined;
+  size?: string | undefined;
+  disabled?: boolean | undefined;
+  ui?: Record<string, any> | undefined;
+  className?: string | undefined;
+}
+
 export interface DrawerProps {
   /** The unique id of the component */
   id?: string;
@@ -26,8 +36,6 @@ export interface DrawerProps {
   ids?: Record<string, string>;
   /** The MiniApp component instance */
   component?: MiniAppComponent;
-  /** Custom UI slot classes for drawer anatomy parts */
-  ui?: DrawerUI;
   /** Placement direction of the drawer sheet */
   placement?: Placement;
   /** Whether the drawer is open (controlled) */
@@ -65,7 +73,6 @@ export interface DrawerResolvedProps extends DrawerProps {
   shouldScaleBackground: boolean;
   scaleFactor: number;
   scaleBackground: string;
-  ui: DrawerUI;
 }
 
 export type DrawerEvent =

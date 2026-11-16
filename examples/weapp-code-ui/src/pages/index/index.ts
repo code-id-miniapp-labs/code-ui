@@ -1,223 +1,573 @@
-Page({
-  data: {
-    components: [
-      {
-        id: "avatar",
-        name: "Avatar",
-        desc: "User profile representation with image, initials, and icon fallbacks.",
-        badge: "Display",
-        path: "/pages/avatar/index",
-      },
-      {
-        id: "avatar-group",
-        name: "AvatarGroup",
-        desc: "Stack multiple avatars with overlapping offsets, border rings, and overflow counter (+N).",
-        badge: "Display",
-        path: "/pages/avatar-group/index",
-      },
-      {
-        id: "badge",
-        name: "Badge",
-        desc: "-",
-        badge: "Display",
-        path: "/pages/badge/index",
-      },
-      {
-        id: "skeleton",
-        name: "Skeleton",
-        desc: "-",
-        badge: "Display",
-        path: "/pages/skeleton/index",
-      },
-      {
-        id: "divider",
-        name: "Divider",
-        desc: "Separators with labels, icons, slots, horizontal/vertical orientations, and styling.",
-        badge: "Display",
-        path: "/pages/divider/index",
-      },
-      {
-        id: "button",
-        name: "Button",
-        desc: "Interactive triggers with solid, outline, soft variants & async auto-loading.",
-        badge: "Interactive",
-        path: "/pages/button/index",
-      },
-      {
-        id: "input",
-        name: "Input",
-        desc: "Text input with controlled value, clearable button, leading/trailing icons & Form link.",
-        badge: "Interactive",
-        path: "/pages/input/index",
-      },
-      {
-        id: "pin-input",
-        name: "PinInput",
-        desc: "OTP cells with auto-advance, password masking & separator dividers.",
-        badge: "Interactive",
-        path: "/pages/pin-input/index",
-      },
-      {
-        id: "progress",
-        name: "Progress",
-        desc: "Accessible linear and circular progress indicators with indeterminate, striped, and animated states.",
-        badge: "Interactive",
-        path: "/pages/progress/index",
-      },
-      {
-        id: "pull-down-refresh",
-        name: "PullDownRefresh",
-        desc: "Gesture-driven pull-to-refresh scroll container with configurable threshold, loading states, and a success phase.",
-        badge: "Interactive",
-        path: "/pages/pull-down-refresh/index",
-      },
-      {
-        id: "switch",
-        name: "Switch",
-        desc: "Toggle switch, controlled checked, custom colors, sizes, and Form link.",
-        badge: "Interactive",
-        path: "/pages/switch/index",
-      },
-      {
-        id: "slider",
-        name: "Slider",
-        desc: "Continuous & stepped range selection with single/dual thumbs, markers & Form link.",
-        badge: "Form",
-        path: "/pages/slider/index",
-      },
-      {
-        id: "checkbox",
-        name: "Checkbox & CheckboxGroup",
-        desc: "Accessible checkbox and multi-select groups with indeterminate state, card variants, min/max limits & Form link.",
-        badge: "Interactive",
-        path: "/pages/checkbox/index",
-      },
-      {
-        id: "radio",
-        name: "Radio & RadioGroup",
-        desc: "Accessible radio buttons with pure CSS geometry, card variants, horizontal layout, useChild & Form link.",
-        badge: "Interactive",
-        path: "/pages/radio/index",
-      },
-      {
-        id: "textarea",
-        name: "Textarea",
-        desc: "Multi-line textarea, controlled value, character counter, auto-height, and Form link.",
-        badge: "Interactive",
-        path: "/pages/textarea/index",
-      },
-      {
-        id: "card",
-        name: "Card",
-        desc: "Containers with structured header, body, footer slots & surface styling.",
-        badge: "Layout",
-        path: "/pages/card/index",
-      },
-      {
-        id: "chip",
-        name: "Chip",
-        desc: "Corner badge indicators, counters, and standalone notification pills.",
-        badge: "Display",
-        path: "/pages/chip/index",
-      },
-      {
-        id: "icon",
-        name: "Icon",
-        desc: "Vector icon masks with dynamic collections, semantic colors, sizing, and spinning animation.",
-        badge: "Display",
-        path: "/pages/icon/index",
-      },
-      {
-        id: "drawer",
-        name: "Drawer",
-        desc: "Gesture-driven bottom sheet with backdrop dimming & multiple placements.",
-        badge: "Interactive",
-        path: "/pages/drawer/index",
-      },
-      {
-        id: "file-upload",
-        name: "FileUpload",
-        desc: "WeChat media & file selector supporting preview, progress, validation, grid/list layouts & Form link.",
-        badge: "Interactive",
-        path: "/pages/file-upload/index",
-      },
-      {
-        id: "form",
-        name: "Form & Validation",
-        desc: "Form validation engine with errorBag, rules, focusOnError & coexisting forms.",
-        badge: "Form",
-        path: "/pages/form/index",
-      },
-      {
-        id: "use-child",
-        name: "useChild (Scoped Slots)",
-        desc: "Reactive snapshot subscription to child components without event emitters or manual setData.",
-        badge: "Composable",
-        path: "/pages/use-child/index",
-      },
-      {
-        id: "qr-code",
-        name: "QR Code",
-        desc: "Universal QR code generator powered by uqr, with SVG path rendering, custom error correction levels, sizes, colors, and center overlay logo.",
-        badge: "Interactive",
-        path: "/pages/qr-code/index",
-      },
-      {
-        id: "stepper",
-        name: "Stepper",
-        desc: "Progress indicators for multi-step workflows with compound items, custom slots, linear guards, and vertical orientation.",
-        badge: "Interactive",
-        path: "/pages/stepper/index",
-      },
-      {
-        id: "accordion",
-        name: "Accordion",
-        desc: "Collapsible disclosure panels supporting single/multiple selection, compound slots, variants, and programmatically driven items.",
-        badge: "Interactive",
-        path: "/pages/accordion/index",
-      },
-      {
-        id: "swipe-cell",
-        name: "SwipeCell",
-        desc: "Gesture-driven swipeable cell with single/multi actions, bidirectional swiping, custom slots, and external control.",
-        badge: "Interactive",
-        path: "/pages/swipe-cell/index",
-      },
-      {
-        id: "tabs",
-        name: "Tabs",
-        desc: "Tabbed navigation supporting compound items, data-driven lists, pill and link variants, badges, and horizontal/vertical orientations.",
-        badge: "Interactive",
-        path: "/pages/tabs/index",
-      },
-      {
-        id: "toast",
-        name: "Toast",
-        desc: "Toast notifications with Nuxt UI and native iOS/Android HUD modes triggered via useToast() composable.",
-        badge: "Feedback",
-        path: "/pages/toast/index",
-      },
-      {
-        id: "banner",
-        name: "Banner",
-        desc: "Persistent banners with auto layout coordination, custom top-bar/tab-bar insets, Baymard UI philosophy & configurable icons.",
-        badge: "Feedback",
-        path: "/pages/banner/index",
-      },
-      {
-        id: "action-sheet",
-        name: "ActionSheet",
-        desc: "Modal bottom action sheet with actions, status variants, descriptions, WeChat open-type triggers, and custom slots.",
-        badge: "Feedback",
-        path: "/pages/action-sheet/index",
-      },
-    ],
+import {
+  useTheme,
+  useToast,
+  type AppColorMode,
+  type AppThemeState,
+} from "@code-ui/composables";
+import {
+  PRIMARY_COLOR_PRESETS,
+  SECONDARY_COLOR_PRESETS,
+  normalizeExampleColorInput,
+  resetExampleTheme,
+  setExampleColorMode,
+  setExampleColors,
+  syncNavigationBarTheme,
+} from "../../utils/theme";
+
+type CategoryId =
+  | "all"
+  | "form"
+  | "display"
+  | "navigation"
+  | "feedback"
+  | "interaction";
+
+interface ComponentCatalogItem {
+  id: string;
+  name: string;
+  path: string;
+  category: Exclude<CategoryId, "all">;
+  categoryLabel: string;
+  desc: string;
+  icon: string;
+  highlights: string[];
+}
+
+interface CategoryTab {
+  id: CategoryId;
+  label: string;
+  count: number;
+}
+
+const COMPONENT_CATALOG: ComponentCatalogItem[] = [
+  // Form & Input (10)
+  {
+    id: "button",
+    name: "Button",
+    path: "/pages/button/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Triggers actions with solid, outline, soft, subtle, ghost & link variants, loadingAuto & openType.",
+    icon: "i-lucide-mouse-pointer-click",
+    highlights: ["loadingAuto", "openType", "6 variants"],
+  },
+  {
+    id: "input",
+    name: "Input",
+    path: "/pages/input/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Single-line text input with clearable button, leading/trailing icons, highlight & FormField integration.",
+    icon: "i-lucide-text-cursor-input",
+    highlights: ["icons", "clearable", "FormField"],
+  },
+  {
+    id: "textarea",
+    name: "Textarea",
+    path: "/pages/textarea/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Multi-line text field supporting auto-height, max-count indicator, loading state & custom slots.",
+    icon: "i-lucide-align-left",
+    highlights: ["autoresize", "count slot", "variants"],
+  },
+  {
+    id: "pin-input",
+    name: "Pin Input",
+    path: "/pages/pin-input/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Segmented OTP / verification code entry with mask, alphanumeric mode, paste handling & states.",
+    icon: "i-lucide-key-round",
+    highlights: ["OTP", "mask", "alphanumeric"],
+  },
+  {
+    id: "checkbox",
+    name: "Checkbox",
+    path: "/pages/checkbox/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Single & group selection with indeterminate state, card/list indicators, icons & validation.",
+    icon: "i-lucide-check-square",
+    highlights: ["indeterminate", "card variant", "group"],
+  },
+  {
+    id: "radio",
+    name: "Radio",
+    path: "/pages/radio/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Exclusive radio choice & RadioGroup with card, table & indicator positions across all sizes.",
+    icon: "i-lucide-circle-dot",
+    highlights: ["table", "card", "horizontal/vertical"],
+  },
+  {
+    id: "switch",
+    name: "Switch",
+    path: "/pages/switch/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Binary toggle control with custom checked/unchecked icons, async loading & label descriptions.",
+    icon: "i-lucide-toggle-right",
+    highlights: ["loading", "icons", "slots"],
+  },
+  {
+    id: "slider",
+    name: "Slider",
+    path: "/pages/slider/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Touch-gesture range & single-value slider with WXS 60fps drag, tooltips, vertical & inverted modes.",
+    icon: "i-lucide-sliders-horizontal",
+    highlights: ["range", "vertical", "tooltip"],
+  },
+  {
+    id: "file-upload",
+    name: "File Upload",
+    path: "/pages/file-upload/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Media & file uploader supporting area/button layouts, progress tracking, retry & file limits.",
+    icon: "i-lucide-cloud-upload",
+    highlights: ["upload progress", "limits", "dropzone"],
+  },
+  {
+    id: "form",
+    name: "Form",
+    path: "/pages/form/index",
+    category: "form",
+    categoryLabel: "Form",
+    desc: "Full form coordinator with FormField labels/errors, sync/async rules, validateOn & programmatic submit.",
+    icon: "i-lucide-clipboard-check",
+    highlights: ["validation", "FormField", "disabled"],
   },
 
-  navigateToComponent(e: WechatMiniprogram.CustomEvent) {
-    const path = e.currentTarget.dataset.path;
-    if (path) {
-      wx.navigateTo({ url: path });
+  // Data Display (9)
+  {
+    id: "avatar",
+    name: "Avatar",
+    path: "/pages/avatar/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "User profile image with 10 sizes, initials fallback, icon slot, chip indicator & image modes.",
+    icon: "i-lucide-user",
+    highlights: ["3xs-3xl", "chip", "fallback"],
+  },
+  {
+    id: "avatar-group",
+    name: "Avatar Group",
+    path: "/pages/avatar-group/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Overlapping stack of avatars that shares size context and collapses overflow into +N badges.",
+    icon: "i-lucide-users",
+    highlights: ["max overflow", "shared size", "ring"],
+  },
+  {
+    id: "badge",
+    name: "Badge",
+    path: "/pages/badge/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Compact status pills with solid, outline, soft & subtle styles, icons, avatars & 5 sizes.",
+    icon: "i-lucide-badge-check",
+    highlights: ["4 variants", "icons", "5 sizes"],
+  },
+  {
+    id: "card",
+    name: "Card",
+    path: "/pages/card/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Structured surface container featuring header, default & footer slots across 4 card variants.",
+    icon: "i-lucide-credit-card",
+    highlights: ["header/footer", "subtle/soft", "ui"],
+  },
+  {
+    id: "chip",
+    name: "Chip",
+    path: "/pages/chip/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Floating indicator badge attached to corners of icons, avatars & buttons with inset and standAlone.",
+    icon: "i-lucide-circle-alert",
+    highlights: ["positions", "inset", "show toggle"],
+  },
+  {
+    id: "icon",
+    name: "Icon",
+    path: "/pages/icon/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Multi-collection vector icons powered by Iconify (Lucide, Tabler) with semantic color & size scaling.",
+    icon: "i-lucide-sparkles",
+    highlights: ["lucide", "tabler", "sizes"],
+  },
+  {
+    id: "progress",
+    name: "Progress",
+    path: "/pages/progress/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Linear, vertical, circular & indeterminate progress indicators with slots & inverted direction.",
+    icon: "i-lucide-loader",
+    highlights: ["circular", "vertical", "slots"],
+  },
+  {
+    id: "qr-code",
+    name: "QR Code",
+    path: "/pages/qr-code/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "High-precision vector/canvas QR generator with runtime theme colors, overlays, ECC & data URL export.",
+    icon: "i-lucide-qr-code",
+    highlights: ["canvas export", "overlay", "theme color"],
+  },
+  {
+    id: "skeleton",
+    name: "Skeleton",
+    path: "/pages/skeleton/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Animated shimmer placeholders for composing cards, lists & loaded content transition states.",
+    icon: "i-lucide-rectangle-horizontal",
+    highlights: ["shimmer", "toggleable", "layouts"],
+  },
+
+  // Navigation & Disclosure (4)
+  {
+    id: "tabs",
+    name: "Tabs",
+    path: "/pages/tabs/index",
+    category: "navigation",
+    categoryLabel: "Navigation",
+    desc: "Animated pill & underline tabs with declarative or data-driven items, badges, lazy mount & scrolling.",
+    icon: "i-lucide-columns-3",
+    highlights: ["pill/link", "lazy mount", "icons"],
+  },
+  {
+    id: "stepper",
+    name: "Stepper",
+    path: "/pages/stepper/index",
+    category: "navigation",
+    categoryLabel: "Navigation",
+    desc: "Multi-step workflow tracker supporting horizontal/vertical orientation, linear guard & custom icons.",
+    icon: "i-lucide-list-ordered",
+    highlights: ["vertical", "completedIcon", "linear"],
+  },
+  {
+    id: "accordion",
+    name: "Accordion",
+    path: "/pages/accordion/index",
+    category: "navigation",
+    categoryLabel: "Navigation",
+    desc: "Expandable disclosure panels with single/multiple open modes, disabled items & 5 visual styles.",
+    icon: "i-lucide-chevrons-up-down",
+    highlights: ["single/multiple", "5 variants", "API"],
+  },
+  {
+    id: "divider",
+    name: "Divider",
+    path: "/pages/divider/index",
+    category: "navigation",
+    categoryLabel: "Navigation",
+    desc: "Horizontal & vertical content separators with solid/dashed/dotted styles, icons & center labels.",
+    icon: "i-lucide-minus",
+    highlights: ["vertical", "dashed/dotted", "labels"],
+  },
+
+  // Feedback & Overlay (5)
+  {
+    id: "toast",
+    name: "Toast",
+    path: "/pages/toast/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Programmatic notification queue with top/center/bottom placements, progress timer & native fallback.",
+    icon: "i-lucide-bell",
+    highlights: ["useToast", "placements", "progress"],
+  },
+  {
+    id: "banner",
+    name: "Banner",
+    path: "/pages/banner/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Sticky top announcement bar coordinating top page insets seamlessly with <c-app>.",
+    icon: "i-lucide-megaphone",
+    highlights: ["app inset", "actions", "closable"],
+  },
+  {
+    id: "drawer",
+    name: "Drawer",
+    path: "/pages/drawer/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "4-direction slide-over modal with WXS swipe dismissal, nested background scale & form support.",
+    icon: "i-lucide-panel-bottom",
+    highlights: ["scale background", "swipe drag", "4 edges"],
+  },
+  {
+    id: "action-sheet",
+    name: "Action Sheet",
+    path: "/pages/action-sheet/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Context menu drawer with destructive actions, sublabels, native openType items & safe-area inset.",
+    icon: "i-lucide-list",
+    highlights: ["openType", "danger item", "cancel"],
+  },
+  {
+    id: "pull-down-refresh",
+    name: "Pull Refresh",
+    path: "/pages/pull-down-refresh/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "WXS physics pull-to-refresh container with custom indicator slots & programmatic refresh/close.",
+    icon: "i-lucide-arrow-down-circle",
+    highlights: ["WXS gesture", "custom slots", "FSM"],
+  },
+
+  // Interaction & Hooks (2)
+  {
+    id: "swipe-cell",
+    name: "Swipe Cell",
+    path: "/pages/swipe-cell/index",
+    category: "interaction",
+    categoryLabel: "Interaction",
+    desc: "Bi-directional swipeable row revealing contextual actions with WXS spring resistance & auto-close.",
+    icon: "i-lucide-move-horizontal",
+    highlights: ["left/right actions", "WXS", "onClose"],
+  },
+  {
+    id: "use-child",
+    name: "Use Child",
+    path: "/pages/use-child/index",
+    category: "interaction",
+    categoryLabel: "Interaction",
+    desc: "Type-safe composable hook connecting page scripts to child component FSM APIs by selector.",
+    icon: "i-lucide-cpu",
+    highlights: ["useChild()", "FSM API", "type-safe"],
+  },
+];
+
+function buildCategoryTabs(items: ComponentCatalogItem[]): CategoryTab[] {
+  const counts: Record<Exclude<CategoryId, "all">, number> = {
+    form: 0,
+    display: 0,
+    navigation: 0,
+    feedback: 0,
+    interaction: 0,
+  };
+  for (const item of items) {
+    counts[item.category] += 1;
+  }
+  return [
+    { id: "all", label: "All", count: items.length },
+    { id: "form", label: "Form", count: counts.form },
+    { id: "display", label: "Data Display", count: counts.display },
+    { id: "navigation", label: "Navigation", count: counts.navigation },
+    { id: "feedback", label: "Feedback", count: counts.feedback },
+    { id: "interaction", label: "Interaction", count: counts.interaction },
+  ];
+}
+
+function filterCatalog(
+  items: ComponentCatalogItem[],
+  category: CategoryId,
+  query: string,
+): ComponentCatalogItem[] {
+  const q = query.trim().toLowerCase();
+  return items.filter((item) => {
+    if (category !== "all" && item.category !== category) return false;
+    if (!q) return true;
+    return (
+      item.name.toLowerCase().includes(q) ||
+      item.desc.toLowerCase().includes(q) ||
+      item.categoryLabel.toLowerCase().includes(q) ||
+      item.highlights.some((h) => h.toLowerCase().includes(q))
+    );
+  });
+}
+
+const CATEGORY_TABS = buildCategoryTabs(COMPONENT_CATALOG);
+
+interface HomePageContext {
+  __unsubTheme?: (() => void) | undefined;
+}
+
+Page({
+  data: {
+    colorMode: "system" as AppColorMode,
+    isDark: false,
+    activePrimary: "stone",
+    activeSecondary: "amber",
+    customHex: "",
+    customTarget: "primary" as "primary" | "secondary",
+    hexError: "",
+    studioExpanded: true,
+    hasCustomTheme: false,
+    primaryPresets: PRIMARY_COLOR_PRESETS,
+    secondaryPresets: SECONDARY_COLOR_PRESETS,
+
+    categories: CATEGORY_TABS,
+    activeCategory: "all" as CategoryId,
+    searchQuery: "",
+    totalCount: COMPONENT_CATALOG.length,
+    filteredComponents: COMPONENT_CATALOG,
+  },
+
+  onLoad() {
+    const applyState = (state: AppThemeState) => {
+      const hasColors = Object.keys(state.colors).length > 0;
+      this.setData({
+        colorMode: state.colorMode,
+        isDark: state.resolvedMode === "dark",
+        activePrimary: state.colors.primary || "stone",
+        activeSecondary: state.colors.secondary || "amber",
+        hasCustomTheme: hasColors || state.colorMode !== "system",
+      });
+    };
+
+    const self = this as unknown as HomePageContext;
+    self.__unsubTheme?.();
+    self.__unsubTheme = useTheme().subscribe(applyState, true);
+    syncNavigationBarTheme();
+  },
+
+  onShow() {
+    syncNavigationBarTheme();
+  },
+
+  onUnload() {
+    const self = this as unknown as HomePageContext;
+    self.__unsubTheme?.();
+    self.__unsubTheme = undefined;
+  },
+
+  toggleStudio() {
+    this.setData({ studioExpanded: !this.data.studioExpanded });
+  },
+
+  onSelectColorMode(e: WechatMiniprogram.TouchEvent) {
+    const mode = e.currentTarget.dataset?.mode as AppColorMode | undefined;
+    if (!mode) return;
+    setExampleColorMode(mode);
+  },
+
+  onSelectPrimaryColor(e: WechatMiniprogram.TouchEvent) {
+    const value = e.currentTarget.dataset?.value as string | undefined;
+    if (!value) return;
+    setExampleColors({ primary: value === "stone" ? "" : value });
+  },
+
+  onSelectSecondaryColor(e: WechatMiniprogram.TouchEvent) {
+    const value = e.currentTarget.dataset?.value as string | undefined;
+    if (!value) return;
+    setExampleColors({ secondary: value === "amber" ? "" : value });
+  },
+
+  onSelectCustomTarget(e: WechatMiniprogram.TouchEvent) {
+    const target = e.currentTarget.dataset?.target as
+      | "primary"
+      | "secondary"
+      | undefined;
+    if (!target) return;
+    this.setData({ customTarget: target, hexError: "" });
+  },
+
+  onCustomHexChange(e: WechatMiniprogram.CustomEvent<{ value?: string }>) {
+    this.setData({
+      customHex: e.detail?.value ?? "",
+      hexError: "",
+    });
+  },
+
+  onCustomHexClear() {
+    this.setData({ customHex: "", hexError: "" });
+  },
+
+  onApplyCustomHex() {
+    const normalized = normalizeExampleColorInput(this.data.customHex);
+    if (!normalized) {
+      this.setData({
+        hexError: "Enter #hex (e.g. #10b981) or palette name (e.g. indigo)",
+      });
+      return;
+    }
+    const target = this.data.customTarget;
+    setExampleColors({ [target]: normalized });
+    this.setData({ hexError: "" });
+    useToast(this).add({
+      title: `Updated ${target} color`,
+      description: `Applied runtime palette: ${normalized}`,
+      color: "success",
+      variant: "soft",
+      icon: "i-lucide-palette",
+      duration: 2000,
+    });
+  },
+
+  onResetTheme() {
+    resetExampleTheme();
+    this.setData({ customHex: "", hexError: "" });
+    useToast(this).add({
+      title: "Theme reset",
+      description: "Restored default Stone & Amber colors.",
+      color: "neutral",
+      variant: "soft",
+      duration: 1800,
+    });
+  },
+
+  onSelectCategory(e: WechatMiniprogram.TouchEvent) {
+    const category = e.currentTarget.dataset?.category as CategoryId | undefined;
+    if (!category) return;
+    this.setData({
+      activeCategory: category,
+      filteredComponents: filterCatalog(
+        COMPONENT_CATALOG,
+        category,
+        this.data.searchQuery,
+      ),
+    });
+  },
+
+  onSearchChange(e: WechatMiniprogram.CustomEvent<{ value?: string }>) {
+    const searchQuery = e.detail?.value ?? "";
+    this.setData({
+      searchQuery,
+      filteredComponents: filterCatalog(
+        COMPONENT_CATALOG,
+        this.data.activeCategory,
+        searchQuery,
+      ),
+    });
+  },
+
+  onSearchClear() {
+    this.setData({
+      searchQuery: "",
+      filteredComponents: filterCatalog(
+        COMPONENT_CATALOG,
+        this.data.activeCategory,
+        "",
+      ),
+    });
+  },
+
+  onResetFilters() {
+    this.setData({
+      activeCategory: "all",
+      searchQuery: "",
+      filteredComponents: COMPONENT_CATALOG,
+    });
+  },
+
+  navigateTo(e: WechatMiniprogram.TouchEvent) {
+    const url = e.currentTarget.dataset?.path as string | undefined;
+    if (url) {
+      wx.navigateTo({ url });
     }
   },
 });

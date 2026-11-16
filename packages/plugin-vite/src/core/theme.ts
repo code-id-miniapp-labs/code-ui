@@ -186,7 +186,84 @@ export const PALETTE_FALLBACKS: Record<string, Record<number, string>> = {
     900: "#78350f",
     950: "#451a03",
   },
+  orange: {
+    400: "#fb923c",
+    500: "#f97316",
+  },
+  yellow: {
+    400: "#facc15",
+    500: "#eab308",
+  },
+  lime: {
+    400: "#a3e635",
+    500: "#84cc16",
+  },
+  teal: {
+    400: "#2dd4bf",
+    500: "#14b8a6",
+  },
+  cyan: {
+    400: "#22d3ee",
+    500: "#06b6d4",
+  },
+  sky: {
+    400: "#38bdf8",
+    500: "#0ea5e9",
+  },
+  indigo: {
+    400: "#818cf8",
+    500: "#6366f1",
+  },
+  violet: {
+    400: "#a78bfa",
+    500: "#8b5cf6",
+  },
+  purple: {
+    400: "#c084fc",
+    500: "#a855f7",
+  },
+  fuchsia: {
+    400: "#e879f9",
+    500: "#d946ef",
+  },
+  pink: {
+    400: "#f472b6",
+    500: "#ec4899",
+  },
 };
+
+const ALPHA_STEPS = [5, 10, 15, 20, 25, 30, 70, 80, 90] as const;
+
+function parseHexToRgbTuple(hex: string): [number, number, number] | null {
+  const clean = hex.trim().replace(/^#/, "");
+  if (clean.length === 3) {
+    const r = Number.parseInt((clean[0] ?? "0") + (clean[0] ?? "0"), 16);
+    const g = Number.parseInt((clean[1] ?? "0") + (clean[1] ?? "0"), 16);
+    const b = Number.parseInt((clean[2] ?? "0") + (clean[2] ?? "0"), 16);
+    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : [r, g, b];
+  }
+  if (clean.length === 6) {
+    const r = Number.parseInt(clean.slice(0, 2), 16);
+    const g = Number.parseInt(clean.slice(2, 4), 16);
+    const b = Number.parseInt(clean.slice(4, 6), 16);
+    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : [r, g, b];
+  }
+  return null;
+}
+
+function appendAlphaVars(
+  lines: string[],
+  key: string,
+  hex: string | undefined,
+): void {
+  if (!hex) return;
+  const rgb = parseHexToRgbTuple(hex);
+  if (!rgb) return;
+  const [r, g, b] = rgb;
+  for (const alpha of ALPHA_STEPS) {
+    lines.push(`  --ui-${key}-a${alpha}: rgba(${r}, ${g}, ${b}, ${alpha / 100});`);
+  }
+}
 
 export const TAILWIND_500_FALLBACKS: Record<string, string> = {
   slate: "#64748b",
@@ -658,6 +735,7 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   const themeLines: string[] = [];
   const rootLines: string[] = [];
   const darkLines: string[] = [];
+  const lightResetLines: string[] = [];
   const colorMode = ui?.colorMode ?? "system";
 
   const configuredColors: Record<string, ColorValue | string | undefined> = {
@@ -681,18 +759,67 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
       }
       themeLines.push(`  --color-${key}: var(--color-${key}-500);`);
 
+      const lightHex = getPaletteColor(val, 500) ?? TAILWIND_500_FALLBACKS[val];
+      const darkHex = getPaletteColor(val, 400) ?? lightHex;
+
       rootLines.push(`  --ui-${key}: var(--ui-color-${key}-500);`);
       rootLines.push(`  --color-${key}: var(--ui-${key});`);
       rootLines.push(`  --color-${val}: var(--color-${val}-500);`);
+      appendAlphaVars(rootLines, key, lightHex);
+
+      lightResetLines.push(`  --ui-${key}: var(--ui-color-${key}-500);`);
+      lightResetLines.push(`  --color-${key}: var(--ui-${key});`);
+      appendAlphaVars(lightResetLines, key, lightHex);
 
       darkLines.push(`  --ui-${key}: var(--ui-color-${key}-400);`);
       darkLines.push(`  --color-${key}: var(--ui-${key});`);
+      appendAlphaVars(darkLines, key, darkHex);
     } else {
       themeLines.push(`  --color-${key}: ${val};`);
       rootLines.push(`  --color-${key}: ${val};`);
       rootLines.push(`  --ui-${key}: ${val};`);
+      appendAlphaVars(rootLines, key, val);
     }
   }
+
+  // Semantic surface, text, and border tokens for seamless light/dark mode
+  const lightSurfaceTokens = [
+    "  --ui-bg: #ffffff;",
+    "  --ui-bg-muted: var(--ui-color-neutral-50);",
+    "  --ui-bg-elevated: var(--ui-color-neutral-100);",
+    "  --ui-bg-accented: var(--ui-color-neutral-200);",
+    "  --ui-bg-inverted: var(--ui-color-neutral-900);",
+    "  --ui-text-dimmed: var(--ui-color-neutral-400);",
+    "  --ui-text-muted: var(--ui-color-neutral-500);",
+    "  --ui-text-toned: var(--ui-color-neutral-600);",
+    "  --ui-text: var(--ui-color-neutral-700);",
+    "  --ui-text-highlighted: var(--ui-color-neutral-900);",
+    "  --ui-text-inverted: #ffffff;",
+    "  --ui-border: var(--ui-color-neutral-200);",
+    "  --ui-border-muted: var(--ui-color-neutral-200);",
+    "  --ui-border-accented: var(--ui-color-neutral-300);",
+    "  --ui-border-inverted: var(--ui-color-neutral-900);",
+  ];
+  const darkSurfaceTokens = [
+    "  --ui-bg: var(--ui-color-neutral-900);",
+    "  --ui-bg-muted: var(--ui-color-neutral-800);",
+    "  --ui-bg-elevated: var(--ui-color-neutral-800);",
+    "  --ui-bg-accented: var(--ui-color-neutral-700);",
+    "  --ui-bg-inverted: #ffffff;",
+    "  --ui-text-dimmed: var(--ui-color-neutral-500);",
+    "  --ui-text-muted: var(--ui-color-neutral-400);",
+    "  --ui-text-toned: var(--ui-color-neutral-300);",
+    "  --ui-text: var(--ui-color-neutral-200);",
+    "  --ui-text-highlighted: #ffffff;",
+    "  --ui-text-inverted: var(--ui-color-neutral-900);",
+    "  --ui-border: var(--ui-color-neutral-800);",
+    "  --ui-border-muted: var(--ui-color-neutral-800);",
+    "  --ui-border-accented: var(--ui-color-neutral-700);",
+    "  --ui-border-inverted: #ffffff;",
+  ];
+  rootLines.push(...lightSurfaceTokens);
+  lightResetLines.push(...lightSurfaceTokens);
+  darkLines.push(...darkSurfaceTokens);
 
   if (ui?.radius) {
     if (typeof ui.radius === "string") {
@@ -751,7 +878,7 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page, :host {\n${rootLines.join("\n")}\n}\n`;
 
   if (colorMode === "system" && darkLines.length > 0) {
-    css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="dark"], .dark {\n${darkLines.join("\n")}\n}\n`;
+    css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="light"], .light, [data-theme="light"] {\n${lightResetLines.join("\n")}\n}\n\npage[data-theme="dark"], .dark, [data-theme="dark"] {\n${darkLines.join("\n")}\n}\n`;
   }
 
   return css;
@@ -842,7 +969,7 @@ export function compileComponentTheme(
   resolvedConfig: CodeUIConfig,
 ) {
   const userColors = resolvedConfig.ui?.colors
-    ? Object.keys(resolvedConfig.ui.colors)
+    ? Object.keys(resolvedConfig.ui.colors).filter((c) => c !== "neutral")
     : [];
   const replaceColors =
     resolvedConfig.ui?.colorsMode === "replace" && userColors.length > 0;

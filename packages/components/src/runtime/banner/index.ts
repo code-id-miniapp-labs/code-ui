@@ -12,6 +12,14 @@ import {
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
 import {
+  resolveSubcomponentList,
+  resolveSubcomponentProps,
+  resolveTriggerButtonProps,
+} from "../../utils/subcomponent";
+import {
+  type BannerAction,
+  type BannerBadgeProps,
+  type BannerButtonProps,
   bannerMachine,
   connectBanner,
   defaultBannerProps,
@@ -65,17 +73,231 @@ Component(
         type: String,
         value: "",
       },
+      color: {
+        type: String,
+        value: "primary",
+      },
+      variant: {
+        type: String,
+        value: "solid",
+      },
+      size: {
+        type: String,
+        value: "md",
+      },
+      placement: {
+        type: String,
+        value: "top",
+      },
+      mode: {
+        type: String,
+        value: "fixed",
+      },
+      title: {
+        type: String,
+        value: "",
+      },
+      description: {
+        type: String,
+        value: "",
+      },
+      caption: {
+        type: String,
+        value: "",
+      },
       badge: {
         type: null,
         value: null,
       },
-      badgeProps: {
-        type: Object,
+      icon: {
+        type: String,
+        value: "",
+      },
+      image: {
+        type: String,
+        value: "",
+      },
+      imagePosition: {
+        type: String,
+        value: "left",
+      },
+      imageShape: {
+        type: String,
+        value: "rect",
+      },
+      imageMode: {
+        type: String,
+        value: "aspectFill",
+      },
+      close: {
+        type: null,
+        value: true,
+      },
+      more: {
+        type: null,
+        value: false,
+      },
+      hoverClass: {
+        type: String,
+        value: "none",
+      },
+      topOffset: {
+        type: null,
         value: null,
+      },
+      bottomOffset: {
+        type: null,
+        value: null,
+      },
+      autoInset: {
+        type: Boolean,
+        value: true,
+      },
+      ui: {
+        type: Object,
+        value: {},
       },
     }),
 
     computed: {
+      resolvedBadge() {
+        const rawBadge = this.data.badge as
+          | string
+          | BannerBadgeProps
+          | null
+          | undefined;
+        if (
+          typeof rawBadge === "string" &&
+          rawBadge.trim().length === 0
+        ) {
+          return null;
+        }
+        if (
+          typeof rawBadge === "object" &&
+          rawBadge !== null &&
+          !rawBadge.label &&
+          !rawBadge.color &&
+          !rawBadge.variant &&
+          !rawBadge.ui &&
+          !rawBadge.className
+        ) {
+          return null;
+        }
+
+        const bannerColor = this.data.color as string | undefined;
+        const bannerVariant = this.data.variant as string | undefined;
+        const bannerSize = this.data.size as string | undefined;
+
+        const resolved = resolveSubcomponentProps<BannerBadgeProps>(
+          rawBadge,
+          {
+            color: bannerColor,
+            variant: bannerVariant === "solid" ? "outline" : "solid",
+            size:
+              bannerSize === "xs" || bannerSize === "sm"
+                ? "xs"
+                : bannerSize === "xl"
+                  ? "md"
+                  : "sm",
+          },
+          "label",
+        );
+
+        if (!resolved) {
+          return null;
+        }
+
+        return {
+          label: resolved.label ?? "",
+          color: resolved.color ?? bannerColor ?? "primary",
+          variant:
+            resolved.variant ??
+            (bannerVariant === "solid" ? "outline" : "solid"),
+          size:
+            resolved.size ??
+            (bannerSize === "xs" || bannerSize === "sm"
+              ? "xs"
+              : bannerSize === "xl"
+                ? "md"
+                : "sm"),
+          ui: resolved.ui ?? {},
+          className: resolved.className ?? "",
+        };
+      },
+
+      resolvedClose() {
+        const classes = this.data.classes as Record<string, string> | undefined;
+        const bannerColor = this.data.color as string;
+        const bannerVariant = this.data.variant as string;
+        const bannerSize = this.data.size as string;
+
+        return resolveTriggerButtonProps<BannerButtonProps>(
+          this.data.close as boolean | BannerButtonProps | null | undefined,
+          {
+            icon: "close",
+            color: bannerVariant === "solid" ? "neutral" : bannerColor,
+            variant: "ghost",
+            size: bannerSize === "xs" || bannerSize === "sm" ? "xs" : "sm",
+            ui: { icon: classes?.closeIcon ?? "" },
+          },
+          classes?.close,
+        );
+      },
+
+      resolvedMore() {
+        const classes = this.data.classes as Record<string, string> | undefined;
+        const bannerColor = this.data.color as string;
+        const bannerVariant = this.data.variant as string;
+        const bannerSize = this.data.size as string;
+
+        return resolveTriggerButtonProps<BannerButtonProps>(
+          this.data.more as boolean | BannerButtonProps | null | undefined,
+          {
+            icon: "chevronRight",
+            color: bannerVariant === "solid" ? "neutral" : bannerColor,
+            variant: "ghost",
+            size: bannerSize === "xs" || bannerSize === "sm" ? "xs" : "sm",
+            ui: { icon: classes?.moreIcon ?? "" },
+          },
+          classes?.more,
+        );
+      },
+
+      resolvedActions() {
+        const rawActions = (this.data.actions || []) as BannerAction[];
+        const classes = this.data.classes as Record<string, string> | undefined;
+        const bannerColor = this.data.color as string;
+        const bannerVariant = this.data.variant as string;
+
+        return resolveSubcomponentList<BannerAction>(
+          rawActions,
+          {
+            label: "",
+            variant: "ghost",
+            size: "xs",
+            color: bannerVariant === "solid" ? "neutral" : bannerColor,
+            loadingIcon: "loading",
+            ui: { icon: classes?.actionIcon ?? "" },
+          },
+          "label",
+          (action, raw) => {
+            const hasCustomColor =
+              typeof raw === "object" && raw !== null && Boolean(raw.color);
+            action.loading = Boolean(action.loading);
+            action.disabled = Boolean(action.disabled);
+            action.closeOnClick = Boolean(action.closeOnClick);
+            action.ui = action.ui ?? {};
+            action.className = [
+              hasCustomColor ? "" : classes?.actionButton,
+              action.className,
+            ]
+              .filter(Boolean)
+              .join(" ");
+            return action;
+          },
+        );
+      },
+
       classes() {
         const color = this.data.color;
         const variant = this.data.variant;

@@ -1,4 +1,3 @@
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
 import type {
   PinInputApi,
   PinInputCell,
@@ -21,14 +20,6 @@ function shouldShowSeparator(
   return separator === true && index + 1 === Math.floor(length / 2);
 }
 
-function getEventIndex(
-  event: MiniAppBaseEventLike<{ index: number }> | undefined,
-  fallback: number,
-): number {
-  const raw = event?.currentTarget?.dataset?.index;
-  return raw !== undefined ? Number(raw) : fallback;
-}
-
 export function connectPinInput(service: PinInputService): PinInputApi {
   const { state, send, context, computed, prop, scope } = service;
 
@@ -39,7 +30,6 @@ export function connectPinInput(service: PinInputService): PinInputApi {
   const focusedIndex = isMachineFocused ? context.get("focusedIndex") : -1;
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
-  const size = computed("effectiveSize");
   const invalid = computed("isInvalid");
   const mask = prop("mask");
   const type = prop("type");
@@ -109,7 +99,6 @@ export function connectPinInput(service: PinInputService): PinInputApi {
     invalid,
     disabled,
     readOnly,
-    size,
     focusedIndex,
     inputs,
 
@@ -129,33 +118,29 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({ type: "INPUT.FOCUS", index: index ?? 0, force: true });
     },
 
-    handleInput(
-      event: MiniAppEventLike<{ value: string }, { index: number }>,
-    ): string | void {
-      const idx = getEventIndex(event, 0);
-      const val = event.detail.value;
-      send({ type: "INPUT.CHANGE", index: idx, value: val });
-      return resolvePinInputCellReturnValue(value, idx, val, length, type);
+    handleInput(nextValue: string, index = 0): string | void {
+      send({ type: "INPUT.CHANGE", index, value: nextValue });
+      return resolvePinInputCellReturnValue(value, index, nextValue, length, type);
     },
 
-    handleFocus(event?: MiniAppBaseEventLike<{ index: number }>) {
+    handleFocus(index = 0) {
       send({
         type: "INPUT.FOCUS",
-        index: getEventIndex(event, 0),
+        index,
         force: true,
       });
     },
 
-    handleTap(event?: MiniAppBaseEventLike<{ index: number }>) {
+    handleTap(index = 0) {
       send({
         type: "INPUT.FOCUS",
-        index: getEventIndex(event, 0),
+        index,
         force: true,
       });
     },
 
-    handleBlur(event?: MiniAppBaseEventLike<{ index: number }>) {
-      send({ type: "INPUT.BLUR", index: getEventIndex(event, -1) });
+    handleBlur(index = -1) {
+      send({ type: "INPUT.BLUR", index });
     },
 
     getInputProps,

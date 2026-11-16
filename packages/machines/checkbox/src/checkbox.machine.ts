@@ -11,7 +11,6 @@ import { isNotEmpty, isNotNull } from "@code-ui/utils";
 import type {
   CheckboxMachine,
   CheckboxSchema,
-  CheckboxSize,
 } from "./checkbox.types";
 import { defaultCheckboxProps } from "./checkbox.props";
 import { parseBooleanProp, resolveInitialBooleans } from "./checkbox.utils";
@@ -109,20 +108,6 @@ export const checkboxMachine: CheckboxMachine = createMachine<CheckboxSchema>({
       ),
     isInteractive: ({ computed }) =>
       !computed("isDisabled") && !computed("isReadOnly"),
-    effectiveSize: ({ prop, computed }) => {
-      const group = prop("groupContext") as CheckboxGroupContext | undefined;
-      return (group?.size() ||
-        computed("fieldSize") ||
-        prop("size")) as CheckboxSize;
-    },
-    effectiveColor: ({ prop }) => {
-      const group = prop("groupContext") as CheckboxGroupContext | undefined;
-      return group?.color() || prop("color");
-    },
-    effectiveVariant: ({ prop }) => {
-      const group = prop("groupContext") as CheckboxGroupContext | undefined;
-      return group?.variant() || prop("variant");
-    },
   },
 
   watch: ({ prop, refs, state, track }) => {

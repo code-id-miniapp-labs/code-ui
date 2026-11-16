@@ -10,7 +10,17 @@ import {
   setupAppRelations,
 } from "@code-ui/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
-import { connectToast, defaultToastProps, toastMachine } from "@code-ui/toast";
+import {
+  resolveSubcomponentList,
+  resolveTriggerButtonProps,
+} from "../../utils/subcomponent";
+import {
+  type ToastAction,
+  type ToastCloseProps,
+  connectToast,
+  defaultToastProps,
+  toastMachine,
+} from "@code-ui/toast";
 import themeConfig from "virtual:cui/theme/toast";
 import { tv } from "../../utils/variants";
 
@@ -45,6 +55,38 @@ Component(
         type: String,
         value: "",
       },
+      mode: {
+        type: String,
+        value: "default",
+      },
+      color: {
+        type: String,
+        value: "neutral",
+      },
+      variant: {
+        type: String,
+        value: "outline",
+      },
+      orientation: {
+        type: String,
+        value: "vertical",
+      },
+      placement: {
+        type: String,
+        value: "top",
+      },
+      title: {
+        type: String,
+        value: "",
+      },
+      description: {
+        type: String,
+        value: "",
+      },
+      icon: {
+        type: String,
+        value: "",
+      },
       progress: {
         type: null,
         value: true,
@@ -52,6 +94,14 @@ Component(
       progressPosition: {
         type: String,
         value: "bottom",
+      },
+      close: {
+        type: null,
+        value: true,
+      },
+      ui: {
+        type: Object,
+        value: {},
       },
       index: {
         type: Number,
@@ -64,20 +114,74 @@ Component(
     }),
 
     computed: {
+      resolvedColor() {
+        const rawColor = this.data.color as string;
+        if (rawColor === "error") return "danger";
+        if (rawColor === "loading") return "neutral";
+        return rawColor;
+      },
+
+      resolvedActions() {
+        const rawActions = (this.data.actions || []) as ToastAction[];
+        const classes = this.data.classes as Record<string, string> | undefined;
+        const color = this.data.resolvedColor as string;
+        const variant = this.data.variant as string;
+
+        return resolveSubcomponentList<ToastAction>(
+          rawActions,
+          {
+            label: "",
+            color: variant === "solid" ? "neutral" : color,
+            variant: "outline",
+            size: "xs",
+            loadingIcon: "loading",
+            ui: {},
+          },
+          "label",
+          (action) => {
+            action.loading = Boolean(action.loading);
+            action.disabled = Boolean(action.disabled);
+            action.closeOnClick = Boolean(action.closeOnClick);
+            action.ui = action.ui ?? {};
+            action.className = [classes?.action, action.className]
+              .filter(Boolean)
+              .join(" ");
+            return action;
+          },
+        );
+      },
+
+      resolvedClose() {
+        const classes = this.data.classes as Record<string, string> | undefined;
+        const color = this.data.resolvedColor as string;
+        const variant = this.data.variant as string;
+
+        return resolveTriggerButtonProps<ToastCloseProps>(
+          this.data.close as boolean | ToastCloseProps | null | undefined,
+          {
+            icon: "close",
+            color: variant === "solid" ? "neutral" : color,
+            variant: "ghost",
+            size: "xs",
+            ui: { icon: classes?.closeIcon ?? "" },
+          },
+          classes?.closeButton,
+        );
+      },
+
       resolvedIcon() {
         const icon = this.data.icon;
         if (icon) return icon;
         const color = this.data.color;
         if (color === "success") return "check";
-        if (color === "danger") return "close";
+        if (color === "danger" || color === "error") return "close";
         if (color === "loading") return "loading";
         return "";
       },
 
       classes() {
         const mode = this.data.mode;
-        const rawColor = this.data.color;
-        const color = rawColor === "error" ? "danger" : rawColor;
+        const color = this.data.resolvedColor;
         const variant = this.data.variant;
         const orientation = this.data.orientation;
         const placement = this.data.placement;
@@ -112,18 +216,18 @@ Component(
         ) {
           const customColor = (rawProgress as { color?: string }).color;
           if (customColor) {
-            return customColor;
+            return customColor === "error" ? "danger" : customColor;
           }
         }
-        const rawColor = this.data.color;
-        return rawColor === "error" ? "danger" : rawColor;
+        return this.data.resolvedColor;
       },
 
       progressUi() {
+        const classes = this.data.classes as Record<string, string> | undefined;
         return {
-          root: "w-full h-full min-w-0 overflow-hidden",
-          track: "bg-transparent h-full min-w-0 rounded-none",
-          range: "rounded-none h-full min-w-0 transition-none",
+          root: classes?.progressBar ?? "",
+          track: classes?.progressTrack ?? "",
+          range: classes?.progressRange ?? "",
         };
       },
 

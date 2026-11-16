@@ -1,96 +1,74 @@
-<view class="min-h-screen bg-neutral-50 text-neutral-900 pb-16">
-  <!-- Page Header -->
-  <view class="px-6 pt-8 pb-5 bg-white border-b border-neutral-200 mb-6">
-    <view class="text-xl font-extrabold text-neutral-950">Avatar</view>
-    <view class="text-xs text-neutral-500 mt-1">
-      User profile representation with image, initials, and icon fallbacks.
-    </view>
-  </view>
-  <view class="px-5 flex flex-col gap-6">
-    <!-- Basic & Sizes -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Sizes</view>
-      <view class="text-xs text-neutral-400 mb-5">Standard size options from 3xs to 3xl.</view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-avatar size="3xs" src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" />
-        <c-avatar size="xs" src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" />
-        <c-avatar size="sm" src="https://api.dicebear.com/7.x/avataaars/svg?seed=3" />
-        <c-avatar size="md" src="https://api.dicebear.com/7.x/avataaars/svg?seed=4" />
-        <c-avatar size="lg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=5" />
-        <c-avatar size="xl" src="https://api.dicebear.com/7.x/avataaars/svg?seed=6" />
-        <c-avatar size="2xl" src="https://api.dicebear.com/7.x/avataaars/svg?seed=7" />
-        <c-avatar size="3xl" src="https://github.com/rdjanuar.png" />
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Avatar"
+    badge="Data Display"
+    subtitle="User image & initials avatars across 9 sizes (3xs-3xl), 7 colors, fallback slots, image mode & chip integration."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Size Scale (3xs - 3xl) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Full Size Scale (3xs - 3xl)</text>
+        <text class="block text-xs text-muted mt-0.5">All 9 sizes with proportional image & fallback typography.</text>
+      </view>
+      <view class="flex flex-wrap items-end gap-3">
+        <view wx:for="{{ sizes }}" wx:key="*this" class="flex flex-col items-center gap-1">
+          <c-avatar size="{{ item }}" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Avatar{{ item }}" alt="User {{ item }}" />
+          <text class="text-[10px] font-mono text-dimmed">{{ item }}</text>
+        </view>
       </view>
     </view>
-    <!-- Colors & Fallbacks -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Colors & Fallbacks</view>
-      <view class="text-xs text-neutral-400 mb-5">
-        Semantic colors used when images are missing or fail to load.
+
+    <!-- 2. Initials, Semantic Colors & Fallbacks -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Fallbacks & Semantic Colors</text>
+        <text class="block text-xs text-muted mt-0.5">Initials from alt/text plus icon fallback across all 7 colors.</text>
       </view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <!-- Initials from Alt -->
-        <c-avatar color="primary" alt="Rizky Djanuar" />
-        <c-avatar color="success" alt="Jane Doe" />
-        <c-avatar color="warning" alt="John Smith" />
-        <c-avatar color="danger" alt="Alex" />
-        <c-avatar color="info" alt="Sarah Connor" />
-        <c-avatar color="neutral" alt="Guest User" />
+      <view class="flex flex-wrap items-center gap-3">
+        <view wx:for="{{ colors }}" wx:key="*this" class="flex flex-col items-center gap-1">
+          <c-avatar color="{{ item }}" size="lg" alt="{{ item }} User" />
+          <text class="text-[10px] text-dimmed">{{ item }}</text>
+        </view>
       </view>
-    </view>
-    <!-- Explicit Text -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Explicit Text</view>
-      <view class="text-xs text-neutral-400 mb-5">
-        Overriding the auto-generated initials with custom text.
-      </view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-avatar color="primary" text="ADMIN" size="lg" />
-        <c-avatar color="neutral" text="USER" size="lg" />
+      <view class="flex flex-wrap items-center gap-3 pt-2 border-t border-muted">
+        <c-avatar color="primary" size="lg" icon="i-lucide-user" />
+        <c-avatar color="secondary" size="lg" text="VIP" />
+        <c-avatar color="danger" size="lg" src="https://invalid.example/broken-img.png" alt="Error Fallback" />
+        <c-chip color="success" position="bottom-right" inset="{{ true }}" size="sm">
+          <c-avatar size="lg" src="{{ sampleImg }}" alt="Online User" />
+        </c-chip>
       </view>
     </view>
-    <!-- Custom Icons -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Custom Icons</view>
-      <view class="text-xs text-neutral-400 mb-5">
-        Using slots to render custom icons inside the avatar.
+
+    <!-- 3. Custom Slots & Image Modes -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Custom Slots & Image Crop Modes</text>
+        <text class="block text-xs text-muted mt-0.5">Override icon/default slot or customize aspectFit vs aspectFill.</text>
       </view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-avatar color="neutral" size="lg" icon="i-lucide-user" />
-        <c-avatar color="neutral" size="lg" icon="i-lucide-home" />
-        <c-avatar color="neutral" size="lg" icon="i-lucide-eye" />
-      </view>
-    </view>
-    <!-- Load Error Simulation -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="text-sm font-bold text-neutral-900 mb-1">Load Error Handling</view>
-      <view class="text-xs text-neutral-400 mb-5">
-        Automatically switching to fallback when image URL is broken.
-      </view>
-      <view class="flex flex-wrap gap-6 items-center">
-        <c-avatar src="https://invalid-url.com/image.png" alt="Error User" color="danger" size="lg" />
-        <c-avatar src="https://invalid-url.com/avatar.jpg" alt="Broken Image" color="warning" size="lg" />
-      </view>
-    </view>
-    <!-- Avatar Group Preview -->
-    <view class="bg-white p-5 rounded-2xl border border-neutral-200 shadow-xs">
-      <view class="flex items-center justify-between mb-1">
-        <view class="text-sm font-bold text-neutral-900">Avatar Group</view>
-        <navigator url="/pages/avatar-group/index" class="text-xs font-semibold text-emerald-600">
-          View Full Showcase ›
-        </navigator>
-      </view>
-      <view class="text-xs text-neutral-400 mb-4">
-        Stacking multiple avatars together with negative margin, border ring separation, and max limit.
-      </view>
-      <view class="flex flex-col gap-4">
-        <c-avatar-group max="{{3}}" size="lg">
-          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
-          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" />
-          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Milo" />
-          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bella" />
-          <c-avatar src="https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver" />
-        </c-avatar-group>
+      <view class="flex flex-wrap items-center gap-4">
+        <view class="flex flex-col items-center gap-1">
+          <c-avatar size="xl" color="primary">
+            <c-icon slot="icon" name="i-lucide-sparkles" size="md" color="primary" />
+          </c-avatar>
+          <text class="text-[10px] text-dimmed">slot="icon"</text>
+        </view>
+        <view class="flex flex-col items-center gap-1">
+          <c-avatar size="xl" color="secondary" ui="{{ { root: 'rounded-xl ring-2 ring-secondary/40' } }}">
+            <text class="text-xs font-bold">CU</text>
+          </c-avatar>
+          <text class="text-[10px] text-dimmed">default + ui</text>
+        </view>
+        <view class="flex flex-col items-center gap-1">
+          <c-avatar size="xl" mode="aspectFill" src="{{ sampleImg }}" />
+          <text class="text-[10px] text-dimmed">aspectFill</text>
+        </view>
+        <view class="flex flex-col items-center gap-1">
+          <c-avatar size="xl" mode="aspectFit" color="neutral" src="{{ sampleImg }}" />
+          <text class="text-[10px] text-dimmed">aspectFit</text>
+        </view>
       </view>
     </view>
   </view>

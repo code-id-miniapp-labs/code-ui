@@ -14,7 +14,6 @@ import type {
   SliderParams,
   SliderPoint,
   SliderSchema,
-  SliderSize,
 } from "./slider.types";
 import { defaultSliderProps } from "./slider.props";
 import {
@@ -53,7 +52,11 @@ function resolveThumbIndexForPoint(
   point: SliderPoint,
   explicitIndex?: number,
 ): number {
-  if (explicitIndex !== undefined && explicitIndex >= 0) {
+  if (
+    explicitIndex !== undefined &&
+    explicitIndex >= 0 &&
+    explicitIndex < currentVals.length
+  ) {
     return explicitIndex;
   }
   if (!rect) return 0;
@@ -220,13 +223,6 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
       !computed("isDisabled") && !computed("isReadOnly"),
     isDragging: ({ state }) => state.matches("dragging"),
     isRange: ({ context }) => context.get("value").length > 1,
-    effectiveSize: ({ prop, computed }) => {
-      const rawSize = prop("size");
-      const fieldSize = computed("fieldSize");
-      return rawSize && rawSize !== "md"
-        ? rawSize
-        : ((fieldSize || rawSize) as SliderSize);
-    },
     values: ({ context }) => context.get("value"),
     value: ({ context, prop, computed }) => {
       const vals = context.get("value");
@@ -384,7 +380,7 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
                 type: "RECT.RESOLVED",
                 rect: queried,
                 point: pendingPoint,
-                index: targetIndex,
+                index: rect ? targetIndex : event.index,
                 commit: pendingPoint ? isTap : undefined,
               });
             }

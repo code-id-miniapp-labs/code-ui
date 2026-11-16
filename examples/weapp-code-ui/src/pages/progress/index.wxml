@@ -1,71 +1,124 @@
-<view class="p-4 space-y-8 pb-16">
-  <!-- Interactive Control -->
-  <view class="space-y-3 p-4 bg-neutral-50 rounded-xl">
-    <text class="text-base font-bold">Interactive Control</text>
-    <c-progress value="{{value}}" showValue label="Controlled Task" indeterminate="{{indeterminate}}" />
-    <view class="flex items-center gap-2 pt-2">
-      <c-button size="sm" variant="outline" bindtap="decrease">-10%</c-button>
-      <c-button size="sm" variant="outline" bindtap="increase">+10%</c-button>
-      <c-button size="sm" variant="outline" bindtap="toggleIndeterminate">
-        Toggle Indeterminate
-      </c-button>
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header
+    title="Progress"
+    badge="Data Display"
+    subtitle="Linear, vertical, circular & indeterminate progress indicators with inverted direction, custom min/max & slots."
+  />
+
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Interactive Linear & Circular Control -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-4">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Interactive Linear & Circular</text>
+        <text class="block text-xs text-muted mt-0.5">Current value: {{ value }}% · test methods & switches below.</text>
+      </view>
+
+      <c-progress
+        id="demo-progress"
+        value="{{ indeterminate ? null : value }}"
+        label="Bundle Upload"
+        show-value="{{ true }}"
+        inverted="{{ inverted }}"
+        color="primary"
+        size="md"
+      />
+
+      <view class="flex items-center justify-around py-2">
+        <c-progress
+          type="circular"
+          value="{{ indeterminate ? null : value }}"
+          show-value="{{ true }}"
+          inverted="{{ inverted }}"
+          size="xl"
+          color="primary"
+        />
+        <c-progress
+          type="circular"
+          value="{{ indeterminate ? null : value }}"
+          size="2xl"
+          color="secondary"
+          stroke-width="{{ 10 }}"
+          track-color="rgba(120,113,108,0.2)"
+        >
+          <view class="flex flex-col items-center">
+            <text class="text-sm font-bold text-highlighted">{{ value }}</text>
+            <text class="text-[10px] text-dimmed">pts</text>
+          </view>
+        </c-progress>
+      </view>
+
+      <view class="flex flex-wrap gap-2">
+        <c-button size="xs" color="neutral" variant="outline" label="-10%" bind:tap="decrease" />
+        <c-button size="xs" color="primary" variant="soft" label="+10%" bind:tap="increase" />
+        <c-button size="xs" color="neutral" variant="soft" label="setToMin()" bind:tap="callSetMin" />
+        <c-button size="xs" color="neutral" variant="soft" label="setValue(50)" bind:tap="callSetHalf" />
+        <c-button size="xs" color="neutral" variant="soft" label="setToMax()" bind:tap="callSetMax" />
+        <c-button size="xs" color="neutral" variant="outline" label="reset()" bind:tap="callReset" />
+      </view>
+
+      <view class="flex items-center justify-between pt-2 border-t border-muted">
+        <view class="flex items-center gap-2">
+          <text class="text-xs text-muted">Indeterminate</text>
+          <c-switch checked="{{ indeterminate }}" size="sm" bind:change="toggleIndeterminate" />
+        </view>
+        <view class="flex items-center gap-2">
+          <text class="text-xs text-muted">Inverted</text>
+          <c-switch checked="{{ inverted }}" size="sm" color="secondary" bind:change="toggleInverted" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 2. Colors & Vertical Orientation -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Semantic Colors (Linear & Vertical)</text>
+        <text class="block text-xs text-muted mt-0.5">All 7 color tokens in horizontal and vertical orientation.</text>
+      </view>
+
+      <view class="flex flex-col gap-2.5">
+        <c-progress wx:for="{{ colors }}" wx:key="*this" value="{{ 72 }}" color="{{ item }}" label="{{ item }}" show-value="{{ true }}" size="sm" />
+      </view>
+
+      <view class="flex items-end justify-around h-32 pt-4 mt-2 border-t border-muted">
+        <view wx:for="{{ colors }}" wx:key="*this" class="h-full flex flex-col items-center gap-1.5">
+          <c-progress orientation="vertical" value="{{ 45 + index * 8 }}" color="{{ item }}" size="md" className="h-20" />
+          <text class="text-[10px] text-dimmed">{{ item }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 3. Size Scale & Striped/Animated -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Sizes (2xs-2xl), Custom Range & Striped</text>
+        <text class="block text-xs text-muted mt-0.5">Custom min=20/max=80 and animated stripes.</text>
+      </view>
+
+      <view class="flex flex-col gap-2.5">
+        <c-progress wx:for="{{ sizes }}" wx:key="*this" value="{{ 55 + index * 5 }}" size="{{ item }}" color="primary" />
+      </view>
+
+      <view class="flex flex-col gap-2.5 pt-2 border-t border-muted">
+        <c-progress value="{{ 50 }}" min="{{ 20 }}" max="{{ 80 }}" label="Bounded Range (min=20, max=80, val=50)" show-value="{{ true }}" color="info" />
+        <c-progress value="{{ 75 }}" striped="{{ true }}" animated="{{ true }}" color="success" label="Striped + Animated" show-value="{{ true }}" />
+      </view>
+    </view>
+
+    <!-- 4. Custom Slots -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Custom Label & Value Slots</text>
+        <text class="block text-xs text-muted mt-0.5">Override header label and value-text via named slots.</text>
+      </view>
+      <c-progress value="{{ 84 }}" color="primary" size="lg">
+        <view slot="label" class="flex items-center gap-1.5">
+          <c-icon name="i-lucide-rocket" size="xs" color="primary" />
+          <text class="text-xs font-semibold text-highlighted">Deploying Edge Nodes</text>
+        </view>
+        <view slot="value-text">
+          <c-badge label="84 / 100" color="primary" variant="soft" size="xs" />
+        </view>
+      </c-progress>
     </view>
   </view>
-  <!-- Linear Progress -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Linear Progress</text>
-    <view class="space-y-3">
-      <c-progress value="{{value}}" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{value}}" showValue label="Uploading files..." />
-      <c-progress label="Indeterminate (loading)" indeterminate="{{indeterminate}}" />
-    </view>
-  </section>
-  <!-- Colors -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Colors</text>
-    <view class="space-y-3">
-      <c-progress value="{{75}}" indeterminate="{{indeterminate}}" color="primary" label="Primary" showValue />
-      <c-progress value="{{75}}" color="success" label="Success" showValue indeterminate="{{indeterminate}}" />
-      <c-progress value="{{75}}" color="warning" label="Warning" showValue indeterminate="{{indeterminate}}" />
-      <c-progress value="{{75}}" color="danger" label="Danger" showValue indeterminate="{{indeterminate}}" />
-      <c-progress value="{{75}}" color="info" label="Info" showValue indeterminate="{{indeterminate}}" />
-      <c-progress value="{{75}}" color="neutral" label="Neutral" showValue indeterminate="{{indeterminate}}" />
-    </view>
-  </section>
-  <!-- Sizes -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Sizes</text>
-    <view class="space-y-3">
-      <c-progress value="{{60}}" size="2xs" label="Size: 2xs" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="xs" label="Size: xs" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="sm" label="Size: sm" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="md" label="Size: md" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="lg" label="Size: lg" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="xl" label="Size: xl" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{60}}" size="2xl" label="Size: 2xl" indeterminate="{{indeterminate}}" />
-    </view>
-  </section>
-  <!-- Striped & Animated -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Striped & Animated</text>
-    <view class="space-y-3">
-      <c-progress value="{{65}}" striped label="Striped" indeterminate="{{indeterminate}}" />
-      <c-progress value="{{65}}" striped animated label="Striped & Animated" indeterminate="{{indeterminate}}" />
-    </view>
-  </section>
-  <!-- Circular Progress -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Circular Progress</text>
-    <view class="flex items-center gap-6 flex-wrap">
-      <c-progress type="circular" value="{{value}}" showValue size="md" color="primary" indeterminate="{{indeterminate}}" />
-      <c-progress type="circular" value="{{value}}" showValue size="lg" color="success" indeterminate="{{indeterminate}}" />
-      <c-progress type="circular" value="{{value}}" showValue size="xl" color="warning" indeterminate="{{indeterminate}}" />
-      <c-progress type="circular" value="{{60}}" size="md" color="danger" indeterminate="{{indeterminate}}" />
-    </view>
-  </section>
-  <!-- Custom UI Override -->
-  <section class="space-y-4">
-    <text class="text-lg font-bold">Custom UI Override</text>
-    <c-progress value="{{70}}" showValue label="Custom Track & Range" ui="{{ { track: 'bg-neutral-100 rounded-none h-4', range: 'rounded-none bg-purple-600', label: 'text-purple-700 font-bold' } }}" />
-  </section>
 </view>

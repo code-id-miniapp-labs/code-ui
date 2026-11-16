@@ -1,4 +1,4 @@
-import { isEqual, runIfFn } from "@code-ui/utils";
+import { isEqual } from "@code-ui/utils";
 import {
   computed as alienComputed,
   effect,
@@ -811,10 +811,12 @@ export function setupComputed(
 ): void {
   if (!self || self[_COMPUTED_INITIALIZED]) return;
 
+  const rawComputedDefs = self[_COMPUTED_DEFS];
   const computedDefs: ComputedDefs =
     explicitDefs ??
-    runIfFn(self[_COMPUTED_DEFS]) ??
-    self[_COMPUTED_DEFS] ??
+    (typeof rawComputedDefs === "function"
+      ? rawComputedDefs()
+      : rawComputedDefs) ??
     self.computed ??
     {};
 

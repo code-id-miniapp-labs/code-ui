@@ -25,16 +25,10 @@ export interface FormFieldProps {
     | undefined;
   name?: string | undefined;
   label?: string | undefined;
-  description?: string | undefined;
-  help?: string | undefined;
-  helperText?: string | undefined;
-  hint?: string | undefined;
   error?: string | undefined;
   required?: boolean | undefined;
   disabled?: boolean | undefined;
   rules?: FormRule[] | undefined;
-  size?: FormFieldSize | undefined;
-  ui?: Record<string, any> | undefined;
   formContext?: FormHostContext | null | undefined;
   form?: string | undefined;
   component?: MiniAppComponent | undefined;
@@ -44,16 +38,10 @@ export type FormFieldDefaultedKey =
   | "name"
   | "form"
   | "label"
-  | "description"
-  | "help"
-  | "helperText"
-  | "hint"
   | "error"
   | "required"
   | "disabled"
-  | "rules"
-  | "size"
-  | "ui";
+  | "rules";
 
 export type FormFieldResolvedProps = Omit<
   FormFieldProps,
@@ -87,7 +75,6 @@ export interface FormFieldComputed {
   isDisabled: boolean;
   isReadOnly: boolean;
   displayError: string;
-  displayHelp: string;
   invalid: boolean;
   effectiveRules: FormRule[];
 }
@@ -115,7 +102,6 @@ export type FormFieldParams = Params<FormFieldSchema>;
 export interface FormFieldApi {
   invalid: boolean;
   displayError: string;
-  displayHelp: string;
   effectiveRules: FormRule[];
   disabled: boolean;
 

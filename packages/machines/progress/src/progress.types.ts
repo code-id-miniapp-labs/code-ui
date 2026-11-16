@@ -55,22 +55,10 @@ export interface ProgressProps {
   id?: string | undefined;
   ids?: Partial<Record<ProgressAnatomyPart, string>> | undefined;
   component?: MiniAppComponent | undefined;
-  ui?: ProgressUI | undefined;
   value?: number | null | undefined;
   defaultValue?: number | null | undefined;
   min?: number | undefined;
   max?: number | undefined;
-  orientation?: ProgressOrientation | undefined;
-  type?: ProgressType | undefined;
-  size?: ProgressSize | undefined;
-  color?: ProgressColor | undefined;
-  trackColor?: string | undefined;
-  striped?: boolean | undefined;
-  animated?: boolean | undefined;
-  animation?: ProgressAnimation | undefined;
-  inverted?: boolean | undefined;
-  circleRadius?: number | undefined;
-  strokeWidth?: number | undefined;
   translations?: ProgressTranslations | undefined;
   indeterminate?: boolean | undefined;
   onValueChange?: ((details: ProgressValueChangeDetails) => void) | undefined;
@@ -81,18 +69,6 @@ export type ProgressDefaultedKey =
   | "defaultValue"
   | "min"
   | "max"
-  | "orientation"
-  | "type"
-  | "size"
-  | "color"
-  | "trackColor"
-  | "striped"
-  | "animated"
-  | "animation"
-  | "inverted"
-  | "circleRadius"
-  | "strokeWidth"
-  | "ui"
   | "indeterminate";
 
 export type ProgressResolvedProps = Omit<
@@ -121,8 +97,6 @@ export interface ProgressComputed {
   isComplete: boolean;
   progressState: ProgressStatus;
   valueAsString: string;
-  rangeStyle: string;
-  circleStyle: string;
 }
 
 export interface ProgressRefs {}
@@ -154,9 +128,6 @@ export interface ProgressApi {
   isIndeterminate: boolean;
   isComplete: boolean;
   valueAsString: string;
-  orientation: ProgressOrientation;
-  type: ProgressType;
-  circleStyle: string;
 
   setValue(value: number | null): void;
   setToMin(): void;

@@ -5,7 +5,7 @@ import type {
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
 import type { RadioGroupContext } from "@code-ui/radio-group";
-import type { MiniAppBaseEventLike, MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { radioAnatomy } from "./radio.anatomy";
 
 export type RadioState = "checked" | "unchecked";
@@ -36,34 +36,22 @@ export interface RadioProps {
   ids?: Record<string, any> | undefined;
   component?: MiniAppComponent | undefined;
   groupContext?: RadioGroupContext | undefined;
-  ui?: RadioUI | undefined;
   value?: string | undefined;
-  label?: string | undefined;
-  description?: string | undefined;
   disabled?: boolean | undefined;
   readOnly?: boolean | undefined;
   checked?: boolean | null | undefined;
   defaultChecked?: boolean | undefined;
   invalid?: boolean | null | undefined;
-  color?: RadioColor | undefined;
-  size?: RadioSize | undefined;
-  variant?: RadioVariant | undefined;
   onChange?: ((details: RadioValueChangeDetails) => void) | undefined;
 }
 
 export interface RadioResolvedProps extends RadioProps {
   value: string;
-  label: string;
-  description: string;
   disabled: boolean;
   readOnly: boolean;
   checked: boolean | null;
   defaultChecked: boolean;
   invalid: boolean | null;
-  color: RadioColor;
-  size: RadioSize;
-  variant: RadioVariant;
-  ui: RadioUI;
 }
 
 export interface RadioContext {
@@ -81,9 +69,6 @@ export interface RadioComputed {
   isReadOnly: boolean;
   isInteractive: boolean;
   isInvalid: boolean;
-  effectiveSize: RadioSize;
-  effectiveColor: RadioColor;
-  effectiveVariant: RadioVariant;
 }
 
 export interface RadioSchema extends MachineSchema {
@@ -107,10 +92,7 @@ export interface RadioApi {
   disabled: boolean;
   readOnly: boolean;
   invalid: boolean;
-  size: RadioSize;
-  color: RadioColor;
-  variant: RadioVariant;
-  handleTap: (e?: MiniAppBaseEventLike) => void;
+  handleTap: () => void;
   rootProps: Record<string, any>;
   baseProps: Record<string, any>;
   indicatorProps: Record<string, any>;

@@ -1,4 +1,3 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
 import type {
   CheckboxGroupApi,
   CheckboxGroupItem,
@@ -17,9 +16,6 @@ export function connectCheckboxGroup(
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
-  const size = computed("effectiveSize");
-  const defaultColor = prop("color");
-  const defaultVariant = prop("variant");
 
   const getItemProps = (item: {
     value: string;
@@ -71,18 +67,14 @@ export function connectCheckboxGroup(
 
   const rawItems: (string | CheckboxGroupItemRaw)[] = prop("items");
   const items: CheckboxGroupItem[] = rawItems.map((raw) => {
-    const item = typeof raw === "string" ? { value: raw, label: raw } : raw;
+    const item = typeof raw === "string" ? { value: raw } : raw;
     const itemValue = item.value;
     const itemChecked = currentValue.includes(itemValue);
     const itemDisabled = Boolean(disabled || item.disabled);
-    const result: CheckboxGroupItem = {
+    return {
       value: itemValue,
-      label: String(item.label ?? itemValue),
-      description: String(item.description ?? ""),
       disabled: itemDisabled,
       checked: itemChecked,
-      color: item.color ?? defaultColor,
-      variant: item.variant ?? defaultVariant,
       itemProps: getItemProps({ value: itemValue, disabled: itemDisabled }),
       controlProps: getItemControlProps({
         value: itemValue,
@@ -93,8 +85,6 @@ export function connectCheckboxGroup(
         disabled: itemDisabled,
       }),
     };
-    if (item.ui) result.ui = item.ui;
-    return result;
   });
 
   return {
@@ -114,13 +104,12 @@ export function connectCheckboxGroup(
     disabled,
     readOnly,
     invalid,
-    size,
     items,
-    handleItemTap: (e: MiniAppEventLike<CheckboxGroupItemTapDetail>) => {
+    handleItemTap: (detail: CheckboxGroupItemTapDetail) => {
       send({
         type: "TOGGLE_VALUE",
-        value: e.detail.value,
-        checked: e.detail.checked,
+        value: detail.value,
+        checked: detail.checked,
       });
     },
     getItemProps,

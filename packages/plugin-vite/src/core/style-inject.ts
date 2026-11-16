@@ -170,7 +170,7 @@ function resolveColorSystemDirective(
     return "\n@custom-variant dark (&:not(.cui-color-system-light));\n";
   }
 
-  return "";
+  return '\n@custom-variant dark (.dark &, .dark&, [data-theme="dark"] &, [data-theme="dark"]&);\n';
 }
 
 export function transformAppStyle(

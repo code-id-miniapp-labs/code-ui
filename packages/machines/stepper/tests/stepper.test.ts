@@ -34,10 +34,6 @@ describe("Stepper Machine", () => {
 
       const group = machine.service.refs.get("groupContext");
       expect(group.linear()).toBe(false);
-      expect(group.orientation()).toBe("horizontal");
-      expect(group.color()).toBe("primary");
-      expect(group.size()).toBe("md");
-      expect(group.variant()).toBe("subtle");
       expect(group.disabled()).toBe(false);
 
       machine.stop();
@@ -46,11 +42,7 @@ describe("Stepper Machine", () => {
     it("initializes with items and defaultStep", () => {
       const machine = new MiniappMachine(stepperMachine, {
         defaultStep: 1,
-        items: [
-          { title: "Step 1", description: "Desc 1" },
-          { title: "Step 2", description: "Desc 2" },
-          { title: "Step 3", description: "Desc 3" },
-        ],
+        items: [{}, {}, {}],
       });
       machine.start();
 
@@ -100,9 +92,9 @@ describe("Stepper Machine", () => {
 
       const machine = new MiniappMachine(stepperMachine, {
         items: [
-          { title: "Account", value: "account" },
-          { title: "Profile", value: "profile" },
-          { title: "Done", value: "done" },
+          { value: "account" },
+          { value: "profile" },
+          { value: "done" },
         ],
         onChange,
         onComplete,
@@ -151,14 +143,14 @@ describe("Stepper Machine", () => {
     it("enforces sequential navigation in linear mode", async () => {
       const machine = new MiniappMachine(stepperMachine, {
         linear: true,
-        items: [{ title: "Step 1" }, { title: "Step 2" }, { title: "Step 3" }],
+        items: [{}, {}, {}],
       });
       machine.start();
 
       let api = connectStepper(machine.service);
       expect(api.step).toBe(0);
       expect(api.steps[2]?.status).toBe("disabled");
-      expect(api.steps[2]?.isDisabled).toBe(true);
+      expect(api.steps[2]?.disabled).toBe(true);
 
       // Attempting to skip from 0 -> 2 is blocked by linear guard
       api.setStep(2);
@@ -172,7 +164,7 @@ describe("Stepper Machine", () => {
       api = connectStepper(machine.service);
       expect(api.step).toBe(1);
       expect(api.steps[2]?.status).toBe("upcoming");
-      expect(api.steps[2]?.isDisabled).toBe(false);
+      expect(api.steps[2]?.disabled).toBe(false);
 
       // Advancing from 1 -> 2 is now allowed
       api.setStep(2);
@@ -192,7 +184,7 @@ describe("Stepper Machine", () => {
     it("dynamically reacts to linear prop updates (toggling linear on/off)", async () => {
       const machine = new MiniappMachine(stepperMachine, {
         linear: true,
-        items: [{ title: "Step 0" }, { title: "Step 1" }, { title: "Step 2" }],
+        items: [{}, {}, {}],
       });
       machine.start();
 
@@ -212,7 +204,7 @@ describe("Stepper Machine", () => {
       api = connectStepper(machine.service);
       expect(machine.service.refs.get("groupContext").linear()).toBe(false);
       expect(api.steps[2]?.status).toBe("upcoming");
-      expect(api.steps[2]?.isDisabled).toBe(false);
+      expect(api.steps[2]?.disabled).toBe(false);
 
       // Now jumping 0 -> 2 is permitted
       api.setStep(2);
@@ -232,9 +224,9 @@ describe("Stepper Machine", () => {
     it("prevents selecting disabled items or navigating when globally disabled", async () => {
       const machine = new MiniappMachine(stepperMachine, {
         items: [
-          { title: "Step 1" },
-          { title: "Step 2", disabled: true },
-          { title: "Step 3" },
+          {},
+          { disabled: true },
+          {},
         ],
       });
       machine.start();
@@ -269,21 +261,18 @@ describe("Stepper Machine", () => {
       const item0 = new MiniappMachine(stepperItemMachine, {
         groupContext,
         groupIndex: 0,
-        title: "Personal",
       });
       item0.start();
 
       const item1 = new MiniappMachine(stepperItemMachine, {
         groupContext,
         groupIndex: 1,
-        title: "Verification",
       });
       item1.start();
 
       const item2 = new MiniappMachine(stepperItemMachine, {
         groupContext,
         groupIndex: 2,
-        title: "Review",
       });
       item2.start();
 
@@ -343,12 +332,7 @@ describe("Stepper Machine", () => {
     it("computes scrollTargetIndex and declarative scrollIntoViewId on step navigation", async () => {
       const machine = new MiniappMachine(stepperMachine, {
         id: "demo",
-        items: [
-          { title: "Step 0" },
-          { title: "Step 1" },
-          { title: "Step 2" },
-          { title: "Step 3" },
-        ],
+        items: [{}, {}, {}, {}],
       });
       machine.start();
 
@@ -358,7 +342,6 @@ describe("Stepper Machine", () => {
       expect(api.scrollTargetIndex).toBe(0);
       expect(api.scrollIntoViewId).toBe("st-demo-i-0");
       expect(api.listProps["enable-flex"]).toBe(true);
-      expect(api.listProps["scroll-x"]).toBe(true);
       expect(api.listProps["scroll-into-view"]).toBe("st-demo-i-0");
 
       // Advance to step 1 -> scrollTargetIndex becomes 2 to reveal next upcoming step
@@ -402,12 +385,7 @@ describe("Stepper Machine", () => {
         id: "interactive",
         step: null,
         value: 0,
-        items: [
-          { title: "Account" },
-          { title: "Profile" },
-          { title: "Billing" },
-          { title: "Complete" },
-        ],
+        items: [{}, {}, {}, {}],
         component: mockComp,
       });
       parentMachine.start();
@@ -416,7 +394,6 @@ describe("Stepper Machine", () => {
       const item2 = new MiniappMachine(stepperItemMachine, {
         groupContext,
         groupIndex: 2,
-        title: "Billing",
       });
       item2.start();
 
@@ -465,11 +442,7 @@ describe("Stepper Machine", () => {
       const parentMachine = new MiniappMachine(stepperMachine, {
         id: "resolve-test",
         step: 0,
-        items: [
-          { title: "Account" },
-          { title: "Profile" },
-          { title: "Done" },
-        ],
+        items: [{}, {}, {}],
       });
       parentMachine.start();
 
@@ -477,7 +450,6 @@ describe("Stepper Machine", () => {
       const itemDone = new MiniappMachine(stepperItemMachine, {
         groupContext,
         groupIndex: 2,
-        title: "Done",
       });
       itemDone.start();
 

@@ -1,83 +1,186 @@
 import type {
   AccordionProps,
+  AccordionSize,
+  AccordionUI,
   AccordionValueChangeDetails,
+  AccordionVariant,
 } from "@code-ui/accordion";
 import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
+  AccordionItemUI,
 } from "@code-ui/accordion-item";
-import type { BannerBadgeProps, BannerProps } from "@code-ui/banner";
 import type {
   ActionSheetAction,
   ActionSheetActionDetails,
+  ActionSheetCloseProps,
   ActionSheetItem,
-  ActionSheetProps,
   ActionSheetSelectDetails,
+  ActionSheetUI,
 } from "@code-ui/action-sheet";
-import type { ButtonProps } from "@code-ui/button";
 import type {
-  CheckboxProps,
+  BannerBadgeProps,
+  BannerButtonProps,
+  BannerColor,
+  BannerImagePosition,
+  BannerImageShape,
+  BannerMode,
+  BannerPlacement,
+  BannerProps,
+  BannerSize,
+  BannerUI,
+  BannerVariant,
+} from "@code-ui/banner";
+import type {
+  ButtonColor,
+  ButtonSize,
+  ButtonUI,
+  ButtonVariant,
+} from "@code-ui/button";
+import type {
   CheckboxCheckedChangeDetails,
+  CheckboxColor,
+  CheckboxSize,
+  CheckboxUI,
 } from "@code-ui/checkbox";
 import type {
+  CheckboxGroupColor,
+  CheckboxGroupOrientation,
   CheckboxGroupProps,
+  CheckboxGroupSize,
+  CheckboxGroupUI,
   CheckboxGroupValueChangeDetails,
+  CheckboxGroupVariant,
 } from "@code-ui/checkbox-group";
-import type { DrawerProps } from "@code-ui/drawer";
+import type {
+  DrawerCloseProps,
+  DrawerProps,
+  DrawerUI,
+} from "@code-ui/drawer";
 import type {
   FileUploadChangeDetails,
+  FileUploadColor,
   FileUploadFile,
+  FileUploadLayout,
   FileUploadProps,
   FileUploadRejectedFile,
+  FileUploadSize,
+  FileUploadUI,
+  FileUploadVariant,
 } from "@code-ui/file-upload";
 import type {
   FormErrorDetails,
-  FormProps,
   FormRule,
   FormSubmitDetails,
+  FormUI,
   FormValidateOn,
   FormValidationResult,
 } from "@code-ui/form";
-import type { InputProps, InputValueChangeDetails } from "@code-ui/input";
 import type {
+  InputColor,
+  InputSize,
+  InputType,
+  InputUI,
+  InputValueChangeDetails,
+  InputVariant,
+} from "@code-ui/input";
+import type {
+  PinInputColor,
   PinInputProps,
+  PinInputSize,
+  PinInputUI,
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
+  PinInputVariant,
 } from "@code-ui/pin-input";
 import type {
+  ProgressAnimation,
+  ProgressColor,
+  ProgressOrientation,
   ProgressProps,
+  ProgressSize,
+  ProgressType,
+  ProgressUI,
   ProgressValueChangeDetails,
 } from "@code-ui/progress";
 import type {
   PullDownRefreshChangeDetails,
   PullDownRefreshDragDetails,
-  PullDownRefreshProps,
   PullDownRefreshRefreshDetails,
   PullDownRefreshScrollDetails,
+  PullDownRefreshUI,
 } from "@code-ui/pull-down-refresh";
-import type { QrCodeProps, QrCodeValueChangeDetails } from "@code-ui/qr-code";
 import type {
+  QrCodeProps,
+  QrCodeSize,
+  QrCodeUI,
+  QrCodeValueChangeDetails,
+} from "@code-ui/qr-code";
+import type {
+  RadioGroupColor,
+  RadioGroupOrientation,
   RadioGroupProps,
+  RadioGroupSize,
+  RadioGroupUI,
   RadioGroupValueChangeDetails,
 } from "@code-ui/radio-group";
-import type { RadioProps } from "@code-ui/radio";
-import type { StepperProps, StepperStepChangeDetails } from "@code-ui/stepper";
-import type { StepperItemProps } from "@code-ui/stepper-item";
-import type { SliderProps, SliderChangeDetails } from "@code-ui/slider";
-import type { SwitchProps } from "@code-ui/switch";
 import type {
-  SwipeCellProps,
-  SwipeCellOpenChangeDetails,
+  RadioColor,
+  RadioSize,
+  RadioUI,
+  RadioVariant,
+} from "@code-ui/radio";
+import type {
+  StepperColor,
+  StepperOrientation,
+  StepperProps,
+  StepperSize,
+  StepperStepChangeDetails,
+  StepperUI,
+  StepperVariant,
+} from "@code-ui/stepper";
+import type { StepperItemUI } from "@code-ui/stepper-item";
+import type {
+  SliderChangeDetails,
+  SliderProps,
+  SliderSize,
+  SliderUI,
+} from "@code-ui/slider";
+import type { SwitchColor, SwitchSize, SwitchUI } from "@code-ui/switch";
+import type {
   SwipeCellActionClickDetails,
+  SwipeCellOpenChangeDetails,
+  SwipeCellProps,
+  SwipeCellUI,
 } from "@code-ui/swipe-cell";
-import type { TabsProps, TabsValueChangeDetails } from "@code-ui/tabs";
-import type { TabsItemProps } from "@code-ui/tabs-item";
 import type {
-  TextareaProps,
-  TextareaValueChangeDetails,
+  TabsColor,
+  TabsOrientation,
+  TabsProps,
+  TabsSize,
+  TabsUI,
+  TabsValueChangeDetails,
+  TabsVariant,
+} from "@code-ui/tabs";
+import type { TabsItemProps, TabsItemUI } from "@code-ui/tabs-item";
+import type {
+  TextareaColor,
   TextareaLineChangeDetails,
+  TextareaSize,
+  TextareaUI,
+  TextareaValueChangeDetails,
+  TextareaVariant,
 } from "@code-ui/textarea";
-import type { ToastProps } from "@code-ui/toast";
+import type {
+  ToastCloseProps,
+  ToastColor,
+  ToastMode,
+  ToastOrientation,
+  ToastPlacement,
+  ToastProps,
+  ToastUI,
+  ToastVariant,
+} from "@code-ui/toast";
 import type { ThemeColor } from "@code-ui/core";
 
 export interface CuiCommonElementProps {
@@ -92,11 +195,20 @@ export interface CuiCommonElementProps {
 }
 
 export interface CuiButtonElementProps extends CuiCommonElementProps {
-  ui?: ButtonProps["ui"];
+  ui?: ButtonUI;
   loading?: boolean;
   disabled?: boolean;
-  variant?: ButtonProps["variant"];
-  size?: ButtonProps["size"];
+  color?: ButtonColor;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  block?: boolean;
+  label?: string;
+  icon?: string;
+  leading?: boolean;
+  leadingIcon?: string;
+  trailing?: boolean;
+  trailingIcon?: string;
+  loadingIcon?: string;
   loadingAuto?: boolean;
   autoResetDuration?: number;
   openType?: string;
@@ -116,33 +228,29 @@ export interface CuiAppElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiBannerElementProps extends CuiCommonElementProps {
-  ui?: BannerProps["ui"];
+  ui?: BannerUI;
   open?: boolean;
   defaultOpen?: boolean;
-  color?: BannerProps["color"];
-  variant?: BannerProps["variant"];
-  size?: BannerProps["size"];
-  placement?: BannerProps["placement"];
-  mode?: BannerProps["mode"];
+  color?: BannerColor;
+  variant?: BannerVariant;
+  size?: BannerSize;
+  placement?: BannerPlacement;
+  mode?: BannerMode;
   title?: string;
   description?: string;
   caption?: string;
   badge?: string | BannerBadgeProps;
-  badgeProps?: BannerBadgeProps;
   icon?: string;
   infoIcon?: string;
   successIcon?: string;
   warningIcon?: string;
   errorIcon?: string;
   image?: string;
-  imagePosition?: BannerProps["imagePosition"];
-  imageShape?: BannerProps["imageShape"];
+  imagePosition?: BannerImagePosition;
+  imageShape?: BannerImageShape;
   imageMode?: string;
-  close?: boolean;
-  closable?: boolean;
-  closeIcon?: string;
-  more?: boolean;
-  moreIcon?: string;
+  close?: boolean | BannerButtonProps;
+  more?: boolean | BannerButtonProps;
   actions?: BannerProps["actions"];
   hoverClass?: string;
   topOffset?: number | string;
@@ -177,7 +285,7 @@ export interface CuiCardElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiCheckboxElementProps extends CuiCommonElementProps {
-  ui?: CheckboxProps["ui"];
+  ui?: CheckboxUI;
   name?: string;
   value?: string;
   label?: string;
@@ -186,8 +294,8 @@ export interface CuiCheckboxElementProps extends CuiCommonElementProps {
   defaultChecked?: boolean;
   indeterminate?: boolean;
   defaultIndeterminate?: boolean;
-  color?: CheckboxProps["color"];
-  size?: CheckboxProps["size"];
+  color?: CheckboxColor;
+  size?: CheckboxSize;
   variant?: "outline" | "card" | (string & {});
   disabled?: boolean;
   readOnly?: boolean;
@@ -212,9 +320,10 @@ export interface CuiChipElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiDrawerElementProps extends CuiCommonElementProps {
-  ui?: DrawerProps["ui"];
+  ui?: DrawerUI;
   open?: boolean;
   placement?: DrawerProps["placement"];
+  close?: boolean | DrawerCloseProps;
   closeOnBackdropClick?: boolean;
   dismissible?: boolean;
   threshold?: number;
@@ -228,14 +337,14 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiFileUploadElementProps extends CuiCommonElementProps {
-  ui?: FileUploadProps["ui"];
+  ui?: FileUploadUI;
   name?: string;
   value?: FileUploadFile[];
   defaultValue?: FileUploadFile[];
-  color?: FileUploadProps["color"];
-  variant?: FileUploadProps["variant"];
-  size?: FileUploadProps["size"];
-  layout?: FileUploadProps["layout"];
+  color?: FileUploadColor;
+  variant?: FileUploadVariant;
+  size?: FileUploadSize;
+  layout?: FileUploadLayout;
   multiple?: boolean;
   maxFiles?: number;
   maxSize?: number;
@@ -294,7 +403,7 @@ export interface CuiFileUploadElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiFormElementProps extends CuiCommonElementProps {
-  ui?: FormProps["ui"];
+  ui?: FormUI;
   value?: Record<string, any>;
   defaultValue?: Record<string, any>;
   rules?: Record<string, FormRule[]>;
@@ -315,17 +424,17 @@ export interface CuiFormElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiInputElementProps extends CuiCommonElementProps {
-  ui?: InputProps["ui"];
+  ui?: InputUI;
   name?: string;
   validateOn?: FormValidateOn;
   invalid?: boolean;
-  variant?: InputProps["variant"];
-  color?: InputProps["color"];
-  size?: InputProps["size"];
+  variant?: InputVariant;
+  color?: InputColor;
+  size?: InputSize;
   highlight?: boolean;
   value?: string | number;
   defaultValue?: string | number;
-  type?: InputProps["type"];
+  type?: InputType;
   password?: boolean;
   placeholder?: string;
   placeholderClass?: string;
@@ -341,7 +450,7 @@ export interface CuiInputElementProps extends CuiCommonElementProps {
   autoFocus?: boolean;
   maxlength?: number;
   cursorSpacing?: number;
-  confirmType?: InputProps["confirmType"];
+  confirmType?: "send" | "search" | "next" | "go" | "done";
   confirmHold?: boolean;
   cursor?: number;
   selectionStart?: number;
@@ -358,14 +467,14 @@ export interface CuiInputElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiPinInputElementProps extends CuiCommonElementProps {
-  ui?: PinInputProps["ui"];
+  ui?: PinInputUI;
   label?: string;
   name?: string;
   validateOn?: FormValidateOn;
   invalid?: boolean;
-  variant?: PinInputProps["variant"];
-  color?: PinInputProps["color"];
-  size?: PinInputProps["size"];
+  variant?: PinInputVariant;
+  color?: PinInputColor;
+  size?: PinInputSize;
   highlight?: boolean;
   length?: number;
   value?: string[];
@@ -430,15 +539,15 @@ export interface CuiIconElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiSwitchElementProps extends CuiCommonElementProps {
-  ui?: SwitchProps["ui"];
+  ui?: SwitchUI;
   name?: string;
   value?: string;
   label?: string;
   description?: string;
   checked?: boolean;
   defaultChecked?: boolean;
-  color?: SwitchProps["color"];
-  size?: SwitchProps["size"];
+  color?: SwitchColor;
+  size?: SwitchSize;
   disabled?: boolean;
   readOnly?: boolean;
   loading?: boolean;
@@ -453,7 +562,7 @@ export interface CuiSwitchElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiTextareaElementProps extends CuiCommonElementProps {
-  ui?: TextareaProps["ui"];
+  ui?: TextareaUI;
   name?: string;
   value?: string | number | null;
   defaultValue?: string | number | null;
@@ -483,9 +592,9 @@ export interface CuiTextareaElementProps extends CuiCommonElementProps {
   holdKeyboard?: boolean;
   disableDefaultPadding?: boolean;
   count?: boolean;
-  variant?: TextareaProps["variant"];
-  color?: TextareaProps["color"];
-  size?: TextareaProps["size"];
+  variant?: TextareaVariant;
+  color?: TextareaColor;
+  size?: TextareaSize;
   highlight?: boolean;
   invalid?: boolean | null;
   onChange?: (
@@ -500,13 +609,13 @@ export interface CuiTextareaElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiRadioGroupElementProps extends CuiCommonElementProps {
-  ui?: RadioGroupProps["ui"];
+  ui?: RadioGroupUI;
   name?: string;
   value?: string | null;
   defaultValue?: string | null;
-  color?: RadioGroupProps["color"];
-  size?: RadioGroupProps["size"];
-  orientation?: RadioGroupProps["orientation"];
+  color?: RadioGroupColor;
+  size?: RadioGroupSize;
+  orientation?: RadioGroupOrientation;
   disabled?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -521,7 +630,7 @@ export interface CuiRadioGroupElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiRadioElementProps extends CuiCommonElementProps {
-  ui?: RadioProps["ui"];
+  ui?: RadioUI;
   value?: string;
   label?: string;
   description?: string;
@@ -530,23 +639,23 @@ export interface CuiRadioElementProps extends CuiCommonElementProps {
   checked?: boolean;
   defaultChecked?: boolean;
   invalid?: boolean | null;
-  color?: RadioProps["color"];
-  size?: RadioProps["size"];
-  variant?: RadioProps["variant"];
+  color?: RadioColor;
+  size?: RadioSize;
+  variant?: RadioVariant;
   onChange?: (
     event: WechatMiniprogram.CustomEvent<{ value: string; checked: boolean }>,
   ) => void;
 }
 
 export interface CuiCheckboxGroupElementProps extends CuiCommonElementProps {
-  ui?: CheckboxGroupProps["ui"];
+  ui?: CheckboxGroupUI;
   name?: string;
   value?: string[] | null;
   defaultValue?: string[] | null;
-  color?: CheckboxGroupProps["color"];
-  size?: CheckboxGroupProps["size"];
-  orientation?: CheckboxGroupProps["orientation"];
-  variant?: CheckboxGroupProps["variant"];
+  color?: CheckboxGroupColor;
+  size?: CheckboxGroupSize;
+  orientation?: CheckboxGroupOrientation;
+  variant?: CheckboxGroupVariant;
   disabled?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -563,18 +672,18 @@ export interface CuiCheckboxGroupElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiProgressElementProps extends CuiCommonElementProps {
-  ui?: ProgressProps["ui"];
+  ui?: ProgressUI;
   value?: number | null;
   defaultValue?: number | null;
   min?: number;
   max?: number;
-  orientation?: ProgressProps["orientation"];
-  type?: ProgressProps["type"];
-  size?: ProgressProps["size"];
-  color?: ProgressProps["color"];
+  orientation?: ProgressOrientation;
+  type?: ProgressType;
+  size?: ProgressSize;
+  color?: ProgressColor;
   striped?: boolean;
   animated?: boolean;
-  animation?: ProgressProps["animation"];
+  animation?: ProgressAnimation;
   inverted?: boolean;
   circleRadius?: number;
   strokeWidth?: number;
@@ -587,7 +696,7 @@ export interface CuiProgressElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiPullDownRefreshElementProps extends CuiCommonElementProps {
-  ui?: PullDownRefreshProps["ui"];
+  ui?: PullDownRefreshUI;
   value?: boolean | null;
   defaultValue?: boolean;
   disabled?: boolean;
@@ -625,14 +734,14 @@ export interface CuiPullDownRefreshElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiQrCodeElementProps extends CuiCommonElementProps {
-  ui?: QrCodeProps["ui"];
+  ui?: QrCodeUI;
   value?: string;
   defaultValue?: string;
   ecc?: QrCodeProps["ecc"];
   border?: number;
   encoding?: QrCodeProps["encoding"];
   pixelSize?: number;
-  size?: QrCodeProps["size"];
+  size?: QrCodeSize;
   color?: QrCodeProps["color"];
   overlaySrc?: string;
   showOverlay?: boolean;
@@ -643,17 +752,17 @@ export interface CuiQrCodeElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiStepperElementProps extends CuiCommonElementProps {
-  ui?: StepperProps["ui"];
+  ui?: StepperUI;
   step?: number | null;
   value?: number | null;
   modelValue?: number | null;
   defaultStep?: number;
   count?: number;
   linear?: boolean;
-  orientation?: StepperProps["orientation"];
-  color?: StepperProps["color"];
-  size?: StepperProps["size"];
-  variant?: StepperProps["variant"];
+  orientation?: StepperOrientation;
+  color?: StepperColor;
+  size?: StepperSize;
+  variant?: StepperVariant;
   disabled?: boolean;
   items?: StepperProps["items"];
   onChange?: (
@@ -663,7 +772,7 @@ export interface CuiStepperElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiStepperItemElementProps extends CuiCommonElementProps {
-  ui?: StepperItemProps["ui"];
+  ui?: StepperItemUI;
   index?: number | null;
   title?: string;
   description?: string;
@@ -671,10 +780,10 @@ export interface CuiStepperItemElementProps extends CuiCommonElementProps {
   disabled?: boolean;
   value?: string | number;
   isLast?: boolean | null;
-  orientation?: StepperItemProps["orientation"];
-  color?: StepperItemProps["color"];
-  size?: StepperItemProps["size"];
-  variant?: StepperItemProps["variant"];
+  orientation?: StepperOrientation;
+  color?: StepperColor;
+  size?: StepperSize;
+  variant?: StepperVariant;
   onTap?: (
     event: WechatMiniprogram.CustomEvent<{
       index: number;
@@ -704,15 +813,15 @@ export interface CuiAvatarGroupElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiAccordionElementProps extends CuiCommonElementProps {
-  ui?: AccordionProps["ui"];
+  ui?: AccordionUI;
   value?: AccordionProps["value"];
   defaultValue?: AccordionProps["defaultValue"];
   modelValue?: AccordionProps["modelValue"];
   multiple?: boolean;
   collapsible?: boolean;
   disabled?: boolean;
-  size?: AccordionProps["size"];
-  variant?: AccordionProps["variant"];
+  size?: AccordionSize;
+  variant?: AccordionVariant;
   items?: AccordionProps["items"];
   onChange?: (
     event: WechatMiniprogram.CustomEvent<AccordionValueChangeDetails>,
@@ -720,7 +829,7 @@ export interface CuiAccordionElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
-  ui?: AccordionItemProps["ui"];
+  ui?: AccordionItemUI;
   value?: AccordionItemProps["value"];
   label?: string;
   description?: string;
@@ -730,8 +839,8 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
   disabled?: boolean;
   open?: boolean | null;
   defaultOpen?: boolean;
-  size?: AccordionItemProps["size"];
-  variant?: AccordionItemProps["variant"];
+  size?: AccordionSize;
+  variant?: AccordionVariant;
   onTap?: (
     event: WechatMiniprogram.CustomEvent<AccordionItemOpenChangeDetails>,
   ) => void;
@@ -741,7 +850,7 @@ export interface CuiAccordionItemElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiActionSheetElementProps extends CuiCommonElementProps {
-  ui?: ActionSheetProps["ui"];
+  ui?: ActionSheetUI;
   open?: boolean;
   defaultOpen?: boolean;
   title?: string;
@@ -749,8 +858,7 @@ export interface CuiActionSheetElementProps extends CuiCommonElementProps {
   items?: ActionSheetItem[];
   actions?: ActionSheetAction[];
   loadingIcon?: string;
-  close?: boolean;
-  closeIcon?: string;
+  close?: boolean | ActionSheetCloseProps;
   closeOnItem?: boolean;
   closeOnBackdropClick?: boolean;
   duration?: number;
@@ -769,7 +877,7 @@ export interface CuiActionSheetElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
-  ui?: SwipeCellProps["ui"];
+  ui?: SwipeCellUI;
   disabled?: boolean;
   opened?: SwipeCellProps["opened"];
   defaultOpened?: SwipeCellProps["defaultOpened"];
@@ -799,7 +907,7 @@ export interface CuiSwipeCellElementProps extends CuiCommonElementProps {
   onDragend?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 export interface CuiSliderElementProps extends CuiCommonElementProps {
-  ui?: SliderProps["ui"];
+  ui?: SliderUI;
   name?: string;
   value?: number | number[];
   defaultValue?: number | number[];
@@ -809,8 +917,8 @@ export interface CuiSliderElementProps extends CuiCommonElementProps {
   orientation?: SliderProps["orientation"];
   inverted?: boolean;
   minStepsBetweenThumbs?: number;
-  color?: SliderProps["color"];
-  size?: SliderProps["size"];
+  color?: ThemeColor;
+  size?: SliderSize;
   disabled?: boolean;
   readOnly?: boolean;
   invalid?: boolean;
@@ -827,14 +935,14 @@ export interface CuiSliderElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiTabsElementProps extends CuiCommonElementProps {
-  ui?: TabsProps["ui"];
+  ui?: TabsUI;
   value?: TabsProps["value"];
   defaultValue?: TabsProps["defaultValue"];
   items?: TabsProps["items"];
-  orientation?: TabsProps["orientation"];
-  variant?: TabsProps["variant"];
-  color?: TabsProps["color"];
-  size?: TabsProps["size"];
+  orientation?: TabsOrientation;
+  variant?: TabsVariant;
+  color?: TabsColor;
+  size?: TabsSize;
   disabled?: boolean;
   loopFocus?: boolean;
   activationMode?: TabsProps["activationMode"];
@@ -844,7 +952,7 @@ export interface CuiTabsElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiTabsItemElementProps extends CuiCommonElementProps {
-  ui?: TabsItemProps["ui"];
+  ui?: TabsItemUI;
   value?: TabsItemProps["value"];
   label?: string;
   icon?: string;
@@ -855,21 +963,20 @@ export interface CuiTabsItemElementProps extends CuiCommonElementProps {
 }
 
 export interface CuiToastElementProps extends CuiCommonElementProps {
-  ui?: ToastProps["ui"];
-  mode?: ToastProps["mode"];
-  color?: ToastProps["color"];
-  variant?: ToastProps["variant"];
-  orientation?: ToastProps["orientation"];
-  placement?: ToastProps["placement"];
+  ui?: ToastUI;
+  mode?: ToastMode;
+  color?: ToastColor;
+  variant?: ToastVariant;
+  orientation?: ToastOrientation;
+  placement?: ToastPlacement;
   title?: string;
   description?: string;
   icon?: string;
   duration?: number;
   open?: boolean;
-  close?: boolean;
-  closeIcon?: string;
+  close?: boolean | ToastCloseProps;
   actions?: ToastProps["actions"];
-  progress?: boolean;
+  progress?: boolean | { color?: string };
   onOpenChange?: (
     event: WechatMiniprogram.CustomEvent<{ open: boolean }>,
   ) => void;

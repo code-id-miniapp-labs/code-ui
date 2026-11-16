@@ -4,6 +4,16 @@ Page({
     selectedSize: "lg",
     selectedColor: "primary",
     collections: ["tabler", "lucide"],
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
+    colors: [
+      "primary",
+      "secondary",
+      "neutral",
+      "success",
+      "warning",
+      "danger",
+      "info",
+    ] as const,
 
     // Tabler Icons (15 curated)
     tablerIcons: [

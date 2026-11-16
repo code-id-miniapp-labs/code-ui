@@ -32,17 +32,17 @@ export interface ThemeDefinition<
   defaultVariants?: DV;
 }
 
-/** Standard semantic colors supported across all component themes */
+/** Standard semantic colors supported across component themes */
 export const DEFAULT_THEME_COLORS = [
   "primary",
-  "neutral",
+  "secondary",
   "danger",
   "success",
   "warning",
   "info",
 ] as const;
 
-export type DefaultThemeColor = (typeof DEFAULT_THEME_COLORS)[number];
+export type DefaultThemeColor = (typeof DEFAULT_THEME_COLORS)[number] | "neutral";
 
 export type ThemeColor = DefaultThemeColor | (string & {});
 

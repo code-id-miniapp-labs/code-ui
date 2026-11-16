@@ -10,7 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type { MiniAppComponent, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./checkbox-group.anatomy";
 
 export type CheckboxGroupState = "idle";
@@ -48,13 +48,8 @@ export interface CheckboxGroupItemRaw {
 
 export interface CheckboxGroupItem {
   value: string;
-  label: string;
-  description: string;
   disabled: boolean;
   checked: boolean;
-  color: CheckboxGroupColor;
-  variant: CheckboxGroupVariant;
-  ui?: Record<string, any> | undefined;
   itemProps: Record<string, any>;
   controlProps: Record<string, any>;
   indicatorProps: Record<string, any>;
@@ -71,8 +66,6 @@ export interface CheckboxGroupProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: CheckboxGroupUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -85,26 +78,14 @@ export interface CheckboxGroupProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the checkbox group is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Semantic color variant */
-  color?: CheckboxGroupColor | undefined;
-  /** Size variant */
-  size?: CheckboxGroupSize | undefined;
-  /** Layout orientation */
-  orientation?: CheckboxGroupOrientation | undefined;
-  /** Visual variant (outline or card) */
-  variant?: CheckboxGroupVariant | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: CheckboxGroupSize | undefined;
   /** Whether the entire checkbox group is disabled */
   disabled?: boolean | undefined;
   /** Whether the checkbox group is read-only */
   readOnly?: boolean | undefined;
   /** Whether selection is required */
   required?: boolean | undefined;
-  /** Legend / group label */
-  legend?: string | undefined;
   /** Minimum number of items that must be selected */
   min?: number | null | undefined;
   /** Maximum number of items that can be selected */
@@ -122,17 +103,11 @@ export interface CheckboxGroupResolvedProps extends CheckboxGroupProps {
   readOnly: boolean;
   required: boolean;
   invalid: boolean | null;
-  color: CheckboxGroupColor;
-  size: CheckboxGroupSize;
-  orientation: CheckboxGroupOrientation;
-  variant: CheckboxGroupVariant;
   name: string;
   form: string;
-  legend: string;
   min: number | null;
   max: number | null;
   items: (string | CheckboxGroupItemRaw)[];
-  ui: CheckboxGroupUI;
 }
 
 export interface CheckboxGroupContext {
@@ -140,9 +115,6 @@ export interface CheckboxGroupContext {
   readonly disabled: () => boolean;
   readonly readOnly: () => boolean;
   readonly invalid: () => boolean;
-  readonly color: () => CheckboxGroupColor;
-  readonly size: () => CheckboxGroupSize;
-  readonly variant: () => CheckboxGroupVariant;
 
   setValue: (value: string[]) => void;
   toggleValue: (value: string, checked?: boolean) => void;
@@ -162,11 +134,9 @@ export type CheckboxGroupEvent =
   | { type: "SET_INVALID"; invalid: boolean };
 
 export interface CheckboxGroupComputed {
-  effectiveSize: CheckboxGroupSize;
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isDisabled: boolean;
@@ -219,12 +189,10 @@ export interface CheckboxGroupApi {
   readOnly: boolean;
   /** Whether the group is invalid */
   invalid: boolean;
-  /** Effective size */
-  size: CheckboxGroupSize;
   /** Pre-computed items with state and props for WXML wx:for rendering */
   items: CheckboxGroupItem[];
-  /** Change event handler for precomputed wx:for items */
-  handleItemTap: (e: MiniAppEventLike<CheckboxGroupItemTapDetail>) => void;
+  /** Change handler for precomputed wx:for items */
+  handleItemTap: (detail: CheckboxGroupItemTapDetail) => void;
   /** Get accessible props for an item container */
   getItemProps: (item: {
     value: string;

@@ -15,5 +15,7 @@ export type {
   ButtonService,
   ButtonSize,
   ButtonState,
+  ButtonTapDetail,
+  ButtonUI,
   ButtonVariant,
 } from "./button.types";

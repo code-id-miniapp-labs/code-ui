@@ -4,13 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type {
-  TabsColor,
-  TabsGroupContext,
-  TabsOrientation,
-  TabsSize,
-  TabsVariant,
-} from "@code-ui/tabs";
+import type { TabsGroupContext } from "@code-ui/tabs";
 import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./tabs-item.anatomy";
 
@@ -22,37 +16,15 @@ export interface TabsItemProps {
   id?: string | undefined;
   ids?: Record<string, any> | undefined;
   component?: MiniAppComponent | undefined;
-  ui?: TabsItemUI | undefined;
 
-  /** Render mode: trigger button, content panel, or auto */
-  mode?: "auto" | "trigger" | "panel" | undefined;
   /** Tab value identifier */
   value?: string | number | undefined;
-  /** Tab label text */
-  label?: string | undefined;
-  /** Leading icon name */
-  icon?: string | undefined;
-  /** Trailing icon name */
-  trailingIcon?: string | undefined;
   /** Whether the tab is disabled */
   disabled?: boolean | undefined;
   /** Direct selected state (e.g. passed from tabs machine) */
   selected?: boolean | null | undefined;
   /** Explicit trigger DOM id */
   triggerId?: string | undefined;
-  /** Whether the tab trigger is fitted (equal width) */
-  fitted?: boolean | undefined;
-  /** Whether to lazily render slot content until active */
-  lazy?: boolean | undefined;
-
-  /** Orientation override or from parent */
-  orientation?: TabsOrientation | undefined;
-  /** Variant override or from parent */
-  variant?: TabsVariant | undefined;
-  /** Color override or from parent */
-  color?: TabsColor | undefined;
-  /** Size override or from parent */
-  size?: TabsSize | undefined;
   /** Index override */
   index?: number | null | undefined;
   /** Callback fired when an unlinked item is selected */
@@ -67,21 +39,10 @@ export interface TabsItemProps {
 }
 
 export type TabsItemDefaultedKey =
-  | "ui"
-  | "mode"
   | "value"
-  | "label"
-  | "icon"
-  | "trailingIcon"
   | "disabled"
   | "selected"
   | "triggerId"
-  | "fitted"
-  | "lazy"
-  | "orientation"
-  | "variant"
-  | "color"
-  | "size"
   | "index";
 
 export type TabsItemResolvedProps = Omit<TabsItemProps, TabsItemDefaultedKey> & {
@@ -92,12 +53,7 @@ export interface TabsItemComputed {
   resolvedValue: string | number;
   isSelected: boolean;
   isDisabled: boolean;
-  color: TabsColor;
-  size: TabsSize;
-  fitted: boolean;
   index: number;
-  orientation: TabsOrientation;
-  variant: TabsVariant;
 }
 
 export type TabsItemEvent = { type: "SELECT" };
@@ -123,12 +79,7 @@ export interface TabsItemApi {
   state: TabsItemState;
   value: string | number;
   isSelected: boolean;
-  isDisabled: boolean;
-  orientation: TabsOrientation;
-  variant: TabsVariant;
-  color: TabsColor;
-  size: TabsSize;
-  fitted: boolean;
+  disabled: boolean;
   index: number;
 
   select(): void;

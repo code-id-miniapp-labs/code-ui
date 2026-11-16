@@ -369,7 +369,7 @@ describe("PullDownRefresh Machine", () => {
       machine.start();
       const api = connectPullDownRefresh(machine.service);
 
-      api.handleScroll({ detail: { scrollTop: 120, scrollLeft: 0 } });
+      api.handleScroll({ scrollTop: 120, scrollLeft: 0 });
       await flush();
 
       expect(machine.computed("isAtTop")).toBe(false);

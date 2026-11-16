@@ -1,13 +1,64 @@
 import { computed, effect, signal } from "alien-signals";
 import type { MiniAppEventLike } from "@code-ui/utils";
+import type {
+  CodeUiComponentInstance,
+  ToastOwnerInstance,
+} from "./types";
+
+function resolvePageId(instance?: ToastOwnerRef | null): string | undefined {
+  if (!instance) return undefined;
+  try {
+    if (typeof instance.getPageId === "function") {
+      const pid = instance.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+    if (
+      instance.__wxWebviewId__ !== undefined &&
+      instance.__wxWebviewId__ !== null &&
+      String(instance.__wxWebviewId__) !== ""
+    ) {
+      return String(instance.__wxWebviewId__);
+    }
+    if (typeof instance.__page__?.getPageId === "function") {
+      const pid = instance.__page__.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+    if (typeof instance.$page?.getPageId === "function") {
+      const pid = instance.$page.getPageId();
+      if (pid !== undefined && pid !== null && pid !== "") return String(pid);
+    }
+  } catch {
+    // Ignore errors when reading platform page IDs
+  }
+  return undefined;
+}
 
 export interface ToastAction {
   label: string;
   onClick?: (() => void) | undefined;
   color?: string | undefined;
   variant?: string | undefined;
+  size?: string | undefined;
+  icon?: string | undefined;
+  leadingIcon?: string | undefined;
+  trailingIcon?: string | undefined;
+  loading?: boolean | undefined;
+  loadingIcon?: string | undefined;
+  disabled?: boolean | undefined;
+  ui?: Record<string, string> | undefined;
+  className?: string | undefined;
   id?: string | undefined;
   closeOnClick?: boolean | undefined;
+}
+
+export interface ToastCloseProps {
+  icon?: string | undefined;
+  color?: string | undefined;
+  variant?: string | undefined;
+  size?: string | undefined;
+  ui?: Record<string, string> | undefined;
+  className?: string | undefined;
+  disabled?: boolean | undefined;
 }
 
 export type ToastSlotName =
@@ -19,7 +70,10 @@ export type ToastSlotName =
   | "actions"
   | "action"
   | "closeTrigger"
-  | "progress";
+  | "closeButton"
+  | "closeIcon"
+  | "progress"
+  | "progressBar";
 
 export type ToastUI = Partial<Record<ToastSlotName, string>>;
 
@@ -39,8 +93,7 @@ export interface ToastEntry {
   progress?: boolean | { color?: string } | undefined;
   progressPosition?: "top" | "bottom" | undefined;
   open?: boolean | undefined;
-  close?: boolean | undefined;
-  closeIcon?: string | undefined;
+  close?: boolean | ToastCloseProps | undefined;
   actions?: ToastAction[] | undefined;
   ui?: ToastUI | undefined;
   className?: string | undefined;
@@ -277,7 +330,7 @@ export class ToastManager {
 }
 
 export interface ToastHostRecord {
-  instance: any;
+  instance: ToastOwnerInstance;
   pageId: string;
   manager: ToastManager;
   order: number;
@@ -296,6 +349,10 @@ export interface ToastRegistry {
 const ACTIVE_KEY = "*";
 const MAX_PENDING_PER_KEY = 20;
 
+interface ToastGlobalScope {
+  __CODE_UI_TOAST_REGISTRY__?: ToastRegistry | undefined;
+}
+
 const globalScope = (
   typeof globalThis !== "undefined"
     ? globalThis
@@ -304,7 +361,7 @@ const globalScope = (
       : typeof global !== "undefined"
         ? global
         : {}
-) as any;
+) as ToastGlobalScope;
 
 if (!globalScope.__CODE_UI_TOAST_REGISTRY__) {
   globalScope.__CODE_UI_TOAST_REGISTRY__ = {
@@ -318,34 +375,7 @@ if (!globalScope.__CODE_UI_TOAST_REGISTRY__) {
 
 const registry: ToastRegistry = globalScope.__CODE_UI_TOAST_REGISTRY__;
 
-function getPageIdOf(instance: any): string | undefined {
-  if (!instance) return undefined;
-  try {
-    if (typeof instance.getPageId === "function") {
-      const id = instance.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    if (
-      instance.__wxWebviewId__ !== undefined &&
-      instance.__wxWebviewId__ !== null &&
-      instance.__wxWebviewId__ !== ""
-    ) {
-      return String(instance.__wxWebviewId__);
-    }
-    if (
-      instance.__page__ &&
-      typeof instance.__page__.getPageId === "function"
-    ) {
-      const id = instance.__page__.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-    if (instance.$page && typeof instance.$page.getPageId === "function") {
-      const id = instance.$page.getPageId();
-      if (id !== undefined && id !== null && id !== "") return String(id);
-    }
-  } catch {}
-  return undefined;
-}
+type ToastOwnerRef = ToastOwnerInstance | CodeUiComponentInstance<any, any>;
 
 function findHostByPageId(pageId: string): ToastHostRecord | undefined {
   for (let i = registry.hosts.length - 1; i >= 0; i--) {
@@ -355,7 +385,9 @@ function findHostByPageId(pageId: string): ToastHostRecord | undefined {
   return undefined;
 }
 
-export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
+export function findActiveToastHost(
+  owner?: ToastOwnerRef | null,
+): ToastHostRecord | undefined {
   if (owner) {
     const own = registry.hostByInstance.get(owner);
     if (own) return own;
@@ -371,7 +403,7 @@ export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
     }
 
     // 4. Page ID match
-    const pageId = getPageIdOf(owner);
+    const pageId = resolvePageId(owner);
     if (pageId) {
       const match = findHostByPageId(pageId);
       if (match) return match;
@@ -380,20 +412,22 @@ export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
 
   if (typeof getCurrentPages === "function") {
     try {
-      const pages = getCurrentPages();
+      const pages = getCurrentPages() as unknown as ToastOwnerRef[];
       const topPage = pages && pages[pages.length - 1];
       if (topPage) {
         if (topPage.__cuiApp) {
           const appHost = registry.hostByInstance.get(topPage.__cuiApp);
           if (appHost) return appHost;
         }
-        const topPageId = getPageIdOf(topPage);
+        const topPageId = resolvePageId(topPage);
         if (topPageId) {
           const host = findHostByPageId(topPageId);
           if (host) return host;
         }
       }
-    } catch {}
+    } catch {
+      // Ignore getCurrentPages errors outside MiniProgram page stack
+    }
   }
 
   let best: ToastHostRecord | undefined;
@@ -403,13 +437,16 @@ export function findActiveToastHost(owner?: any): ToastHostRecord | undefined {
   return best ?? registry.hosts[registry.hosts.length - 1];
 }
 
-function withToastHost(owner: any, op: PendingToastOp): void {
+function withToastHost(
+  owner: ToastOwnerRef | null | undefined,
+  op: PendingToastOp,
+): void {
   const host = findActiveToastHost(owner);
   if (host) {
     op(host);
     return;
   }
-  const key = (owner && getPageIdOf(owner)) || ACTIVE_KEY;
+  const key = (owner && resolvePageId(owner)) || ACTIVE_KEY;
   const queue = registry.pending.get(key) ?? [];
   if (queue.length >= MAX_PENDING_PER_KEY) {
     queue.shift();
@@ -431,7 +468,7 @@ function flushPending(host: ToastHostRecord): void {
 }
 
 export function registerToastHost(
-  instance: any,
+  instance: ToastOwnerInstance | null | undefined,
   onChange?: (toasts: ToastEntry[]) => void,
   options?: { max?: number | undefined },
 ): void {
@@ -446,7 +483,7 @@ export function registerToastHost(
   }
 
   const pageId =
-    getPageIdOf(instance) ?? `toast-host-${++registry.orderCounter}`;
+    resolvePageId(instance) ?? `toast-host-${++registry.orderCounter}`;
   const manager = new ToastManager({
     max: options?.max ?? 2,
     onChange,
@@ -464,7 +501,9 @@ export function registerToastHost(
   flushPending(record);
 }
 
-export function unregisterToastHost(instance: any): void {
+export function unregisterToastHost(
+  instance: ToastOwnerInstance | null | undefined,
+): void {
   if (!instance) return;
   const record = registry.hostByInstance.get(instance);
   if (record) {
@@ -479,7 +518,7 @@ export function unregisterToastHost(instance: any): void {
 }
 
 export function updateToastHostConfig(
-  owner: any,
+  owner: ToastOwnerRef | null | undefined,
   options: { max?: number | undefined },
 ): void {
   withToastHost(owner, (host) => {
@@ -491,7 +530,7 @@ export function updateToastHostConfig(
 
 export function addToast(
   entry: Omit<ToastEntry, "id"> & { id?: string | undefined },
-  owner?: any,
+  owner?: ToastOwnerRef | null,
 ): string {
   const id = entry.id || `toast-${++registry.toastIdCounter}`;
   const mode = entry.mode ?? "default";
@@ -508,7 +547,7 @@ export function addToast(
     progress: entry.progress ?? mode !== "native",
     progressPosition: entry.progressPosition ?? "bottom",
     variant: entry.variant ?? "outline",
-    closeIcon: entry.closeIcon ?? "close",
+    close: entry.close ?? true,
   };
 
   withToastHost(owner, (host) => {
@@ -518,19 +557,19 @@ export function addToast(
   return id;
 }
 
-export function dismissToast(id: string, owner?: any): void {
+export function dismissToast(id: string, owner?: ToastOwnerRef | null): void {
   withToastHost(owner, (host) => {
     host.manager.dismiss(id);
   });
 }
 
-export function removeToast(id: string, owner?: any): void {
+export function removeToast(id: string, owner?: ToastOwnerRef | null): void {
   withToastHost(owner, (host) => {
     host.manager.remove(id);
   });
 }
 
-export function clearToasts(owner?: any): void {
+export function clearToasts(owner?: ToastOwnerRef | null): void {
   withToastHost(owner, (host) => {
     host.manager.clear();
   });
@@ -539,14 +578,16 @@ export function clearToasts(owner?: any): void {
 export function updateToast(
   id: string,
   patch: Partial<Omit<ToastEntry, "id">>,
-  owner?: any,
+  owner?: ToastOwnerRef | null,
 ): void {
   withToastHost(owner, (host) => {
     host.manager.update(id, patch);
   });
 }
 
-export function getToastManager(owner?: any): ToastManager | undefined {
+export function getToastManager(
+  owner?: ToastOwnerRef | null,
+): ToastManager | undefined {
   const host = findActiveToastHost(owner);
   return host?.manager;
 }
@@ -554,38 +595,38 @@ export function getToastManager(owner?: any): ToastManager | undefined {
 export function createToastHostBehavior() {
   return Behavior({
     observers: {
-      maxToasts(this: any, value: number) {
+      maxToasts(this: ToastOwnerInstance, value: number) {
         if (!this.__cuiToastHostAttached) return;
         updateToastHostConfig(this, { max: value });
       },
     },
 
     lifetimes: {
-      attached(this: any) {
+      attached(this: ToastOwnerInstance) {
         this.__cuiToastHostAttached = true;
         registerToastHost(
           this,
           (toasts: ToastEntry[]) => {
-            this.setData({ toasts });
+            this.setData?.({ toasts });
           },
-          { max: this.data.maxToasts },
+          { max: this.data?.maxToasts },
         );
         this.toastManager = getToastManager(this);
       },
 
-      detached(this: any) {
+      detached(this: ToastOwnerInstance) {
         this.__cuiToastHostAttached = false;
         unregisterToastHost(this);
       },
     },
 
     methods: {
-      removeToast(this: any, id: string) {
+      removeToast(this: ToastOwnerInstance, id: string) {
         return removeToast(id, this);
       },
 
       handleToastDismiss(
-        this: any,
+        this: ToastOwnerInstance,
         event: MiniAppEventLike<{ id?: string }, { id?: string }>,
       ) {
         const id = event.detail?.id ?? event.currentTarget?.dataset?.id;

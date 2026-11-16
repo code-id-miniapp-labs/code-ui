@@ -1,26 +1,28 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function radioGroupTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
       root: "relative inline-flex flex-col gap-1.5",
       fieldset: "flex flex-col gap-2",
-      legend: "block font-medium text-neutral-900 leading-snug",
+      legend: "block font-medium text-highlighted leading-snug",
     },
     variants: {
       variant: {
         outline: {},
         card: {},
       },
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       size: {
         xs: { legend: "text-xs" },
         sm: { legend: "text-xs" },

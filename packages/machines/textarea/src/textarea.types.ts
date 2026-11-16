@@ -10,11 +10,7 @@ import type {
   FormRule,
   FormValidateOn,
 } from "@code-ui/form";
-import type {
-  MiniAppBaseEventLike,
-  MiniAppComponent,
-  MiniAppEventLike,
-} from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-ui/utils";
 import type { anatomy } from "./textarea.anatomy";
 
 export type TextareaState = "idle" | "focused";
@@ -54,8 +50,6 @@ export interface TextareaProps {
   rules?: FormRule[] | undefined;
   /** Optional explicit reactive form host */
   formContext?: FormHostContext | null | undefined;
-  /** Custom UI slot classes */
-  ui?: TextareaUI | undefined;
   /** Optional target `<c-form>` id/name when multiple forms exist on the same Page */
   form?: string | undefined;
   /** Form field name for hidden input and Form registration */
@@ -64,81 +58,20 @@ export interface TextareaProps {
   validateOn?: FormValidateOn | undefined;
   /** Whether the textarea is currently invalid */
   invalid?: boolean | null | undefined;
-  /** Visual variant */
-  variant?: TextareaVariant | undefined;
-  /** Semantic color */
-  color?: TextareaColor | undefined;
-  /** Size variant */
-  size?: TextareaSize | undefined;
   /** Form field wrapper disabled state */
   fieldDisabled?: boolean | undefined;
-  /** Form field wrapper size override */
-  fieldSize?: TextareaSize | undefined;
-  /** Highlight textarea with color ring */
-  highlight?: boolean | undefined;
   /** Controlled value */
   value?: string | number | null | undefined;
   /** Default value */
   defaultValue?: string | number | null | undefined;
-  /** Placeholder text */
-  placeholder?: string | undefined;
-  /** Placeholder CSS class */
-  placeholderClass?: string | undefined;
-  /** Placeholder inline styles */
-  placeholderStyle?: string | undefined;
   /** Whether the textarea is disabled */
   disabled?: boolean | undefined;
   /** Whether the textarea is read-only */
   readOnly?: boolean | undefined;
   /** Whether to show a clear button when value is non-empty */
   clearable?: boolean | undefined;
-  /** Custom clear icon class */
-  clearIcon?: string | undefined;
-  /** Whether textarea is in loading state */
-  loading?: boolean | undefined;
-  /** Custom loading icon class */
-  loadingIcon?: string | undefined;
-  /** Leading icon class */
-  leadingIcon?: string | undefined;
-  /** Trailing icon class */
-  trailingIcon?: string | undefined;
   /** Whether to focus on mount */
   autoFocus?: boolean | undefined;
-  /** Whether height is auto computed based on content */
-  autoHeight?: boolean | undefined;
-  /** If the textarea is inside a scroll-view */
-  fixed?: boolean | undefined;
-  /** Maximum number of characters */
-  maxlength?: number | undefined;
-  /** Whether to show confirm bar above keyboard */
-  showConfirmBar?: boolean | undefined;
-  /** Distance between cursor and keyboard */
-  cursorSpacing?: number | undefined;
-  /** Keyboard confirm button type */
-  confirmType?:
-    | "return"
-    | "send"
-    | "search"
-    | "next"
-    | "go"
-    | "done"
-    | undefined;
-  /** Keep keyboard active on confirm */
-  confirmHold?: boolean | undefined;
-  /** Cursor position */
-  cursor?: number | undefined;
-  /** Selection start */
-  selectionStart?: number | undefined;
-  /** Selection end */
-  selectionEnd?: number | undefined;
-  /** Adjust position when keyboard appears */
-  adjustPosition?: boolean | undefined;
-  /** Hold keyboard */
-  holdKeyboard?: boolean | undefined;
-  /** Disable default padding */
-  disableDefaultPadding?: boolean | undefined;
-  /** Whether to show character counter */
-  count?: boolean | undefined;
   /** Callback fired when value changes */
   onChange?: ((details: TextareaValueChangeDetails) => void) | undefined;
   /** Callback fired when textarea is focused */
@@ -176,7 +109,6 @@ export interface TextareaComputed {
   formDisabled: boolean;
   formReadOnly: boolean;
   fieldDisabled: boolean;
-  fieldSize: string;
   isInvalid: boolean;
 
   isEmpty: boolean;
@@ -186,7 +118,6 @@ export interface TextareaComputed {
   isInteractive: boolean;
   isClearable: boolean;
   characterCount: number;
-  effectiveSize: TextareaSize;
 }
 
 export interface TextareaRefs {
@@ -197,39 +128,12 @@ export interface TextareaRefs {
 type TextareaDefaultedKey =
   | "value"
   | "invalid"
-  | "variant"
-  | "color"
-  | "size"
-  | "highlight"
   | "defaultValue"
   | "name"
-  | "placeholder"
-  | "placeholderClass"
-  | "placeholderStyle"
   | "disabled"
   | "readOnly"
   | "clearable"
-  | "clearIcon"
-  | "loading"
-  | "loadingIcon"
-  | "leadingIcon"
-  | "trailingIcon"
-  | "autoFocus"
-  | "autoHeight"
-  | "fixed"
-  | "maxlength"
-  | "showConfirmBar"
-  | "cursorSpacing"
-  | "confirmType"
-  | "confirmHold"
-  | "cursor"
-  | "selectionStart"
-  | "selectionEnd"
-  | "adjustPosition"
-  | "holdKeyboard"
-  | "disableDefaultPadding"
-  | "count"
-  | "ui";
+  | "autoFocus";
 
 export type TextareaResolvedProps = Omit<
   TextareaProps,
@@ -274,8 +178,6 @@ export interface TextareaApi {
   disabled: boolean;
   /** Whether the field is read-only (via Form or direct prop) */
   readOnly: boolean;
-  /** Effective size variant */
-  size: TextareaSize;
   /** Set value programmatically */
   setValue(value: string | number): void;
   /** Clear value */
@@ -286,20 +188,18 @@ export interface TextareaApi {
   focus(): void;
   /** Blur textarea */
   blur(): void;
-  /** MiniProgram bindinput handler */
-  handleInput(
-    e: MiniAppEventLike<{ value: string; cursor?: number }>,
-  ): string | void;
-  /** MiniProgram bindfocus handler */
-  handleFocus(e?: MiniAppBaseEventLike): void;
-  /** MiniProgram bindblur handler */
-  handleBlur(e?: MiniAppBaseEventLike): void;
-  /** MiniProgram bindconfirm handler */
-  handleConfirm(e?: MiniAppEventLike<{ value?: string }>): void;
-  /** MiniProgram bindlinechange handler */
-  handleLineChange(e: MiniAppEventLike<Partial<TextareaLineChangeDetails>>): void;
-  /** Tap handler for clear button */
-  handleClear(e?: MiniAppBaseEventLike): void;
+  /** Handle textarea value update */
+  handleInput(value: string, cursor?: number): string | void;
+  /** Handle focus interaction */
+  handleFocus(): void;
+  /** Handle blur interaction */
+  handleBlur(): void;
+  /** Handle confirm interaction */
+  handleConfirm(value?: string): void;
+  /** Handle linechange metrics */
+  handleLineChange(detail: Partial<TextareaLineChangeDetails>): void;
+  /** Handle clear interaction */
+  handleClear(): void;
   /** Get props for root container */
   rootProps: Record<string, any>;
   /** Get props for textarea element */

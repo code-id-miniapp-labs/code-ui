@@ -1,16 +1,11 @@
 import {
   DEFAULT_THEME_COLORS,
-  createColorVariants,
   defineTheme,
   type ThemeOptions,
 } from "../../theme";
 
 export default function bannerTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
-  const semanticColors = (colors as readonly string[]).filter(
-    (c) => c !== "neutral",
-  );
-  const hasNeutral = (colors as readonly string[]).includes("neutral");
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
 
   return defineTheme({
     slots: {
@@ -30,10 +25,14 @@ export default function bannerTheme(options: ThemeOptions = {}) {
         "flex flex-col justify-between items-center self-start shrink-0 gap-2",
       close:
         "rounded-md transition-opacity opacity-75 hover:opacity-100 shrink-0 cursor-pointer flex items-center justify-center text-inherit",
+      closeIcon: "w-4 h-4",
       more: "rounded-md transition-opacity opacity-75 hover:opacity-100 shrink-0 cursor-pointer flex items-center justify-center text-inherit",
+      moreIcon: "w-4 h-4",
       actions:
         "flex items-center justify-around divide-x w-full border-t mt-2 pt-2",
       action: "flex-1",
+      actionButton: "text-inherit",
+      actionIcon: "w-3.5 h-3.5",
     },
     variants: {
       mode: {
@@ -41,7 +40,7 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           root: "fixed left-0 right-0 z-[90]",
         },
         inline: {
-          root: "relative w-full z-0",
+          root: "relative w-full z-0 rounded-md overflow-hidden",
           background: "rounded-md overflow-hidden",
         },
       },
@@ -56,34 +55,41 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           root: "relative",
         },
       },
-      color: createColorVariants(colors),
+      color: Object.assign(
+        Object.fromEntries(colors.map((color) => [color, {}])),
+        { neutral: {} },
+      ),
       variant: {
         solid: {},
         outline: {},
-        soft: {},
-        subtle: {},
+        soft: {
+          root: "bg-default",
+        },
+        subtle: {
+          root: "bg-default",
+        },
       },
       size: {
         xs: {
-          background: "py-1.5 px-2.5 gap-2",
+          background: "py-1.5 px-2.5 md:px-4 gap-2",
           title: "text-xs",
-          description: "text-[10px]",
-          caption: "text-[9px]",
+          description: "text-2xs",
+          caption: "text-3xs",
           icon: "w-3.5 h-3.5",
           close: "p-0.5 -mr-0.5",
           more: "p-0.5 -mr-0.5",
         },
         sm: {
-          background: "py-2 px-3 gap-2",
+          background: "py-2 px-3 md:px-5 gap-2",
           title: "text-xs sm:text-sm",
-          description: "text-[11px]",
-          caption: "text-[10px]",
+          description: "text-2xs",
+          caption: "text-2xs",
           icon: "w-4 h-4",
           close: "p-1 -mr-1",
           more: "p-1 -mr-1",
         },
         md: {
-          background: "py-2.5 px-3 gap-2.5",
+          background: "py-2.5 px-3 md:px-6 gap-2.5",
           title: "text-sm",
           description: "text-xs",
           caption: "text-sm",
@@ -92,7 +98,7 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           more: "p-1 -mr-1",
         },
         lg: {
-          background: "py-3 px-3.5 gap-3",
+          background: "py-3 px-3.5 md:px-6 gap-3",
           title: "text-base",
           description: "text-sm",
           caption: "text-xs",
@@ -101,7 +107,7 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           more: "p-1.5 -mr-1",
         },
         xl: {
-          background: "py-3.5 px-4 gap-3.5",
+          background: "py-3.5 px-4 md:px-8 gap-3.5",
           title: "text-lg",
           description: "text-base",
           caption: "text-sm",
@@ -141,8 +147,8 @@ export default function bannerTheme(options: ThemeOptions = {}) {
       },
     },
     compoundVariants: [
-      ...semanticColors.map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         variant: "solid" as const,
         class: {
           background:
@@ -164,55 +170,43 @@ export default function bannerTheme(options: ThemeOptions = {}) {
               : "border-white/20 divide-white/20",
         },
       })),
-      ...(hasNeutral
-        ? [
-            {
-              color: "neutral" as (typeof colors)[number],
-              variant: "solid" as const,
-              class: {
-                background: "bg-neutral-900 text-white dark:bg-neutral-800",
-                icon: "text-white",
-                close: "text-white/80 hover:text-white",
-                more: "text-white/80 hover:text-white",
-                actions: "border-white/20 divide-white/20",
-              },
-            },
-          ]
-        : []),
+      {
+        color: "neutral" as const,
+        variant: "solid" as const,
+        class: {
+          background: "bg-inverted text-inverted",
+          icon: "text-inverted",
+          close: "text-inverted/80 hover:text-inverted",
+          more: "text-inverted/80 hover:text-inverted",
+          actions: "border-accented/30 divide-accented/30",
+        },
+      },
 
-      ...semanticColors.map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         variant: "outline" as const,
         class: {
-          background: `bg-white dark:bg-neutral-900 border border-${color}/30 text-neutral-900 dark:text-white`,
+          background: `bg-default border border-${color}/30 text-highlighted`,
           icon: `text-${color}`,
-          close:
-            "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-          more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
+          close: "text-muted hover:text-default",
+          more: "text-muted hover:text-default",
           actions: `border-${color}/20 divide-${color}/20`,
         },
       })),
-      ...(hasNeutral
-        ? [
-            {
-              color: "neutral" as (typeof colors)[number],
-              variant: "outline" as const,
-              class: {
-                background:
-                  "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white",
-                icon: "text-neutral-900 dark:text-white",
-                close:
-                  "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                actions:
-                  "border-neutral-200 dark:border-neutral-800 divide-neutral-200 dark:divide-neutral-800",
-              },
-            },
-          ]
-        : []),
+      {
+        color: "neutral" as const,
+        variant: "outline" as const,
+        class: {
+          background: "bg-default border border-default text-highlighted",
+          icon: "text-highlighted",
+          close: "text-muted hover:text-default",
+          more: "text-muted hover:text-default",
+          actions: "border-default divide-default",
+        },
+      },
 
-      ...semanticColors.map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         variant: "soft" as const,
         class: {
           background: `bg-${color}/10 text-${color}`,
@@ -222,28 +216,20 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           actions: `border-${color}/20 divide-${color}/20`,
         },
       })),
-      ...(hasNeutral
-        ? [
-            {
-              color: "neutral" as (typeof colors)[number],
-              variant: "soft" as const,
-              class: {
-                background:
-                  "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white",
-                icon: "text-neutral-700 dark:text-neutral-300",
-                close:
-                  "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                actions:
-                  "border-neutral-200 dark:border-neutral-700 divide-neutral-200 dark:divide-neutral-700",
-              },
-            },
-          ]
-        : []),
+      {
+        color: "neutral" as const,
+        variant: "soft" as const,
+        class: {
+          background: "bg-elevated text-highlighted",
+          icon: "text-default",
+          close: "text-muted hover:text-default",
+          more: "text-muted hover:text-default",
+          actions: "border-default divide-default",
+        },
+      },
 
-      // 4. Subtle
-      ...semanticColors.map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         variant: "subtle" as const,
         class: {
           background: `bg-${color}/10 border-b border-${color}/20 text-${color}`,
@@ -253,24 +239,18 @@ export default function bannerTheme(options: ThemeOptions = {}) {
           actions: `border-${color}/20 divide-${color}/20`,
         },
       })),
-      ...(hasNeutral
-        ? [
-            {
-              color: "neutral" as (typeof colors)[number],
-              variant: "subtle" as const,
-              class: {
-                background:
-                  "bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white",
-                icon: "text-neutral-700 dark:text-neutral-300",
-                close:
-                  "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                more: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-white",
-                actions:
-                  "border-neutral-200 dark:border-neutral-700 divide-neutral-200 dark:divide-neutral-700",
-              },
-            },
-          ]
-        : []),
+      {
+        color: "neutral" as const,
+        variant: "subtle" as const,
+        class: {
+          background:
+            "bg-elevated border-b border-default text-highlighted",
+          icon: "text-default",
+          close: "text-muted hover:text-default",
+          more: "text-muted hover:text-default",
+          actions: "border-default divide-default",
+        },
+      },
     ],
     defaultVariants: {
       color: "primary",

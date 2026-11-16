@@ -5,33 +5,41 @@ import {
 } from "../../theme";
 
 export default function radioTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
       root: "relative inline-flex items-start select-none cursor-pointer",
-      base: "relative mt-0.5 flex items-center justify-center rounded-full border border-neutral-300 bg-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      base: "relative mt-0.5 flex items-center justify-center rounded-full border border-accented bg-default transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       indicator: "rounded-full transition-transform duration-150 ease-out",
       wrapper: "ms-2 flex flex-col justify-center",
-      label: "block font-medium text-neutral-900 leading-snug",
-      description: "text-neutral-500 mt-0.5 leading-snug",
+      label: "block font-medium text-highlighted leading-snug",
+      description: "text-muted mt-0.5 leading-snug",
     },
     variants: {
       variant: {
         outline: {},
         card: {
-          root: "p-3 rounded-xl border border-neutral-200 bg-white shadow-xs transition-all w-full",
+          root: "p-3 rounded-xl border border-default bg-default shadow-xs transition-all w-full",
         },
       },
-      color: Object.fromEntries(
-        (colors as readonly string[]).map((color) => [
-          color,
-          {
-            base: `border-${color} text-${color}`,
-            indicator: `bg-${color}`,
+      color: Object.assign(
+        Object.fromEntries(
+          colors.map((color) => [
+            color,
+            {
+              base: `border-${color} text-${color}`,
+              indicator: `bg-${color}`,
+            },
+          ]),
+        ),
+        {
+          neutral: {
+            base: "border-inverted text-inverted",
+            indicator: "bg-inverted",
           },
-        ]),
+        },
       ),
       size: {
         xs: {
@@ -39,14 +47,14 @@ export default function radioTheme(options: ThemeOptions = {}) {
           indicator: "w-1.5 h-1.5",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[20rpx]",
+          description: "text-2xs",
         },
         sm: {
           base: "w-4 h-4",
           indicator: "w-2 h-2",
           wrapper: "text-xs",
           label: "text-xs",
-          description: "text-[22rpx]",
+          description: "text-2xs",
         },
         md: {
           base: "w-4.5 h-4.5",
@@ -71,8 +79,12 @@ export default function radioTheme(options: ThemeOptions = {}) {
         },
       },
       checked: {
-        true: {},
-        false: {},
+        true: {
+          indicator: "scale-100 opacity-100",
+        },
+        false: {
+          indicator: "scale-0 opacity-0",
+        },
       },
       disabled: {
         true: {
@@ -93,17 +105,25 @@ export default function radioTheme(options: ThemeOptions = {}) {
         checked: false,
         invalid: false,
         class: {
-          base: "border-neutral-300 text-transparent",
+          base: "border-accented text-transparent",
         },
       },
-      ...(colors as readonly string[]).map((color) => ({
+      ...colors.map((color) => ({
         variant: "card" as const,
-        color: color as (typeof colors)[number],
-        checked: true,
+        color,
+        checked: true as const,
         class: {
           root: `border-${color} bg-${color}/5 ring-1 ring-${color}`,
         },
       })),
+      {
+        variant: "card" as const,
+        color: "neutral" as const,
+        checked: true as const,
+        class: {
+          root: "border-inverted bg-elevated ring-1 ring-inverted",
+        },
+      },
       {
         variant: "card" as const,
         invalid: true,

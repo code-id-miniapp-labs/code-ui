@@ -5,49 +5,58 @@ import {
 } from "../../theme";
 
 export default function textareaTheme(options: ThemeOptions = {}) {
-  const colors = options.colors ?? DEFAULT_THEME_COLORS;
+  const colors = (options.colors ?? DEFAULT_THEME_COLORS) as readonly string[];
   const errorColor = options.errorColor ?? "danger";
 
   return defineTheme({
     slots: {
       root: "relative flex flex-col w-full box-border rounded-lg border transition-colors focus-within:outline-none",
-      base: "w-full box-border border-0 p-0 m-0 bg-transparent text-neutral-900 focus:outline-none disabled:cursor-not-allowed disabled:text-neutral-400 resize-none leading-normal min-h-12",
-      placeholder: "text-neutral-400",
+      base: "w-full box-border border-0 p-0 m-0 bg-transparent text-highlighted focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed resize-none leading-normal min-h-12",
+      placeholder: "text-dimmed",
       leading:
-        "absolute start-0 top-0 flex items-center justify-center pointer-events-none text-neutral-400",
+        "absolute start-0 top-0 flex items-center justify-center pointer-events-none text-dimmed",
       leadingIcon: "shrink-0",
       trailing:
-        "absolute end-0 top-0 flex items-center justify-center text-neutral-400",
+        "absolute end-0 top-0 flex items-center justify-center text-dimmed",
       trailingIcon: "shrink-0",
+      loadingIcon: "w-full h-full animate-spin",
       clear:
-        "cursor-pointer pointer-events-auto transition-colors hover:text-neutral-700",
+        "cursor-pointer pointer-events-auto transition-colors hover:text-default",
+      clearIcon: "size-3.5",
       count:
-        "absolute end-0 bottom-0 flex items-center text-neutral-400 pointer-events-none tabular-nums",
+        "absolute end-0 bottom-0 flex items-center text-dimmed pointer-events-none tabular-nums",
     },
     variants: {
-      color: Object.fromEntries(
-        (colors as readonly string[]).map((color) => [
-          color,
-          {
-            root: `focus-within:border-${color} focus-within:ring-2 focus-within:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+      color: Object.assign(
+        Object.fromEntries(
+          colors.map((color) => [
+            color,
+            {
+              root: `focus-within:border-${color} focus-within:ring-2 focus-within:ring-${color}/20 data-[focused=true]:border-${color} data-[focused=true]:ring-2 data-[focused=true]:ring-${color}/20`,
+            },
+          ]),
+        ),
+        {
+          neutral: {
+            root: "focus-within:border-inverted focus-within:ring-2 focus-within:ring-inverted/20 data-[focused=true]:border-inverted data-[focused=true]:ring-2 data-[focused=true]:ring-inverted/20",
           },
-        ]),
+        },
       ),
       variant: {
         outline: {
-          root: "bg-white text-neutral-900 border-neutral-300",
+          root: "bg-default text-highlighted border-accented",
         },
         soft: {
-          root: "bg-neutral-100/70 text-neutral-900 border-transparent",
+          root: "bg-elevated text-highlighted border-transparent",
         },
         subtle: {
-          root: "bg-neutral-100 text-neutral-900 border-neutral-300",
+          root: "bg-elevated text-highlighted border-accented",
         },
         ghost: {
-          root: "bg-transparent text-neutral-900 border-transparent focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
+          root: "bg-transparent text-highlighted border-transparent focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
         none: {
-          root: "bg-transparent text-neutral-900 border-0 focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
+          root: "bg-transparent text-highlighted border-0 focus-within:border-transparent focus-within:ring-0 data-[focused=true]:border-transparent data-[focused=true]:ring-0",
         },
       },
       size: {
@@ -141,8 +150,8 @@ export default function textareaTheme(options: ThemeOptions = {}) {
       },
       disabled: {
         true: {
-          root: "opacity-60 cursor-not-allowed bg-neutral-100",
-          base: "cursor-not-allowed text-neutral-400",
+          root: "opacity-60 cursor-not-allowed bg-elevated",
+          base: "cursor-not-allowed text-dimmed",
         },
         false: {
           root: "",
@@ -163,7 +172,7 @@ export default function textareaTheme(options: ThemeOptions = {}) {
           base: "h-auto",
         },
         false: {
-          base: "h-full min-h-[4.5rem]",
+          base: "h-full min-h-18",
         },
       },
     },
@@ -273,13 +282,20 @@ export default function textareaTheme(options: ThemeOptions = {}) {
           root: "pb-9",
         },
       },
-      ...(colors as readonly string[]).map((color) => ({
-        color: color as (typeof colors)[number],
+      ...colors.map((color) => ({
+        color,
         highlight: true as const,
         class: {
           root: `border-${color} ring-2 ring-${color}/20`,
         },
       })),
+      {
+        color: "neutral" as const,
+        highlight: true as const,
+        class: {
+          root: "border-inverted ring-2 ring-inverted/20",
+        },
+      },
       {
         invalid: true as const,
         class: {

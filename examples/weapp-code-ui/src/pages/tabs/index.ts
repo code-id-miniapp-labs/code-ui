@@ -12,12 +12,14 @@ Page({
     color: "primary",
     colorOptions: [
       "primary",
+      "secondary",
       "neutral",
       "success",
       "warning",
       "danger",
       "info",
     ],
+    extraCount: 0,
 
     // 2. Data-Driven Items
     dataTab: "preview",
@@ -159,5 +161,9 @@ Page({
 
   selectBilling() {
     this.setData({ activeTab: "billing" });
+  },
+
+  onAddTabTrigger() {
+    this.setData({ extraCount: this.data.extraCount + 1 });
   },
 });

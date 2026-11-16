@@ -6,7 +6,7 @@ import {
   setupFormFieldSync,
 } from "@code-ui/form/context";
 import { isEmpty, isNotEmpty, isNotNull } from "@code-ui/utils";
-import type { InputMachine, InputSchema, InputSize } from "./input.types";
+import type { InputMachine, InputSchema } from "./input.types";
 import { defaultInputProps } from "./input.props";
 
 const toStringValue = (val: unknown): string | undefined =>
@@ -60,15 +60,15 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
     isInvalid: ({ prop, refs, context, scope }) =>
       Boolean(
         context.get("invalid") ||
-          hasFormFieldErrors(prop, refs, scope, "input"),
+        hasFormFieldErrors(prop, refs, scope, "input"),
       ),
     isEmpty: ({ context }) => isEmpty(context.get("value")),
     isFilled: ({ context }) => !isEmpty(context.get("value")),
     isDisabled: ({ prop, computed }) =>
       Boolean(
         computed("formDisabled") ||
-          computed("fieldDisabled") ||
-          prop("disabled"),
+        computed("fieldDisabled") ||
+        prop("disabled"),
       ),
     isReadOnly: ({ prop, computed }) =>
       Boolean(prop("readOnly") || computed("formReadOnly")),
@@ -78,8 +78,6 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       Boolean(
         prop("clearable") && computed("isInteractive") && computed("isFilled"),
       ),
-    effectiveSize: ({ prop, computed }) =>
-      (computed("fieldSize") || prop("size") || "md") as InputSize,
   },
 
   entry: ["setupFormField"],
@@ -138,7 +136,15 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
     },
 
     actions: {
-      setupFormField: ({ context, prop, refs, scope, state, computed }) => {
+      setupFormField: ({
+        context,
+        prop,
+        refs,
+        scope,
+        state,
+        computed,
+        action,
+      }) => {
         setupFormFieldSync(
           {
             component: prop("component"),
@@ -151,13 +157,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
               context.set("value", toStringValue(rawVal) ?? "");
             },
             resetValue: () => {
-              const initial =
-                refs.get("initialValue") ??
-                toStringValue(prop("defaultValue")) ??
-                "";
-              context.set("value", initial);
-              context.set("invalid", false);
-              state.set("idle");
+              action(["resetValue"]);
             },
             focus: () => {
               if (!computed("isInteractive")) return;
@@ -201,11 +201,12 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         prop("onClear")?.({});
       },
 
-      resetValue: ({ context, prop, refs }) => {
+      resetValue: ({ context, prop, refs, state }) => {
         const initial =
           refs.get("initialValue") ?? toStringValue(prop("defaultValue")) ?? "";
         context.set("value", initial);
         context.set("invalid", false);
+        state.set("idle");
       },
     },
   },

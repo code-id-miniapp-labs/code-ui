@@ -5,10 +5,6 @@ export const defaultPinInputProps: PinInputResolvedProps = {
   invalid: null,
   length: 4,
   type: "numeric",
-  variant: "outline" as const,
-  color: "primary" as const,
-  size: "",
-  highlight: false,
   name: "",
   mask: false,
   placeholder: "",
@@ -20,5 +16,4 @@ export const defaultPinInputProps: PinInputResolvedProps = {
   selectOnFocus: false,
   separator: false,
   separatorChar: "-",
-  ui: {},
 };

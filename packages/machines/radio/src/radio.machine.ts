@@ -82,21 +82,6 @@ export const radioMachine: RadioMachine = createMachine<RadioSchema>({
       const group = prop("groupContext") as RadioGroupContext | undefined;
       return Boolean(context.get("invalid") || group?.invalid());
     },
-
-    effectiveSize: ({ prop }) => {
-      const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.size() || prop("size");
-    },
-
-    effectiveColor: ({ prop }) => {
-      const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.color() || prop("color");
-    },
-
-    effectiveVariant: ({ prop }) => {
-      const group = prop("groupContext") as RadioGroupContext | undefined;
-      return group?.variant() || prop("variant");
-    },
   },
 
   watch: ({ prop, state, track }) => {
