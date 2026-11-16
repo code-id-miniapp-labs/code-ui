@@ -68,6 +68,7 @@ export interface ComputeFloatingPositionParams {
   viewport: FloatingViewport;
   contentSize?: FloatingContentSize | null | undefined;
   portal: boolean;
+  arrow?: boolean | undefined;
   side: FloatingSide;
   align: FloatingAlign;
   sideOffset: number;
@@ -78,76 +79,29 @@ export interface ComputeFloatingPositionParams {
   maxHeight: number;
 }
 
-export function computeFloatingPosition(
-  params: ComputeFloatingPositionParams,
-): FloatingPositionResult {
+function resolveVerticalPlacement(params: {
+  anchorRect: FloatingRect | null;
+  viewport: FloatingViewport;
+  contentSize?: FloatingContentSize | null | undefined;
+  side: FloatingSide;
+  sideOffset: number;
+  collisionPadding: number;
+  avoidCollisions: boolean;
+  safeMaxHeight: number;
+}): { resolvedSide: FloatingSide; resolvedMaxHeight: number } {
   const {
     anchorRect,
     viewport,
     contentSize,
-    portal,
     side,
-    align,
     sideOffset,
-    alignOffset,
     collisionPadding,
     avoidCollisions,
-    matchTriggerWidth,
-    maxHeight,
+    safeMaxHeight,
   } = params;
 
-  const safeMaxHeight = Math.max(80, maxHeight);
-
-  if (!portal) {
-    const vertical =
-      side === "top"
-        ? `bottom: calc(100% + ${roundPx(sideOffset)}px);`
-        : `top: calc(100% + ${roundPx(sideOffset)}px);`;
-
-    const horizontal =
-      align === "end"
-        ? `right: ${roundPx(alignOffset)}px;`
-        : align === "center"
-          ? "left: 50%; transform: translateX(-50%);"
-          : `left: ${roundPx(alignOffset)}px;`;
-
-    const widthStyle =
-      matchTriggerWidth === true || matchTriggerWidth === "exact"
-        ? "width: 100%;"
-        : matchTriggerWidth === "min"
-          ? "min-width: 100%;"
-          : "";
-
-    const origin = side === "top" ? "bottom center" : "top center";
-    const arrowVertical = side === "top" ? "bottom: -5px;" : "top: -5px;";
-    const arrowHorizontal =
-      align === "end"
-        ? "right: 16px;"
-        : align === "center"
-          ? "left: 50%; margin-left: -5px;"
-          : "left: 16px;";
-
-    return {
-      positioned: true,
-      resolvedSide: side,
-      resolvedAlign: align,
-      maxHeight: safeMaxHeight,
-      positionerStyle: `${vertical} ${horizontal} ${widthStyle}`.trim(),
-      contentStyle: `max-height: ${roundPx(safeMaxHeight)}px; transform-origin: ${origin};`,
-      arrowStyle: `${arrowVertical} ${arrowHorizontal}`,
-    };
-  }
-
   if (!anchorRect) {
-    return {
-      positioned: false,
-      resolvedSide: side,
-      resolvedAlign: align,
-      maxHeight: safeMaxHeight,
-      positionerStyle: "opacity: 0; pointer-events: none; left: 0px; top: 0px;",
-      contentStyle: `max-height: ${roundPx(safeMaxHeight)}px;`,
-      arrowStyle: "",
-    };
+    return { resolvedSide: side, resolvedMaxHeight: safeMaxHeight };
   }
 
   const pad = Math.max(0, collisionPadding);
@@ -189,12 +143,103 @@ export function computeFloatingPosition(
     ? Math.max(80, Math.min(safeMaxHeight, Math.floor(availableSpace)))
     : safeMaxHeight;
 
+  return { resolvedSide, resolvedMaxHeight };
+}
+
+const ARROW_ROTATE_STYLE =
+  "-webkit-transform: rotate(45deg); transform: rotate(45deg);";
+
+export function computeFloatingPosition(
+  params: ComputeFloatingPositionParams,
+): FloatingPositionResult {
+  const {
+    anchorRect,
+    viewport,
+    contentSize,
+    portal,
+    arrow,
+    side,
+    align,
+    sideOffset,
+    alignOffset,
+    collisionPadding,
+    avoidCollisions,
+    matchTriggerWidth,
+    maxHeight,
+  } = params;
+
+  const safeMaxHeight = Math.max(80, maxHeight);
+  const effectiveSideOffset = arrow ? Math.max(sideOffset, 8) : sideOffset;
+  const pad = Math.max(0, collisionPadding);
+  const maxAllowedWidth = Math.max(120, viewport.width - pad * 2);
+  const { resolvedSide, resolvedMaxHeight } = resolveVerticalPlacement({
+    anchorRect,
+    viewport,
+    contentSize,
+    side,
+    sideOffset: effectiveSideOffset,
+    collisionPadding,
+    avoidCollisions,
+    safeMaxHeight,
+  });
+
+  if (!portal) {
+    const vertical =
+      resolvedSide === "top"
+        ? `bottom: calc(100% + ${roundPx(effectiveSideOffset)}px);`
+        : `top: calc(100% + ${roundPx(effectiveSideOffset)}px);`;
+
+    const horizontal =
+      align === "end"
+        ? `right: ${roundPx(alignOffset)}px;`
+        : align === "center"
+          ? "left: 50%; transform: translateX(-50%);"
+          : `left: ${roundPx(alignOffset)}px;`;
+
+    const widthStyle =
+      matchTriggerWidth === true || matchTriggerWidth === "exact"
+        ? "width: 100%;"
+        : matchTriggerWidth === "min"
+          ? `min-width: 100%; max-width: ${roundPx(maxAllowedWidth)}px;`
+          : `max-width: ${roundPx(maxAllowedWidth)}px;`;
+
+    const origin = resolvedSide === "top" ? "bottom center" : "top center";
+    const arrowVertical = resolvedSide === "top" ? "bottom: -5px;" : "top: -5px;";
+    const arrowHorizontal =
+      align === "end"
+        ? "right: 16px;"
+        : align === "center"
+          ? "left: 50%; margin-left: -5px;"
+          : "left: 16px;";
+
+    return {
+      positioned: true,
+      resolvedSide,
+      resolvedAlign: align,
+      maxHeight: resolvedMaxHeight,
+      positionerStyle: `${vertical} ${horizontal} ${widthStyle}`.trim(),
+      contentStyle: `max-height: ${roundPx(resolvedMaxHeight)}px; transform-origin: ${origin};`,
+      arrowStyle: `${arrowVertical} ${arrowHorizontal} ${ARROW_ROTATE_STYLE}`,
+    };
+  }
+
+  if (!anchorRect) {
+    return {
+      positioned: false,
+      resolvedSide: side,
+      resolvedAlign: align,
+      maxHeight: safeMaxHeight,
+      positionerStyle: "opacity: 0; pointer-events: none; left: 0px; top: 0px;",
+      contentStyle: `max-height: ${roundPx(safeMaxHeight)}px;`,
+      arrowStyle: "",
+    };
+  }
+
   const verticalStyle =
     resolvedSide === "bottom"
-      ? `top: ${roundPx(anchorRect.bottom + sideOffset)}px;`
-      : `bottom: ${roundPx(viewport.height - anchorRect.top + sideOffset)}px;`;
+      ? `top: ${roundPx(anchorRect.bottom + effectiveSideOffset)}px;`
+      : `bottom: ${roundPx(viewport.height - anchorRect.top + effectiveSideOffset)}px;`;
 
-  const maxAllowedWidth = Math.max(120, viewport.width - pad * 2);
   let widthStyle = `max-width: ${roundPx(maxAllowedWidth)}px;`;
   let knownWidth: number | undefined;
 
@@ -272,6 +317,6 @@ export function computeFloatingPosition(
     maxHeight: resolvedMaxHeight,
     positionerStyle: `${verticalStyle} ${horizontalStyle} ${widthStyle}`.trim(),
     contentStyle: `max-height: ${roundPx(resolvedMaxHeight)}px; transform-origin: ${origin};`,
-    arrowStyle: `${arrowVertical} ${arrowHorizontal}`,
+    arrowStyle: `${arrowVertical} ${arrowHorizontal} ${ARROW_ROTATE_STYLE}`,
   };
 }

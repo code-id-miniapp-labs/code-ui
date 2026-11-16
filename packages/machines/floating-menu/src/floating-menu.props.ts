@@ -6,7 +6,7 @@ export const defaultFloatingMenuProps: FloatingMenuResolvedProps = {
   disabled: false,
   closeOnBackdropClick: true,
   triggerMode: "manual",
-  portal: true,
+  portal: false,
   arrow: false,
   side: "bottom",
   align: "start",

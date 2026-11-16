@@ -47,10 +47,12 @@ Component(
     }),
 
     computed: {
-      portalThemeStyle() {
-        if (!this.data.portal) return "";
-        const base = this.data.themeCssVars || "";
-        return base;
+      wrapperStyle(): string {
+        const visible = Boolean(this.data.floatingMenu?.visible);
+        const base = this.data.portal ? this.data.themeCssVars || "" : "";
+        if (visible) return base;
+        if (!base) return "display:none;";
+        return base.endsWith(";") ? `${base}display:none;` : `${base};display:none;`;
       },
 
       classes() {
@@ -58,6 +60,7 @@ Component(
         const themeFns = floatingMenuTheme({
           portal: Boolean(this.data.portal),
           open: Boolean(api?.open),
+          visible: Boolean(api?.visible),
           side: api?.resolvedSide ?? this.data.side,
         });
         return resolveSlots(themeFns, this.data.ui, this.data.className);

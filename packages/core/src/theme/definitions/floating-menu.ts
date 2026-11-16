@@ -4,13 +4,13 @@ export default function floatingMenuTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "relative w-full",
-      trigger: "w-full",
+      trigger: "relative w-full",
       backdrop: "fixed inset-0 z-40 bg-transparent",
       positioner: "z-50 box-border",
       content:
-        "relative w-full overflow-hidden rounded-lg bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
+        "relative w-full rounded-lg bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
       arrow:
-        "absolute w-2.5 h-2.5 rotate-45 bg-default border-default pointer-events-none",
+        "absolute w-2.5 h-2.5 bg-default border-default pointer-events-none",
     },
     variants: {
       portal: {
@@ -31,6 +31,13 @@ export default function floatingMenuTheme(_options: ThemeOptions = {}) {
           content: "opacity-0 scale-95 pointer-events-none",
         },
       },
+      visible: {
+        true: {
+          root: "z-50",
+          trigger: "z-50",
+        },
+        false: {},
+      },
       side: {
         bottom: {
           arrow: "border-t border-l",
@@ -41,8 +48,9 @@ export default function floatingMenuTheme(_options: ThemeOptions = {}) {
       },
     },
     defaultVariants: {
-      portal: true,
+      portal: false,
       open: false,
+      visible: false,
       side: "bottom",
     },
   });

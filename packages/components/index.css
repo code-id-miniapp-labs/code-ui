@@ -120,3 +120,9 @@ button:not([size="mini"]):not([data-part="item"]) {
 button.w-full {
   width: 100% !important;
 }
+
+.cui-picker-indicator::before,
+.cui-picker-indicator::after {
+  content: none !important;
+  border: none !important;
+}

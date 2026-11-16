@@ -1,7 +1,10 @@
 import { createMachine } from "@code-ui/core";
 import { isEqual, isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
 import * as dom from "./floating-menu.dom";
-import { computeFloatingPosition, readViewportSize } from "./floating-menu.position";
+import {
+  computeFloatingPosition,
+  readViewportSize,
+} from "./floating-menu.position";
 import { defaultFloatingMenuProps } from "./floating-menu.props";
 import type {
   FloatingContentSize,
@@ -14,14 +17,16 @@ import type {
 
 const DEFAULT_CLOSE_DURATION = 150;
 
-function toRect(res: {
-  left?: number;
-  top?: number;
-  right?: number;
-  bottom?: number;
-  width?: number;
-  height?: number;
-} | null): FloatingRect | null {
+function toRect(
+  res: {
+    left?: number;
+    top?: number;
+    right?: number;
+    bottom?: number;
+    width?: number;
+    height?: number;
+  } | null,
+): FloatingRect | null {
   if (!res) return null;
   const width = typeof res.width === "number" ? res.width : 0;
   const height = typeof res.height === "number" ? res.height : 0;
@@ -37,14 +42,13 @@ function runMeasure(
   isCancelled: () => boolean,
 ): void {
   const { prop, scope, refs, send } = params;
-  if (!prop("portal")) return;
 
   const comp = scope.component;
   const canQuery =
     Boolean(
       comp &&
-        typeof (comp as { createSelectorQuery?: unknown })
-          .createSelectorQuery === "function",
+      typeof (comp as { createSelectorQuery?: unknown }).createSelectorQuery ===
+        "function",
     ) || isMiniApp();
   if (!canQuery) return;
 
@@ -144,8 +148,7 @@ export const floatingMenuMachine: FloatingMenuMachine =
 
     computed: {
       isOpen: ({ state }) => state.hasTag("open"),
-      isVisible: ({ state }) =>
-        state.hasTag("open") || state.hasTag("closing"),
+      isVisible: ({ state }) => state.hasTag("open") || state.hasTag("closing"),
       isDisabled: ({ prop }) => Boolean(prop("disabled")),
       position: ({ context, prop }) =>
         computeFloatingPosition({
@@ -153,6 +156,7 @@ export const floatingMenuMachine: FloatingMenuMachine =
           viewport: context.get("viewport"),
           contentSize: context.get("contentSize"),
           portal: prop("portal"),
+          arrow: Boolean(prop("arrow")),
           side: prop("side"),
           align: prop("align"),
           sideOffset: prop("sideOffset"),

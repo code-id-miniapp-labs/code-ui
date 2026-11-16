@@ -13,7 +13,8 @@ export default function selectTheme(options: ThemeOptions = {}) {
       root: "relative w-full",
       base: "relative w-full min-h-0 flex items-center justify-between overflow-hidden box-border rounded-lg border text-highlighted transition-colors cursor-pointer select-none focus:outline-none",
       leading: "shrink-0 flex items-center justify-center text-dimmed",
-      leadingIcon: "inline-flex items-center justify-center shrink-0 leading-none",
+      leadingIcon:
+        "inline-flex items-center justify-center shrink-0 leading-none",
       value: "flex-1 min-w-0 truncate text-left text-inherit",
       placeholder: "flex-1 min-w-0 truncate text-left text-dimmed",
       trailing: "shrink-0 flex items-center justify-center gap-1 text-dimmed",
@@ -22,7 +23,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
       iconInner: "w-full h-full block",
       loadingIcon: "w-full h-full block animate-spin",
       content: "",
-      viewport: "w-full p-1 box-border",
+      viewport: "w-full p-1 flex flex-col gap-1 box-border",
       header: "px-2.5 py-2 border-b border-muted",
       footer: "px-2.5 py-2 border-t border-muted",
       empty: "py-6 px-3 text-center text-sm text-muted",
@@ -47,7 +48,8 @@ export default function selectTheme(options: ThemeOptions = {}) {
         "flex items-center justify-center text-sm text-highlighted truncate px-3 text-center",
       pickerItemDisabled:
         "flex items-center justify-center text-sm text-dimmed opacity-40 truncate px-3 text-center",
-      pickerFooter: "px-4 py-3 border-t border-muted shrink-0 box-border w-full",
+      pickerFooter:
+        "px-4 py-3 border-t border-muted shrink-0 box-border w-full",
     },
     variants: {
       color: Object.assign(
@@ -119,6 +121,12 @@ export default function selectTheme(options: ThemeOptions = {}) {
           pickerBackdrop: "opacity-0 pointer-events-none",
           pickerContent: "translate-y-full",
         },
+      },
+      visible: {
+        true: {
+          root: "z-50",
+        },
+        false: {},
       },
       leading: {
         true: { base: "" },
@@ -199,6 +207,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
       color: "primary",
       size: "md",
       open: false,
+      visible: false,
       leading: false,
       trailing: true,
       highlight: false,

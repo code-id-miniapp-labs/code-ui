@@ -19,7 +19,7 @@ export default function selectItemTheme(options: ThemeOptions = {}) {
       trailing: "ms-auto shrink-0 flex items-center justify-center",
       trailingIcon: "shrink-0",
       groupLabel: "font-semibold text-highlighted select-none truncate",
-      separator: "h-px bg-muted my-1 -mx-1",
+      separator: "h-px bg-muted my-0.5 -mx-1",
     },
     variants: {
       color: Object.assign(

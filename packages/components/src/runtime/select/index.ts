@@ -144,7 +144,7 @@ Component(
       },
       portal: {
         type: Boolean,
-        value: true,
+        value: false,
       },
       arrow: {
         type: Boolean,
@@ -319,8 +319,23 @@ Component(
         return Math.max(120, (Number.isFinite(h) && h > 0 ? h : 44) * 5);
       },
 
-      portalThemeStyle(): string {
-        if (!this.data.portal) return "";
+      pickerMaskStyle(): string {
+        const stop =
+          this.data.themeMode === "dark" ? "24, 24, 27" : "255, 255, 255";
+        return `background-image: linear-gradient(180deg, rgba(${stop}, 0.94), rgba(${stop}, 0.45)), linear-gradient(0deg, rgba(${stop}, 0.94), rgba(${stop}, 0.45));`;
+      },
+
+      pickerIndicatorStyle(): string {
+        const h = Number(this.data.itemHeight);
+        const height = Number.isFinite(h) && h > 0 ? h : 44;
+        const borderColor =
+          this.data.themeMode === "dark"
+            ? "rgba(255, 255, 255, 0.12)"
+            : "rgba(0, 0, 0, 0.08)";
+        return `height: ${height}px; border-top: 1px solid ${borderColor}; border-bottom: 1px solid ${borderColor}; box-sizing: border-box;`;
+      },
+
+      pickerThemeStyle(): string {
         return this.data.themeCssVars || "";
       },
 
@@ -332,6 +347,7 @@ Component(
           color: this.data.color,
           size: this.data.resolvedSize,
           open: Boolean(api?.open),
+          visible: Boolean(api?.visible),
           highlight: Boolean(this.data.highlight),
           invalid: Boolean(api?.invalid),
           disabled: Boolean(api?.disabled),

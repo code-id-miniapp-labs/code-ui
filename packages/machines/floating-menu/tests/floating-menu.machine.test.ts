@@ -124,6 +124,7 @@ describe("floatingMenuMachine (@code-ui/floating-menu)", () => {
 
     const machine = new MiniappMachine(floatingMenuMachine, {
       id: "fm-q",
+      portal: true,
       component: mockComp as any,
       duration: 50,
     });
@@ -194,6 +195,56 @@ describe("floatingMenuMachine (@code-ui/floating-menu)", () => {
     expect(pos.positionerStyle).toContain("top: calc(100% + 6px);");
     expect(pos.positionerStyle).toContain("right: 0px;");
     expect(pos.positionerStyle).toContain("min-width: 100%;");
+  });
+
+  it("flips non-portal menu to top near bottom viewport edge while staying anchor-relative", () => {
+    const pos = computeFloatingPosition({
+      anchorRect: {
+        left: 16,
+        top: 580,
+        right: 359,
+        bottom: 616,
+        width: 343,
+        height: 36,
+      },
+      viewport: { width: 375, height: 667, safeTop: 0, safeBottom: 0 },
+      portal: false,
+      side: "bottom",
+      align: "start",
+      sideOffset: 4,
+      alignOffset: 0,
+      collisionPadding: 8,
+      avoidCollisions: true,
+      matchTriggerWidth: true,
+      maxHeight: 240,
+    });
+
+    expect(pos.positioned).toBe(true);
+    expect(pos.resolvedSide).toBe("top");
+    expect(pos.positionerStyle).toContain("bottom: calc(100% + 4px);");
+    expect(pos.positionerStyle).toContain("width: 100%;");
+    expect(pos.contentStyle).toContain("transform-origin: bottom center;");
+  });
+
+  it("enforces arrow clearance on sideOffset and applies 45deg transform in arrowStyle", () => {
+    const pos = computeFloatingPosition({
+      anchorRect: null,
+      viewport: { width: 375, height: 667 },
+      portal: false,
+      arrow: true,
+      side: "bottom",
+      align: "start",
+      sideOffset: 4,
+      alignOffset: 0,
+      collisionPadding: 8,
+      avoidCollisions: true,
+      matchTriggerWidth: true,
+      maxHeight: 240,
+    });
+
+    expect(pos.positionerStyle).toContain("top: calc(100% + 8px);");
+    expect(pos.arrowStyle).toContain("top: -5px;");
+    expect(pos.arrowStyle).toContain("transform: rotate(45deg);");
   });
 
   it("emits null delta on no-op transition and cleans up timer on stop()", async () => {

@@ -15,16 +15,19 @@ describe("floatingMenuTheme (@code-ui/core)", () => {
   it("sets correct default variants", () => {
     const theme = floatingMenuTheme();
     expect(theme.defaultVariants).toEqual({
-      portal: true,
+      portal: false,
       open: false,
+      visible: false,
       side: "bottom",
     });
   });
 
-  it("supports portal and side variants", () => {
+  it("supports portal, visible, and side variants", () => {
     const theme = floatingMenuTheme();
     expect(theme.variants.portal.true.positioner).toContain("fixed");
     expect(theme.variants.portal.false.positioner).toContain("absolute");
+    expect(theme.variants.visible.true.root).toContain("z-50");
+    expect(theme.variants.visible.true.trigger).toContain("z-50");
     expect(theme.variants.open.true.content).toContain("opacity-100");
     expect(theme.variants.open.false.content).toContain("opacity-0");
     expect(theme.variants.side.bottom.arrow).toContain("border-t");

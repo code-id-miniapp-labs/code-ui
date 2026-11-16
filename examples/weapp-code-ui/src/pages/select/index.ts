@@ -31,14 +31,23 @@ Page({
       { label: "Apple", value: "apple", icon: "i-lucide-apple" },
       { label: "Banana", value: "banana", icon: "i-lucide-banana" },
       { label: "Blueberry", value: "blueberry", icon: "i-lucide-cherry" },
-      { label: "Grapes", value: "grapes", disabled: true },
+      {
+        label: "Grapes",
+        value: "grapes",
+        disabled: true,
+        icon: "i-lucide-grape",
+      },
     ],
     multipleValue: ["apple"],
 
     groupedItems: [
       [
         { type: "label", label: "Fruits" },
-        { label: "Apple", value: "apple", description: "Crisp red orchard fruit" },
+        {
+          label: "Apple",
+          value: "apple",
+          description: "Crisp red orchard fruit",
+        },
         { label: "Orange", value: "orange", description: "Sweet citrus" },
       ],
       [

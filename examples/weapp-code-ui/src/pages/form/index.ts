@@ -38,6 +38,21 @@ Page({
       },
     ],
     roleRules: [{ required: true, message: "Please choose your workspace role" }],
+    departmentRules: [
+      { required: true, message: "Please select a department" },
+    ],
+    countryRules: [
+      { required: true, message: "Please select a country or region" },
+    ],
+    skillsRules: [
+      {
+        validator: (val: unknown) => {
+          const arr = Array.isArray(val) ? val : [];
+          return arr.length >= 2 || "Select at least 2 core skills";
+        },
+      },
+    ],
+    cityRules: [{ required: true, message: "Please pick an office city" }],
     termsRules: [
       {
         required: true,
@@ -49,6 +64,29 @@ Page({
       { value: "developer", label: "Developer" },
       { value: "designer", label: "Designer" },
       { value: "pm", label: "Product Manager" },
+    ],
+    departmentItems: [
+      { value: "engineering", label: "Core Engineering" },
+      { value: "design", label: "Design Systems" },
+      { value: "product", label: "Product & Growth" },
+    ],
+    countryItems: [
+      { value: "us", label: "United States" },
+      { value: "jp", label: "Japan" },
+      { value: "sg", label: "Singapore" },
+      { value: "de", label: "Germany" },
+    ],
+    skillItems: [
+      { value: "ts", label: "TypeScript" },
+      { value: "weapp", label: "WeChat MiniProgram" },
+      { value: "fsm", label: "State Machines" },
+      { value: "tailwind", label: "Tailwind CSS" },
+    ],
+    cityItems: [
+      { label: "Beijing", value: "beijing" },
+      { label: "Shanghai", value: "shanghai" },
+      { label: "Shenzhen", value: "shenzhen" },
+      { label: "Hangzhou", value: "hangzhou" },
     ],
     topicItems: [
       { value: "components", label: "UI Components" },
@@ -64,6 +102,8 @@ Page({
     transferMessage: "",
     preferencesStatus: "",
     preferencesMessage: "",
+    selectFormStatus: "",
+    selectFormMessage: "",
   },
 
   getRegistrationForm(): FormRef | null {
@@ -76,6 +116,10 @@ Page({
 
   getPreferencesForm(): FormRef | null {
     return this.selectComponent("#preferences-form") as FormRef | null;
+  },
+
+  getSelectForm(): FormRef | null {
+    return this.selectComponent("#select-form") as FormRef | null;
   },
 
   toggleFormDisabled(e: WechatMiniprogram.CustomEvent<{ checked?: boolean }>) {
@@ -123,6 +167,7 @@ Page({
       email: "alice@example.com",
       pin: "2026",
       role: "developer",
+      department: "engineering",
       topics: ["components", "theming"],
       satisfaction: 85,
       terms: true,
@@ -209,6 +254,57 @@ Page({
     this.setData({
       preferencesStatus: "Saved",
       preferencesMessage: `Preferences: ${JSON.stringify(e.detail.values)}`,
+    });
+  },
+
+  submitSelectForm() {
+    this.getSelectForm()?.submit?.();
+  },
+
+  fillSelectForm() {
+    this.getSelectForm()?.setValues?.({
+      country: "jp",
+      skills: ["ts", "weapp"],
+      city: "shanghai",
+    });
+    this.setData({
+      selectFormStatus: "Info",
+      selectFormMessage: "Filled single, multi, and picker select fields.",
+    });
+  },
+
+  injectSelectFormErrors() {
+    this.getSelectForm()?.setErrors?.({
+      country: "Selected region is currently unavailable",
+      skills: "Choose a different combination of core skills",
+    });
+    this.setData({
+      selectFormStatus: "Server Validation Error",
+      selectFormMessage: "Injected backend errors into Country & Skills.",
+    });
+  },
+
+  clearSelectFormErrors() {
+    this.getSelectForm()?.resetValidation?.();
+    this.setData({ selectFormStatus: "", selectFormMessage: "" });
+  },
+
+  resetSelectForm() {
+    this.getSelectForm()?.reset?.();
+    this.setData({ selectFormStatus: "", selectFormMessage: "" });
+  },
+
+  handleSelectFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      selectFormStatus: "Success",
+      selectFormMessage: `Submitted: ${JSON.stringify(e.detail.values)}`,
+    });
+  },
+
+  handleSelectFormError(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      selectFormStatus: "Validation Failed",
+      selectFormMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
     });
   },
 });

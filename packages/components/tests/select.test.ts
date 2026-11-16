@@ -23,7 +23,12 @@ const flush = () =>
 describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
   it("resolves select trigger, dropdown, and picker theme slots across variants", () => {
     const outlineClosed = resolveSlots(
-      selectTheme({ variant: "outline", color: "primary", size: "md", open: false }),
+      selectTheme({
+        variant: "outline",
+        color: "primary",
+        size: "md",
+        open: false,
+      }),
       {},
       "",
     );
@@ -31,7 +36,12 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(outlineClosed.pickerContent).toContain("translate-y-full");
 
     const openPrimary = resolveSlots(
-      selectTheme({ variant: "outline", color: "primary", size: "lg", open: true }),
+      selectTheme({
+        variant: "outline",
+        color: "primary",
+        size: "lg",
+        open: true,
+      }),
       {},
       "my-select",
     );
@@ -43,7 +53,12 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
 
   it("resolves select-item and floating-menu theme slots", () => {
     const itemSlots = resolveSlots(
-      selectItemTheme({ color: "primary", size: "md", selected: true, disabled: false }),
+      selectItemTheme({
+        color: "primary",
+        size: "md",
+        selected: true,
+        disabled: false,
+      }),
       {},
       "",
     );
@@ -51,13 +66,30 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(itemSlots.trailingIcon).toContain("text-primary");
 
     const fmSlots = resolveSlots(
-      floatingMenuTheme({ portal: true, open: true, side: "top" }),
+      floatingMenuTheme({
+        portal: true,
+        open: true,
+        visible: true,
+        side: "top",
+      }),
       {},
       "",
     );
     expect(fmSlots.positioner).toContain("fixed");
+    expect(fmSlots.root).toContain("z-50");
+    expect(fmSlots.trigger).toContain("z-50");
     expect(fmSlots.content).toContain("opacity-100");
+    expect(fmSlots.content).not.toContain("overflow-hidden");
+    expect(fmSlots.arrow).not.toContain("rotate-45");
     expect(fmSlots.arrow).toContain("border-b");
+
+    const fmInlineSlots = resolveSlots(
+      floatingMenuTheme({ portal: false, open: true, visible: true }),
+      {},
+      "",
+    );
+    expect(fmInlineSlots.positioner).toContain("absolute");
+    expect(fmInlineSlots.root).toContain("z-50");
   });
 
   it("detects slots on c-select and c-select-item via @code-ui/compiler", () => {
@@ -76,15 +108,29 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
   });
 
   it("binds required WXML attributes and templates cleanly", () => {
-    const selectWxml = readFileSync(resolve(RUNTIME_DIR, "select/index.wxml"), "utf8");
-    const itemWxml = readFileSync(resolve(RUNTIME_DIR, "select-item/index.wxml"), "utf8");
-    const menuWxml = readFileSync(resolve(RUNTIME_DIR, "floating-menu/index.wxml"), "utf8");
+    const selectWxml = readFileSync(
+      resolve(RUNTIME_DIR, "select/index.wxml"),
+      "utf8",
+    );
+    const itemWxml = readFileSync(
+      resolve(RUNTIME_DIR, "select-item/index.wxml"),
+      "utf8",
+    );
+    const menuWxml = readFileSync(
+      resolve(RUNTIME_DIR, "floating-menu/index.wxml"),
+      "utf8",
+    );
 
     expect(selectWxml).toContain("<c-floating-menu");
     expect(selectWxml).toContain("<picker-view");
     expect(selectWxml).toContain("<picker-view-column");
+    expect(selectWxml).toContain("cui-picker-indicator");
+    expect(selectWxml).toContain("mask-style");
+    expect(selectWxml).toMatch(/<view[^>]*data-part="placeholder"/);
     expect(itemWxml).toContain('aria-role="option"');
     expect(menuWxml).toContain("<root-portal");
+    expect(menuWxml).toContain('data-part="arrow"');
+    expect(menuWxml).toContain("overflow-hidden");
   });
 
   it("connects selectMachine to MiniProgram instance with <= 1 setData call per selection", async () => {
@@ -106,7 +152,12 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
       duration: 0,
     });
     machine.start();
-    const dispose = connectToComponent(machine, instance, connectSelect, "select");
+    const dispose = connectToComponent(
+      machine,
+      instance,
+      connectSelect,
+      "select",
+    );
 
     expect(patches.length).toBe(1);
     patches.length = 0;
