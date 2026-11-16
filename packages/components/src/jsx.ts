@@ -89,6 +89,28 @@ import type {
   InputVariant,
 } from "@code-ui/input";
 import type {
+  InputMenuColor,
+  InputMenuContentConfig,
+  InputMenuCreateDetails,
+  InputMenuCreateItemProp,
+  InputMenuItemType,
+  InputMenuItemsInput,
+  InputMenuOpenChangeDetails,
+  InputMenuScalarValue,
+  InputMenuSearchTermChangeDetails,
+  InputMenuSelectDetails,
+  InputMenuSize,
+  InputMenuUI,
+  InputMenuValue,
+  InputMenuValueChangeDetails,
+  InputMenuVariant,
+} from "@code-ui/input-menu";
+import type {
+  InputMenuItemColor,
+  InputMenuItemSize,
+  InputMenuItemUI,
+} from "@code-ui/input-menu-item";
+import type {
   ModalCloseProps,
   ModalOpenChangeDetails,
   ModalSize,
@@ -1156,6 +1178,116 @@ export interface CuiSelectItemElementProps extends CuiCommonElementProps {
   size?: SelectItemSize;
   onSelect?: (
     event: WechatMiniprogram.CustomEvent<{ value: SelectScalarValue }>,
+  ) => void;
+}
+
+export interface CuiInputMenuElementProps extends CuiCommonElementProps {
+  ui?: InputMenuUI;
+  name?: string;
+  form?: string;
+  rules?: FormRule[];
+  validateOn?: FormValidateOn;
+  value?: InputMenuValue;
+  defaultValue?: InputMenuValue;
+  searchTerm?: string | null;
+  defaultSearchTerm?: string;
+  open?: boolean | null;
+  defaultOpen?: boolean;
+  multiple?: boolean;
+  items?: InputMenuItemsInput;
+  valueKey?: string;
+  labelKey?: string;
+  descriptionKey?: string;
+  disabledKey?: string;
+  filterFields?: string[];
+  ignoreFilter?: boolean;
+  resetSearchTermOnBlur?: boolean;
+  resetSearchTermOnSelect?: boolean;
+  createItem?: InputMenuCreateItemProp;
+  createItemText?: string;
+  createIcon?: string;
+  openOnFocus?: boolean;
+  openOnClick?: boolean;
+  openOnInput?: boolean;
+  closeOnSelect?: boolean | null;
+  closeOnBackdropClick?: boolean;
+  variant?: InputMenuVariant;
+  color?: InputMenuColor;
+  size?: InputMenuSize;
+  highlight?: boolean;
+  placeholder?: string;
+  placeholderClass?: string;
+  placeholderStyle?: string;
+  maxlength?: number;
+  cursorSpacing?: number;
+  confirmType?: "send" | "search" | "next" | "go" | "done";
+  confirmHold?: boolean;
+  adjustPosition?: boolean;
+  holdKeyboard?: boolean;
+  icon?: string;
+  leading?: boolean;
+  leadingIcon?: string;
+  trailing?: boolean;
+  trailingIcon?: string;
+  selectedIcon?: string;
+  clearIcon?: string;
+  deleteIcon?: string;
+  loading?: boolean;
+  loadingIcon?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  invalid?: boolean | null;
+  portal?: boolean;
+  arrow?: boolean;
+  content?: InputMenuContentConfig;
+  emptyText?: string;
+  duration?: number;
+  onChange?: (
+    event: WechatMiniprogram.CustomEvent<InputMenuValueChangeDetails>,
+  ) => void;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<InputMenuSelectDetails>,
+  ) => void;
+  onOpenChange?: (
+    event: WechatMiniprogram.CustomEvent<InputMenuOpenChangeDetails>,
+  ) => void;
+  onSearchTermChange?: (
+    event: WechatMiniprogram.CustomEvent<InputMenuSearchTermChangeDetails>,
+  ) => void;
+  onCreate?: (
+    event: WechatMiniprogram.CustomEvent<InputMenuCreateDetails>,
+  ) => void;
+  onClear?: (event: WechatMiniprogram.CustomEvent) => void;
+  onFocus?: (
+    event: WechatMiniprogram.CustomEvent<{
+      value: InputMenuValue;
+      searchTerm: string;
+    }>,
+  ) => void;
+  onBlur?: (
+    event: WechatMiniprogram.CustomEvent<{
+      value: InputMenuValue;
+      searchTerm: string;
+    }>,
+  ) => void;
+}
+
+export interface CuiInputMenuItemElementProps extends CuiCommonElementProps {
+  ui?: InputMenuItemUI;
+  type?: InputMenuItemType;
+  value?: InputMenuScalarValue;
+  label?: string;
+  description?: string;
+  icon?: string;
+  trailingIcon?: string;
+  disabled?: boolean;
+  selected?: boolean | null;
+  color?: InputMenuItemColor;
+  size?: InputMenuItemSize;
+  onSelect?: (
+    event: WechatMiniprogram.CustomEvent<{ value: InputMenuScalarValue }>,
   ) => void;
 }
 

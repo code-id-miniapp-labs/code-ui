@@ -73,6 +73,14 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/input/src",
       ),
+      "@code-ui/input-menu": resolve(
+        import.meta.dirname,
+        "packages/machines/input-menu/src",
+      ),
+      "@code-ui/input-menu-item": resolve(
+        import.meta.dirname,
+        "packages/machines/input-menu-item/src",
+      ),
       "@code-ui/modal": resolve(
         import.meta.dirname,
         "packages/machines/modal/src",

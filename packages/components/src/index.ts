@@ -11,6 +11,8 @@ export * from "@code-ui/floating-menu";
 export * from "@code-ui/form";
 export * from "@code-ui/form-field";
 export * from "@code-ui/input";
+export * from "@code-ui/input-menu";
+export * from "@code-ui/input-menu-item";
 export * from "@code-ui/modal";
 export * from "@code-ui/pin-input";
 export * from "@code-ui/progress";

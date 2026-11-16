@@ -19,6 +19,7 @@
     "pages/checkbox/index",
     "pages/radio/index",
     "pages/select/index",
+    "pages/input-menu/index",
     "pages/form/index",
     "pages/use-child/index",
     "pages/textarea/index",

@@ -615,6 +615,12 @@ export default defineConfig({
               minSize: 0,
             },
             {
+              name: "behaviors/input-menu",
+              test: /[\\/]behaviors[\\/]input-menu/,
+              includeDependenciesRecursively: false,
+              minSize: 0,
+            },
+            {
               name: "behaviors/radio",
               test: /[\\/]behaviors[\\/]radio/,
               includeDependenciesRecursively: false,

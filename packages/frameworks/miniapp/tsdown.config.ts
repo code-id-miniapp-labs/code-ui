@@ -12,6 +12,7 @@ export default defineConfig({
     "src/behaviors/accordion.ts",
     "src/behaviors/tabs.ts",
     "src/behaviors/select.ts",
+    "src/behaviors/input-menu.ts",
     "src/behaviors/app.ts",
     "src/behaviors/theme.ts",
     "src/behaviors/avatar-group.ts",

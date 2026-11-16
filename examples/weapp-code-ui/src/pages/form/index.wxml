@@ -12,7 +12,7 @@
         <view class="flex-1 min-w-0">
           <text class="block text-sm font-semibold text-highlighted">Full Registration Form</text>
           <text class="block text-xs text-muted mt-0.5">
-            Combines Input, PinInput, Select, RadioGroup, CheckboxGroup, Slider, Switch & Checkbox.
+            Combines Input, PinInput, Select, InputMenu, RadioGroup, CheckboxGroup, Slider, Switch & Checkbox.
           </text>
         </view>
         <view class="flex items-center gap-2">
@@ -53,6 +53,10 @@
 
           <c-form-field name="department" label="Department" description="Primary engineering group" required="{{ true }}" rules="{{ departmentRules }}">
             <c-select items="{{ departmentItems }}" placeholder="Select department..." leading-icon="i-lucide-building-2" clearable="{{ true }}" />
+          </c-form-field>
+
+          <c-form-field name="primaryStack" label="Primary Tech Stack (InputMenu)" description="Searchable combobox inside Form" required="{{ true }}" rules="{{ primaryStackRules }}">
+            <c-input-menu items="{{ skillItems }}" placeholder="Search stack..." leading-icon="i-lucide-layers" clearable="{{ true }}" />
           </c-form-field>
 
           <c-form-field name="topics" label="Interests (Custom Rule)" required="{{ true }}" rules="{{ topicsRules }}">
@@ -196,6 +200,61 @@
       <view wx:if="{{ selectFormStatus }}" class="rounded-xl p-3 border {{ selectFormStatus === 'Success' ? 'bg-success/10 border-success/30 text-success' : 'bg-elevated border-default text-toned' }}">
         <text class="block text-xs font-bold">{{ selectFormStatus }}</text>
         <text class="block text-xs mt-1 break-all">{{ selectFormMessage }}</text>
+      </view>
+    </view>
+
+    <!-- 5. InputMenu & Form Integration -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">InputMenu & Form Integration</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Searchable single combobox, multi-tag selection with createItem, and custom c-input-menu-item wired to Form validation, setValues, setErrors & reset.
+        </text>
+      </view>
+
+      <c-form
+        id="input-menu-form"
+        disabled="{{ formDisabled }}"
+        validate-on="{{ validateOn }}"
+        bind:submit="handleInputMenuFormSubmit"
+        bind:error="handleInputMenuFormError"
+      >
+        <view class="flex flex-col gap-3.5">
+          <c-form-field name="framework" label="Target Framework" description="Searchable single-select combobox" required="{{ true }}" rules="{{ frameworkRules }}">
+            <c-input-menu items="{{ frameworkItems }}" placeholder="Search framework..." leading-icon="i-lucide-code" clearable="{{ true }}" />
+          </c-form-field>
+
+          <c-form-field name="labels" label="Issue Labels (Min 2, Creatable)" description="Search or create new tags on the fly" hint="Select >= 2" required="{{ true }}" rules="{{ labelsRules }}">
+            <c-input-menu id="input-menu-labels" multiple="{{ true }}" items="{{ labelItems }}" create-item="always" create-icon="i-lucide-plus" placeholder="Search or create labels..." leading-icon="i-lucide-tags" clearable="{{ true }}" bind:create="onCreateFormLabel" />
+          </c-form-field>
+
+          <c-form-field name="reviewer" label="Code Reviewer" description="Declarative c-input-menu-item children" required="{{ true }}" rules="{{ reviewerRules }}">
+            <c-input-menu placeholder="Search reviewer..." leading-icon="i-lucide-user-check" clearable="{{ true }}">
+              <c-input-menu-item value="alice" label="Alice Wang" description="Design Systems">
+                <c-avatar slot="leading" size="xs" text="Alice Wang" color="primary" />
+              </c-input-menu-item>
+              <c-input-menu-item value="bob" label="Bob Chen" description="Core Runtime">
+                <c-avatar slot="leading" size="xs" text="Bob Chen" color="secondary" />
+              </c-input-menu-item>
+              <c-input-menu-item value="charlie" label="Charlie Zhang" description="Compiler & Vite">
+                <c-avatar slot="leading" size="xs" text="Charlie Zhang" color="success" />
+              </c-input-menu-item>
+            </c-input-menu>
+          </c-form-field>
+        </view>
+      </c-form>
+
+      <view class="flex flex-wrap gap-2 pt-3 border-t border-muted">
+        <c-button size="sm" color="primary" label="Submit" bind:tap="submitInputMenuForm" />
+        <c-button size="sm" color="secondary" variant="soft" label="Fill Sample" bind:tap="fillInputMenuForm" />
+        <c-button size="sm" color="danger" variant="soft" label="Inject Errors" bind:tap="injectInputMenuFormErrors" />
+        <c-button size="sm" color="neutral" variant="outline" label="Clear Errors" bind:tap="clearInputMenuFormErrors" />
+        <c-button size="sm" color="neutral" variant="outline" label="Reset" bind:tap="resetInputMenuForm" />
+      </view>
+
+      <view wx:if="{{ inputMenuFormStatus }}" class="rounded-xl p-3 border {{ inputMenuFormStatus === 'Success' ? 'bg-success/10 border-success/30 text-success' : 'bg-elevated border-default text-toned' }}">
+        <text class="block text-xs font-bold">{{ inputMenuFormStatus }}</text>
+        <text class="block text-xs mt-1 break-all">{{ inputMenuFormMessage }}</text>
       </view>
     </view>
   </view>

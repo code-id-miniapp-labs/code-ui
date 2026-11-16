@@ -1,0 +1,73 @@
+<view id="{{inputMenu.rootProps.id}}" class="{{classes.root}}" data-scope="input-menu" data-part="root" data-state="{{inputMenu.state}}" data-disabled="{{inputMenu.disabled}}" data-readonly="{{inputMenu.readOnly}}" data-invalid="{{inputMenu.invalid}}">
+  <c-floating-menu open="{{inputMenu.open}}" disabled="{{inputMenu.disabled || inputMenu.readOnly}}" close-on-backdrop-click="{{closeOnBackdropClick}}" trigger-mode="manual" portal="{{portal}}" arrow="{{arrow}}" side="{{menuConfig.side}}" align="{{menuConfig.align}}" side-offset="{{menuConfig.sideOffset}}" align-offset="{{menuConfig.alignOffset}}" collision-padding="{{menuConfig.collisionPadding}}" avoid-collisions="{{menuConfig.avoidCollisions}}" match-trigger-width="{{menuConfig.matchTriggerWidth}}" max-height="{{menuConfig.maxHeight}}" duration="{{duration}}" ui="{{floatingMenuUi}}" bind:openchange="handleMenuOpenChange">
+    <view slot="trigger" id="{{inputMenu.triggerProps.id}}" class="{{classes.base}}" data-scope="input-menu" data-part="base" data-state="{{inputMenu.state}}" data-open="{{inputMenu.open}}" data-focused="{{inputMenu.focused}}" data-disabled="{{inputMenu.disabled}}" data-readonly="{{inputMenu.readOnly}}" data-invalid="{{inputMenu.invalid}}" aria-role="combobox" aria-expanded="{{inputMenu.open}}" aria-disabled="{{inputMenu.disabled}}" aria-invalid="{{inputMenu.invalid}}" aria-haspopup="listbox" catchtap="handleTriggerTap">
+      <view wx:if="{{icons.isLeading}}" class="{{classes.leading}}" data-scope="input-menu" data-part="leading" aria-hidden="{{true}}">
+        <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
+        <view wx:elif="{{icons.leadingIconName}}" class="{{classes.leadingIcon}}">
+          <c-icon name="{{icons.leadingIconName}}" className="{{classes.iconInner}}" />
+        </view>
+      </view>
+      <block wx:if="{{multiple && resolvedTags.length > 0}}">
+        <view wx:for="{{resolvedTags}}" wx:key="key" class="{{classes.tagsItem}}" data-scope="input-menu" data-part="tags-item" data-disabled="{{item.disabled}}">
+          <view wx:if="{{item.icon}}" class="{{classes.tagsItemIcon}}" data-scope="input-menu" data-part="tags-item-icon" aria-hidden="{{true}}">
+            <c-icon name="{{item.icon}}" className="{{classes.iconInner}}" />
+          </view>
+          <text class="{{classes.tagsItemText}}" data-scope="input-menu" data-part="tags-item-text">{{item.label}}</text>
+          <view wx:if="{{!item.disabled && !inputMenu.disabled && !inputMenu.readOnly}}" class="{{classes.tagsItemDelete}}" data-scope="input-menu" data-part="tags-item-delete" data-index="{{index}}" aria-role="button" aria-label="Remove {{item.label}}" catchtap="handleTagRemove">
+            <view class="{{classes.tagsItemDeleteIcon}}">
+              <c-icon name="{{deleteIcon}}" className="{{classes.iconInner}}" />
+            </view>
+          </view>
+        </view>
+      </block>
+      <input id="{{inputMenu.inputProps.id}}" name="{{name}}" class="{{classes.nativeInput}}" value="{{inputMenu.inputValue}}" focus="{{inputMenu.focused}}" disabled="{{inputMenu.inputProps.disabled}}" placeholder="{{placeholder}}" placeholder-class="{{placeholderClass}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" cursor-spacing="{{cursorSpacing}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" aria-invalid="{{inputMenu.invalid}}" data-scope="input-menu" data-part="native-input" data-state="{{inputMenu.state}}" data-focused="{{inputMenu.focused}}" data-disabled="{{inputMenu.disabled}}" data-readonly="{{inputMenu.readOnly}}" data-invalid="{{inputMenu.invalid}}" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" />
+      <view wx:if="{{icons.isTrailing || inputMenu.isClearable}}" class="{{classes.trailing}}" data-scope="input-menu" data-part="trailing" aria-hidden="{{true}}">
+        <view wx:if="{{icons.trailingLoading}}" class="{{classes.trailingIcon}}">
+          <slot wx:if="{{icons.hasLoadingSlot}}" name="loadingIcon" />
+          <c-icon wx:else name="{{icons.trailingIconName}}" className="{{classes.loadingIcon}}" />
+        </view>
+        <view wx:elif="{{inputMenu.isClearable}}" class="{{classes.trailingIcon}}" data-scope="input-menu" data-part="clear" aria-role="button" aria-label="Clear selection" catchtap="handleClear">
+          <c-icon name="{{clearIcon}}" className="{{classes.iconInner}}" />
+        </view>
+        <slot wx:elif="{{icons.hasTrailingSlot}}" name="trailing" />
+        <view wx:elif="{{icons.trailingIconName}}" class="{{classes.trailingIcon}}" data-scope="input-menu" data-part="toggle" aria-role="button" catchtap="handleToggleTap">
+          <c-icon name="{{icons.trailingIconName}}" className="{{classes.iconInner}}" />
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{slots.header}}" class="{{classes.header}}" data-scope="input-menu" data-part="header">
+      <slot name="header" />
+    </view>
+    <scroll-view scroll-y scroll-x="{{false}}" scroll-into-view="{{inputMenu.activeItemDomId}}" scroll-with-animation="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" style="{{viewportMaxHeightStyle}}" aria-role="listbox" aria-multiselectable="{{multiple}}">
+      <view class="{{classes.viewport}}" data-scope="input-menu" data-part="viewport">
+        <view wx:if="{{inputMenu.showCreateItem && inputMenu.createItemPosition === 'top'}}" class="{{classes.createItem}}" data-scope="input-menu" data-part="create-item" aria-role="option" catchtap="handleCreateItem">
+          <slot wx:if="{{slots.createItem}}" name="createItem" />
+          <block wx:else>
+            <c-icon wx:if="{{createIcon}}" name="{{createIcon}}" className="{{classes.createItemIcon}}" />
+            <text class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">{{createItemText}} "{{inputMenu.searchTerm}}"</text>
+          </block>
+        </view>
+        <block wx:if="{{hasItems}}">
+          <c-input-menu-item wx:for="{{resolvedDropdownItems}}" wx:key="key" id="{{item.domId}}" type="{{item.type}}" value="{{item.value}}" label="{{item.label}}" description="{{item.description}}" icon="{{item.icon}}" trailing-icon="{{item.trailingIcon}}" disabled="{{item.disabled}}" selected="{{item.selected}}" managed="{{true}}" color="{{color}}" size="{{resolvedSize}}" ui="{{item.ui}}" class-name="{{item.className}}" bind:select="handleItemSelect" />
+        </block>
+        <slot />
+        <view wx:if="{{inputMenu.showCreateItem && inputMenu.createItemPosition === 'bottom'}}" class="{{classes.createItem}}" data-scope="input-menu" data-part="create-item" aria-role="option" catchtap="handleCreateItem">
+          <slot wx:if="{{slots.createItem}}" name="createItem" />
+          <block wx:else>
+            <c-icon wx:if="{{createIcon}}" name="{{createIcon}}" className="{{classes.createItemIcon}}" />
+            <text class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">{{createItemText}} "{{inputMenu.searchTerm}}"</text>
+          </block>
+        </view>
+        <block wx:if="{{!hasDropdownContent && !inputMenu.showCreateItem}}">
+          <slot wx:if="{{slots.empty}}" name="empty" />
+          <view wx:elif="{{emptyText}}" class="{{classes.empty}}" data-scope="input-menu" data-part="empty">
+            {{emptyText}}
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+    <view wx:if="{{slots.footer}}" class="{{classes.footer}}" data-scope="input-menu" data-part="footer">
+      <slot name="footer" />
+    </view>
+  </c-floating-menu>
+</view>

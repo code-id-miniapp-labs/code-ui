@@ -244,6 +244,32 @@ export interface SelectItemInstance extends CodeUiComponentInstance<SelectItemDa
   __codeUiSelectId?: string | undefined;
 }
 
+export interface InputMenuVisualData extends Record<string, unknown> {
+  groupColor: string;
+  groupSize: string;
+  groupSelectedIcon: string;
+}
+
+export interface InputMenuInstance extends CodeUiComponentInstance<BaseComponentData> {
+  __codeUiInputMenuChildren?: InputMenuItemInstance[] | undefined;
+}
+
+export interface InputMenuItemData
+  extends BaseComponentData,
+    Partial<InputMenuVisualData> {
+  managed?: boolean | undefined;
+  type?: string | undefined;
+  value?: string | number | boolean | undefined;
+  label?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface InputMenuItemInstance extends CodeUiComponentInstance<InputMenuItemData> {
+  __codeUiPendingInputMenu?: InputMenuInstance | undefined;
+  __codeUiInputMenuIndex?: number | undefined;
+  __codeUiInputMenuId?: string | undefined;
+}
+
 export interface AvatarGroupData extends BaseComponentData {
   max?: number | undefined;
   totalCount?: number | undefined;

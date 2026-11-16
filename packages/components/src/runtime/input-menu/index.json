@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "virtualHost": true,
+  "usingComponents": {
+    "c-floating-menu": "../floating-menu/index",
+    "c-icon": "../icon/index",
+    "c-input-menu-item": "../input-menu-item/index"
+  }
+}

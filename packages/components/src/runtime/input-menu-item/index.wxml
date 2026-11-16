@@ -1,0 +1,26 @@
+<view wx:if="{{!inputMenuItem.hidden}}" id="{{inputMenuItem.rootProps.id}}" class="{{classes.root}}" data-scope="input-menu-item" data-part="root" data-type="{{type}}" data-state="{{inputMenuItem.state}}" data-selected="{{inputMenuItem.selected}}" data-disabled="{{inputMenuItem.disabled}}">
+  <view wx:if="{{type === 'separator'}}" class="{{classes.separator}}" data-scope="input-menu-item" data-part="separator" aria-hidden="{{true}}" />
+  <view wx:elif="{{type === 'label'}}" class="{{classes.groupLabel}}" data-scope="input-menu-item" data-part="group-label">
+    <text wx:if="{{label}}">{{label}}</text>
+    <slot wx:else name="label" />
+  </view>
+  <view wx:else class="{{classes.base}}" data-scope="input-menu-item" data-part="base" data-selected="{{inputMenuItem.selected}}" data-disabled="{{inputMenuItem.disabled}}" aria-role="option" aria-selected="{{inputMenuItem.selected}}" aria-disabled="{{inputMenuItem.disabled}}" catchtap="handleTap">
+    <view wx:if="{{slots.leading || icon}}" class="{{classes.leading}}" data-scope="input-menu-item" data-part="leading" aria-hidden="{{true}}">
+      <slot wx:if="{{slots.leading}}" name="leading" />
+      <c-icon wx:else name="{{icon}}" className="{{classes.leadingIcon}}" />
+    </view>
+    <view class="{{classes.wrapper}}" data-scope="input-menu-item" data-part="wrapper">
+      <slot wx:if="{{slots.default}}" />
+      <block wx:else>
+        <text wx:if="{{label}}" class="{{classes.label}}" data-scope="input-menu-item" data-part="label">{{label}}</text>
+        <slot wx:elif="{{slots.label}}" name="label" />
+        <text wx:if="{{description}}" class="{{classes.description}}" data-scope="input-menu-item" data-part="description">{{description}}</text>
+        <slot wx:elif="{{slots.description}}" name="description" />
+      </block>
+    </view>
+    <view wx:if="{{slots.trailing || inputMenuItem.selected}}" class="{{classes.trailing}}" data-scope="input-menu-item" data-part="trailing" aria-hidden="{{true}}">
+      <slot wx:if="{{slots.trailing}}" name="trailing" />
+      <c-icon wx:elif="{{inputMenuItem.selected}}" name="{{resolvedTrailingIcon}}" className="{{classes.trailingIcon}}" />
+    </view>
+  </view>
+</view>

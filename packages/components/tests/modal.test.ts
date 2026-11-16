@@ -28,7 +28,7 @@ describe("modalTheme runtime resolution (@code-ui/components)", () => {
     expect(slots.overlay).toContain("backdrop-blur-md");
     expect(slots.overlay).toContain(escapeClass("bg-black/35"));
     expect(slots.overlay).not.toContain("cui-modal-overlay-enter");
-    expect(slots.content).toContain("rounded-3xl");
+    expect(slots.content).toContain("rounded-xl");
     expect(slots.content).toContain("opacity-0");
     expect(slots.content).toContain("scale-95");
     expect(slots.content).not.toContain("cui-modal-content-enter");

@@ -41,6 +41,9 @@ Page({
     departmentRules: [
       { required: true, message: "Please select a department" },
     ],
+    primaryStackRules: [
+      { required: true, message: "Please select your primary tech stack" },
+    ],
     countryRules: [
       { required: true, message: "Please select a country or region" },
     ],
@@ -53,6 +56,20 @@ Page({
       },
     ],
     cityRules: [{ required: true, message: "Please pick an office city" }],
+    frameworkRules: [
+      { required: true, message: "Please select a target framework" },
+    ],
+    labelsRules: [
+      {
+        validator: (val: unknown) => {
+          const arr = Array.isArray(val) ? val : [];
+          return arr.length >= 2 || "Select or create at least 2 issue labels";
+        },
+      },
+    ],
+    reviewerRules: [
+      { required: true, message: "Please assign a code reviewer" },
+    ],
     termsRules: [
       {
         required: true,
@@ -93,6 +110,13 @@ Page({
       { value: "fsm", label: "State Machines" },
       { value: "theming", label: "Runtime Theming" },
     ],
+    frameworkItems: [
+      { value: "weapp", label: "WeChat MiniProgram" },
+      { value: "nuxt", label: "Nuxt UI v4" },
+      { value: "vite", label: "Weapp-Vite" },
+      { value: "skyline", label: "Skyline Renderer" },
+    ],
+    labelItems: ["Feature", "Bugfix", "Performance", "Accessibility"],
     fieldSizes: ["xs", "sm", "md", "lg", "xl"] as const,
 
     newsletterControlled: true,
@@ -104,6 +128,8 @@ Page({
     preferencesMessage: "",
     selectFormStatus: "",
     selectFormMessage: "",
+    inputMenuFormStatus: "",
+    inputMenuFormMessage: "",
   },
 
   getRegistrationForm(): FormRef | null {
@@ -120,6 +146,10 @@ Page({
 
   getSelectForm(): FormRef | null {
     return this.selectComponent("#select-form") as FormRef | null;
+  },
+
+  getInputMenuForm(): FormRef | null {
+    return this.selectComponent("#input-menu-form") as FormRef | null;
   },
 
   toggleFormDisabled(e: WechatMiniprogram.CustomEvent<{ checked?: boolean }>) {
@@ -168,6 +198,7 @@ Page({
       pin: "2026",
       role: "developer",
       department: "engineering",
+      primaryStack: "ts",
       topics: ["components", "theming"],
       satisfaction: 85,
       terms: true,
@@ -305,6 +336,74 @@ Page({
     this.setData({
       selectFormStatus: "Validation Failed",
       selectFormMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
+    });
+  },
+
+  onCreateFormLabel(e: WechatMiniprogram.CustomEvent<{ value?: string }>) {
+    const newLabel = e.detail?.value?.trim();
+    if (!newLabel) return;
+    if (!this.data.labelItems.includes(newLabel)) {
+      this.setData({
+        labelItems: [...this.data.labelItems, newLabel],
+      });
+    }
+    const inputMenu = this.selectComponent("#input-menu-labels") as {
+      selectValue?: (val: string) => void;
+    } | null;
+    inputMenu?.selectValue?.(newLabel);
+  },
+
+  submitInputMenuForm() {
+    this.getInputMenuForm()?.submit?.();
+  },
+
+  fillInputMenuForm() {
+    this.getInputMenuForm()?.setValues?.({
+      framework: "weapp",
+      labels: ["Feature", "Performance"],
+      reviewer: "alice",
+    });
+    this.setData({
+      inputMenuFormStatus: "Info",
+      inputMenuFormMessage:
+        "Filled single, multi-tag, and custom item InputMenu fields.",
+    });
+  },
+
+  injectInputMenuFormErrors() {
+    this.getInputMenuForm()?.setErrors?.({
+      framework: "Selected framework version is deprecated",
+      labels: "Please include at least one priority label",
+      reviewer: "Alice is currently on vacation",
+    });
+    this.setData({
+      inputMenuFormStatus: "Server Validation Error",
+      inputMenuFormMessage:
+        "Injected backend errors into Framework, Labels & Reviewer.",
+    });
+  },
+
+  clearInputMenuFormErrors() {
+    this.getInputMenuForm()?.resetValidation?.();
+    this.setData({ inputMenuFormStatus: "", inputMenuFormMessage: "" });
+  },
+
+  resetInputMenuForm() {
+    this.getInputMenuForm()?.reset?.();
+    this.setData({ inputMenuFormStatus: "", inputMenuFormMessage: "" });
+  },
+
+  handleInputMenuFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      inputMenuFormStatus: "Success",
+      inputMenuFormMessage: `Submitted: ${JSON.stringify(e.detail.values)}`,
+    });
+  },
+
+  handleInputMenuFormError(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      inputMenuFormStatus: "Validation Failed",
+      inputMenuFormMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
     });
   },
 });

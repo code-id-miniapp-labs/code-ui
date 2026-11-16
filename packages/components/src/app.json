@@ -24,6 +24,8 @@
     "cui-form-field": "runtime/form-field/index",
     "cui-icon": "runtime/icon/index",
     "cui-input": "runtime/input/index",
+    "cui-input-menu": "runtime/input-menu/index",
+    "cui-input-menu-item": "runtime/input-menu-item/index",
     "cui-modal": "runtime/modal/index",
     "cui-pin-input": "runtime/pin-input/index",
     "cui-progress": "runtime/progress/index",
