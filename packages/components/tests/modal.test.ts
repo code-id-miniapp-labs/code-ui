@@ -100,22 +100,28 @@ describe("modalTheme runtime resolution (@code-ui/components)", () => {
     expect(slots.body).not.toContain("flex-1");
   });
 
-  it("resolves iOS alert variant with centered typography and actions", () => {
+  it("supports centered alert-style composition via ui slot overrides", () => {
     const slots = resolveSlots(
       modalTheme({
         open: true,
-        variant: "alert",
         size: "xs",
         closable: true,
       }),
-      {},
+      {
+        header: "border-b-0 px-11 pt-6 pb-2 items-center text-center",
+        wrapper: "items-center text-center gap-1.5",
+        title: "text-center",
+        description: "text-center",
+        body: "pt-1 pb-5 text-center text-muted",
+        footer: "justify-center",
+      },
       "",
     );
 
     expect(slots.content).toContain("max-w-xs");
     expect(slots.header).toContain("items-center text-center");
     expect(slots.header).toContain("px-11");
-    expect(slots.header).not.toContain("border-b");
+    expect(slots.header).toContain("border-b-0");
     expect(slots.title).toContain("text-center");
     expect(slots.description).toContain("text-center");
     expect(slots.body).toContain("text-center");
@@ -143,7 +149,6 @@ describe("modalTheme runtime resolution (@code-ui/components)", () => {
     const slots = resolveSlots(
       modalTheme({
         open: true,
-        variant: "default",
         hasBody: false,
         hasFooter: true,
         closable: false,

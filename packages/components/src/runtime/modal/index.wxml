@@ -1,7 +1,7 @@
 <view wx:if="{{slots.trigger}}" class="{{classes.trigger}}" data-scope="modal" data-part="trigger" bindtap="handleTriggerTap">
   <slot name="trigger" />
 </view>
-<view wx:if="{{modal.visible}}" id="{{modal.rootProps.id}}" class="{{classes.root}}" data-scope="modal" data-part="root" data-state="{{modal.state}}" data-variant="{{variant}}" data-size="{{size}}" data-fullscreen="{{fullscreen}}" data-scrollable="{{scrollable}}">
+<view wx:if="{{modal.visible}}" id="{{modal.rootProps.id}}" class="{{classes.root}}" data-scope="modal" data-part="root" data-state="{{modal.state}}" data-size="{{size}}" data-fullscreen="{{fullscreen}}" data-scrollable="{{scrollable}}">
   <view wx:if="{{overlay}}" id="{{modal.overlayProps.id}}" class="{{classes.overlay}}" data-scope="modal" data-part="overlay" data-state="{{modal.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleOverlayTap" catchtouchmove="noop" />
   <view id="{{modal.containerProps.id}}" class="{{classes.container}}" style="{{modal.containerProps.style}}" data-scope="modal" data-part="container" bindtap="handleContainerTap">
     <view id="{{modal.contentProps.id}}" class="{{classes.content}}" style="{{modal.contentProps.style}}" data-scope="modal" data-part="content" data-state="{{modal.state}}" data-keyboard-height="{{modal.contentProps['data-keyboard-height']}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!modal.open}}">

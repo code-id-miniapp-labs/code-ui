@@ -10,7 +10,8 @@ export default function modalTheme(_options: ThemeOptions = {}) {
         "relative z-10 w-full flex items-center justify-center box-border",
       content:
         "pointer-events-auto relative flex flex-col w-full bg-default border border-muted shadow-2xl overflow-hidden box-border",
-      header: "relative flex flex-col shrink-0 box-border w-full",
+      header:
+        "relative flex flex-col shrink-0 box-border w-full px-5 pt-4 pb-3.5",
       wrapper: "flex flex-col gap-1 min-w-0 w-full",
       title:
         "text-base font-semibold tracking-tight text-highlighted leading-snug",
@@ -21,23 +22,9 @@ export default function modalTheme(_options: ThemeOptions = {}) {
       closeIcon: "w-3.5 h-3.5",
       body: "w-full box-border px-5 py-4 text-sm text-default leading-relaxed",
       footer:
-        "flex items-center gap-2.5 px-5 py-3.5 border-t border-muted shrink-0 box-border w-full",
+        "flex items-center justify-end gap-2.5 px-5 py-3.5 border-t border-muted shrink-0 box-border w-full",
     },
     variants: {
-      variant: {
-        default: {
-          header: "px-5 pt-4 pb-3.5",
-          footer: "justify-end",
-        },
-        alert: {
-          header: "px-5 pt-6 pb-2 items-center text-center",
-          wrapper: "items-center text-center gap-1.5",
-          title: "text-center",
-          description: "text-center",
-          body: "pt-1 pb-5 text-center text-muted",
-          footer: "justify-center",
-        },
-      },
       size: {
         xs: {
           content: "max-w-xs",
@@ -137,21 +124,12 @@ export default function modalTheme(_options: ThemeOptions = {}) {
         },
       },
       {
-        variant: "default",
         closable: true,
         class: {
           header: "pr-12",
         },
       },
       {
-        variant: "alert",
-        closable: true,
-        class: {
-          header: "px-11",
-        },
-      },
-      {
-        variant: "default",
         hasBody: true,
         class: {
           header: "border-b border-muted",
@@ -199,7 +177,6 @@ export default function modalTheme(_options: ThemeOptions = {}) {
       },
     ],
     defaultVariants: {
-      variant: "default",
       size: "md",
       fullscreen: false,
       scrollable: false,

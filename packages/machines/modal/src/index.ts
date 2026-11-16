@@ -24,5 +24,4 @@ export type {
   ModalState,
   ModalTag,
   ModalUI,
-  ModalVariant,
 } from "./modal.types";

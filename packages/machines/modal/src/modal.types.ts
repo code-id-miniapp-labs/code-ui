@@ -9,7 +9,6 @@ import type { anatomy } from "./modal.anatomy";
 
 export type ModalState = "open" | "closed" | "closing";
 export type ModalTag = "open" | "closed" | "closing";
-export type ModalVariant = "default" | "alert" | (string & {});
 export type ModalSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 export type ModalAnatomyPart = AnatomyPartName<typeof anatomy>;

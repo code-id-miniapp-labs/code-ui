@@ -57,10 +57,6 @@ Component(
         type: Boolean,
         value: false,
       },
-      variant: {
-        type: String,
-        value: "default",
-      },
       size: {
         type: String,
         value: "md",
@@ -114,7 +110,6 @@ Component(
         );
 
         const themeFns = modalTheme({
-          variant: this.data.variant,
           size: this.data.size,
           fullscreen: Boolean(this.data.fullscreen),
           scrollable: Boolean(this.data.scrollable),

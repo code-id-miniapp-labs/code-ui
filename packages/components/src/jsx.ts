@@ -93,7 +93,6 @@ import type {
   ModalOpenChangeDetails,
   ModalSize,
   ModalUI,
-  ModalVariant,
 } from "@code-ui/modal";
 import type {
   PinInputColor,
@@ -382,7 +381,6 @@ export interface CuiModalElementProps extends CuiCommonElementProps {
   dismissible?: boolean;
   closeOnBackdropClick?: boolean;
   duration?: number;
-  variant?: ModalVariant;
   size?: ModalSize;
   close?: boolean | ModalCloseProps;
   closeIcon?: string;
