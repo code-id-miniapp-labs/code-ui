@@ -2,7 +2,7 @@ Page({
   data: {
     showUnread: true,
     unreadCount: 5,
-    sizes: ["3xs", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl"] as const,
+    sizes: ["xs", "sm", "md", "lg", "xl"] as const,
     colors: [
       "primary",
       "secondary",

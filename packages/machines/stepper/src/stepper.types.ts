@@ -85,6 +85,8 @@ export interface StepperProps {
   count?: number | undefined;
   /** Dynamically linked children count */
   linkedCount?: number | undefined;
+  /** Dynamically linked children metadata (disabled state in compound mode) */
+  linkedItems?: StepperItem[] | undefined;
   /** Whether progression must be strictly sequential */
   linear?: boolean | undefined;
   /** Whether the entire stepper is disabled */
@@ -106,6 +108,7 @@ export type StepperDefaultedKey =
   | "defaultStep"
   | "count"
   | "linkedCount"
+  | "linkedItems"
   | "linear"
   | "disabled"
   | "items";

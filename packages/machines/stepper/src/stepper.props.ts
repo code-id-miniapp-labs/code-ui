@@ -7,6 +7,7 @@ export const defaultStepperProps: StepperResolvedProps = {
   defaultStep: 0,
   count: 0,
   linkedCount: 0,
+  linkedItems: [],
   linear: false,
   disabled: false,
   items: [],

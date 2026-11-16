@@ -1,9 +1,4 @@
-import {
-  useTheme,
-  useToast,
-  type AppColorMode,
-  type AppThemeState,
-} from "@code-ui/composables";
+import { useToast } from "@code-ui/composables";
 import {
   PRIMARY_COLOR_PRESETS,
   SECONDARY_COLOR_PRESETS,
@@ -12,6 +7,9 @@ import {
   setExampleColorMode,
   setExampleColors,
   syncNavigationBarTheme,
+  useTheme,
+  type AppColorMode,
+  type AppThemeState,
 } from "../../utils/theme";
 
 type CategoryId =

@@ -47,7 +47,7 @@
       data-state="{{progress.progressState}}"
     >
       <view
-        class="cui-progress-circle {{classes.circle}} {{classes.circleRange}} {{progress.isIndeterminate ? 'cui-progress-circle-indeterminate' : ''}}"
+        class="cui-progress-circle {{classes.circle}} {{classes.circleRange}} {{inverted ? 'cui-progress-circle-inverted' : ''}} {{progress.isIndeterminate ? 'cui-progress-circle-indeterminate' : ''}}"
         data-scope="progress"
         data-part="circle"
         data-state="{{progress.progressState}}"

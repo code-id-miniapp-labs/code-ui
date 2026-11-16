@@ -477,5 +477,65 @@ describe("Stepper Machine", () => {
       itemDone.stop();
       parentMachine.stop();
     });
+
+    it("blocks navigating into disabled linkedItems in compound mode and sets hasNext to false", async () => {
+      const parentMachine = new MiniappMachine(stepperMachine, {
+        linear: true,
+        linkedCount: 4,
+        linkedItems: [{}, {}, {}, { disabled: true }],
+      });
+      parentMachine.start();
+
+      let api = connectStepper(parentMachine.service);
+      expect(api.step).toBe(0);
+      expect(api.hasNext).toBe(true);
+
+      api.nextStep();
+      await flush();
+      api.nextStep();
+      await flush();
+
+      api = connectStepper(parentMachine.service);
+      expect(api.step).toBe(2);
+      expect(api.hasNext).toBe(false);
+
+      api.nextStep();
+      await flush();
+      api.setStep(3);
+      await flush();
+
+      api = connectStepper(parentMachine.service);
+      expect(api.step).toBe(2);
+      expect(api.hasNext).toBe(false);
+
+      parentMachine.stop();
+    });
+
+    it("skips disabled steps with nextStep/prevStep in non-linear mode", async () => {
+      const parentMachine = new MiniappMachine(stepperMachine, {
+        linear: false,
+        linkedCount: 3,
+        linkedItems: [{}, { disabled: true }, {}],
+      });
+      parentMachine.start();
+
+      let api = connectStepper(parentMachine.service);
+      expect(api.hasNext).toBe(true);
+
+      api.nextStep();
+      await flush();
+
+      api = connectStepper(parentMachine.service);
+      expect(api.step).toBe(2);
+      expect(api.hasPrev).toBe(true);
+
+      api.prevStep();
+      await flush();
+
+      api = connectStepper(parentMachine.service);
+      expect(api.step).toBe(0);
+
+      parentMachine.stop();
+    });
   });
 });

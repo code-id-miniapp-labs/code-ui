@@ -79,26 +79,15 @@ Page({
   },
 
   nextStep() {
-    if (this.data.activeStep < 4) {
-      this.setData({
-        activeStep: this.data.activeStep + 1,
-      });
-    }
+    this.stepperChild?.api?.nextStep?.();
   },
 
   prevStep() {
-    if (this.data.activeStep > 0) {
-      console.log(this.data.activeStep);
-      this.setData({
-        activeStep: this.data.activeStep - 1,
-      });
-    }
+    this.stepperChild?.api?.prevStep?.();
   },
 
   resetStep() {
-    this.setData({
-      activeStep: 0,
-    });
+    this.stepperChild?.api?.resetStep?.();
   },
 
   toggleLinear(e: WechatMiniprogram.CustomEvent) {
@@ -120,6 +109,5 @@ Page({
 
   jumpToStepTwo() {
     this.stepperChild?.api?.setStep?.(2);
-    this.setData({ activeStep: 2 });
   },
 });

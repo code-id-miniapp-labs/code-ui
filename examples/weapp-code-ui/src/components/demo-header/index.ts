@@ -1,10 +1,11 @@
-import { useTheme, type AppThemeState } from "@code-ui/composables";
 import {
   PRIMARY_COLOR_PRESETS,
   resetExampleTheme,
   setExampleColors,
   syncNavigationBarTheme,
   toggleExampleColorMode,
+  useTheme,
+  type AppThemeState,
 } from "../../utils/theme";
 
 interface DemoHeaderInstance

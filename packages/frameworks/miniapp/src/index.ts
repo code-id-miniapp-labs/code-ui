@@ -151,14 +151,7 @@ export type {
   WithAppInsetOptions,
 } from "./behaviors/app";
 export {
-  resolveThemePaletteHex,
-  buildThemeCssVars,
   getAppTheme,
-  setAppTheme,
-  setAppColorMode,
-  toggleAppColorMode,
-  setAppThemeColors,
-  resetAppTheme,
   subscribeAppTheme,
   createAppThemeBehavior,
 } from "./behaviors/theme";
@@ -166,7 +159,6 @@ export type {
   AppColorMode,
   ResolvedThemeMode,
   AppThemeColors,
-  AppThemeConfig,
   AppThemeState,
   AppThemeListener,
 } from "./behaviors/theme";

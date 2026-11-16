@@ -18,12 +18,6 @@ export default function chipTheme(options: ThemeOptions = {}) {
         { neutral: {} },
       ),
       size: {
-        "3xs": {
-          base: "h-[4px] min-w-[4px] text-[4px]",
-        },
-        "2xs": {
-          base: "h-[5px] min-w-[5px] text-[5px]",
-        },
         xs: {
           base: "h-1.5 min-w-1.5 text-[6px]",
         },
@@ -31,19 +25,13 @@ export default function chipTheme(options: ThemeOptions = {}) {
           base: "h-2 min-w-2 text-[7px]",
         },
         md: {
-          base: "h-2.5 min-w-2.5 text-[8px] px-0.5",
+          base: "h-3 min-w-3 text-[8px] px-1",
         },
         lg: {
-          base: "h-3 min-w-3 text-[9px] px-1",
+          base: "h-3.5 min-w-3.5 text-[9px] px-1",
         },
         xl: {
-          base: "h-3.5 min-w-3.5 text-[10px] px-1",
-        },
-        "2xl": {
-          base: "h-4 min-w-4 text-[11px] px-1",
-        },
-        "3xl": {
-          base: "h-5 min-w-5 text-xs px-1.5",
+          base: "h-4 min-w-4 text-[10px] px-1.5",
         },
       },
       position: {

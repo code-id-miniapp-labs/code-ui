@@ -60,8 +60,8 @@
       </c-stepper>
 
       <view class="flex flex-wrap gap-2 pt-2 border-t border-muted">
-        <c-button size="xs" variant="outline" color="neutral" label="Prev" disabled="{{ activeStep <= 0 }}" bind:tap="prevStep" />
-        <c-button size="xs" color="primary" label="Next" bind:tap="nextStep" />
+        <c-button size="xs" variant="outline" color="neutral" label="Prev" disabled="{{ !stepper.hasPrev }}" bind:tap="prevStep" />
+        <c-button size="xs" color="primary" label="Next" disabled="{{ stepper.hasNext === false }}" bind:tap="nextStep" />
         <c-button size="xs" variant="soft" color="secondary" label="api.setStep(2)" bind:tap="jumpToStepTwo" />
         <c-button size="xs" variant="outline" color="neutral" label="Reset" bind:tap="resetStep" />
       </view>

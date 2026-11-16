@@ -68,8 +68,11 @@ export function syncStepperChildren(group: StepperInstance): void {
         ? templateChildren
         : (group.__codeUiStepperChildren ?? []);
   const total = children.length;
+  const linkedItems = children.map((child) => ({
+    disabled: Boolean(child.data?.disabled),
+  }));
 
-  group.__codeUiMachine?.updateProps({ linkedCount: total });
+  group.__codeUiMachine?.updateProps({ linkedCount: total, linkedItems });
 
   const groupId = resolveInstanceId(group, "cui");
   const visuals = getStepperVisuals(group);
@@ -127,6 +130,18 @@ export function unlinkStepperItemFromParentGroup(
 export const cuiStepperItemBehavior: MiniappBehaviorRef =
   /* @__PURE__ */ createBehaviorRef({
     data: { ...EMPTY_STEPPER_VISUALS },
+    observers: {
+      disabled(this: StepperItemInstance) {
+        const parent = resolveParentNode<StepperInstance>(
+          this,
+          this.__codeUiPendingStepper,
+          "cuiStepperParent",
+        );
+        if (parent) {
+          syncStepperChildren(parent);
+        }
+      },
+    },
     relations: {
       cuiStepperParent: {
         type: "ancestor",

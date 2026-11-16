@@ -1,4 +1,4 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine, type PropFn } from "@code-ui/core";
 import { getItemId } from "./stepper.dom";
 import type {
   StepperGroupContext,
@@ -8,6 +8,46 @@ import type {
 } from "./stepper.types";
 import { defaultStepperProps } from "./stepper.props";
 import { clampValue, resolveControlledStep } from "./stepper.utils";
+
+function resolveStepItems(
+  items: StepperItem[],
+  prop: PropFn<StepperSchema>,
+): StepperItem[] {
+  if (Array.isArray(items) && items.length > 0) {
+    return items;
+  }
+  const linked = prop("linkedItems");
+  return Array.isArray(linked) ? linked : [];
+}
+
+function findNextStepIndex(
+  current: number,
+  total: number,
+  linear: boolean,
+  stepItems: StepperItem[],
+): number {
+  if (total <= 0) return -1;
+  if (linear) {
+    const next = current + 1;
+    return next < total && !stepItems[next]?.disabled ? next : -1;
+  }
+  for (let i = current + 1; i < total; i++) {
+    if (!stepItems[i]?.disabled) return i;
+  }
+  return -1;
+}
+
+function findPrevStepIndex(
+  current: number,
+  total: number,
+  stepItems: StepperItem[],
+): number {
+  const start = total > 0 ? Math.min(current - 1, total - 1) : current - 1;
+  for (let i = start; i >= 0; i--) {
+    if (!stepItems[i]?.disabled) return i;
+  }
+  return -1;
+}
 
 export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
   props: ({ props }) => ({
@@ -97,12 +137,20 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
       return Math.round((current / (total - 1)) * 100);
     },
 
-    hasNext: ({ context, computed }) => {
-      const total = computed("totalCount");
-      return total > 0 && context.get("step") < total - 1;
-    },
+    hasNext: ({ context, computed, prop }) =>
+      findNextStepIndex(
+        context.get("step"),
+        computed("totalCount"),
+        prop("linear"),
+        resolveStepItems(context.get("items"), prop),
+      ) !== -1,
 
-    hasPrev: ({ context }) => context.get("step") > 0,
+    hasPrev: ({ context, computed, prop }) =>
+      findPrevStepIndex(
+        context.get("step"),
+        computed("totalCount"),
+        resolveStepItems(context.get("items"), prop),
+      ) !== -1,
 
     isFirst: ({ context }) => context.get("step") <= 0,
 
@@ -210,8 +258,8 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         const total = computed("totalCount");
         if (total > 0 && target > total) return false;
 
-        const items = context.get("items");
-        if (target < total && Array.isArray(items) && items[target]?.disabled) {
+        const stepItems = resolveStepItems(context.get("items"), prop);
+        if (target < total && stepItems[target]?.disabled) {
           return false;
         }
 
@@ -221,17 +269,11 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         return true;
       },
 
-      canNextStep: ({ context, computed }) => {
-        if (!computed("isInteractive") || !computed("hasNext")) return false;
-        const items = context.get("items");
-        return !(Array.isArray(items) && items[context.get("step") + 1]?.disabled);
-      },
+      canNextStep: ({ computed }) =>
+        computed("isInteractive") && computed("hasNext"),
 
-      canPrevStep: ({ context, computed }) => {
-        if (!computed("isInteractive") || !computed("hasPrev")) return false;
-        const items = context.get("items");
-        return !(Array.isArray(items) && items[context.get("step") - 1]?.disabled);
-      },
+      canPrevStep: ({ computed }) =>
+        computed("isInteractive") && computed("hasPrev"),
     },
 
     actions: {
@@ -241,14 +283,27 @@ export const stepperMachine: StepperMachine = createMachine<StepperSchema>({
         }
       },
 
-      nextStep: ({ context, computed }) => {
-        const total = computed("totalCount");
-        const next = context.get("step") + 1;
-        context.set("step", total > 0 ? clampValue(next, 0, total - 1) : next);
+      nextStep: ({ context, computed, prop }) => {
+        const next = findNextStepIndex(
+          context.get("step"),
+          computed("totalCount"),
+          prop("linear"),
+          resolveStepItems(context.get("items"), prop),
+        );
+        if (next !== -1) {
+          context.set("step", next);
+        }
       },
 
-      prevStep: ({ context }) => {
-        context.set("step", Math.max(0, context.get("step") - 1));
+      prevStep: ({ context, computed, prop }) => {
+        const prev = findPrevStepIndex(
+          context.get("step"),
+          computed("totalCount"),
+          resolveStepItems(context.get("items"), prop),
+        );
+        if (prev !== -1) {
+          context.set("step", prev);
+        }
       },
 
       resetStep: ({ context, refs, prop }) => {

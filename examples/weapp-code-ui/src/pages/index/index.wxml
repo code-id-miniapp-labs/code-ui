@@ -195,19 +195,23 @@
         bind:clear="onSearchClear"
       />
 
-      <view class="flex items-center flex-wrap gap-2">
-        <view
+      <view class="flex items-center flex-wrap gap-3 pt-1">
+        <c-chip
           wx:for="{{ categories }}"
           wx:key="id"
-          data-category="{{ item.id }}"
-          bind:tap="onSelectCategory"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors {{ activeCategory === item.id ? 'bg-primary text-white border-primary' : 'bg-default text-toned border-default' }}"
+          text="{{ item.count }}"
+          size="md"
+          color="{{ activeCategory === item.id ? 'primary' : 'neutral' }}"
         >
-          <text>{{ item.label }}</text>
-          <text class="text-[11px] {{ activeCategory === item.id ? 'opacity-85' : 'text-dimmed' }}">
-            {{ item.count }}
-          </text>
-        </view>
+          <c-button
+            size="sm"
+            color="{{ activeCategory === item.id ? 'primary' : 'neutral' }}"
+            variant="{{ activeCategory === item.id ? 'soft' : 'outline' }}"
+            label="{{ item.label }}"
+            data-category="{{ item.id }}"
+            bind:tap="onSelectCategory"
+          />
+        </c-chip>
       </view>
 
       <view class="flex items-center justify-between px-0.5">

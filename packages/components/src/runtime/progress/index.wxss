@@ -88,3 +88,11 @@
     var(--cui-progress-track-color, #e5e7eb) 30% 100%
   ) !important;
 }
+
+.cui-progress-circle-inverted.cui-progress-circle-indeterminate {
+  animation: spin 1s linear infinite reverse !important;
+  background: conic-gradient(
+    var(--cui-progress-track-color, #e5e7eb) 0% 70%,
+    currentColor 70% 100%
+  ) !important;
+}

@@ -111,6 +111,13 @@ describe("@code-ui/core color generation", () => {
     const chip = chipTheme();
     expect(chip.slots).toHaveProperty("root");
     expect(chip.slots).toHaveProperty("base");
+    expect(Object.keys(chip.variants.size)).toEqual([
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ]);
     expect(chip.defaultVariants).toEqual({
       size: "md",
       color: "primary",
@@ -118,6 +125,10 @@ describe("@code-ui/core color generation", () => {
       inset: false,
       standalone: false,
     });
+
+    const { skeletonTheme } = await import("../src");
+    const skeleton = skeletonTheme();
+    expect(skeleton.variants.variant.shine.root).toBe("cui-skeleton-shine");
 
     const pinInput = pinInputTheme();
     expect(pinInput.slots).toHaveProperty("root");

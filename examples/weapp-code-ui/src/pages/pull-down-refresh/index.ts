@@ -26,8 +26,8 @@ Page({
     disabled: false,
     useCustomIndicatorSlot: false,
     loadingIcon: "i-lucide-refresh-cw",
-    threshold: 50,
-    maxPullDistance: 80,
+    threshold: 30,
+    maxPullDistance: 60,
     successDuration: 600,
     loadingTexts: [
       "Pull down to refresh feed",

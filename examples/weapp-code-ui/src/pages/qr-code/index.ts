@@ -1,4 +1,5 @@
-import { useTheme, useToast } from "@code-ui/composables";
+import { useToast } from "@code-ui/composables";
+import { useTheme } from "../../utils/theme";
 
 interface QrCodeRef {
   setValue?: (value: string) => void;

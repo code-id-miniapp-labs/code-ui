@@ -11,7 +11,7 @@ export default function skeletonTheme(_options: ThemeOptions = {}) {
           root: "animate-pulse",
         },
         shine: {
-          root: "relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shine_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+          root: "cui-skeleton-shine",
         },
         none: {
           root: "",

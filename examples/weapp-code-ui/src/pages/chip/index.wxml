@@ -2,7 +2,7 @@
   <demo-header
     title="Chip"
     badge="Data Display"
-    subtitle="Corner status dot & counter indicators supporting 9 sizes, 4 positions, inset alignment, content slot & visibility toggle."
+    subtitle="Corner status dot & counter indicators supporting 5 sizes, 4 positions, inset alignment, content slot & visibility toggle."
   />
 
   <view class="px-4 flex flex-col gap-4">
@@ -21,9 +21,9 @@
           <c-button size="sm" color="neutral" variant="soft" leading-icon="i-lucide-bell" label="Inbox" bind:tap="bumpCount" />
         </c-chip>
 
-        <c-chip show="{{ showUnread }}" color="primary" inset="{{ true }}" size="md">
+        <c-chip show="{{ showUnread }}" color="primary" inset="{{ true }}" size="xl">
           <view slot="content">
-            <c-icon name="i-lucide-sparkles" size="xs" color="neutral" />
+            <c-icon name="i-lucide-sparkles" size="xs" ui="{{ { root: 'w-2.5 h-2.5 text-white' } }}" />
           </view>
           <c-avatar size="lg" color="secondary" text="CU" />
         </c-chip>
@@ -67,16 +67,16 @@
       </view>
     </view>
 
-    <!-- 4. All 9 Sizes (3xs - 3xl) -->
+    <!-- 4. All 5 Sizes (xs - xl) -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
-        <text class="block text-sm font-semibold text-highlighted">Size Scale (3xs - 3xl)</text>
-        <text class="block text-xs text-muted mt-0.5">All 9 dot and text chip sizes.</text>
+        <text class="block text-sm font-semibold text-highlighted">Size Scale (xs - xl)</text>
+        <text class="block text-xs text-muted mt-0.5">All 5 dot and text chip sizes.</text>
       </view>
       <view class="flex flex-wrap items-center gap-4 py-1">
         <view wx:for="{{ sizes }}" wx:key="*this" class="flex flex-col items-center gap-1.5">
-          <c-chip size="{{ item }}" color="secondary" text="{{ index > 3 ? item : '' }}">
-            <c-button size="xs" variant="outline" color="neutral" icon="i-lucide-box" />
+          <c-chip size="{{ item }}" color="secondary" text="{{ index > 1 ? item : '' }}">
+            <c-button size="sm" variant="outline" color="neutral" icon="i-lucide-box" />
           </c-chip>
           <text class="text-[10px] font-mono text-dimmed">{{ item }}</text>
         </view>
