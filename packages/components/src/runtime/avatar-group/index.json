@@ -1,6 +1,6 @@
 {
   "component": true,
-  "styleIsolation": "apply-shared",
+  "styleIsolation": "shared",
   "virtualHost": true,
   "usingComponents": {
     "c-avatar": "../avatar/index"

@@ -27,7 +27,7 @@ export function compatMiniProgramTransforms(css: string): string {
 
   if (result.includes("translate:")) {
     result = result.replace(
-      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*translate\s*\([^;]+\)\s*;\s*)*translate\s*:\s*var\(--tw-translate-x\)\s+var\(--tw-translate-y\)\s*;/g,
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*translate\s*\([^;}]+\)\s*;\s*)*translate\s*:\s*var\(--tw-translate-x\)\s+var\(--tw-translate-y\)\s*(?:;|(?=\s*\}))/g,
       (_, indent) =>
         `${indent}-webkit-transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}translate: var(--tw-translate-x) var(--tw-translate-y);`,
     );
@@ -35,7 +35,7 @@ export function compatMiniProgramTransforms(css: string): string {
 
   if (result.includes("scale:")) {
     result = result.replace(
-      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*scale\s*\([^;]+\)\s*;\s*)*scale\s*:\s*var\(--tw-scale-x\)\s+var\(--tw-scale-y\)\s*;/g,
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*scale\s*\([^;}]+\)\s*;\s*)*scale\s*:\s*var\(--tw-scale-x\)\s+var\(--tw-scale-y\)\s*(?:;|(?=\s*\}))/g,
       (_, indent) =>
         `${indent}-webkit-transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}scale: var(--tw-scale-x) var(--tw-scale-y);`,
     );
@@ -43,7 +43,7 @@ export function compatMiniProgramTransforms(css: string): string {
 
   if (result.includes("rotate:")) {
     result = result.replace(
-      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*rotate\s*\([^;]+\)\s*;\s*)*(?<![\w-])rotate\s*:\s*([^;]+);/g,
+      /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*rotate\s*\([^;}]+\)\s*;\s*)*(?<![\w-])rotate\s*:\s*([^;}]+?)\s*(?:;|(?=\s*\}))/g,
       (_, indent, val) =>
         `${indent}-webkit-transform: rotate(${val});\n${indent}transform: rotate(${val});\n${indent}rotate: ${val};`,
     );
@@ -143,4 +143,146 @@ export function compatSemanticColorVariables(css: string): string {
       return changed ? `${selector}{${nextBody}}` : fullMatch;
     },
   );
+}
+
+function isWhitespace(ch: string): boolean {
+  return ch === " " || ch === "\t" || ch === "\n" || ch === "\r" || ch === "\f";
+}
+
+/**
+ * Minifies WXSS/CSS safely without corrupting quoted strings (e.g. SVG data URIs),
+ * parenthesized expressions (`calc()`, `var()`), or descendant pseudo-selectors (`div :where(...)`).
+ */
+export function minifyCss(css: string): string {
+  const len = css.length;
+  let out = "";
+  let i = 0;
+  let quote = "";
+  let parenDepth = 0;
+  let pendingSpace = false;
+
+  const peekNextNonWsOrComment = (start: number): string => {
+    let idx = start;
+    while (idx < len) {
+      const c = css[idx] ?? "";
+      if (isWhitespace(c)) {
+        idx++;
+        continue;
+      }
+      if (c === "/" && css[idx + 1] === "*") {
+        const end = css.indexOf("*/", idx + 2);
+        idx = end === -1 ? len : end + 2;
+        continue;
+      }
+      return c;
+    }
+    return "";
+  };
+
+  while (i < len) {
+    const ch = css[i] ?? "";
+
+    if (quote) {
+      out += ch;
+      if (ch === "\\" && i + 1 < len) {
+        out += css[i + 1] ?? "";
+        i += 2;
+        continue;
+      }
+      if (ch === quote) quote = "";
+      i++;
+      continue;
+    }
+
+    if (ch === '"' || ch === "'") {
+      if (pendingSpace && out.length > 0) out += " ";
+      pendingSpace = false;
+      quote = ch;
+      out += ch;
+      i++;
+      continue;
+    }
+
+    if (ch === "/" && css[i + 1] === "*") {
+      const end = css.indexOf("*/", i + 2);
+      i = end === -1 ? len : end + 2;
+      continue;
+    }
+
+    if (isWhitespace(ch)) {
+      if (out.length > 0) pendingSpace = true;
+      i++;
+      continue;
+    }
+
+    if (ch === "(") {
+      if (pendingSpace && out.length > 0) {
+        // Keep space before '(' for @media (...) / and (...) / selector expressions,
+        // skip only when preceded by ':' or ',' or '{' or ';'
+        const prev = out[out.length - 1] ?? "";
+        if (prev !== ":" && prev !== "," && prev !== "{" && prev !== ";" && prev !== "(") {
+          out += " ";
+        }
+      }
+      pendingSpace = false;
+      parenDepth++;
+      out += "(";
+      i++;
+      continue;
+    }
+
+    if (ch === ")") {
+      pendingSpace = false;
+      if (parenDepth > 0) parenDepth--;
+      out += ")";
+      i++;
+      continue;
+    }
+
+    if (parenDepth === 0) {
+      if (ch === "{" || ch === "}" || ch === ";" || ch === ",") {
+        pendingSpace = false;
+        if (ch === ";" && peekNextNonWsOrComment(i + 1) === "}") {
+          i++;
+          continue;
+        }
+        out += ch;
+        i++;
+        continue;
+      }
+
+      if (ch === ":") {
+        if (pendingSpace && out.length > 0) {
+          const prev = out[out.length - 1] ?? "";
+          if (prev !== "{" && prev !== "}" && prev !== ";") {
+            out += " ";
+          }
+        }
+        pendingSpace = false;
+        out += ":";
+        i++;
+        continue;
+      }
+    }
+
+    if (pendingSpace && out.length > 0) {
+      const prev = out[out.length - 1] ?? "";
+      if (
+        parenDepth > 0
+          ? prev !== "(" && prev !== ","
+          : prev !== "{" &&
+            prev !== "}" &&
+            prev !== ";" &&
+            prev !== "," &&
+            prev !== ":"
+      ) {
+        out += " ";
+      }
+    }
+    pendingSpace = false;
+    out += ch;
+    i++;
+  }
+
+  return out;
 }

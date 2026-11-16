@@ -1,9 +1,7 @@
-:host {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  user-select: none;
-}
-view, text, image {
+[data-scope="checkbox-group"],
+[data-scope="checkbox-group"] view,
+[data-scope="checkbox-group"] text,
+[data-scope="checkbox-group"] image {
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;

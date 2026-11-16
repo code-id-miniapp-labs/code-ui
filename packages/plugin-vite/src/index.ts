@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import type { ModuleNode, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import {
@@ -43,6 +44,7 @@ import { cleanKeyframes, cleanKeyframesInDir } from "./core/keyframes";
 import {
   compatMiniProgramTransforms,
   compatSemanticColorVariables,
+  minifyCss,
 } from "./core/transforms";
 import { transformAppStyle } from "./core/style-inject";
 import { handleTreeShake } from "./core/tree-shake";
@@ -454,6 +456,17 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       );
       handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
       cleanKeyframesInDir(distRoot);
+
+      if (!this.meta.watchMode && viteConfigObj?.build?.cssMinify !== false) {
+        const appWxssPath = path.join(distRoot, "app.wxss");
+        if (fs.existsSync(appWxssPath)) {
+          const raw = fs.readFileSync(appWxssPath, "utf8");
+          const minified = minifyCss(raw);
+          if (minified.length < raw.length) {
+            fs.writeFileSync(appWxssPath, minified, "utf8");
+          }
+        }
+      }
     },
   };
 }

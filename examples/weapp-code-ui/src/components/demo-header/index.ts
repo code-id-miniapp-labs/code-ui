@@ -17,7 +17,7 @@ const COMPACT_PRESETS = PRIMARY_COLOR_PRESETS.slice(0, 7);
 
 Component({
   options: {
-    styleIsolation: "apply-shared",
+    styleIsolation: "shared",
   },
 
   properties: {

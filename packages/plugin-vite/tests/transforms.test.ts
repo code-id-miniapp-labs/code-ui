@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { compatMiniProgramTransforms } from "../src/core/transforms";
+import {
+  compatMiniProgramTransforms,
+  minifyCss,
+} from "../src/core/transforms";
 
 describe("compatMiniProgramTransforms", () => {
   it("leaves CSS without transforms untouched", () => {
@@ -97,5 +100,50 @@ describe("compatMiniProgramTransforms", () => {
 
     expect(countWebkit).toBe(1);
     expect(countTransform).toBe(1);
+  });
+
+  it("handles minified CSS without trailing semicolons before closing braces", () => {
+    const css =
+      ".rotate-180{rotate:180deg}.transform{transform:var(--tw-rotate-x,)}.touch-pan-y{--tw-pan-y:pan-y}";
+    const result = compatMiniProgramTransforms(css);
+    expect(result).toContain("-webkit-transform: rotate(180deg);");
+    expect(result).toContain("transform: rotate(180deg);");
+    expect(result).toContain("rotate: 180deg;}");
+    expect(result).toContain(".touch-pan-y{--tw-pan-y:pan-y}");
+  });
+});
+
+describe("minifyCss", () => {
+  it("strips comments and whitespace while preserving strings, calc, var, and descendant pseudo-selectors", () => {
+    const css = `
+/* comment */
+view, text {
+  margin: 0;
+  padding: 0;
+}
+.i-lucide-check {
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+}
+.w-1_f2 {
+  width: calc(var(--spacing) * 4);
+}
+div :where(.foo) {
+  color: var(--ui-primary, #000);
+}
+@media (min-width: 640px) {
+  .sm_cflex {
+    display: flex;
+  }
+}
+`;
+    const out = minifyCss(css);
+    expect(out).not.toContain("/* comment */");
+    expect(out).toContain("view,text{margin:0;padding:0}");
+    expect(out).toContain(
+      `--svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E")`,
+    );
+    expect(out).toContain("width:calc(var(--spacing) * 4)");
+    expect(out).toContain("div :where(.foo){color:var(--ui-primary,#000)}");
+    expect(out).toContain("@media (min-width: 640px){.sm_cflex{display:flex}}");
   });
 });

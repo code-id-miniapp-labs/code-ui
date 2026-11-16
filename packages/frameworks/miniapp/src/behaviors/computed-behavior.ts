@@ -391,7 +391,7 @@ function ensureComputedBehavior(behaviors: readonly any[] | undefined): any[] {
  */
 const DEFAULT_COMPONENT_OPTIONS: WechatMiniprogram.Component.ComponentOptions = {
   multipleSlots: true,
-  styleIsolation: "apply-shared",
+  styleIsolation: "shared",
   virtualHost: true,
 };
 

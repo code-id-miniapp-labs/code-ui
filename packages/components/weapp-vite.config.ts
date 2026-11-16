@@ -87,8 +87,8 @@ function cleanDist(): Plugin {
       for (const jsonFile of findFilesByExt(distDir, ".json")) {
         try {
           const parsed = JSON.parse(fs.readFileSync(jsonFile, "utf8"));
-          if (parsed.styleIsolation === "apply-shared") {
-            delete parsed.styleIsolation;
+          if (parsed.component === true) {
+            parsed.styleIsolation = "shared";
           }
           fs.writeFileSync(jsonFile, JSON.stringify(parsed), "utf8");
         } catch {}
