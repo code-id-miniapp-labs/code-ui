@@ -13,6 +13,7 @@
     "bench": "vitest bench --run",
     "size": "node scripts/size-report.mjs",
     "size:check": "node scripts/size-report.mjs --check",
+    "components": "node scripts/component-report.mjs",
     "lint": "oxlint packages",
     "lint:fix": "oxlint --fix packages",
     "format": "oxfmt packages",
