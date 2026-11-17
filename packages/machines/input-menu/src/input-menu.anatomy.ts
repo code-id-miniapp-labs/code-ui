@@ -5,6 +5,7 @@ export const anatomy = createAnatomy("input-menu").parts(
   "base",
   "leading",
   "leadingIcon",
+  "tagsWrapper",
   "tagsItem",
   "tagsItemIcon",
   "tagsItemText",

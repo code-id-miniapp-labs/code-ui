@@ -7,6 +7,7 @@ describe("inputMenuTheme (@code-ui/core)", () => {
     expect(theme.slots).toHaveProperty("root");
     expect(theme.slots).toHaveProperty("base");
     expect(theme.slots).toHaveProperty("nativeInput");
+    expect(theme.slots).toHaveProperty("tagsWrapper");
     expect(theme.slots).toHaveProperty("tagsItem");
     expect(theme.slots).toHaveProperty("tagsItemText");
     expect(theme.slots).toHaveProperty("tagsItemDelete");
@@ -33,7 +34,9 @@ describe("inputMenuTheme (@code-ui/core)", () => {
     expect(theme.slots.viewport).toContain("flex-col");
     expect(theme.variants.open.true.root).toContain("z-50");
     expect(theme.variants.open.true.trailingIcon).toContain("rotate-180");
-    expect(theme.variants.multiple.true.base).toContain("flex-wrap");
+    expect(theme.variants.multiple.true.base).toContain("h-auto");
+    expect(theme.variants.multiple.true.base).not.toContain("flex-wrap");
+    expect(theme.variants.multiple.true.tagsWrapper).toContain("flex-wrap");
     expect(Object.keys(theme.variants.variant)).toEqual([
       "outline",
       "soft",

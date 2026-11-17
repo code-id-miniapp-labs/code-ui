@@ -225,6 +225,45 @@ describe("inputMenuMachine", () => {
     machine.stop();
   });
 
+  it("re-focuses the input after selecting or creating in multiple mode so the user can keep typing", async () => {
+    const onCreate = vi.fn();
+    const { machine, api } = setupInputMenu({
+      multiple: true,
+      items: ["Bug", "Feature"],
+      createItem: { position: "top", when: "always" },
+      onCreate,
+    });
+
+    api().handleFocus();
+    api().handleInput("Urgent");
+    await flush();
+    expect(api().open).toBe(true);
+
+    // Tapping the create option natively blurs the <input> first
+    api().handleBlur();
+    await flush();
+    expect(api().focused).toBe(false);
+
+    api().createItem();
+    await flush();
+    expect(onCreate).toHaveBeenCalledWith({ value: "Urgent" });
+    expect(api().state).toBe("open");
+    expect(api().focused).toBe(true);
+
+    // Same for picking an existing option
+    api().handleInput("bu");
+    await flush();
+    api().handleBlur();
+    await flush();
+    api().selectValue("Bug");
+    await flush();
+    expect(api().value).toEqual(["Bug"]);
+    expect(api().state).toBe("open");
+    expect(api().focused).toBe(true);
+
+    machine.stop();
+  });
+
   it("syncs controlled props (open, value, searchTerm)", async () => {
     const { machine, api } = setupInputMenu({
       items: ["A", "B", "C"],

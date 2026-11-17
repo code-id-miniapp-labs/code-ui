@@ -15,6 +15,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
       leading: "shrink-0 flex items-center justify-center text-dimmed",
       leadingIcon:
         "inline-flex items-center justify-center shrink-0 leading-none",
+      tagsWrapper: "flex-1 min-w-0 flex items-center gap-2",
       tagsItem:
         "inline-flex items-center gap-1 rounded bg-elevated text-highlighted font-medium max-w-full min-w-0 box-border",
       tagsItemIcon:
@@ -25,7 +26,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
       tagsItemDeleteIcon:
         "inline-flex items-center justify-center shrink-0 leading-none",
       nativeInput:
-        "flex-1 min-w-[60px] w-full min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
+        "flex-1 min-w-0 min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
       trailing: "shrink-0 flex items-center justify-center gap-1 text-dimmed",
       trailingIcon:
         "inline-flex items-center justify-center shrink-0 leading-none transition-transform duration-200",
@@ -67,7 +68,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
       },
       size: {
         xs: {
-          base: "min-h-7 text-xs px-2 gap-1",
+          base: "h-7 text-xs px-2 gap-1",
           leadingIcon: "size-3",
           trailingIcon: "size-3",
           tagsItem: "px-1.5 py-0.5 text-[10px]",
@@ -77,7 +78,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           createItemIcon: "size-3.5",
         },
         sm: {
-          base: "min-h-8 text-xs px-2.5 gap-1.5",
+          base: "h-8 text-xs px-2.5 gap-1.5",
           leadingIcon: "size-4",
           trailingIcon: "size-4",
           tagsItem: "px-1.5 py-0.5 text-xs",
@@ -87,7 +88,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           createItemIcon: "size-4",
         },
         md: {
-          base: "min-h-9 text-sm px-3 gap-1.5",
+          base: "h-9 text-sm px-3 gap-1.5",
           leadingIcon: "size-4",
           trailingIcon: "size-4",
           tagsItem: "px-2 py-0.5 text-xs",
@@ -97,7 +98,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           createItemIcon: "size-4",
         },
         lg: {
-          base: "min-h-10 text-base px-3.5 gap-2",
+          base: "h-10 text-base px-3.5 gap-2",
           leadingIcon: "size-5",
           trailingIcon: "size-5",
           tagsItem: "px-2 py-1 text-xs",
@@ -107,7 +108,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           createItemIcon: "size-5",
         },
         xl: {
-          base: "min-h-11 text-lg px-4 gap-2",
+          base: "h-11 text-lg px-4 gap-2",
           leadingIcon: "size-5",
           trailingIcon: "size-5",
           tagsItem: "px-2.5 py-1 text-sm",
@@ -118,8 +119,12 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
         },
       },
       multiple: {
+        // Grow with wrapped tags: `h-auto` replaces the fixed `h-*` from `size`,
+        // while compound `min-h-*` below keeps the empty state at input height.
         true: {
-          base: "flex-wrap py-1",
+          base: "h-auto py-1",
+          tagsWrapper: "flex-wrap gap-y-1",
+          nativeInput: "min-w-[60px] h-[1.5em]",
         },
         false: {},
       },
@@ -235,6 +240,21 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           base: `border-${errorColor} ring-2 ring-${errorColor}/20`,
         },
       },
+      // ...(
+      //   [
+      //     ["xs", "min-h-7"],
+      //     ["sm", "min-h-8"],
+      //     ["md", "min-h-9"],
+      //     ["lg", "min-h-10"],
+      //     ["xl", "min-h-11"],
+      //   ] as const
+      // ).map(([size, minHeight]) => ({
+      //   multiple: true as const,
+      //   size,
+      //   class: {
+      //     base: minHeight,
+      //   },
+      // })),
     ],
     defaultVariants: {
       variant: "outline",

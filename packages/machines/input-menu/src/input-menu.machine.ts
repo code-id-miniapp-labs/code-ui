@@ -469,7 +469,7 @@ export const inputMenuMachine: InputMenuMachine =
             },
             {
               guard: "canSelectDropdownItem",
-              actions: ["selectItem"],
+              actions: ["selectItem", "refocusInput"],
             },
           ],
           CREATE_ITEM: [
@@ -480,7 +480,7 @@ export const inputMenuMachine: InputMenuMachine =
             },
             {
               guard: "canCreateItem",
-              actions: ["createItem"],
+              actions: ["createItem", "refocusInput"],
             },
           ],
           CONFIRM: [
@@ -491,7 +491,7 @@ export const inputMenuMachine: InputMenuMachine =
             },
             {
               guard: "isInteractive",
-              actions: ["handleConfirm"],
+              actions: ["handleConfirm", "refocusInput"],
             },
           ],
         },
@@ -649,6 +649,12 @@ export const inputMenuMachine: InputMenuMachine =
 
         blurOnClose: ({ context }) => {
           context.set("focused", false);
+        },
+
+        // Tapping a dropdown option natively blurs the <input>; when the menu
+        // stays open (multiple mode) restore focus so the user can keep typing.
+        refocusInput: ({ context }) => {
+          context.set("focused", true);
         },
 
         resetSearchOnClosed: ({ context, prop }) => {

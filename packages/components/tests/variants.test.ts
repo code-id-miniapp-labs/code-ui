@@ -3,6 +3,7 @@ import {
   buttonTheme as createButtonTheme,
   switchTheme as createSwitchTheme,
   inputTheme as createInputTheme,
+  inputMenuTheme as createInputMenuTheme,
   pinInputTheme as createPinInputTheme,
   radioTheme as createRadioTheme,
   radioGroupTheme as createRadioGroupTheme,
@@ -579,6 +580,36 @@ describe("inputTheme invalid & highlight theming", () => {
     expect(slots.base).toContain("border-rose");
     expect(slots.base).toContain(escapeClass("ring-rose/20"));
     expect(slots.base).toContain(escapeClass("focus:border-rose"));
+  });
+});
+
+describe("inputMenuTheme single vs multiple layout", () => {
+  const inputMenuTheme = tv(createInputMenuTheme());
+
+  it("keeps the fixed size height (like c-input) for single select", () => {
+    const single = resolveSlots(
+      inputMenuTheme({ size: "md", multiple: false }) as any,
+    );
+    const baseTokens = single.base.split(/\s+/);
+    expect(baseTokens).toContain("h-9");
+    expect(baseTokens).toContain("items-center");
+    expect(baseTokens).not.toContain("flex-wrap");
+    expect(baseTokens).not.toContain("py-1");
+    expect(single.tagsWrapper).not.toContain("flex-wrap");
+  });
+
+  it("grows with wrapped tags h-auto for multiple", () => {
+    const multiple = resolveSlots(
+      inputMenuTheme({ size: "md", multiple: true }) as any,
+    );
+    const baseTokens = multiple.base.split(/\s+/);
+    expect(baseTokens).toContain("h-auto");
+    expect(baseTokens).toContain("py-1");
+    expect(baseTokens).toContain("items-center");
+    expect(baseTokens).not.toContain("h-9");
+    expect(baseTokens).not.toContain("flex-wrap");
+    expect(multiple.tagsWrapper).toContain("flex-wrap");
+    expect(multiple.nativeInput).toContain(escapeClass("min-w-[60px]"));
   });
 });
 

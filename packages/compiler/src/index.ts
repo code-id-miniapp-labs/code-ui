@@ -1902,3 +1902,9 @@ export function transformWxmlSlots(
     hasChanges: out !== source,
   };
 }
+
+export {
+  serializeConfig,
+  serializeFunction,
+  serializeCompactThemeModule,
+} from "./serialize";

@@ -316,7 +316,7 @@ Component(
             apiItem.groupIndex,
             apiItem.rawIndex,
           ) as InputMenuItem | undefined;
-          const descRaw = rawObj ? rawObj[descKey] ?? rawObj.description : "";
+          const descRaw = rawObj ? (rawObj[descKey] ?? rawObj.description) : "";
           return {
             key: apiItem.key,
             domId: apiItem.domId,

@@ -286,7 +286,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@code-ui/plugin-vite": "workspace:*",
+    "@code-ui/compiler": "workspace:*",
     "@types/node": "^26.2.0",
     "alien-signals": "^3.2.1",
     "miniprogram-api-typings": "^5.2.3",

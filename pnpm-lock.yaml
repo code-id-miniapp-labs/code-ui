@@ -190,6 +190,9 @@ importers:
       '@code-ui/checkbox-group':
         specifier: workspace:*
         version: link:../machines/checkbox-group
+      '@code-ui/compiler':
+        specifier: workspace:*
+        version: link:../compiler
       '@code-ui/context':
         specifier: workspace:*
         version: link:../context
@@ -229,9 +232,6 @@ importers:
       '@code-ui/pin-input':
         specifier: workspace:*
         version: link:../machines/pin-input
-      '@code-ui/plugin-vite':
-        specifier: workspace:*
-        version: link:../plugin-vite
       '@code-ui/progress':
         specifier: workspace:*
         version: link:../machines/progress

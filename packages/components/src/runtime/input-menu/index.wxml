@@ -7,20 +7,24 @@
           <c-icon name="{{icons.leadingIconName}}" className="{{classes.iconInner}}" />
         </view>
       </view>
-      <block wx:if="{{multiple && resolvedTags.length > 0}}">
-        <view wx:for="{{resolvedTags}}" wx:key="key" class="{{classes.tagsItem}}" data-scope="input-menu" data-part="tags-item" data-disabled="{{item.disabled}}">
-          <view wx:if="{{item.icon}}" class="{{classes.tagsItemIcon}}" data-scope="input-menu" data-part="tags-item-icon" aria-hidden="{{true}}">
-            <c-icon name="{{item.icon}}" className="{{classes.iconInner}}" />
-          </view>
-          <text class="{{classes.tagsItemText}}" data-scope="input-menu" data-part="tags-item-text">{{item.label}}</text>
-          <view wx:if="{{!item.disabled && !inputMenu.disabled && !inputMenu.readOnly}}" class="{{classes.tagsItemDelete}}" data-scope="input-menu" data-part="tags-item-delete" data-index="{{index}}" aria-role="button" aria-label="Remove {{item.label}}" catchtap="handleTagRemove">
-            <view class="{{classes.tagsItemDeleteIcon}}">
-              <c-icon name="{{deleteIcon}}" className="{{classes.iconInner}}" />
+      <view class="{{classes.tagsWrapper}}" data-scope="input-menu" data-part="tags-wrapper">
+        <block wx:if="{{multiple && resolvedTags.length > 0}}">
+          <view wx:for="{{resolvedTags}}" wx:key="key" class="{{classes.tagsItem}}" data-scope="input-menu" data-part="tags-item" data-disabled="{{item.disabled}}">
+            <view wx:if="{{item.icon}}" class="{{classes.tagsItemIcon}}" data-scope="input-menu" data-part="tags-item-icon" aria-hidden="{{true}}">
+              <c-icon name="{{item.icon}}" className="{{classes.iconInner}}" />
+            </view>
+            <view class="{{classes.tagsItemText}}" data-scope="input-menu" data-part="tags-item-text">
+              {{item.label}}
+            </view>
+            <view wx:if="{{!item.disabled && !inputMenu.disabled && !inputMenu.readOnly}}" class="{{classes.tagsItemDelete}}" data-scope="input-menu" data-part="tags-item-delete" data-index="{{index}}" aria-role="button" aria-label="Remove {{item.label}}" catchtap="handleTagRemove">
+              <view class="{{classes.tagsItemDeleteIcon}}">
+                <c-icon name="{{deleteIcon}}" className="{{classes.iconInner}}" />
+              </view>
             </view>
           </view>
-        </view>
-      </block>
-      <input id="{{inputMenu.inputProps.id}}" name="{{name}}" class="{{classes.nativeInput}}" value="{{inputMenu.inputValue}}" focus="{{inputMenu.focused}}" disabled="{{inputMenu.inputProps.disabled}}" placeholder="{{placeholder}}" placeholder-class="{{placeholderClass}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" cursor-spacing="{{cursorSpacing}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard}}" aria-invalid="{{inputMenu.invalid}}" data-scope="input-menu" data-part="native-input" data-state="{{inputMenu.state}}" data-focused="{{inputMenu.focused}}" data-disabled="{{inputMenu.disabled}}" data-readonly="{{inputMenu.readOnly}}" data-invalid="{{inputMenu.invalid}}" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" />
+        </block>
+        <input id="{{inputMenu.inputProps.id}}" name="{{name}}" class="{{classes.nativeInput}}" value="{{inputMenu.inputValue}}" focus="{{inputMenu.focused}}" disabled="{{inputMenu.inputProps.disabled}}" placeholder="{{placeholder}}" placeholder-class="{{placeholderClass}}" placeholder-style="{{placeholderStyle}}" maxlength="{{maxlength}}" cursor-spacing="{{cursorSpacing}}" confirm-type="{{confirmType}}" confirm-hold="{{confirmHold || multiple}}" adjust-position="{{adjustPosition}}" hold-keyboard="{{holdKeyboard || multiple}}" aria-invalid="{{inputMenu.invalid}}" data-scope="input-menu" data-part="native-input" data-state="{{inputMenu.state}}" data-focused="{{inputMenu.focused}}" data-disabled="{{inputMenu.disabled}}" data-readonly="{{inputMenu.readOnly}}" data-invalid="{{inputMenu.invalid}}" bindinput="handleInput" bindfocus="handleFocus" bindblur="handleBlur" bindconfirm="handleConfirm" />
+      </view>
       <view wx:if="{{icons.isTrailing || inputMenu.isClearable}}" class="{{classes.trailing}}" data-scope="input-menu" data-part="trailing" aria-hidden="{{true}}">
         <view wx:if="{{icons.trailingLoading}}" class="{{classes.trailingIcon}}">
           <slot wx:if="{{icons.hasLoadingSlot}}" name="loadingIcon" />
@@ -44,7 +48,9 @@
           <slot wx:if="{{slots.createItem}}" name="createItem" />
           <block wx:else>
             <c-icon wx:if="{{createIcon}}" name="{{createIcon}}" className="{{classes.createItemIcon}}" />
-            <text class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">{{createItemText}} "{{inputMenu.searchTerm}}"</text>
+            <view class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">
+              {{createItemText}} "{{inputMenu.searchTerm}}"
+            </view>
           </block>
         </view>
         <block wx:if="{{hasItems}}">
@@ -55,7 +61,9 @@
           <slot wx:if="{{slots.createItem}}" name="createItem" />
           <block wx:else>
             <c-icon wx:if="{{createIcon}}" name="{{createIcon}}" className="{{classes.createItemIcon}}" />
-            <text class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">{{createItemText}} "{{inputMenu.searchTerm}}"</text>
+            <view class="{{classes.createItemLabel}}" data-scope="input-menu" data-part="create-item-label">
+              {{createItemText}} "{{inputMenu.searchTerm}}"
+            </view>
           </block>
         </view>
         <block wx:if="{{!hasDropdownContent && !inputMenu.showCreateItem}}">
