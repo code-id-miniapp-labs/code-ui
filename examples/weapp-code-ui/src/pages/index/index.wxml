@@ -5,7 +5,8 @@
       <view class="flex-1 min-w-0">
         <view class="flex items-center gap-2 flex-wrap">
           <text class="text-2xl font-bold text-highlighted tracking-tight">Code UI</text>
-          <c-badge label="{{ totalCount }} Components" color="primary" variant="soft" size="sm" />
+          <c-badge label="{{ componentCount }} Components" color="primary" variant="soft" size="sm" />
+          <c-badge label="{{ composableCount }} Composables" color="secondary" variant="soft" size="sm" />
         </view>
         <text class="block text-sm text-muted mt-1 leading-relaxed">Preview Component</text>
       </view>
@@ -13,8 +14,8 @@
     </view>
   </view>
   <view class="px-4 pt-4 flex flex-col gap-4">
-    <c-accordion defaultValue="{{['theme']}}" variant="outline">
-      <c-accordion-item label="Runtime Theme Studio" value="theme" icon="i-lucide-palette">
+    <c-accordion ui="{{accordionUI}}" defaultValue="{{['theme']}}" variant="outline">
+      <c-accordion-item label="Runtime Theme Studio" value="theme" icon="i-lucide-palette" ui="{{ { body: 'flex flex-col gap-3' } }}">
         <view class="flex items-center justify-between gap-2 flex-wrap">
           <text class="text-xs font-semibold text-toned">Appearance</text>
           <view class="inline-flex items-center bg-elevated p-1 rounded-lg gap-1 border border-default">

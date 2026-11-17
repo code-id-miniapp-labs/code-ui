@@ -18,7 +18,8 @@ type CategoryId =
   | "display"
   | "navigation"
   | "feedback"
-  | "interaction";
+  | "interaction"
+  | "composable";
 
 interface ComponentCatalogItem {
   id: string;
@@ -356,7 +357,7 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["WXS gesture", "custom slots", "FSM"],
   },
 
-  // Interaction & Hooks (2)
+  // Interaction (1)
   {
     id: "swipe-cell",
     name: "Swipe Cell",
@@ -367,12 +368,24 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     icon: "i-lucide-move-horizontal",
     highlights: ["left/right actions", "WXS", "onClose"],
   },
+
+  // Composables (2)
+  {
+    id: "use-toast",
+    name: "Use Toast",
+    path: "/pages/toast/index",
+    category: "composable",
+    categoryLabel: "Composable",
+    desc: "Programmatic composable hook to trigger, update, and clear toast notifications from page/component scripts.",
+    icon: "i-lucide-bell-ring",
+    highlights: ["useToast()", "queue", "programmatic"],
+  },
   {
     id: "use-child",
     name: "Use Child",
     path: "/pages/use-child/index",
-    category: "interaction",
-    categoryLabel: "Interaction",
+    category: "composable",
+    categoryLabel: "Composable",
     desc: "Type-safe composable hook connecting page scripts to child component FSM APIs by selector.",
     icon: "i-lucide-cpu",
     highlights: ["useChild()", "FSM API", "type-safe"],
@@ -386,6 +399,7 @@ function buildCategoryTabs(items: ComponentCatalogItem[]): CategoryTab[] {
     navigation: 0,
     feedback: 0,
     interaction: 0,
+    composable: 0,
   };
   for (const item of items) {
     counts[item.category] += 1;
@@ -397,6 +411,7 @@ function buildCategoryTabs(items: ComponentCatalogItem[]): CategoryTab[] {
     { id: "navigation", label: "Navigation", count: counts.navigation },
     { id: "feedback", label: "Feedback", count: counts.feedback },
     { id: "interaction", label: "Interaction", count: counts.interaction },
+    { id: "composable", label: "Composable", count: counts.composable },
   ];
 }
 
@@ -426,6 +441,9 @@ interface HomePageContext {
 
 Page({
   data: {
+    accordionUI: {
+      root: "bg-default",
+    },
     colorMode: "system" as AppColorMode,
     isDark: false,
     activePrimary: "stone",
@@ -442,6 +460,8 @@ Page({
     activeCategory: "all" as CategoryId,
     searchQuery: "",
     totalCount: COMPONENT_CATALOG.length,
+    componentCount: COMPONENT_CATALOG.filter((item) => item.category !== "composable").length,
+    composableCount: COMPONENT_CATALOG.filter((item) => item.category === "composable").length,
     filteredComponents: COMPONENT_CATALOG,
   },
 
@@ -549,7 +569,9 @@ Page({
   },
 
   onSelectCategory(e: WechatMiniprogram.TouchEvent) {
-    const category = e.currentTarget.dataset?.category as CategoryId | undefined;
+    const category = e.currentTarget.dataset?.category as
+      | CategoryId
+      | undefined;
     if (!category) return;
     this.setData({
       activeCategory: category,
