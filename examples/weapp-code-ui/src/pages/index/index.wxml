@@ -13,27 +13,8 @@
     </view>
   </view>
   <view class="px-4 pt-4 flex flex-col gap-4">
-    <!-- Runtime Theme Studio Card -->
-    <c-card variant="outline">
-      <view slot="header" class="flex items-center justify-between gap-2" bind:tap="toggleStudio">
-        <view class="flex items-center gap-2">
-          <view class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <c-icon name="i-lucide-palette" size="sm" color="primary" />
-          </view>
-          <view>
-            <text class="block text-sm font-semibold text-highlighted">Runtime Theme Studio</text>
-            <text class="block text-[11px] text-muted">
-              Mode: {{ colorMode }} ({{ isDark ? 'Dark' : 'Light' }}) · Primary: {{ activePrimary }}
-            </text>
-          </view>
-        </view>
-        <view class="flex items-center gap-2">
-          <c-badge wx:if="{{ hasCustomTheme }}" label="Custom" color="secondary" variant="soft" size="xs" />
-          <c-icon name="{{ studioExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down' }}" size="sm" color="neutral" />
-        </view>
-      </view>
-      <view wx:if="{{ studioExpanded }}" class="flex flex-col gap-4">
-        <!-- Color Mode Selector -->
+    <c-accordion defaultValue="{{['theme']}}" variant="outline">
+      <c-accordion-item label="Runtime Theme Studio" value="theme" icon="i-lucide-palette">
         <view class="flex items-center justify-between gap-2 flex-wrap">
           <text class="text-xs font-semibold text-toned">Appearance</text>
           <view class="inline-flex items-center bg-elevated p-1 rounded-lg gap-1 border border-default">
@@ -113,8 +94,8 @@
           </view>
           <c-progress value="{{ 68 }}" color="primary" size="sm" show-value="{{ true }}" />
         </view>
-      </view>
-    </c-card>
+      </c-accordion-item>
+    </c-accordion>
     <!-- Search & Category Filters -->
     <view class="flex flex-col gap-3">
       <c-input value="{{ searchQuery }}" placeholder="Search components, features, or tags..." size="md" clearable="{{ true }}" leading-icon="i-lucide-search" bind:change="onSearchChange" bind:clear="onSearchClear" />

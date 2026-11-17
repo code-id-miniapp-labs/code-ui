@@ -42,8 +42,8 @@
           Single-column and multi-column cascading wheel pickers.
         </text>
       </view>
-      <c-select mode="picker" title="Select City" cancel-btn="Cancel" confirm-btn="Confirm" value="{{ pickerValue }}" items="{{ pickerItems }}" placeholder="Choose a city..." leading-icon="i-lucide-map-pin" bind:confirm="onPickerConfirm" />
-      <c-select mode="picker" title="Select Region" value="{{ cascadeValue }}" items="{{ cascadeItems }}" placeholder="Choose province & city..." bind:columnchange="onCascadeColumnChange" bind:confirm="onCascadeConfirm" />
+      <c-select mode="picker" title="Select City" cancel-btn="Cancel" confirm-btn="Confirm" value="{{ pickerValue }}" clearable items="{{ pickerItems }}" placeholder="Choose a city..." leading-icon="i-lucide-map-pin" bind:confirm="onPickerConfirm" />
+      <c-select mode="picker" title="Select Region" value="{{ cascadeValue }}" items="{{ cascadeItems }}" clearable placeholder="Choose province & city..." bind:columnchange="onCascadeColumnChange" bind:confirm="onCascadeConfirm" />
     </view>
     <!-- 4. Variants, Sizes, Colors & FormField -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">

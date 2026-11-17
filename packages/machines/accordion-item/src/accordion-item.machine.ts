@@ -28,8 +28,8 @@ function measureBodyHeight(
   const canQuery =
     Boolean(
       comp &&
-        typeof (comp as { createSelectorQuery?: unknown })
-          .createSelectorQuery === "function",
+      typeof (comp as { createSelectorQuery?: unknown }).createSelectorQuery ===
+        "function",
     ) || isMiniApp();
   if (!canQuery) return;
   queryRect(".cui-accordion-body", comp)
