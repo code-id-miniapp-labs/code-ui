@@ -38,11 +38,17 @@ const closedTransitions = {
     target: "open" as const,
     actions: ["invokeOnOpen" as const],
   },
-  "TRIGGER.TAP": {
-    guard: "shouldOpenOnClick" as const,
-    target: "open" as const,
-    actions: ["invokeOnOpen" as const],
-  },
+  "TRIGGER.TAP": [
+    {
+      guard: "shouldOpenOnClick" as const,
+      target: "open" as const,
+      actions: ["setFocusedTrue" as const, "invokeOnOpen" as const],
+    },
+    {
+      guard: "isInteractive" as const,
+      actions: ["setFocusedTrue" as const],
+    },
+  ],
   FOCUS: [
     {
       guard: "shouldOpenOnFocus" as const,
@@ -82,11 +88,51 @@ const closingReopenTransitions = {
     target: "open" as const,
     actions: ["resetSearchOnClosed" as const, "invokeOnOpen" as const],
   },
-  "TRIGGER.TAP": {
-    guard: "shouldOpenOnClick" as const,
-    target: "open" as const,
-    actions: ["resetSearchOnClosed" as const, "invokeOnOpen" as const],
-  },
+  "TRIGGER.TAP": [
+    {
+      guard: "shouldOpenOnClick" as const,
+      target: "open" as const,
+      actions: [
+        "resetSearchOnClosed" as const,
+        "setFocusedTrue" as const,
+        "invokeOnOpen" as const,
+      ],
+    },
+    {
+      guard: "isInteractive" as const,
+      actions: ["setFocusedTrue" as const],
+    },
+  ],
+  FOCUS: [
+    {
+      guard: "shouldOpenOnFocus" as const,
+      target: "open" as const,
+      actions: [
+        "resetSearchOnClosed" as const,
+        "setFocusedTrue" as const,
+        "invokeOnOpen" as const,
+      ],
+    },
+    {
+      guard: "isInteractive" as const,
+      actions: ["setFocusedTrue" as const],
+    },
+  ],
+  INPUT: [
+    {
+      guard: "shouldOpenOnInput" as const,
+      target: "open" as const,
+      actions: [
+        "resetSearchOnClosed" as const,
+        "updateSearchTerm" as const,
+        "invokeOnOpen" as const,
+      ],
+    },
+    {
+      guard: "isInteractive" as const,
+      actions: ["updateSearchTerm" as const],
+    },
+  ],
   SELECT_ITEM: closedTransitions.SELECT_ITEM,
 };
 
@@ -577,6 +623,7 @@ export const inputMenuMachine: InputMenuMachine =
         },
 
         setFocusedTrue: ({ context, prop, refs }) => {
+          if (context.get("focused")) return;
           context.set("focused", true);
           const val = context.get("value");
           refs.get("formField")?.emitFocus(val);

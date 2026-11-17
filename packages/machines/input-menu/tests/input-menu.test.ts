@@ -37,11 +37,47 @@ describe("inputMenuMachine", () => {
     machine.stop();
   });
 
-  it("opens on focus, keeps filtered items stable during closing animation (no full-list blip), and resets after closed", async () => {
+  it("stays closed on focus/tap by default and opens on search input or toggle", async () => {
+    const onFocus = vi.fn();
+    const { machine, api } = setupInputMenu({
+      items: ["Backlog", "Todo", "In Progress", "Done"],
+      defaultValue: "Todo",
+      onFocus,
+    });
+
+    api().handleFocus();
+    await flush();
+    expect(api().focused).toBe(true);
+    expect(api().open).toBe(false);
+    expect(onFocus).toHaveBeenCalledTimes(1);
+
+    // Tapping trigger while already focused does not open or re-emit onFocus
+    api().handleTriggerTap();
+    await flush();
+    expect(api().open).toBe(false);
+    expect(onFocus).toHaveBeenCalledTimes(1);
+
+    // Searching opens the floating menu and filters items
+    api().handleInput("back");
+    await flush();
+    expect(api().open).toBe(true);
+    expect(api().items).toHaveLength(1);
+    expect(api().items[0]?.label).toBe("Backlog");
+
+    // Toggle closes and reopens explicitly
+    api().toggle();
+    await flush();
+    expect(api().open).toBe(false);
+
+    machine.stop();
+  });
+
+  it("opens on focus when openOnFocus is true, keeps filtered items stable during closing animation, and resets after closed", async () => {
     vi.useFakeTimers();
     const { machine, api } = setupInputMenu({
       items: ["Backlog", "Todo", "In Progress", "Done"],
       defaultValue: "Todo",
+      openOnFocus: true,
       duration: 150,
     });
 
