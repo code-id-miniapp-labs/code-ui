@@ -1,0 +1,10 @@
+allowBuilds:
+  sharp: true
+  '@parcel/watcher': false
+  '@tailwindcss/oxide': false
+  esbuild: false
+  unrs-resolver: false
+  vue-demi: false
+
+minimumReleaseAgeExclude:
+  - '@nuxtjs/mdc@0.23.3'
