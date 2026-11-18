@@ -236,34 +236,6 @@ describe("codeUI virtual themes", () => {
     expect(classes).toContain("border");
   });
 
-  it("replaces default colors when colorsMode is replace", () => {
-    const config = {
-      prefix: "cui",
-      ui: {
-        colors: {
-          primary: "#3b82f6",
-          danger: "#ef4444",
-        },
-        colorsMode: "replace" as const,
-      },
-    };
-
-    const compiled = compileComponentTheme("button", buttonTheme, config);
-    expect(Object.keys(compiled.variants.color)).toEqual([
-      "primary",
-      "danger",
-      "neutral",
-    ]);
-    expect(
-      compiled.compoundVariants?.every(
-        (cv: any) =>
-          cv.color === "primary" ||
-          cv.color === "danger" ||
-          cv.color === "neutral",
-      ),
-    ).toBe(true);
-  });
-
   it("compiles drawer theme dynamically", () => {
     const config = {
       prefix: "cui",
@@ -279,6 +251,30 @@ describe("codeUI virtual themes", () => {
     const compiled = compileComponentTheme("drawer", drawerTheme, config);
     expect(compiled.slots).toHaveProperty("content");
     expect(compiled.defaultVariants.placement).toBe("top");
+  });
+
+  it("supports function slot replacers (defaultClass) => string and ui/defaultProps aliases", () => {
+    const config = {
+      prefix: "cui",
+      components: {
+        button: {
+          slots: {
+            root: (defaultClass: string) =>
+              `${defaultClass.replace("rounded-md", "rounded-full")} tracking-wide`,
+          },
+          defaultProps: {
+            size: "xl",
+          },
+        },
+      },
+    };
+
+    const compiled = compileComponentTheme("button", buttonTheme, config);
+    expect(typeof compiled.slots.root).toBe("string");
+    expect(compiled.slots.root).toContain("rounded-full");
+    expect(compiled.slots.root).toContain("tracking-wide");
+    expect(compiled.slots.root).not.toContain("rounded-md");
+    expect(compiled.defaultVariants.size).toBe("xl");
   });
 
   it("resolves virtual:cui/theme/<component> and loads pure theme object", () => {
@@ -352,7 +348,7 @@ describe("codeUI virtual themes", () => {
     );
   });
 
-  it("injects @plugin @egoist/tailwindcss-icons when enabled", () => {
+  it("injects @plugin @code-ui/plugin-vite/icons with built-in Lucide by default", async () => {
     const configManager = new PluginConfigManager({
       icons: { autoPlugin: true },
     });
@@ -364,7 +360,30 @@ describe("codeUI virtual themes", () => {
       () => {},
     );
     expect(result).not.toBeNull();
-    expect(result?.code).toContain('@plugin "@egoist/tailwindcss-icons";');
+    expect(result?.code).toContain('@plugin "@code-ui/plugin-vite/icons";');
+
+    const { resolveCodeUIIconCollections } = await import("../src/icons");
+    const collections = resolveCodeUIIconCollections("/test");
+    expect(collections).toHaveProperty("lucide");
+  });
+
+  it("does not duplicate @plugin when @code-ui/plugin-vite/icons is already present", () => {
+    const configManager = new PluginConfigManager({
+      icons: { autoPlugin: true },
+    });
+    const existing =
+      '@import "tailwindcss";\n@plugin "@code-ui/plugin-vite/icons";';
+    const result = transformAppStyle(
+      existing,
+      "/test/src/app.css",
+      "/test",
+      configManager,
+      () => {},
+    );
+    const matches = result?.code.match(
+      /@plugin "@code-ui\/plugin-vite\/icons"/g,
+    );
+    expect(matches?.length).toBe(1);
   });
 
   it("does not duplicate @plugin if already present in stylesheet", () => {

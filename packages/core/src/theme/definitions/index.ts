@@ -14,7 +14,7 @@ export { default as chip } from "./chip";
 export { default as divider } from "./divider";
 export { default as drawer } from "./drawer";
 export { default as fileUpload } from "./file-upload";
-export { default as floatingMenu } from "./floating-menu";
+export { default as popover } from "./popover";
 export { default as form } from "./form";
 export { default as formField } from "./form-field";
 export { default as icon } from "./icon";

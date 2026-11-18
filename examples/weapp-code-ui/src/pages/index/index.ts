@@ -390,6 +390,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     icon: "i-lucide-cpu",
     highlights: ["useChild()", "FSM API", "type-safe"],
   },
+  {
+    id: "popover",
+    name: "Popover",
+    path: "/pages/popover/index",
+    category: "navigation",
+    categoryLabel: "Navigation",
+    desc: "Anchored floating menu / popover surface positioned relative to a trigger element, with collision handling, optional directional arrow, optional <root-portal> rendering, backdrop dismissal, and enter/exit visibility transitions.",
+    highlights: ["anchored"],
+    icon: "i-lucide-box",
+  },
 ];
 
 function buildCategoryTabs(items: ComponentCatalogItem[]): CategoryTab[] {
@@ -460,8 +470,12 @@ Page({
     activeCategory: "all" as CategoryId,
     searchQuery: "",
     totalCount: COMPONENT_CATALOG.length,
-    componentCount: COMPONENT_CATALOG.filter((item) => item.category !== "composable").length,
-    composableCount: COMPONENT_CATALOG.filter((item) => item.category === "composable").length,
+    componentCount: COMPONENT_CATALOG.filter(
+      (item) => item.category !== "composable",
+    ).length,
+    composableCount: COMPONENT_CATALOG.filter(
+      (item) => item.category === "composable",
+    ).length,
     filteredComponents: COMPONENT_CATALOG,
   },
 

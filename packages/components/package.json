@@ -110,12 +110,12 @@
       "require": "./dist/runtime/file-upload/index.js"
     },
     "./file-upload/*": "./dist/runtime/file-upload/*",
-    "./floating-menu": {
-      "types": "./dist/runtime/floating-menu/index.d.ts",
-      "import": "./dist/runtime/floating-menu/index.js",
-      "require": "./dist/runtime/floating-menu/index.js"
+    "./popover": {
+      "types": "./dist/runtime/popover/index.d.ts",
+      "import": "./dist/runtime/popover/index.js",
+      "require": "./dist/runtime/popover/index.js"
     },
-    "./floating-menu/*": "./dist/runtime/floating-menu/*",
+    "./popover/*": "./dist/runtime/popover/*",
     "./form": {
       "types": "./dist/runtime/form/index.d.ts",
       "import": "./dist/runtime/form/index.js",
@@ -305,7 +305,7 @@
     "@code-ui/core": "workspace:*",
     "@code-ui/drawer": "workspace:*",
     "@code-ui/file-upload": "workspace:*",
-    "@code-ui/floating-menu": "workspace:*",
+    "@code-ui/popover": "workspace:*",
     "@code-ui/form": "workspace:*",
     "@code-ui/form-field": "workspace:*",
     "@code-ui/input": "workspace:*",

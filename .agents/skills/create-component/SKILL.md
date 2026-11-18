@@ -5,7 +5,21 @@ description: Step-by-step guide to creating a new Code UI component (Theme defin
 
 # Creating a Code UI Component
 
-Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `chip`, `button`, `stepper`).
+Follow this checklist whenever adding or updating a component `<name>` (e.g., `card`, `chip`, `button`, `stepper`).
+
+---
+
+## Step 0: Write or Update `<name>.spec.md` (Spec-Driven Development)
+
+Before implementing or modifying a component, create or update its spec at `packages/components/src/runtime/<name>/<name>.spec.md`. This file is the single source of truth for agents and for generating live documentation in `docs/`.
+
+Keep the spec focused on the **public contract** (avoid internal FSM state names or implementation details):
+- **Overview & Tier**: Component purpose, architecture tier (Presentational / Interactive / Domain), and related child/parent components (if compound).
+- **Props**: Name, type, default value, and description (including `ui` and `class`).
+- **Slots**: Named slots and default slot behavior (note any MiniProgram static `<slot>` constraints or conditional fallbacks).
+- **Events**: `bind:*` events and their `detail` payloads.
+- **Theme**: Available `slots`, `variants`, and `defaultVariants` from `packages/core/src/theme/definitions/<name>.ts`.
+- **Examples**: Minimal WXML + TS usage snippets.
 
 ---
 

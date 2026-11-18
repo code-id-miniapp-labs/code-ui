@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: ["src/index.ts", "src/icons.ts"],
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: false,
@@ -12,6 +12,13 @@ export default defineConfig({
     exports: "named",
   },
   deps: {
-    neverBundle: ["vite", "c12", "@code-ui/core", "@code-ui/compiler"],
+    neverBundle: [
+      "vite",
+      "c12",
+      "@code-ui/core",
+      "@code-ui/compiler",
+      "@egoist/tailwindcss-icons",
+      "@iconify-json/lucide",
+    ],
   },
 });

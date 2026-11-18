@@ -1,26 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   ariaControlState,
   createScope,
   dataAttrs,
   dataControlState,
-  isMinimalDataAttrs,
   itemPartId,
   optPartId,
   partId,
 } from "../src";
 
 describe("scope & DOM id / attribute helpers (@code-ui/core)", () => {
-  const g = globalThis as any;
-  let prevConfig: any;
-
-  beforeEach(() => {
-    prevConfig = g.__CODE_UI_GLOBAL_CONFIG__;
-  });
-
-  afterEach(() => {
-    g.__CODE_UI_GLOBAL_CONFIG__ = prevConfig;
-  });
 
   it("creates scope with id, ids and component references", () => {
     const scope = createScope({ id: "my-btn", ids: { root: "custom-root" } });
@@ -59,39 +48,19 @@ describe("scope & DOM id / attribute helpers (@code-ui/core)", () => {
     expect(optPartId(scopeWithOpt, "indicator")).toBe("ind-1");
   });
 
-  describe("dataAttributes mode: full vs minimal", () => {
-    it("returns all data-* attributes in default/full mode", () => {
-      delete g.__CODE_UI_GLOBAL_CONFIG__;
-      expect(isMinimalDataAttrs()).toBe(false);
-
-      const attrs = dataAttrs({ orientation: "horizontal", active: true });
-      expect(attrs).toEqual({
-        "data-orientation": "horizontal",
-        "data-active": "true",
-      });
-
-      const ctrl = dataControlState("open", true, { orientation: "vertical" }, true);
-      expect(ctrl).toEqual({
-        "data-state": "open",
-        "data-disabled": "true",
-        "data-focused": "true",
-        "data-orientation": "vertical",
-      });
+  it("builds data-* attributes via dataAttrs and dataControlState", () => {
+    const attrs = dataAttrs({ orientation: "horizontal", active: true });
+    expect(attrs).toEqual({
+      "data-orientation": "horizontal",
+      "data-active": "true",
     });
 
-    it("omits non-essential data-* attributes in minimal mode", () => {
-      g.__CODE_UI_GLOBAL_CONFIG__ = { dataAttributes: "minimal" };
-      expect(isMinimalDataAttrs()).toBe(true);
-
-      const attrs = dataAttrs({ orientation: "horizontal", active: true });
-      expect(attrs).toEqual({});
-
-      const ctrl = dataControlState("open", true, { orientation: "vertical" }, true);
-      expect(ctrl).toEqual({
-        "data-state": "open",
-        "data-disabled": "true",
-        "data-focused": "true",
-      });
+    const ctrl = dataControlState("open", true, { orientation: "vertical" }, true);
+    expect(ctrl).toEqual({
+      "data-state": "open",
+      "data-disabled": "true",
+      "data-focused": "true",
+      "data-orientation": "vertical",
     });
   });
 

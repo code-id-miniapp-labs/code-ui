@@ -2,38 +2,15 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 const items: DropdownMenuItem[] = [{
-  label: 'Starter',
-  to: 'https://starter-template.nuxt.dev/'
-}, {
-  label: 'Landing',
-  to: 'https://landing-template.nuxt.dev/'
-}, {
   label: 'Docs',
-  to: 'https://docs-template.nuxt.dev/',
+  to: '/',
   color: 'primary',
   checked: true,
   type: 'checkbox'
 }, {
-  label: 'SaaS',
-  to: 'https://saas-template.nuxt.dev/'
-}, {
-  label: 'Dashboard',
-  to: 'https://dashboard-template.nuxt.dev/'
-}, {
-  label: 'Chat',
-  to: 'https://chat-template.nuxt.dev/'
-}, {
-  label: 'Portfolio',
-  to: 'https://portfolio-template.nuxt.dev/'
-}, {
-  label: 'Changelog',
-  to: 'https://changelog-template.nuxt.dev/'
-}, {
-  label: 'Editor',
-  to: 'https://editor-template.nuxt.dev/'
-}, {
-  label: 'Calendar',
-  to: 'https://calendar-template.nuxt.dev/'
+  label: 'Code UI on GitHub',
+  to: 'https://github.com/code-id-miniapp-labs/code-ui',
+  target: '_blank'
 }]
 </script>
 

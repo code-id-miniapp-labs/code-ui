@@ -7,7 +7,7 @@ export * from "@code-ui/checkbox";
 export * from "@code-ui/checkbox-group";
 export * from "@code-ui/drawer";
 export * from "@code-ui/file-upload";
-export * from "@code-ui/floating-menu";
+export * from "@code-ui/popover";
 export * from "@code-ui/form";
 export * from "@code-ui/form-field";
 export * from "@code-ui/input";

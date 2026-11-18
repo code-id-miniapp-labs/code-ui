@@ -56,9 +56,17 @@ const links = computed(() => {
   <UPage v-if="page">
     <UPageHeader
       :title="page.title"
-      :description="page.description"
       :headline="headline"
     >
+      <template
+        v-if="page.description"
+        #description
+      >
+        <MDC
+          :value="page.description"
+          unwrap="p"
+        />
+      </template>
       <template #links>
         <UButton
           v-for="(link, index) in page.links"
@@ -66,7 +74,7 @@ const links = computed(() => {
           v-bind="link"
         />
 
-        <PageHeaderLinks />
+        <!-- <PageHeaderLinks /> -->
       </template>
     </UPageHeader>
 

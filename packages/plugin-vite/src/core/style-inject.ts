@@ -1,12 +1,23 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import { componentThemes, getActiveCollections } from "@code-ui/core";
 import { THEME_TAG } from "./theme";
 import type { PluginConfigManager } from "./config";
 import { collectUsedComponents, toKebabCase } from "./used-components";
 
-const require = createRequire(import.meta.url);
+const CURRENT_FILE =
+  typeof __filename === "string" && path.isAbsolute(__filename)
+    ? __filename
+    : fileURLToPath(import.meta.url);
+const require = createRequire(CURRENT_FILE);
+const CURRENT_DIR = path.dirname(CURRENT_FILE);
+const PLUGIN_SEARCH_PATHS = [
+  CURRENT_DIR,
+  path.resolve(CURRENT_DIR, ".."),
+  path.resolve(CURRENT_DIR, "../.."),
+];
 
 interface ResolvedPackageScanTarget {
   compScanDir: string | undefined;
@@ -55,13 +66,27 @@ function resolveComponentScanTarget(
   return resolved;
 }
 
+function isBuiltinIconsEntryAvailable(
+  projectRoot: string,
+  styleDir: string,
+): boolean {
+  try {
+    require.resolve("@code-ui/plugin-vite/icons", {
+      paths: [projectRoot, styleDir, ...PLUGIN_SEARCH_PATHS],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isTailwindIconsInstalled(
   projectRoot: string,
   styleDir: string,
 ): boolean {
   try {
     require.resolve("@egoist/tailwindcss-icons", {
-      paths: [projectRoot, styleDir],
+      paths: [projectRoot, styleDir, ...PLUGIN_SEARCH_PATHS],
     });
     return true;
   } catch {
@@ -76,13 +101,13 @@ function checkIconCollectionInstalled(
 ): boolean {
   try {
     require.resolve(`@iconify-json/${collection}`, {
-      paths: [projectRoot, styleDir],
+      paths: [projectRoot, styleDir, ...PLUGIN_SEARCH_PATHS],
     });
     return true;
   } catch {
     try {
       require.resolve("@iconify/json", {
-        paths: [projectRoot, styleDir],
+        paths: [projectRoot, styleDir, ...PLUGIN_SEARCH_PATHS],
       });
       return true;
     } catch {
@@ -98,6 +123,8 @@ function resolveIconsPluginDirective(
   configManager: PluginConfigManager,
 ): string {
   if (
+    code.includes('@plugin "@code-ui/plugin-vite/icons"') ||
+    code.includes("@plugin '@code-ui/plugin-vite/icons'") ||
     code.includes('@plugin "@egoist/tailwindcss-icons"') ||
     code.includes("@plugin '@egoist/tailwindcss-icons'")
   ) {
@@ -111,7 +138,9 @@ function resolveIconsPluginDirective(
   if (autoPlugin === false) return "";
 
   const collections = getActiveCollections(configManager.resolvedConfig.icons);
-  const isInstalled = isTailwindIconsInstalled(projectRoot, styleDir);
+  const useBuiltinEntry = isBuiltinIconsEntryAvailable(projectRoot, styleDir);
+  const isInstalled =
+    useBuiltinEntry || isTailwindIconsInstalled(projectRoot, styleDir);
 
   if (autoPlugin === "auto" && !isInstalled) {
     if (collections.length > 0) {
@@ -130,6 +159,10 @@ function resolveIconsPluginDirective(
     }
   }
 
+  const pluginTarget = useBuiltinEntry
+    ? "@code-ui/plugin-vite/icons"
+    : "@egoist/tailwindcss-icons";
+
   const hasCustomOptions =
     iconsOptions.scale !== undefined ||
     iconsOptions.prefix !== undefined ||
@@ -137,7 +170,7 @@ function resolveIconsPluginDirective(
       Object.keys(iconsOptions.extraProperties).length > 0);
 
   if (!hasCustomOptions) {
-    return `\n@plugin "@egoist/tailwindcss-icons";\n`;
+    return `\n@plugin "${pluginTarget}";\n`;
   }
 
   const lines: string[] = [];
@@ -153,7 +186,7 @@ function resolveIconsPluginDirective(
     }
   }
 
-  return `\n@plugin "@egoist/tailwindcss-icons" {\n${lines.join("\n")}\n};\n`;
+  return `\n@plugin "${pluginTarget}" {\n${lines.join("\n")}\n};\n`;
 }
 
 function resolveColorSystemDirective(

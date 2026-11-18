@@ -12,9 +12,10 @@ useSeoMeta({
   title,
   ogTitle: title,
   description,
-  ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/docs-light.png'
+  ogDescription: description
 })
+
+defineOgImage('Docs', { title, description })
 </script>
 
 <template>
@@ -22,6 +23,6 @@ useSeoMeta({
     v-if="page"
     :value="page"
     :prose="false"
-    :components="{ a: 'prose-a' }"
+    :components="{ a: 'prose-a', pre: 'prose-pre' }"
   />
 </template>

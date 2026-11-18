@@ -53,9 +53,9 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/file-upload/src",
       ),
-      "@code-ui/floating-menu": resolve(
+      "@code-ui/popover": resolve(
         import.meta.dirname,
-        "packages/machines/floating-menu/src",
+        "packages/machines/popover/src",
       ),
       "@code-ui/form/context": resolve(
         import.meta.dirname,

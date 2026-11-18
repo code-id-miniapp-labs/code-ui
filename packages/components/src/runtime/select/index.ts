@@ -238,6 +238,7 @@ Component(
       menuConfig(): Required<SelectContentConfig> {
         const cfg = (this.data.content || {}) as SelectContentConfig;
         return {
+          block: cfg.block ?? true,
           side: cfg.side ?? "bottom",
           align: cfg.align ?? "start",
           sideOffset: cfg.sideOffset ?? 4,
@@ -253,10 +254,12 @@ Component(
         return `max-height: ${this.data.menuConfig.maxHeight}px;`;
       },
 
-      floatingMenuUi() {
+      popoverUi() {
         const classes = this.data.classes as Record<string, string> | undefined;
+        const ui = this.data.ui as { popover?: Record<string, string> } | undefined;
         return {
           content: classes?.content ?? "",
+          ...(ui?.popover ?? {}),
         };
       },
 

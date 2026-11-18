@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@nuxt/content",
     "nuxt-og-image",
+    "nuxt-llms",
     "@nuxtjs/i18n",
     "@nuxtjs/seo",
   ],
@@ -19,6 +20,12 @@ export default defineNuxtConfig({
   },
 
   css: ["~/assets/css/main.css"],
+
+  fonts: {
+    defaults: {
+      weights: [400, 500, 600, 700, 800]
+    }
+  },
 
   content: {
     build: {
@@ -49,13 +56,14 @@ export default defineNuxtConfig({
   },
 
   llms: {
-    domain: "https://docs-template.nuxt.dev",
-    title: "Nuxt Docs Template",
+    domain: "https://github.com/code-id-miniapp-labs/code-ui",
+    title: "Code UI",
     description:
-      "A template for building documentation with Nuxt UI and Nuxt Content.",
+      "@code-ui — a headless + Tailwind-styled WeChat MiniProgram component library.",
     full: {
-      title: "Nuxt Docs Template - Full Documentation",
-      description: "This is the full documentation for the Nuxt Docs Template.",
+      title: "Code UI - Full Documentation",
+      description:
+        "This is the full documentation for Code UI (@code-ui), a headless + Tailwind-styled WeChat MiniProgram component library.",
     },
     sections: [
       {
@@ -66,22 +74,31 @@ export default defineNuxtConfig({
         ],
       },
       {
-        title: "Essentials",
+        title: "Theme",
         contentCollection: "docs",
         contentFilters: [
-          { field: "path", operator: "LIKE", value: "/essentials%" },
+          { field: "path", operator: "LIKE", value: "/theme%" },
         ],
       },
       {
-        title: "AI",
+        title: "Integrations",
         contentCollection: "docs",
-        contentFilters: [{ field: "path", operator: "LIKE", value: "/ai%" }],
+        contentFilters: [
+          { field: "path", operator: "LIKE", value: "/integrations%" },
+        ],
+      },
+      {
+        title: "Components",
+        contentCollection: "docs",
+        contentFilters: [
+          { field: "path", operator: "LIKE", value: "/components%" },
+        ],
       },
     ],
   },
 
   mcp: {
-    name: "Docs template",
+    name: "Code UI",
   },
 
   ogImage: {

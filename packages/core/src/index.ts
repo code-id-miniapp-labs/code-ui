@@ -46,7 +46,6 @@ export {
   partId,
   itemPartId,
   optPartId,
-  isMinimalDataAttrs,
   dataAttrs,
   dataControlState,
   ariaControlState,
@@ -77,7 +76,6 @@ export {
 } from "./config";
 export type {
   CodeUIConfig,
-  DataAttributesMode,
   UIConfig,
   UIColorsConfig,
   TailwindColorPalette,
@@ -140,7 +138,7 @@ export { default as chipTheme } from "./theme/definitions/chip";
 export { default as dividerTheme } from "./theme/definitions/divider";
 export { default as drawerTheme } from "./theme/definitions/drawer";
 export { default as fileUploadTheme } from "./theme/definitions/file-upload";
-export { default as floatingMenuTheme } from "./theme/definitions/floating-menu";
+export { default as popoverTheme } from "./theme/definitions/popover";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
 export { default as iconTheme } from "./theme/definitions/icon";

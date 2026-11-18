@@ -1,5 +1,5 @@
 <view id="{{select.rootProps.id}}" class="{{classes.root}}" data-scope="select" data-part="root" data-mode="{{mode}}" data-state="{{select.state}}" data-disabled="{{select.disabled}}" data-readonly="{{select.readOnly}}" data-invalid="{{select.invalid}}">
-  <c-floating-menu open="{{mode !== 'picker' && select.open}}" disabled="{{mode === 'picker' || select.disabled || select.readOnly}}" close-on-backdrop-click="{{closeOnBackdropClick}}" trigger-mode="manual" portal="{{portal}}" arrow="{{arrow}}" side="{{menuConfig.side}}" align="{{menuConfig.align}}" side-offset="{{menuConfig.sideOffset}}" align-offset="{{menuConfig.alignOffset}}" collision-padding="{{menuConfig.collisionPadding}}" avoid-collisions="{{menuConfig.avoidCollisions}}" match-trigger-width="{{menuConfig.matchTriggerWidth}}" max-height="{{menuConfig.maxHeight}}" duration="{{duration}}" ui="{{floatingMenuUi}}" bind:openchange="handleMenuOpenChange">
+  <c-popover open="{{mode !== 'picker' && select.open}}" disabled="{{mode === 'picker' || select.disabled || select.readOnly}}" close-on-backdrop-click="{{closeOnBackdropClick}}" trigger-mode="manual" block="{{menuConfig.block}}" portal="{{portal}}" arrow="{{arrow}}" side="{{menuConfig.side}}" align="{{menuConfig.align}}" side-offset="{{menuConfig.sideOffset}}" align-offset="{{menuConfig.alignOffset}}" collision-padding="{{menuConfig.collisionPadding}}" avoid-collisions="{{menuConfig.avoidCollisions}}" match-trigger-width="{{menuConfig.matchTriggerWidth}}" max-height="{{menuConfig.maxHeight}}" duration="{{duration}}" ui="{{popoverUi}}" bind:openchange="handleMenuOpenChange">
     <view slot="trigger" id="{{select.triggerProps.id}}" class="{{classes.base}}" data-scope="select" data-part="base" data-state="{{select.state}}" data-open="{{select.open}}" data-disabled="{{select.disabled}}" data-readonly="{{select.readOnly}}" data-invalid="{{select.invalid}}" aria-role="combobox" aria-expanded="{{select.open}}" aria-disabled="{{select.disabled}}" aria-invalid="{{select.invalid}}" aria-haspopup="listbox" catchtap="handleTriggerTap">
       <view wx:if="{{icons.isLeading}}" class="{{classes.leading}}" data-scope="select" data-part="leading" aria-hidden="{{true}}">
         <slot wx:if="{{icons.hasLeadingSlot}}" name="leading" />
@@ -48,7 +48,7 @@
     <view wx:if="{{mode !== 'picker' && slots.footer}}" class="{{classes.footer}}" data-scope="select" data-part="footer">
       <slot name="footer" />
     </view>
-  </c-floating-menu>
+  </c-popover>
   <root-portal wx:if="{{mode === 'picker' && select.state !== 'closed'}}" enable="{{true}}">
     <view class="{{themeMode}} {{classes.pickerRoot}}" style="{{pickerThemeStyle}}" data-scope="select" data-part="picker-root" data-state="{{select.state}}" catchtouchmove="noop">
       <view class="{{classes.pickerBackdrop}}" data-scope="select" data-part="picker-backdrop" data-state="{{select.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" catchtap="handlePickerBackdropTap" />

@@ -1,5 +1,5 @@
 <view class="min-h-screen bg-muted text-default pb-12">
-  <demo-header title="Input Menu" badge="Form" subtitle="Autocomplete combobox built on floating-menu supporting live search, multiple tags, createItem & c-input-menu-item." />
+  <demo-header title="Input Menu" badge="Form" subtitle="Autocomplete combobox built on popover supporting live search, multiple tags, createItem & c-input-menu-item." />
   <view class="px-4 flex flex-col gap-4">
     <!-- 1. Basic Searchable Combobox -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">

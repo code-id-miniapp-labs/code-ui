@@ -67,11 +67,11 @@ import type {
 import type {
   FloatingAlign,
   FloatingMatchWidth,
-  FloatingMenuOpenChangeDetails,
-  FloatingMenuUI,
+  PopoverOpenChangeDetails,
+  PopoverUI,
   FloatingSide,
   FloatingTriggerMode,
-} from "@code-ui/floating-menu";
+} from "@code-ui/popover";
 import type {
   FormErrorDetails,
   FormRule,
@@ -1069,8 +1069,8 @@ export interface CuiToastElementProps extends CuiCommonElementProps {
   ) => void;
 }
 
-export interface CuiFloatingMenuElementProps extends CuiCommonElementProps {
-  ui?: FloatingMenuUI;
+export interface CuiPopoverElementProps extends CuiCommonElementProps {
+  ui?: PopoverUI;
   open?: boolean | null;
   defaultOpen?: boolean;
   disabled?: boolean;
@@ -1088,7 +1088,7 @@ export interface CuiFloatingMenuElementProps extends CuiCommonElementProps {
   maxHeight?: number;
   duration?: number;
   onOpenChange?: (
-    event: WechatMiniprogram.CustomEvent<FloatingMenuOpenChangeDetails>,
+    event: WechatMiniprogram.CustomEvent<PopoverOpenChangeDetails>,
   ) => void;
   onOpen?: (event: WechatMiniprogram.CustomEvent) => void;
   onClose?: (event: WechatMiniprogram.CustomEvent) => void;
