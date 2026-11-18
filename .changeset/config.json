@@ -14,5 +14,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["weapp-code-ui", "docs"]
+  "ignore": []
 }
