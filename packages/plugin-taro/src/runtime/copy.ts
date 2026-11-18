@@ -24,7 +24,7 @@ export async function copyComponents(
     sourcePath = path.join(
       appPath,
       "node_modules",
-      "@code-ui",
+      "@code-id-labs",
       "components",
       "dist",
     ),
@@ -32,7 +32,7 @@ export async function copyComponents(
       appPath,
       "dist",
       "miniprogram_npm",
-      "@code-ui",
+      "@code-id-labs",
       "components",
     ),
   } = options;
@@ -42,7 +42,7 @@ export async function copyComponents(
     await fs.access(sourcePath);
   } catch {
     console.warn(
-      `[code-ui] ⚠️  Could not find @code-ui/components at:\n  ${sourcePath}\n  Skipping asset copy. Is @code-ui/components installed?`,
+      `[code-ui] ⚠️  Could not find @code-id-labs/components at:\n  ${sourcePath}\n  Skipping asset copy. Is @code-id-labs/components installed?`,
     );
     return;
   }
@@ -129,9 +129,9 @@ export async function copyComponents(
     }
   }
 
-  // 3. Write miniprogram npm package.json descriptor so WeChat resolves @code-ui/components as a valid npm package
+  // 3. Write miniprogram npm package.json descriptor so WeChat resolves @code-id-labs/components as a valid npm package
   const pkgJson = {
-    name: "@code-ui/components",
+    name: "@code-id-labs/components",
     version: "0.0.1",
     miniprogram: ".",
   };

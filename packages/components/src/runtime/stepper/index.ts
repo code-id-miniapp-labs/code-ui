@@ -1,13 +1,13 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withStepper } from "@code-ui/miniapp/behaviors/stepper";
-import type { MiniAppEventLike } from "@code-ui/utils";
+import { withStepper } from "@code-id-labs/miniapp/behaviors/stepper";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
   stepperMachine,
   connectStepper,
   defaultStepperProps,
-} from "@code-ui/stepper";
+} from "@code-id-labs/stepper";
 import themeConfig from "virtual:cui/theme/stepper";
 import { tv } from "../../utils/variants";
 

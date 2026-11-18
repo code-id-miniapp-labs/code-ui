@@ -3,7 +3,7 @@ import { signal, effect } from "alien-signals";
 import { batch } from "../src/batch";
 import { MiniappMachine } from "../src/machine";
 import { connectToComponent } from "../src/connect";
-import { createMachine, bindable } from "@code-ui/core";
+import { createMachine, bindable } from "@code-id-labs/core";
 import { setupComputed } from "../src/behaviors/computed-behavior";
 
 function flush(): Promise<void> {

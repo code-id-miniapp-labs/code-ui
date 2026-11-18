@@ -4,7 +4,7 @@
 
 `c-slider` is an interactive slider input component supporting single-value and range (multi-thumb) selection, horizontal and vertical orientations, step increments, inverted direction, track marks, and form field integration.
 
-- **Architecture Tier**: Tier 2 Interactive (FSM-backed via `@code-ui/slider`), with Tier 3 Domain form field integration (`withFormField` from `@code-ui/miniapp/behaviors/form`).
+- **Architecture Tier**: Tier 2 Interactive (FSM-backed via `@code-id-labs/slider`), with Tier 3 Domain form field integration (`withFormField` from `@code-id-labs/miniapp/behaviors/form`).
 - **Compound Structure**: Standalone component (not a parent/child compound component). Integrates with a parent form host when `formContext` is provided.
 
 ---

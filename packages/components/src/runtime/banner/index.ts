@@ -1,5 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import {
   createMachineBehavior,
   createProperties,
@@ -9,7 +9,7 @@ import {
   cuiAppChildBehavior,
   setupAppRelations,
   withAppBannerInset,
-} from "@code-ui/miniapp/behaviors/app";
+} from "@code-id-labs/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
 import {
   resolveSubcomponentList,
@@ -23,7 +23,7 @@ import {
   bannerMachine,
   connectBanner,
   defaultBannerProps,
-} from "@code-ui/banner";
+} from "@code-id-labs/banner";
 import themeConfig from "virtual:cui/theme/banner";
 import { tv } from "../../utils/variants";
 

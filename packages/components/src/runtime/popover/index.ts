@@ -4,12 +4,12 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { createAppThemeBehavior } from "@code-ui/miniapp/behaviors/theme";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
 import {
   connectPopover,
   defaultPopoverProps,
   popoverMachine,
-} from "@code-ui/popover";
+} from "@code-id-labs/popover";
 import themeConfig from "virtual:cui/theme/popover";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";

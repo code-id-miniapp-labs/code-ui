@@ -1,7 +1,7 @@
-import { useComponentRef } from "@code-ui/composables";
-import type { UseComponentRefReturn } from "@code-ui/composables";
-import type { PinInputApi } from "@code-ui/pin-input";
-import type { InputApi } from "@code-ui/input";
+import { useComponentRef } from "@code-id-labs/composables";
+import type { UseComponentRefReturn } from "@code-id-labs/composables";
+import type { PinInputApi } from "@code-id-labs/pin-input";
+import type { InputApi } from "@code-id-labs/input";
 
 Page({
   data: {

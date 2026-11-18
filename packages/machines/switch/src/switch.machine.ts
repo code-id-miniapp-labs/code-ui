@@ -1,12 +1,12 @@
-import { createMachine } from "@code-ui/core";
-import type { BindableRefs, PropFn } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
+import type { BindableRefs, PropFn } from "@code-id-labs/core";
 import {
   cleanupFormFieldSync,
   createFormFieldComputed,
   hasFormFieldErrors,
   setupFormFieldSync,
-} from "@code-ui/form/context";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+} from "@code-id-labs/form/context";
+import { isNotEmpty, isNotNull } from "@code-id-labs/utils";
 import type { SwitchMachine, SwitchSchema } from "./switch.types";
 import { defaultSwitchProps } from "./switch.props";
 

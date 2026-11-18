@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isEqual } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isEqual } from "@code-id-labs/utils";
 import type {
   AccordionGroupContext,
   AccordionMachine,

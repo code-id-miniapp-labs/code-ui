@@ -1,11 +1,11 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import {
   cleanupFormFieldSync,
   createFormFieldComputed,
   hasFormFieldErrors,
   setupFormFieldSync,
-} from "@code-ui/form/context";
-import { isEqual, isNotEmpty, isNotNull } from "@code-ui/utils";
+} from "@code-id-labs/form/context";
+import { isEqual, isNotEmpty, isNotNull } from "@code-id-labs/utils";
 import { defaultInputMenuProps } from "./input-menu.props";
 import type {
   InputMenuMachine,

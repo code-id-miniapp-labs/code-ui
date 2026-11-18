@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import type { PropFn } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
+import type { PropFn } from "@code-id-labs/core";
 import { defaultTabsProps } from "./tabs.props";
 import type {
   NormalizedTabItem,

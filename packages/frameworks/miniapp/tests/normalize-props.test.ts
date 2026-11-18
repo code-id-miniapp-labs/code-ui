@@ -6,7 +6,7 @@ import {
   normalizeProps,
   toMiniEventName,
 } from "../src";
-import { buttonMachine, connectButton } from "@code-ui/button";
+import { buttonMachine, connectButton } from "@code-id-labs/button";
 import { MiniappMachine } from "../src/machine";
 
 describe("toMiniEventName", () => {

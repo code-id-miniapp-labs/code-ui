@@ -4,14 +4,14 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withInputMenuItem } from "@code-ui/miniapp/behaviors/input-menu";
+import { withInputMenuItem } from "@code-id-labs/miniapp/behaviors/input-menu";
 import {
   connectInputMenuItem,
   defaultInputMenuItemProps,
   inputMenuItemMachine,
   type InputMenuItemColor,
   type InputMenuItemSize,
-} from "@code-ui/input-menu-item";
+} from "@code-id-labs/input-menu-item";
 import themeConfig from "virtual:cui/theme/input-menu-item";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";

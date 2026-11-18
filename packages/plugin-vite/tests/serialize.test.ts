@@ -81,7 +81,7 @@ describe("serializeConfig", () => {
     const { serializeCompactThemeModule } = await import(
       "../src/core/serialize"
     );
-    const core = await import("@code-ui/core");
+    const core = await import("@code-id-labs/core");
 
     function evalModule(code: string): any {
       const cjs = code.replace(/export default\s+/, "module.exports = ");

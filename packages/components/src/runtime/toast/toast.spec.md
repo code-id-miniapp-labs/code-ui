@@ -5,9 +5,9 @@
 `c-toast` is a transient notification component for displaying brief feedback messages with optional icons, titles, descriptions, action buttons, a close trigger, and an animated auto-dismiss progress bar. Touching the toast pauses the auto-dismiss countdown and releasing resumes it.
 
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
-  - Backed by `toastMachine` and `connectToast` from `@code-ui/toast` via `createMachineBehavior` (`../_shared/machine`), plus `computedBehavior` and `createComponentOptions` (`../_shared/base`).
+  - Backed by `toastMachine` and `connectToast` from `@code-id-labs/toast` via `createMachineBehavior` (`../_shared/machine`), plus `computedBehavior` and `createComponentOptions` (`../_shared/base`).
   - Exports its machine API (`exportApi: true` under key `"toast"`) for programmatic control (`dismiss()`, `pause()`, `resume()`, `handleAction(index)`).
-- **Container Relation**: Registers `cuiAppChildBehavior` and `setupAppRelations(relations, "child")` from `@code-ui/miniapp/behaviors/app` so it can be managed as a child of the `c-app` container.
+- **Container Relation**: Registers `cuiAppChildBehavior` and `setupAppRelations(relations, "child")` from `@code-id-labs/miniapp/behaviors/app` so it can be managed as a child of the `c-app` container.
 
 ---
 
@@ -56,7 +56,7 @@ WeChat MiniProgram `<slot>` elements are static and do not support nested fallba
 
 **None** — The MiniProgram `<c-toast>` component does not emit `bind:*` custom events via `triggerEvent`. Touch pause/resume, close taps, and action button taps are handled internally by forwarding to the toast API.
 
-> Note: The underlying `@code-ui/toast` machine `ToastProps` type defines programmatic callbacks (`onOpenChange`, `onDismiss`, `onAction`, and `ToastAction.onClick`), which are not wired as MiniProgram component properties in the runtime wrapper.
+> Note: The underlying `@code-id-labs/toast` machine `ToastProps` type defines programmatic callbacks (`onOpenChange`, `onDismiss`, `onAction`, and `ToastAction.onClick`), which are not wired as MiniProgram component properties in the runtime wrapper.
 
 ---
 

@@ -1,14 +1,14 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
-import { isEqual } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
+import { isEqual } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
-import { withSelect } from "@code-ui/miniapp/behaviors/select";
-import { createAppThemeBehavior } from "@code-ui/miniapp/behaviors/theme";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
+import { withSelect } from "@code-id-labs/miniapp/behaviors/select";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
 import {
   connectSelect,
   defaultSelectProps,
@@ -16,7 +16,7 @@ import {
   type SelectContentConfig,
   type SelectItem,
   type SelectSize,
-} from "@code-ui/select";
+} from "@code-id-labs/select";
 import themeConfig from "virtual:cui/theme/select";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";

@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Represents an individual tab in a tabs group, acting either as a tab trigger button (`mode="trigger"`) or as a tab content panel (`mode="auto"` / panel mode).
-- **Architecture Tier**: **Tier 3 Domain** (uses FSM in `@code-ui/tabs-item` with `createMachineBehavior` and domain relation plugin `withTabsItem` from `@code-ui/miniapp/behaviors/tabs`).
+- **Architecture Tier**: **Tier 3 Domain** (uses FSM in `@code-id-labs/tabs-item` with `createMachineBehavior` and domain relation plugin `withTabsItem` from `@code-id-labs/miniapp/behaviors/tabs`).
 - **Compound Relationships**: Child component of `c-tabs`. Coordinates selection state, index, and inherited styling props (`orientation`, `variant`, `color`, `size`, `fitted`) with the parent `c-tabs` via `withTabsItem()`.
 
 ## Props

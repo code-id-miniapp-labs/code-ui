@@ -1,4 +1,4 @@
-import { defu } from "@code-ui/utils";
+import { defu } from "@code-id-labs/utils";
 import type { ColorSystem, ExtractSlots } from "./theme";
 import type * as componentThemes from "./theme/definitions";
 
@@ -213,7 +213,7 @@ export interface CodeUIConfig {
  *
  * @example
  * ```ts
- * import { defineConfig } from '@code-ui/core'
+ * import { defineConfig } from '@code-id-labs/core'
  *
  * export default defineConfig({
  *   prefix: 'cui',

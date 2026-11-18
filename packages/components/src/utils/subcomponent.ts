@@ -1,4 +1,4 @@
-import { defu } from "@code-ui/utils";
+import { defu } from "@code-id-labs/utils";
 
 /**
  * Merges a Nuxt UI v4-style boolean / string / object subcomponent prop with

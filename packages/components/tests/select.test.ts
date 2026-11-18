@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { transformWxmlSlots } from "@code-ui/compiler";
+import { transformWxmlSlots } from "@code-id-labs/compiler";
 import {
   popoverTheme as createPopoverTheme,
   selectItemTheme as createSelectItemTheme,
   selectTheme as createSelectTheme,
-} from "@code-ui/core";
-import { MiniappMachine, connectToComponent } from "@code-ui/miniapp";
-import { connectSelect, selectMachine } from "@code-ui/select";
+} from "@code-id-labs/core";
+import { MiniappMachine, connectToComponent } from "@code-id-labs/miniapp";
+import { connectSelect, selectMachine } from "@code-id-labs/select";
 import { resolveSlots } from "../src/utils/ui";
 import { tv } from "../src/utils/variants";
 
@@ -94,7 +94,7 @@ describe("Select, SelectItem & Popover runtime & theme resolution", () => {
     expect(fmInlineSlots.root).toContain("z-50");
   });
 
-  it("detects slots on c-select and c-select-item via @code-ui/compiler", () => {
+  it("detects slots on c-select and c-select-item via @code-id-labs/compiler", () => {
     const source = `
       <c-select placeholder="Assign">
         <c-icon slot="leading" name="i-lucide-user" />

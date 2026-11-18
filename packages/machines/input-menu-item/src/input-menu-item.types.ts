@@ -2,16 +2,16 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
 import type {
   InputMenuColor,
   InputMenuGroupContext,
   InputMenuItemType,
   InputMenuScalarValue,
   InputMenuSize,
-} from "@code-ui/input-menu";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/input-menu";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./input-menu-item.anatomy";
 
 export type InputMenuItemState = "selected" | "unselected";

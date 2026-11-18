@@ -341,8 +341,8 @@ describe("app-wrapper", () => {
       expect(jsonResult).not.toBeNull();
       const parsedJson = JSON.parse(jsonResult?.code ?? "{}");
       expect(parsedJson.usingComponents).toEqual({
-        "c-button": "@code-ui/components/runtime/button/index",
-        "c-app": "@code-ui/components/runtime/app/index",
+        "c-button": "@code-id-labs/components/runtime/button/index",
+        "c-app": "@code-id-labs/components/runtime/app/index",
       });
 
       // Transform WXML
@@ -390,7 +390,7 @@ describe("app-wrapper", () => {
       expect(jsonResult).not.toBeNull();
       const parsedJson = JSON.parse(jsonResult?.code ?? "{}");
       expect(parsedJson.usingComponents).toEqual({
-        "c-app": "@code-ui/components/runtime/app/index",
+        "c-app": "@code-id-labs/components/runtime/app/index",
       });
     });
 
@@ -425,7 +425,7 @@ describe("app-wrapper", () => {
       expect(jsonResult).not.toBeNull();
       const parsedJson = JSON.parse(jsonResult?.code ?? "{}");
       expect(parsedJson.usingComponents).toEqual({
-        "c-button": "@code-ui/components/runtime/button/index",
+        "c-button": "@code-id-labs/components/runtime/button/index",
       });
       expect(parsedJson.usingComponents["c-app"]).toBeUndefined();
     });
@@ -469,7 +469,7 @@ describe("app-wrapper", () => {
         (bundle["pages/demo/index.json"] as any).source,
       );
       expect(parsedJson.usingComponents).toEqual({
-        "c-app": "@code-ui/components/runtime/app/index",
+        "c-app": "@code-id-labs/components/runtime/app/index",
       });
 
       // Test disk syncing
@@ -499,7 +499,7 @@ describe("app-wrapper", () => {
         fs.readFileSync(path.join(distPageDir, "index.json"), "utf-8"),
       );
       expect(diskJson.usingComponents).toEqual({
-        "c-app": "@code-ui/components/runtime/app/index",
+        "c-app": "@code-id-labs/components/runtime/app/index",
       });
     });
   });

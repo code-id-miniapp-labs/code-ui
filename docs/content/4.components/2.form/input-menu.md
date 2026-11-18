@@ -48,7 +48,7 @@ Page({
 ```json [index.json]
 {
   "usingComponents": {
-    "c-input-menu": "@code-ui/components/input-menu/index"
+    "c-input-menu": "@code-id-labs/components/input-menu/index"
   }
 }
 ```
@@ -206,8 +206,8 @@ Page({
 ```json [index.json]
 {
   "usingComponents": {
-    "c-input-menu": "@code-ui/components/input-menu/index",
-    "c-input-menu-item": "@code-ui/components/input-menu-item/index"
+    "c-input-menu": "@code-id-labs/components/input-menu/index",
+    "c-input-menu-item": "@code-id-labs/components/input-menu-item/index"
   }
 }
 ```

@@ -1,5 +1,5 @@
-import { createMachine, type PropFn } from "@code-ui/core";
-import type { InputMenuScalarValue } from "@code-ui/input-menu";
+import { createMachine, type PropFn } from "@code-id-labs/core";
+import type { InputMenuScalarValue } from "@code-id-labs/input-menu";
 import { defaultInputMenuItemProps } from "./input-menu-item.props";
 import type {
   InputMenuItemMachine,

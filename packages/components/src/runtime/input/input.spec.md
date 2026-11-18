@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Styled, accessible single-line text input component wrapping the WeChat MiniProgram native `<input>`, with controlled/uncontrolled value support, clear button, loading indicator, leading/trailing icons or slots, and form field integration.
-- **Architecture Tier**: **Tier 3 Domain** (Interactive / Stateful component backed by `@code-ui/input` and domain form-field behavior `withFormField` from `@code-ui/miniapp/behaviors/form`, importing from `../_shared/base` and `../_shared/machine`).
+- **Architecture Tier**: **Tier 3 Domain** (Interactive / Stateful component backed by `@code-id-labs/input` and domain form-field behavior `withFormField` from `@code-id-labs/miniapp/behaviors/form`, importing from `../_shared/base` and `../_shared/machine`).
 - **Related Components**:
   - Integrates with parent form / form-field contexts (e.g., `<c-form>`, `c-form-field`) via `withFormField()` (`form`, `name`, `rules`, `validateOn`, `fieldDisabled`, and inherited `fieldSize` fallback when `size` is unset).
   - Uses `c-icon` internally for leading, trailing, clear, and loading icons.

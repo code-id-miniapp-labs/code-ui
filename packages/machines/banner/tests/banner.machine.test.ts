@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { diffSnapshot } from "@code-ui/utils";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { diffSnapshot } from "@code-id-labs/utils";
 import { bannerMachine, connectBanner } from "../src";
 
 function flush(): Promise<void> {

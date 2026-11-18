@@ -1,17 +1,17 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withAccordion } from "@code-ui/miniapp/behaviors/accordion";
+import { withAccordion } from "@code-id-labs/miniapp/behaviors/accordion";
 import { resolveSlots } from "../../utils/ui";
 import {
   accordionMachine,
   connectAccordion,
   defaultAccordionProps,
-} from "@code-ui/accordion";
+} from "@code-id-labs/accordion";
 import themeConfig from "virtual:cui/theme/accordion";
 import { tv } from "../../utils/variants";
 

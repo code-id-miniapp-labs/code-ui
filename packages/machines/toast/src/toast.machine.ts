@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isNotNull } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isNotNull } from "@code-id-labs/utils";
 import type {
   ToastMachine,
   ToastParams,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tabsTheme } from "../src";
 
-describe("tabsTheme (@code-ui/core)", () => {
+describe("tabsTheme (@code-id-labs/core)", () => {
   it("provides all tabs container anatomy slots", () => {
     const theme = tabsTheme();
     expect(theme.slots).toHaveProperty("root");

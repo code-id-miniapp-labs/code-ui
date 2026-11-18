@@ -1,9 +1,9 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import { effect, signal } from "alien-signals";
-import { onProvide } from "@code-ui/context";
-import { getFormHostKey, injectFormHost } from "@code-ui/form/context";
-import type { FormHostContext, FormRule } from "@code-ui/form";
-import { isEmpty } from "@code-ui/utils";
+import { onProvide } from "@code-id-labs/context";
+import { getFormHostKey, injectFormHost } from "@code-id-labs/form/context";
+import type { FormHostContext, FormRule } from "@code-id-labs/form";
+import { isEmpty } from "@code-id-labs/utils";
 import { defaultFormFieldProps } from "./form-field.props";
 import type {
   FormFieldParams,

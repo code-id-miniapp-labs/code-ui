@@ -6,7 +6,7 @@ import {
   type AppThemeState,
   type ResolvedThemeMode,
   type ThemeRegistry,
-} from "@code-ui/miniapp/behaviors/theme";
+} from "@code-id-labs/miniapp/behaviors/theme";
 
 export type {
   AppColorMode,

@@ -2,9 +2,9 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./form.anatomy";
 
 export type FormState =

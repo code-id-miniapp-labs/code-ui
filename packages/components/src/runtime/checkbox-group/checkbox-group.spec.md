@@ -5,8 +5,8 @@
 - **Component**: `c-checkbox-group` (`packages/components/src/runtime/checkbox-group/`)
 - **Purpose**: Manages a group of checkboxes with shared controlled or uncontrolled selection state (`value` / `defaultValue`), selection bounds (`min` / `max`), layout `orientation`, visual `variant` / `color` / `size`, optional `legend`, and form field integration. Supports both data-driven rendering via `items` and declarative compound composition via the default `<slot />`.
 - **Architecture Tier**: **Tier 3 Domain**
-  - Uses the stateful FSM in `@code-ui/checkbox-group` (`checkboxGroupMachine` + `connectCheckboxGroup`).
-  - Integrates domain relation behaviors `withCheckboxGroup()` (from `@code-ui/miniapp/behaviors/checkbox`) and `withFormField()` (from `@code-ui/miniapp/behaviors/form`).
+  - Uses the stateful FSM in `@code-id-labs/checkbox-group` (`checkboxGroupMachine` + `connectCheckboxGroup`).
+  - Integrates domain relation behaviors `withCheckboxGroup()` (from `@code-id-labs/miniapp/behaviors/checkbox`) and `withFormField()` (from `@code-id-labs/miniapp/behaviors/form`).
 - **Related Components**:
   - **Child**: `c-checkbox` — rendered automatically via `wx:for` when `items` is provided, or placed directly inside `<c-checkbox-group>` as compound children linked through `withCheckboxGroup()`.
   - **Parent (optional)**: `c-form` / `c-form-field` — integrates validation, `disabled`, `readOnly`, `invalid`, and `fieldSize` via `withFormField()`.

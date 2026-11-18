@@ -1,7 +1,7 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withCheckboxItem } from "@code-ui/miniapp/behaviors/checkbox";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withCheckboxItem } from "@code-id-labs/miniapp/behaviors/checkbox";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   checkboxMachine,
@@ -10,7 +10,7 @@ import {
   type CheckboxColor,
   type CheckboxSize,
   type CheckboxVariant,
-} from "@code-ui/checkbox";
+} from "@code-id-labs/checkbox";
 import themeConfig from "virtual:cui/theme/checkbox";
 import { tv } from "../../utils/variants";
 

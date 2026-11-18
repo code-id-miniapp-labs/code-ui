@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Renders a single option, group heading (`type="label"`), or divider (`type="separator"`) inside an input menu, supporting leading/trailing icons, label/description text, custom slots, and selection coordination.
-- **Architecture Tier**: **Tier 3 — Domain / Stateful** (uses `@code-ui/input-menu-item` machine via `createMachineBehavior` and the `withInputMenuItem` relation plugin from `@code-ui/miniapp/behaviors/input-menu`).
+- **Architecture Tier**: **Tier 3 — Domain / Stateful** (uses `@code-id-labs/input-menu-item` machine via `createMachineBehavior` and the `withInputMenuItem` relation plugin from `@code-id-labs/miniapp/behaviors/input-menu`).
 - **Compound Relationships**: Child component of `c-input-menu`. Inherits `color`, `size`, and selected icon defaults from its parent `c-input-menu` when not explicitly overridden on the item.
 
 ---

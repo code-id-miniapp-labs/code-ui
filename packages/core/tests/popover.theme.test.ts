@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { popoverTheme } from "../src";
 
-describe("popoverTheme (@code-ui/core)", () => {
+describe("popoverTheme (@code-id-labs/core)", () => {
   it("provides all popover anatomy slots", () => {
     const theme = popoverTheme();
     expect(theme.slots).toHaveProperty("root");

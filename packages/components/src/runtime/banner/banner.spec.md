@@ -4,8 +4,8 @@
 
 - **Purpose**: Displays a fixed or inline announcement/notification banner with optional leading icon, image, badge, caption, title, description, action buttons, and dismiss/more controls.
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
-  - Uses `bannerMachine` and `connectBanner` from `@code-ui/banner`, importing from `../_shared/base` and `../_shared/machine`.
-  - Also integrates with `@code-ui/miniapp/behaviors/app` (`cuiAppChildBehavior`, `setupAppRelations(..., "child")`, `withAppBannerInset()`) so fixed banners can coordinate inset offsets with an ancestor `c-app` container.
+  - Uses `bannerMachine` and `connectBanner` from `@code-id-labs/banner`, importing from `../_shared/base` and `../_shared/machine`.
+  - Also integrates with `@code-id-labs/miniapp/behaviors/app` (`cuiAppChildBehavior`, `setupAppRelations(..., "child")`, `withAppBannerInset()`) so fixed banners can coordinate inset offsets with an ancestor `c-app` container.
 - **Related Components**:
   - **Parent (optional)**: `c-app` (via MiniProgram child relation when `autoInset` is enabled).
   - **Internal subcomponents**: `c-icon`, `c-badge`, and `c-button`.

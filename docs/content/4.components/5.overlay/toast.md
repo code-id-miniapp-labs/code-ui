@@ -312,7 +312,7 @@ Page({
 `<c-toast>` does not emit `bind:*` custom events via `triggerEvent`. Touch pause/resume, close taps, and action button taps are handled internally by forwarding to the toast API.
 
 ::callout{icon="i-lucide-triangle-alert" color="warning"}
-The underlying `@code-ui/toast` `ToastProps` type defines programmatic callbacks (`onOpenChange`, `onDismiss`, `onAction`, and `ToastAction.onClick`), which are not wired as component properties in the runtime wrapper.
+The underlying `@code-id-labs/toast` `ToastProps` type defines programmatic callbacks (`onOpenChange`, `onDismiss`, `onAction`, and `ToastAction.onClick`), which are not wired as component properties in the runtime wrapper.
 ::
 
 ## Theme

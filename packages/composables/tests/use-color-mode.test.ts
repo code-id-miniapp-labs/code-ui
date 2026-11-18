@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { __resetThemeRegistry } from "@code-ui/miniapp/behaviors/theme";
+import { __resetThemeRegistry } from "@code-id-labs/miniapp/behaviors/theme";
 import { useColorMode } from "../src/use-color-mode";
 
 describe("useColorMode Composable", () => {

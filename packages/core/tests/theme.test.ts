@@ -10,7 +10,7 @@ import {
   buttonTheme,
 } from "../src";
 
-describe("@code-ui/core color generation", () => {
+describe("@code-id-labs/core color generation", () => {
   it("includes all standard semantic colors in DEFAULT_THEME_COLORS", () => {
     expect(DEFAULT_THEME_COLORS).toEqual([
       "primary",

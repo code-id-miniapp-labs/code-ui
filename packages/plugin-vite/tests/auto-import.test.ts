@@ -43,8 +43,8 @@ describe("auto-import", () => {
     expect(res).not.toBeNull();
     const parsed = JSON.parse(res?.code ?? "{}");
     expect(parsed.usingComponents).toEqual({
-      "c-button": "@code-ui/components/runtime/button/index",
-      "c-drawer": "@code-ui/components/runtime/drawer/index",
+      "c-button": "@code-id-labs/components/runtime/button/index",
+      "c-drawer": "@code-id-labs/components/runtime/drawer/index",
     });
   });
 
@@ -66,7 +66,7 @@ describe("auto-import", () => {
     const parsed = JSON.parse(jsonBody);
     expect(parsed.usingComponents).toEqual({
       "c-button": "/custom/button",
-      "c-drawer": "@code-ui/components/runtime/drawer/index",
+      "c-drawer": "@code-id-labs/components/runtime/drawer/index",
     });
   });
 
@@ -78,7 +78,7 @@ describe("auto-import", () => {
 
     const first = transformAutoImport(`{}`, jsonPath, { enable: true });
     expect(JSON.parse(first?.code ?? "{}").usingComponents).toEqual({
-      "c-button": "@code-ui/components/runtime/button/index",
+      "c-button": "@code-id-labs/components/runtime/button/index",
     });
 
     // Update WXML and invalidate cache
@@ -87,8 +87,8 @@ describe("auto-import", () => {
 
     const second = transformAutoImport(`{}`, jsonPath, { enable: true });
     expect(JSON.parse(second?.code ?? "{}").usingComponents).toEqual({
-      "c-button": "@code-ui/components/runtime/button/index",
-      "c-drawer": "@code-ui/components/runtime/drawer/index",
+      "c-button": "@code-id-labs/components/runtime/button/index",
+      "c-drawer": "@code-id-labs/components/runtime/drawer/index",
     });
   });
 
@@ -112,7 +112,7 @@ describe("auto-import", () => {
 
     const updated = JSON.parse(bundle["pages/home/index.json"].source);
     expect(updated.usingComponents).toEqual({
-      "c-drawer": "@code-ui/components/runtime/drawer/index",
+      "c-drawer": "@code-id-labs/components/runtime/drawer/index",
     });
   });
 
@@ -131,7 +131,7 @@ describe("auto-import", () => {
       path.join(distPageDir, "index.json"),
       JSON.stringify({
         usingComponents: {
-          "c-button": "@code-ui/components/runtime/button/index",
+          "c-button": "@code-id-labs/components/runtime/button/index",
         },
       }),
       "utf-8",
@@ -143,10 +143,10 @@ describe("auto-import", () => {
       fs.readFileSync(path.join(distPageDir, "index.json"), "utf-8"),
     );
     expect(updated.usingComponents).toEqual({
-      "c-button": "@code-ui/components/runtime/button/index",
-      "c-card": "@code-ui/components/runtime/card/index",
-      "c-chip": "@code-ui/components/runtime/chip/index",
-      "c-pin-input": "@code-ui/components/runtime/pin-input/index",
+      "c-button": "@code-id-labs/components/runtime/button/index",
+      "c-card": "@code-id-labs/components/runtime/card/index",
+      "c-chip": "@code-id-labs/components/runtime/chip/index",
+      "c-pin-input": "@code-id-labs/components/runtime/pin-input/index",
     });
   });
 });

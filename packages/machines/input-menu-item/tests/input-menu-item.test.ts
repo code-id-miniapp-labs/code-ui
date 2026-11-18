@@ -2,8 +2,8 @@ import {
   connectInputMenu,
   inputMenuMachine,
   type InputMenuGroupContext,
-} from "@code-ui/input-menu";
-import { MiniappMachine } from "@code-ui/miniapp";
+} from "@code-id-labs/input-menu";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { describe, expect, it, vi } from "vitest";
 import { connectInputMenuItem, inputMenuItemMachine } from "../src";
 

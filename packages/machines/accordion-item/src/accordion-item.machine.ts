@@ -1,6 +1,6 @@
-import { createMachine } from "@code-ui/core";
-import { isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
-import type { AccordionGroupContext } from "@code-ui/accordion";
+import { createMachine } from "@code-id-labs/core";
+import { isMiniApp, isNotNull, queryRect } from "@code-id-labs/utils";
+import type { AccordionGroupContext } from "@code-id-labs/accordion";
 import type {
   AccordionItemMachine,
   AccordionItemParams,

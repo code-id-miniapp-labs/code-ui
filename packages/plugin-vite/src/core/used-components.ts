@@ -94,7 +94,7 @@ function componentNameFromPath(
 }
 
 /**
- * Collect the `@code-ui/components` names referenced by WXML tags or
+ * Collect the `@code-id-labs/components` names referenced by WXML tags or
  * `usingComponents` entries under `root`.
  *
  * Returns `null` when the scan cannot safely determine the used set, so the

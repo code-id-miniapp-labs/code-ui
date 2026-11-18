@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { drawerMachine } from "../src/drawer.machine";
 import { connectDrawer } from "../src/drawer.connect";
 

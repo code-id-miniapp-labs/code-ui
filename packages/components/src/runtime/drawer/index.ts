@@ -1,4 +1,4 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties } from "../_shared/machine";
 import {
@@ -6,7 +6,7 @@ import {
   notifyScaleGestureDragMove,
   notifyScaleGestureDragStart,
   withAppScale,
-} from "@code-ui/miniapp/behaviors/app";
+} from "@code-id-labs/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
 import { resolveTriggerButtonProps } from "../../utils/subcomponent";
 
@@ -15,7 +15,7 @@ import {
   drawerMachine,
   connectDrawer,
   defaultDrawerProps,
-} from "@code-ui/drawer";
+} from "@code-id-labs/drawer";
 import themeConfig from "virtual:cui/theme/drawer";
 import { tv } from "../../utils/variants";
 

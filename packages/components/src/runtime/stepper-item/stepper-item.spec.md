@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Renders an individual step inside a `<c-stepper>` sequence, displaying a clickable step indicator (step number, icon, completed icon, or custom slot), title, description, extra content, and a connecting separator line.
-- **Architecture Tier**: **Tier 3 Domain** (stateful child component backed by `@code-ui/stepper-item` FSM + connect layer and linked to `<c-stepper>` via `withStepperItem()` from `@code-ui/miniapp/behaviors/stepper`).
+- **Architecture Tier**: **Tier 3 Domain** (stateful child component backed by `@code-id-labs/stepper-item` FSM + connect layer and linked to `<c-stepper>` via `withStepperItem()` from `@code-id-labs/miniapp/behaviors/stepper`).
 - **Related Components**: Parent `<c-stepper>` (provides step state, count, linear mode, orientation, color, and size context via component relations).
 
 ---

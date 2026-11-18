@@ -2,16 +2,16 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { PopoverContentConfig } from "@code-ui/popover";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
+import type { PopoverContentConfig } from "@code-id-labs/popover";
 import type {
   BoundFormField,
   FormHostContext,
   FormRule,
   FormValidateOn,
-} from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/form";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./select.anatomy";
 
 export type SelectState = "closed" | "open" | "closing";

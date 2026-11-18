@@ -1,11 +1,11 @@
 declare module "virtual:cui/config" {
-  import type { CodeUIConfig } from "@code-ui/core";
+  import type { CodeUIConfig } from "@code-id-labs/core";
   const config: CodeUIConfig;
   export default config;
 }
 
 declare module "virtual:cui-config" {
-  import type { CodeUIConfig } from "@code-ui/core";
+  import type { CodeUIConfig } from "@code-id-labs/core";
   const config: CodeUIConfig;
   export default config;
 }

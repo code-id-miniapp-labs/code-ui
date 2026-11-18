@@ -4,8 +4,8 @@
 
 - **Purpose**: Accessible single-selection radio group container supporting both data-driven rendering (`items`) and declarative compound composition (`<c-radio>` children), with optional form-field integration.
 - **Architecture Tier**: **Tier 3 — Domain / Interactive Compound Component**
-  - Driven by the `@code-ui/radio-group` state machine (`radioGroupMachine` + `connectRadioGroup`) via `createMachineBehavior` (`exportApi: true`).
-  - Integrates domain relation behaviors `withRadioGroup()` (`@code-ui/miniapp/behaviors/radio`) and `withFormField()` (`@code-ui/miniapp/behaviors/form`).
+  - Driven by the `@code-id-labs/radio-group` state machine (`radioGroupMachine` + `connectRadioGroup`) via `createMachineBehavior` (`exportApi: true`).
+  - Integrates domain relation behaviors `withRadioGroup()` (`@code-id-labs/miniapp/behaviors/radio`) and `withFormField()` (`@code-id-labs/miniapp/behaviors/form`).
 - **Related Components**:
   - Child: `c-radio` (automatically rendered via `wx:for` when `items` is provided, or placed declaratively inside the default `<slot />`).
   - Parent (optional): `c-form` / `c-form-field` via `withFormField()`.

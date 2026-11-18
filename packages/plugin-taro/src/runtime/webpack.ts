@@ -1,6 +1,6 @@
 import type { CodeUIPluginOptions } from "../types";
 
-const CODE_UI_INCLUDE_PATTERN = /@code-ui/;
+const CODE_UI_INCLUDE_PATTERN = /@code-id-labs/;
 
 export function applyWebpackRules(
   chain: any,

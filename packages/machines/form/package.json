@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/form",
+  "name": "@code-id-labs/form",
   "version": "0.0.1",
   "private": true,
   "description": "Form state machine, validation rules, and reactive host context for code-ui",
@@ -36,10 +36,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/anatomy": "workspace:*",
-    "@code-ui/context": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/anatomy": "workspace:*",
+    "@code-id-labs/context": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

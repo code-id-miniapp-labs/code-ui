@@ -1,11 +1,11 @@
-import type { MiniAppRect } from "@code-ui/utils";
+import type { MiniAppRect } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   sliderMachine,
@@ -13,7 +13,7 @@ import {
   defaultSliderProps,
   type SliderPoint,
   type SliderSize,
-} from "@code-ui/slider";
+} from "@code-id-labs/slider";
 import themeConfig from "virtual:cui/theme/slider";
 import { tv } from "../../utils/variants";
 

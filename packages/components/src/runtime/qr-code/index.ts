@@ -7,7 +7,7 @@ import {
   defaultQrCodeProps,
   type QrCodeApi,
   type QrCodeEncodingOptions,
-} from "@code-ui/qr-code";
+} from "@code-id-labs/qr-code";
 import themeConfig from "virtual:cui/theme/qr-code";
 import { tv } from "../../utils/variants";
 

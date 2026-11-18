@@ -1,11 +1,11 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import type { MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -13,7 +13,7 @@ import {
   connectInput,
   defaultInputProps,
   type InputSize,
-} from "@code-ui/input";
+} from "@code-id-labs/input";
 import themeConfig from "virtual:cui/theme/input";
 import { tv } from "../../utils/variants";
 

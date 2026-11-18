@@ -1,6 +1,6 @@
 import { computed, setActiveSub, signal } from "alien-signals";
-import { isFunction } from "@code-ui/utils";
-import type { Bindable, BindableFn, BindableParams } from "@code-ui/core";
+import { isFunction } from "@code-id-labs/utils";
+import type { Bindable, BindableFn, BindableParams } from "@code-id-labs/core";
 
 export const bindable: BindableFn = Object.assign(
   function bindable<T>(props: () => BindableParams<T>): Bindable<T> {

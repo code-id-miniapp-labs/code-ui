@@ -1,4 +1,4 @@
-import type { MachineSchema } from "@code-ui/core";
+import type { MachineSchema } from "@code-id-labs/core";
 import type { MiniappMachine } from "../machine";
 import type { MachinePlugin } from "../plugin";
 import {

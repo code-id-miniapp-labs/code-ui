@@ -52,7 +52,7 @@ function readNonEmptyString(value: unknown): string | undefined {
 
 /**
  * Resolves a component instance's ID consistently across native WXML `id`,
- * component `data.id`, and `@code-ui/miniapp`'s cached `__codeUiId`.
+ * component `data.id`, and `@code-id-labs/miniapp`'s cached `__codeUiId`.
  * When `prefix` is given and no ID exists yet, generates and caches one.
  */
 export function resolveInstanceId(

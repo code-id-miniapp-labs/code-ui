@@ -1,8 +1,8 @@
 import { MiniappMachine } from "./machine";
 import { connectToComponent } from "./connect";
 import type { ConnectFn } from "./connect";
-import type { Machine, MachineSchema } from "@code-ui/core";
-import { isObject, runIfFn } from "@code-ui/utils";
+import type { Machine, MachineSchema } from "@code-id-labs/core";
+import { isObject, runIfFn } from "@code-id-labs/utils";
 import type { MachinePlugin } from "./plugin";
 
 const instanceIds = new WeakMap<object, string>();

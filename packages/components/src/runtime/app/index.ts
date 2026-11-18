@@ -4,12 +4,12 @@ import {
   createAppHostBehavior,
   cuiAppParentBehavior,
   setupAppRelations,
-} from "@code-ui/miniapp/behaviors/app";
-import type { AppMetrics } from "@code-ui/miniapp/behaviors/app";
-import { createToastHostBehavior } from "@code-ui/miniapp/behaviors/toast";
-import type { ToastEntry } from "@code-ui/miniapp/behaviors/toast";
-import { createAppThemeBehavior } from "@code-ui/miniapp/behaviors/theme";
-import type { ResolvedThemeMode } from "@code-ui/miniapp/behaviors/theme";
+} from "@code-id-labs/miniapp/behaviors/app";
+import type { AppMetrics } from "@code-id-labs/miniapp/behaviors/app";
+import { createToastHostBehavior } from "@code-id-labs/miniapp/behaviors/toast";
+import type { ToastEntry } from "@code-id-labs/miniapp/behaviors/toast";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
+import type { ResolvedThemeMode } from "@code-id-labs/miniapp/behaviors/theme";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/app";
 import { tv } from "../../utils/variants";

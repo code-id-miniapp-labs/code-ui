@@ -1,4 +1,4 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -12,7 +12,7 @@ import {
   defaultSwipeCellProps,
   type SwipeCellApi,
   type SwipeSide,
-} from "@code-ui/swipe-cell";
+} from "@code-id-labs/swipe-cell";
 import themeConfig from "virtual:cui/theme/swipe-cell";
 import { tv } from "../../utils/variants";
 

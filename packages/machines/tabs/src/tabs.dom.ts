@@ -1,4 +1,4 @@
-import { itemPartId, optPartId, partId } from "@code-ui/core";
+import { itemPartId, optPartId, partId } from "@code-id-labs/core";
 
 export interface TabsDomScope {
   id?: string | undefined;

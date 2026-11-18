@@ -9,7 +9,7 @@ import {
   partId,
 } from "../src";
 
-describe("scope & DOM id / attribute helpers (@code-ui/core)", () => {
+describe("scope & DOM id / attribute helpers (@code-id-labs/core)", () => {
 
   it("creates scope with id, ids and component references", () => {
     const scope = createScope({ id: "my-btn", ids: { root: "custom-root" } });

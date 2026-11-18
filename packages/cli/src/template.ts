@@ -51,8 +51,8 @@ export function generateStarterFiles(
           postinstall: "wv prepare",
         },
         dependencies: {
-          "@code-ui/components": codeUiRange,
-          "@code-ui/plugin-vite": codeUiRange,
+          "@code-id-labs/components": codeUiRange,
+          "@code-id-labs/plugin-vite": codeUiRange,
         },
         devDependencies: {
           ...(iconCollection !== "lucide"
@@ -130,7 +130,7 @@ export function generateStarterFiles(
     ) + "\n",
 
     "weapp-vite.config.ts": `import { defineConfig } from "weapp-vite";
-import { codeUI } from "@code-ui/plugin-vite";
+import { codeUI } from "@code-id-labs/plugin-vite";
 
 export default defineConfig(({ mode }) => ({
   weapp: {
@@ -169,7 +169,7 @@ export default defineConfig(({ mode }) => ({
 }));
 `,
 
-    "cui.config.ts": `import { defineConfig } from "@code-ui/plugin-vite";
+    "cui.config.ts": `import { defineConfig } from "@code-id-labs/plugin-vite";
 
 export default defineConfig({
   prefix: "${prefix}",
@@ -193,7 +193,7 @@ export default defineConfig({
 `,
 
     "src/app.css": `@import "tailwindcss";
-@import "@code-ui/components";
+@import "@code-id-labs/components";
 
 * {
   box-sizing: border-box;

@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isEmpty, isEqual, isPromise } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isEmpty, isEqual, isPromise } from "@code-id-labs/utils";
 import { provideFormHost } from "./form.context";
 import * as dom from "./form.dom";
 import { defaultFormProps } from "./form.props";

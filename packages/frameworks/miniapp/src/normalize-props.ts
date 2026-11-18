@@ -1,5 +1,5 @@
 /**
- * @code-ui/miniapp - normalizeProps
+ * @code-id-labs/miniapp - normalizeProps
  *
  */
 
@@ -7,7 +7,7 @@ import {
   createNormalizer,
   type NormalizeProps,
   type PropTypes,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import { normalizeEvent } from "./normalize-event";
 
 export { createNormalizer, type NormalizeProps, type PropTypes };

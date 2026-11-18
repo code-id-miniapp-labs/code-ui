@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "src/",
-  "projectname": "@code-ui/components",
+  "projectname": "@code-id-labs/components",
   "description": "Code UI components",
   "appid": "touristappid",
   "setting": {

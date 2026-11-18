@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bannerTheme as createBannerTheme } from "@code-ui/core";
+import { bannerTheme as createBannerTheme } from "@code-id-labs/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
@@ -23,7 +23,7 @@ function resolveIcon(data: {
   return "";
 }
 
-describe("bannerTheme runtime resolution (@code-ui/components)", () => {
+describe("bannerTheme runtime resolution (@code-id-labs/components)", () => {
   it("resolves top fixed banner classes", () => {
     const slots = resolveSlots(
       bannerTheme({

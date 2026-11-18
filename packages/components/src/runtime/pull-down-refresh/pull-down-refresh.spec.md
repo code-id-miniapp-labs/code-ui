@@ -5,7 +5,7 @@
 `c-pull-down-refresh` is a scrollable container for WeChat MiniProgram (`<scroll-view>`) that supports pull-to-refresh gestures, configurable thresholds and status text, animated snap/collapse transitions, and optional custom header and loading indicator slots.
 
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
-  - Driven by the `@code-ui/pull-down-refresh` finite state machine (`pullDownRefreshMachine`, `connectPullDownRefresh`) and WXS gesture handling (`pull-down-refresh-gesture.wxs`).
+  - Driven by the `@code-id-labs/pull-down-refresh` finite state machine (`pullDownRefreshMachine`, `connectPullDownRefresh`) and WXS gesture handling (`pull-down-refresh-gesture.wxs`).
   - Runtime component (`packages/components/src/runtime/pull-down-refresh/index.ts`) binds `createMachineBehavior` (with `exportApi: true`) and `computedBehavior`, resolves theme slot classes, and exposes imperative `refresh()` and `close()` component methods.
 - **Compound Relationships**: Standalone container component (no parent/child behavior relations). Internally renders `<c-icon>` as the default loading indicator when no `indicator` slot is provided.
 

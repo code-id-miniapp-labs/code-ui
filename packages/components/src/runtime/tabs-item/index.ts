@@ -4,14 +4,14 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withTabsItem } from "@code-ui/miniapp/behaviors/tabs";
+import { withTabsItem } from "@code-id-labs/miniapp/behaviors/tabs";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
   tabsItemMachine,
   connectTabsItem,
   defaultTabsItemProps,
-} from "@code-ui/tabs-item";
+} from "@code-id-labs/tabs-item";
 import themeConfig from "virtual:cui/theme/tabs-item";
 import { tv } from "../../utils/variants";
 

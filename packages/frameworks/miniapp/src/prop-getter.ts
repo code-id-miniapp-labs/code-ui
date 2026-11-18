@@ -1,5 +1,5 @@
 /**
- * @code-ui/miniapp - createMachinePropGetter
+ * @code-id-labs/miniapp - createMachinePropGetter
  *
  * Wraps the MiniApp component instance and user props so the FSM can call
  * `prop('onTap')(payload)` or `prop('onChange')(payload)` without knowing

@@ -1,6 +1,6 @@
 import { effect } from "alien-signals";
-import { diffSnapshot, isPlainObject } from "@code-ui/utils";
-import type { MachineSchema, Service } from "@code-ui/core";
+import { diffSnapshot, isPlainObject } from "@code-id-labs/utils";
+import type { MachineSchema, Service } from "@code-id-labs/core";
 import { type MiniappMachine, nextTick } from "./machine";
 import { normalizeProps } from "./normalize-props";
 

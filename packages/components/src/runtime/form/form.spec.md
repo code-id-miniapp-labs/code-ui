@@ -5,7 +5,7 @@
 - **Purpose**: Form container wrapping MiniProgram's native `<form>` element to coordinate descendant field registration, synchronous/asynchronous validation rules, error reporting, dirty/touched tracking, and submit/reset lifecycles.
 - **Architecture Tier**: **Tier 3 Domain**
   - Uses the state machine in `packages/machines/form` (`formMachine`, `connectForm`) via `../_shared/machine`.
-  - Connects to descendant form controls through the `withFormParent()` domain relation behavior from `@code-ui/miniapp/behaviors/form`.
+  - Connects to descendant form controls through the `withFormParent()` domain relation behavior from `@code-id-labs/miniapp/behaviors/form`.
 - **Related Components**: Acts as the parent host (`FormHostContext`) for descendant form field/control components that register with `c-form`. Also exposes imperative form methods (`validate`, `submit`, `reset`, `resetValidation`, `clearErrors`, `setErrors`, `getErrors`, `getValues`, `getFieldValue`, `setValues`, `setFieldValue`, `focusFirstError`, `scrollToFirstError`, `handleSubmit`, `handleReset`) via `selectComponent` (`exportApi: true`).
 
 ## Props

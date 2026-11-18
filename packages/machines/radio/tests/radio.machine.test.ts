@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { signal } from "alien-signals";
-import { MiniappMachine } from "@code-ui/miniapp";
-import type { RadioGroupContext } from "@code-ui/radio-group";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import type { RadioGroupContext } from "@code-id-labs/radio-group";
 import { radioMachine } from "../src/radio.machine";
 import { connectRadio } from "../src/radio.connect";
 

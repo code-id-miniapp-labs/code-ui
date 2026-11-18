@@ -5,7 +5,7 @@
 `c-input-menu` is a searchable combobox / autocomplete input with a floating dropdown menu of selectable options. It supports single and multiple (tag-based) selection, built-in or external search filtering, dynamic item creation, clearable values, and `<c-form>` / `<c-form-field>` integration.
 
 - **Architecture Tier**: **Tier 3 — Domain**
-  - Backed by the `@code-ui/input-menu` state machine (`inputMenuMachine`, `connectInputMenu`) and domain behaviors `withFormField()` (`@code-ui/miniapp/behaviors/form`) and `withInputMenu()` (`@code-ui/miniapp/behaviors/input-menu`).
+  - Backed by the `@code-id-labs/input-menu` state machine (`inputMenuMachine`, `connectInputMenu`) and domain behaviors `withFormField()` (`@code-id-labs/miniapp/behaviors/form`) and `withInputMenu()` (`@code-id-labs/miniapp/behaviors/input-menu`).
 - **Related Components**:
   - **Host / Form**: `<c-form>`, `<c-form-field>` (form validation, disabled/size propagation).
   - **Internal Overlay**: `<c-popover>` (dropdown positioning, backdrop handling, transitions).

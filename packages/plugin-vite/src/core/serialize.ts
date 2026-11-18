@@ -2,4 +2,4 @@ export {
   serializeCompactThemeModule,
   serializeConfig,
   serializeFunction,
-} from "@code-ui/compiler";
+} from "@code-id-labs/compiler";

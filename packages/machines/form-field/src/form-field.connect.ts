@@ -1,4 +1,4 @@
-import type { Scope } from "@code-ui/core";
+import type { Scope } from "@code-id-labs/core";
 import * as dom from "./form-field.dom";
 import type { FormFieldApi, FormFieldService } from "./form-field.types";
 

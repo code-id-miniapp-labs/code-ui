@@ -46,7 +46,7 @@ const dist = resolve(distArg);
 const runtime = join(dist, "runtime");
 
 if (!existsSync(runtime)) {
-  console.error(`Missing ${runtime}. Run: pnpm --filter @code-ui/components build`);
+  console.error(`Missing ${runtime}. Run: pnpm --filter @code-id-labs/components build`);
   process.exit(1);
 }
 

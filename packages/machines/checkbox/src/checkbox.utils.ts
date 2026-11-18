@@ -1,5 +1,5 @@
-import { isNotNull } from "@code-ui/utils";
-import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
+import { isNotNull } from "@code-id-labs/utils";
+import type { CheckboxGroupContext } from "@code-id-labs/checkbox-group";
 import type {
   CheckboxProps,
   CheckboxState,

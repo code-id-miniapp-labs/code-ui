@@ -1,4 +1,4 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -11,7 +11,7 @@ import {
   connectPullDownRefresh,
   defaultPullDownRefreshProps,
   type PullDownRefreshApi,
-} from "@code-ui/pull-down-refresh";
+} from "@code-id-labs/pull-down-refresh";
 import themeConfig from "virtual:cui/theme/pull-down-refresh";
 import { tv } from "../../utils/variants";
 

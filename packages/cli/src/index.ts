@@ -267,18 +267,18 @@ program
       logger.success(`Created ${pc.green("src/app.css")}`);
     } else {
       const currentCss = fs.readFileSync(appCssPath, "utf-8");
-      if (!currentCss.includes("@code-ui/components")) {
-        const updatedCss = `@import "tailwindcss";\n@import "@code-ui/components";\n\n${currentCss.replace(/@import\s+["']tailwindcss["'];?\s*/g, "")}`;
+      if (!currentCss.includes("@code-id-labs/components")) {
+        const updatedCss = `@import "tailwindcss";\n@import "@code-id-labs/components";\n\n${currentCss.replace(/@import\s+["']tailwindcss["'];?\s*/g, "")}`;
         fs.writeFileSync(appCssPath, updatedCss, "utf-8");
         logger.success(
-          `Added ${pc.green('@import "@code-ui/components";')} to ${pc.green("src/app.css")}`,
+          `Added ${pc.green('@import "@code-id-labs/components";')} to ${pc.green("src/app.css")}`,
         );
       }
     }
 
     if (cmdOpts.install) {
       const iconCol = cmdOpts.icons || "lucide";
-      installDependencies(["@code-ui/components", "@code-ui/plugin-vite"], {
+      installDependencies(["@code-id-labs/components", "@code-id-labs/plugin-vite"], {
         cwd,
       });
       if (iconCol !== "lucide") {
@@ -291,7 +291,7 @@ program
       const iconCol = cmdOpts.icons || "lucide";
       console.log(`\n${pc.bold("Install required packages:")}`);
       console.log(
-        `  ${pc.cyan(`${addCmd} @code-ui/components @code-ui/plugin-vite`)}`,
+        `  ${pc.cyan(`${addCmd} @code-id-labs/components @code-id-labs/plugin-vite`)}`,
       );
       if (iconCol !== "lucide") {
         console.log(
@@ -323,7 +323,7 @@ program
     } else {
       console.log(pc.yellow("No cui.config.ts found in current directory."));
       console.log(
-        `Run ${pc.cyan("npx @code-ui/cli init")} or create a ${pc.cyan("cui.config.ts")} to customize global component styling.`,
+        `Run ${pc.cyan("npx @code-id-labs/cli init")} or create a ${pc.cyan("cui.config.ts")} to customize global component styling.`,
       );
     }
     console.log("");

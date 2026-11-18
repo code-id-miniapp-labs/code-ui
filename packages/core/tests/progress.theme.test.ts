@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { progressTheme } from "../src";
 
-describe("progressTheme (@code-ui/core)", () => {
+describe("progressTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = progressTheme();
     expect(theme.slots).toHaveProperty("root");

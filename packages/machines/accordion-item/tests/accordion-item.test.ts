@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { accordionItemMachine, connectAccordionItem } from "../src";
-import type { AccordionGroupContext } from "@code-ui/accordion";
+import type { AccordionGroupContext } from "@code-id-labs/accordion";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));

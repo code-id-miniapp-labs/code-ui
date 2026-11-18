@@ -1,5 +1,5 @@
 import { defineConfig } from "weapp-vite";
-import { codeUI } from "@code-ui/plugin-vite";
+import { codeUI } from "@code-id-labs/plugin-vite";
 
 export default defineConfig(({ mode }) => {
   console.log("[mode]:", mode);

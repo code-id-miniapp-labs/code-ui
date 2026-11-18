@@ -1,6 +1,6 @@
-import type { AnatomyPartName, ComponentUI } from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { AnatomyPartName, ComponentUI } from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./toast.anatomy";
 
 export type ToastMode = "default" | "native";

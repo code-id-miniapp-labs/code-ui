@@ -1,4 +1,4 @@
-import { createMachine, type PropFn } from "@code-ui/core";
+import { createMachine, type PropFn } from "@code-id-labs/core";
 import { getItemId } from "./stepper.dom";
 import type {
   StepperGroupContext,

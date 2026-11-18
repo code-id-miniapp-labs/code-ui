@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { signal } from "alien-signals";
-import { createMachine, MachineStatus } from "@code-ui/core";
+import { createMachine, MachineStatus } from "@code-id-labs/core";
 import { MiniappMachine } from "../src/machine";
 
 /** Events are drained in a single microtask, so one tick flushes everything. */

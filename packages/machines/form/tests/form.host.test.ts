@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { effect, signal } from "alien-signals";
-import { MiniappMachine } from "@code-ui/miniapp";
-import type { MiniAppComponent } from "@code-ui/utils";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import {
   bindFormField,
   cleanupFormFieldSync,

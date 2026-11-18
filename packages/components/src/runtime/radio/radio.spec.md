@@ -4,7 +4,7 @@
 
 `c-radio` is a single radio selection control that can be used standalone or as an item inside `c-radio-group`. It supports controlled/uncontrolled checked state, disabled/read-only/invalid states, `outline` and `card` variants, theme colors and sizes, and customizable slots.
 
-- **Architecture Tier**: **Tier 3 (Domain)** — uses `createMachineBehavior` with `radioMachine` (`@code-ui/radio`) and the domain relation plugin `withRadioItem()` from `@code-ui/miniapp/behaviors/radio`.
+- **Architecture Tier**: **Tier 3 (Domain)** — uses `createMachineBehavior` with `radioMachine` (`@code-id-labs/radio`) and the domain relation plugin `withRadioItem()` from `@code-id-labs/miniapp/behaviors/radio`.
 - **Related Components**:
   - **Parent**: `c-radio-group` (via `withRadioItem()`, inheriting `groupSize`, `groupColor`, `groupVariant`, and group selection context).
 

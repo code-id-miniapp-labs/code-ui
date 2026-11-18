@@ -26,56 +26,56 @@ importers:
 
   examples/weapp-code-ui:
     dependencies:
-      '@code-ui/components':
+      '@code-id-labs/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@code-ui/composables':
+      '@code-id-labs/composables':
         specifier: workspace:*
         version: link:../../packages/composables
-      '@code-ui/plugin-vite':
+      '@code-id-labs/plugin-vite':
         specifier: workspace:*
         version: link:../../packages/plugin-vite
     devDependencies:
-      '@code-ui/accordion':
+      '@code-id-labs/accordion':
         specifier: workspace:*
         version: link:../../packages/machines/accordion
-      '@code-ui/accordion-item':
+      '@code-id-labs/accordion-item':
         specifier: workspace:*
         version: link:../../packages/machines/accordion-item
-      '@code-ui/action-sheet':
+      '@code-id-labs/action-sheet':
         specifier: workspace:*
         version: link:../../packages/machines/action-sheet
-      '@code-ui/banner':
+      '@code-id-labs/banner':
         specifier: workspace:*
         version: link:../../packages/machines/banner
-      '@code-ui/checkbox':
+      '@code-id-labs/checkbox':
         specifier: workspace:*
         version: link:../../packages/machines/checkbox
-      '@code-ui/checkbox-group':
+      '@code-id-labs/checkbox-group':
         specifier: workspace:*
         version: link:../../packages/machines/checkbox-group
-      '@code-ui/file-upload':
+      '@code-id-labs/file-upload':
         specifier: workspace:*
         version: link:../../packages/machines/file-upload
-      '@code-ui/input':
+      '@code-id-labs/input':
         specifier: workspace:*
         version: link:../../packages/machines/input
-      '@code-ui/pin-input':
+      '@code-id-labs/pin-input':
         specifier: workspace:*
         version: link:../../packages/machines/pin-input
-      '@code-ui/qr-code':
+      '@code-id-labs/qr-code':
         specifier: workspace:*
         version: link:../../packages/machines/qr-code
-      '@code-ui/radio':
+      '@code-id-labs/radio':
         specifier: workspace:*
         version: link:../../packages/machines/radio
-      '@code-ui/radio-group':
+      '@code-id-labs/radio-group':
         specifier: workspace:*
         version: link:../../packages/machines/radio-group
-      '@code-ui/stepper':
+      '@code-id-labs/stepper':
         specifier: workspace:*
         version: link:../../packages/machines/stepper
-      '@code-ui/stepper-item':
+      '@code-id-labs/stepper-item':
         specifier: workspace:*
         version: link:../../packages/machines/stepper-item
       '@egoist/tailwindcss-icons':
@@ -139,7 +139,7 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
     devDependencies:
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../core
       '@types/node':
@@ -169,121 +169,121 @@ importers:
 
   packages/components:
     devDependencies:
-      '@code-ui/accordion':
+      '@code-id-labs/accordion':
         specifier: workspace:*
         version: link:../machines/accordion
-      '@code-ui/accordion-item':
+      '@code-id-labs/accordion-item':
         specifier: workspace:*
         version: link:../machines/accordion-item
-      '@code-ui/action-sheet':
+      '@code-id-labs/action-sheet':
         specifier: workspace:*
         version: link:../machines/action-sheet
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../anatomy
-      '@code-ui/banner':
+      '@code-id-labs/banner':
         specifier: workspace:*
         version: link:../machines/banner
-      '@code-ui/button':
+      '@code-id-labs/button':
         specifier: workspace:*
         version: link:../machines/button
-      '@code-ui/checkbox':
+      '@code-id-labs/checkbox':
         specifier: workspace:*
         version: link:../machines/checkbox
-      '@code-ui/checkbox-group':
+      '@code-id-labs/checkbox-group':
         specifier: workspace:*
         version: link:../machines/checkbox-group
-      '@code-ui/compiler':
+      '@code-id-labs/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@code-ui/context':
+      '@code-id-labs/context':
         specifier: workspace:*
         version: link:../context
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../core
-      '@code-ui/drawer':
+      '@code-id-labs/drawer':
         specifier: workspace:*
         version: link:../machines/drawer
-      '@code-ui/file-upload':
+      '@code-id-labs/file-upload':
         specifier: workspace:*
         version: link:../machines/file-upload
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../machines/form
-      '@code-ui/form-field':
+      '@code-id-labs/form-field':
         specifier: workspace:*
         version: link:../machines/form-field
-      '@code-ui/input':
+      '@code-id-labs/input':
         specifier: workspace:*
         version: link:../machines/input
-      '@code-ui/input-menu':
+      '@code-id-labs/input-menu':
         specifier: workspace:*
         version: link:../machines/input-menu
-      '@code-ui/input-menu-item':
+      '@code-id-labs/input-menu-item':
         specifier: workspace:*
         version: link:../machines/input-menu-item
-      '@code-ui/miniapp':
+      '@code-id-labs/miniapp':
         specifier: workspace:*
         version: link:../frameworks/miniapp
-      '@code-ui/modal':
+      '@code-id-labs/modal':
         specifier: workspace:*
         version: link:../machines/modal
-      '@code-ui/pin-input':
+      '@code-id-labs/pin-input':
         specifier: workspace:*
         version: link:../machines/pin-input
-      '@code-ui/popover':
+      '@code-id-labs/popover':
         specifier: workspace:*
         version: link:../machines/popover
-      '@code-ui/progress':
+      '@code-id-labs/progress':
         specifier: workspace:*
         version: link:../machines/progress
-      '@code-ui/pull-down-refresh':
+      '@code-id-labs/pull-down-refresh':
         specifier: workspace:*
         version: link:../machines/pull-down-refresh
-      '@code-ui/qr-code':
+      '@code-id-labs/qr-code':
         specifier: workspace:*
         version: link:../machines/qr-code
-      '@code-ui/radio':
+      '@code-id-labs/radio':
         specifier: workspace:*
         version: link:../machines/radio
-      '@code-ui/radio-group':
+      '@code-id-labs/radio-group':
         specifier: workspace:*
         version: link:../machines/radio-group
-      '@code-ui/select':
+      '@code-id-labs/select':
         specifier: workspace:*
         version: link:../machines/select
-      '@code-ui/select-item':
+      '@code-id-labs/select-item':
         specifier: workspace:*
         version: link:../machines/select-item
-      '@code-ui/slider':
+      '@code-id-labs/slider':
         specifier: workspace:*
         version: link:../machines/slider
-      '@code-ui/stepper':
+      '@code-id-labs/stepper':
         specifier: workspace:*
         version: link:../machines/stepper
-      '@code-ui/stepper-item':
+      '@code-id-labs/stepper-item':
         specifier: workspace:*
         version: link:../machines/stepper-item
-      '@code-ui/swipe-cell':
+      '@code-id-labs/swipe-cell':
         specifier: workspace:*
         version: link:../machines/swipe-cell
-      '@code-ui/switch':
+      '@code-id-labs/switch':
         specifier: workspace:*
         version: link:../machines/switch
-      '@code-ui/tabs':
+      '@code-id-labs/tabs':
         specifier: workspace:*
         version: link:../machines/tabs
-      '@code-ui/tabs-item':
+      '@code-id-labs/tabs-item':
         specifier: workspace:*
         version: link:../machines/tabs-item
-      '@code-ui/textarea':
+      '@code-id-labs/textarea':
         specifier: workspace:*
         version: link:../machines/textarea
-      '@code-ui/toast':
+      '@code-id-labs/toast':
         specifier: workspace:*
         version: link:../machines/toast
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../utils
       '@types/node':
@@ -310,13 +310,13 @@ importers:
 
   packages/composables:
     devDependencies:
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../core
-      '@code-ui/miniapp':
+      '@code-id-labs/miniapp':
         specifier: workspace:*
         version: link:../frameworks/miniapp
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../utils
       '@types/node':
@@ -334,7 +334,7 @@ importers:
 
   packages/context:
     dependencies:
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -353,7 +353,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -372,10 +372,10 @@ importers:
 
   packages/frameworks/miniapp:
     dependencies:
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -397,13 +397,13 @@ importers:
 
   packages/machines/accordion:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -422,16 +422,16 @@ importers:
 
   packages/machines/accordion-item:
     dependencies:
-      '@code-ui/accordion':
+      '@code-id-labs/accordion':
         specifier: workspace:*
         version: link:../accordion
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -450,16 +450,16 @@ importers:
 
   packages/machines/action-sheet:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/context':
+      '@code-id-labs/context':
         specifier: workspace:*
         version: link:../../context
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -478,16 +478,16 @@ importers:
 
   packages/machines/banner:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/context':
+      '@code-id-labs/context':
         specifier: workspace:*
         version: link:../../context
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -506,13 +506,13 @@ importers:
 
   packages/machines/button:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -531,19 +531,19 @@ importers:
 
   packages/machines/checkbox:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/checkbox-group':
+      '@code-id-labs/checkbox-group':
         specifier: workspace:*
         version: link:../checkbox-group
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -562,16 +562,16 @@ importers:
 
   packages/machines/checkbox-group:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -590,13 +590,13 @@ importers:
 
   packages/machines/drawer:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -615,16 +615,16 @@ importers:
 
   packages/machines/file-upload:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -643,16 +643,16 @@ importers:
 
   packages/machines/form:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/context':
+      '@code-id-labs/context':
         specifier: workspace:*
         version: link:../../context
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -671,19 +671,19 @@ importers:
 
   packages/machines/form-field:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/context':
+      '@code-id-labs/context':
         specifier: workspace:*
         version: link:../../context
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -702,16 +702,16 @@ importers:
 
   packages/machines/input:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -730,19 +730,19 @@ importers:
 
   packages/machines/input-menu:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/popover':
+      '@code-id-labs/popover':
         specifier: workspace:*
         version: link:../popover
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -761,16 +761,16 @@ importers:
 
   packages/machines/input-menu-item:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/input-menu':
+      '@code-id-labs/input-menu':
         specifier: workspace:*
         version: link:../input-menu
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -789,13 +789,13 @@ importers:
 
   packages/machines/modal:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -814,16 +814,16 @@ importers:
 
   packages/machines/pin-input:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -842,13 +842,13 @@ importers:
 
   packages/machines/popover:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -867,13 +867,13 @@ importers:
 
   packages/machines/progress:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -892,13 +892,13 @@ importers:
 
   packages/machines/pull-down-refresh:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -917,13 +917,13 @@ importers:
 
   packages/machines/qr-code:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
       uqr:
@@ -945,16 +945,16 @@ importers:
 
   packages/machines/radio:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/radio-group':
+      '@code-id-labs/radio-group':
         specifier: workspace:*
         version: link:../radio-group
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -973,16 +973,16 @@ importers:
 
   packages/machines/radio-group:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1001,19 +1001,19 @@ importers:
 
   packages/machines/select:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/popover':
+      '@code-id-labs/popover':
         specifier: workspace:*
         version: link:../popover
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1032,16 +1032,16 @@ importers:
 
   packages/machines/select-item:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/select':
+      '@code-id-labs/select':
         specifier: workspace:*
         version: link:../select
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1060,16 +1060,16 @@ importers:
 
   packages/machines/slider:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1088,13 +1088,13 @@ importers:
 
   packages/machines/stepper:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1113,16 +1113,16 @@ importers:
 
   packages/machines/stepper-item:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/stepper':
+      '@code-id-labs/stepper':
         specifier: workspace:*
         version: link:../stepper
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1141,13 +1141,13 @@ importers:
 
   packages/machines/swipe-cell:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1166,16 +1166,16 @@ importers:
 
   packages/machines/switch:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1194,13 +1194,13 @@ importers:
 
   packages/machines/tabs:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1219,16 +1219,16 @@ importers:
 
   packages/machines/tabs-item:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/tabs':
+      '@code-id-labs/tabs':
         specifier: workspace:*
         version: link:../tabs
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1247,16 +1247,16 @@ importers:
 
   packages/machines/textarea:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/form':
+      '@code-id-labs/form':
         specifier: workspace:*
         version: link:../form
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1275,13 +1275,13 @@ importers:
 
   packages/machines/toast:
     dependencies:
-      '@code-ui/anatomy':
+      '@code-id-labs/anatomy':
         specifier: workspace:*
         version: link:../../anatomy
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../../utils
     devDependencies:
@@ -1328,13 +1328,13 @@ importers:
         specifier: ^2.0.1
         version: 2.0.4
     devDependencies:
-      '@code-ui/compiler':
+      '@code-id-labs/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@code-ui/core':
+      '@code-id-labs/core':
         specifier: workspace:*
         version: link:../core
-      '@code-ui/utils':
+      '@code-id-labs/utils':
         specifier: workspace:*
         version: link:../utils
       '@types/node':

@@ -1,4 +1,4 @@
-import { isEqual } from "@code-ui/utils";
+import { isEqual } from "@code-id-labs/utils";
 import {
   computed as alienComputed,
   effect,

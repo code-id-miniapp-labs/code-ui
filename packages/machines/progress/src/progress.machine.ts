@@ -1,4 +1,4 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import type { ProgressMachine, ProgressSchema } from "./progress.types";
 import { defaultProgressProps } from "./progress.props";
 

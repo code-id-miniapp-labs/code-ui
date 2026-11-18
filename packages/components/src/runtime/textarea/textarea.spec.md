@@ -5,8 +5,8 @@
 Multi-line text input component for WeChat MiniProgram with Nuxt UI v4-style theming, optional leading/trailing icons and slots, loading state, clear button, character counter, and form-field integration.
 
 - **Architecture Tier**: **Tier 2 Interactive** (with **Tier 3 Form Domain** integration)
-  - Powered by `textareaMachine` and `connectTextarea` from `@code-ui/textarea` via `createMachineBehavior`.
-  - Integrates with `<c-form>` / `<c-form-field>` via the `withFormField()` plugin from `@code-ui/miniapp/behaviors/form`.
+  - Powered by `textareaMachine` and `connectTextarea` from `@code-id-labs/textarea` via `createMachineBehavior`.
+  - Integrates with `<c-form>` / `<c-form-field>` via the `withFormField()` plugin from `@code-id-labs/miniapp/behaviors/form`.
   - Uses `computedBehavior` from `../_shared/base` and renders `c-icon` internally for icons.
 - **Compound Relationships**: Standalone form control (not a parent/child compound container), optionally binds to an ancestor or named `<c-form>` / `<c-form-field>` through `withFormField()`.
 
@@ -55,7 +55,7 @@ Multi-line text input component for WeChat MiniProgram with Nuxt UI v4-style the
 
 ### Additional Machine / Form Props (`TextareaProps`)
 
-Declared in `@code-ui/textarea` (`TextareaProps`) for machine and `<c-form>` integration:
+Declared in `@code-id-labs/textarea` (`TextareaProps`) for machine and `<c-form>` integration:
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |

@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/context",
+  "name": "@code-id-labs/context",
   "version": "0.0.1",
   "private": true,
   "description": "Dependency injection and event bus context primitives for MiniApp native components",
@@ -25,7 +25,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

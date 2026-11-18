@@ -4,7 +4,7 @@
 
 `c-accordion-item` is an interactive collapsible panel item consisting of a clickable header trigger (with optional leading icon/slot, label, description, and trailing icon/slot) and an animated expandable content body.
 
-- **Architecture Tier**: Tier 3 Domain (`@code-ui/accordion-item` FSM machine via `createMachineBehavior` + `withAccordionItem()` relation behavior from `@code-ui/miniapp/behaviors/accordion`).
+- **Architecture Tier**: Tier 3 Domain (`@code-id-labs/accordion-item` FSM machine via `createMachineBehavior` + `withAccordionItem()` relation behavior from `@code-id-labs/miniapp/behaviors/accordion`).
 - **Compound Relationships**:
   - **Parent**: `c-accordion` (`accordion`) — links via `withAccordionItem()`, inheriting `groupSize`, `groupVariant`, and group open-state coordination when used as a child. Can also be used standalone (`defaultOpen` / `open` / `collapsible`).
   - **Internal Child**: `c-icon` — renders the `icon` and `trailingIcon` when custom `leading` / `trailing` slots are not provided.

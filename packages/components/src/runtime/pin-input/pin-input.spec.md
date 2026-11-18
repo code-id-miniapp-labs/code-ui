@@ -4,14 +4,14 @@
 
 - **Component**: `<c-pin-input>` (`packages/components/src/runtime/pin-input`)
 - **Purpose**: Multi-cell PIN and one-time-code (OTP) input component supporting configurable length, character type filtering, masking, cell separators, focus management, and form field integration.
-- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (backed by `@code-ui/pin-input` machine & connect layer, with `@code-ui/miniapp/behaviors/form` `withFormField()` integration for `<c-form>` / `<c-form-field>`).
+- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (backed by `@code-id-labs/pin-input` machine & connect layer, with `@code-id-labs/miniapp/behaviors/form` `withFormField()` integration for `<c-form>` / `<c-form-field>`).
 - **Compound Structure**: Standalone component (not compound). Individual cells and separators are rendered internally via `wx:for` over `pinInput.inputs`. Exposes its `pinInput` API on the component instance (`exportApi: true`).
 
 ---
 
 ## Props
 
-> Runtime properties are composed from `defaultPinInputProps` (`@code-ui/pin-input`) and the component's own `properties` definition in `index.ts`. Form-related props from `withFormField()` and `PinInputProps` are also supported.
+> Runtime properties are composed from `defaultPinInputProps` (`@code-id-labs/pin-input`) and the component's own `properties` definition in `index.ts`. Form-related props from `withFormField()` and `PinInputProps` are also supported.
 
 | Name | Type | Default | Description |
 | :--- | :--- | :--- | :--- |

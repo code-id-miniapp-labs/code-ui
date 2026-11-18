@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { dividerTheme as createDividerTheme } from "@code-ui/core";
+import { dividerTheme as createDividerTheme } from "@code-id-labs/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
 const dividerTheme = tv(createDividerTheme());
 
-describe("dividerTheme runtime resolution (@code-ui/components)", () => {
+describe("dividerTheme runtime resolution (@code-id-labs/components)", () => {
   it("resolves default horizontal divider slots", () => {
     const theme = dividerTheme();
     const slots = resolveSlots(theme, {}, "");

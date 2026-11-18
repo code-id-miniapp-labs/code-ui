@@ -5,7 +5,7 @@ import { tv } from "../../utils/variants";
 import {
   cuiAvatarGroupBehavior,
   setupAvatarGroupRelations,
-} from "@code-ui/miniapp/behaviors/avatar-group";
+} from "@code-id-labs/miniapp/behaviors/avatar-group";
 
 const avatarGroupTheme = tv(themeConfig);
 

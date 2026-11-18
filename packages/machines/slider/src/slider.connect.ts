@@ -1,4 +1,4 @@
-import type { MiniAppRect } from "@code-ui/utils";
+import type { MiniAppRect } from "@code-id-labs/utils";
 import * as dom from "./slider.dom";
 import type {
   SliderApi,

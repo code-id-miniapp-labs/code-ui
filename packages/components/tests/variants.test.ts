@@ -20,7 +20,7 @@ import {
   fileUploadTheme as createFileUploadTheme,
   stepperItemTheme as createStepperItemTheme,
   drawerTheme as createDrawerTheme,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import {
   cn,
   computeUtilityKey,

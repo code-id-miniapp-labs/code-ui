@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { resetConfig, setConfig } from "@code-ui/core";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { resetConfig, setConfig } from "@code-id-labs/core";
 import { qrCodeMachine, resolveColor } from "../src/qr-code.machine";
 import { connectQrCode } from "../src/qr-code.connect";
 

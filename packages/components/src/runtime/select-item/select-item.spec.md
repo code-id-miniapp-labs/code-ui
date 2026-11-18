@@ -5,7 +5,7 @@
 `c-select-item` renders an individual option, group label, or visual separator inside a `c-select` dropdown menu. It supports leading/trailing icons, primary label and secondary description text, selected-state indicators, disabled state styling, and per-slot theme overrides.
 
 - **Architecture Tier**: **Tier 3 — Domain**
-  - Uses `computedBehavior` + `createComponentOptions` (`../_shared/base`), `createMachineBehavior` (`../_shared/machine`), `@code-ui/select-item`, and the domain relation plugin `withSelectItem()` from `@code-ui/miniapp/behaviors/select`.
+  - Uses `computedBehavior` + `createComponentOptions` (`../_shared/base`), `createMachineBehavior` (`../_shared/machine`), `@code-id-labs/select-item`, and the domain relation plugin `withSelectItem()` from `@code-id-labs/miniapp/behaviors/select`.
 - **Compound Relationship**: Child item component designed to be paired with parent `c-select` (both declaratively via `<slot />` and in data-driven `wx:for` lists).
 
 ---

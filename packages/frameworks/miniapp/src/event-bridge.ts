@@ -1,4 +1,4 @@
-import { isPromise } from "@code-ui/utils";
+import { isPromise } from "@code-id-labs/utils";
 
 type AnyFn = (...args: any[]) => any;
 

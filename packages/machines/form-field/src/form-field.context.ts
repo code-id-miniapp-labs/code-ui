@@ -3,8 +3,8 @@ import {
   provide,
   inject,
   type InjectionKey,
-} from "@code-ui/context";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/context";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { FormFieldSize } from "./form-field.types";
 
 export interface FormFieldContextValue {

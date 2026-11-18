@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/accordion-item",
+  "name": "@code-id-labs/accordion-item",
   "version": "0.0.1",
   "private": true,
   "description": "AccordionItem state machine for code-ui",
@@ -26,10 +26,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/accordion": "workspace:*",
-    "@code-ui/anatomy": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/accordion": "workspace:*",
+    "@code-id-labs/anatomy": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

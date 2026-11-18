@@ -1,4 +1,4 @@
-import { useComponentRef, useToast, type UseComponentRefReturn } from "@code-ui/composables";
+import { useComponentRef, useToast, type UseComponentRefReturn } from "@code-id-labs/composables";
 
 const toast = useToast();
 

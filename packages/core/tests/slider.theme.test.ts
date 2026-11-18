@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sliderTheme } from "../src";
 
-describe("sliderTheme (@code-ui/core)", () => {
+describe("sliderTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = sliderTheme();
     expect(theme.slots).toHaveProperty("root");

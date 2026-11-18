@@ -1,6 +1,6 @@
-import { useComponentRef } from "@code-ui/composables";
-import type { UseComponentRefReturn } from "@code-ui/composables";
-import type { RadioGroupApi } from "@code-ui/radio-group";
+import { useComponentRef } from "@code-id-labs/composables";
+import type { UseComponentRefReturn } from "@code-id-labs/composables";
+import type { RadioGroupApi } from "@code-id-labs/radio-group";
 
 Page({
   tierGroupRef: null as UseComponentRefReturn<any, RadioGroupApi> | null,

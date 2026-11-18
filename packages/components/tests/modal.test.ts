@@ -1,18 +1,18 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { modalTheme as createModalTheme } from "@code-ui/core";
+import { modalTheme as createModalTheme } from "@code-id-labs/core";
 import {
   COMPONENT_SLOTS_MANIFEST,
   transformWxmlSlots,
-} from "@code-ui/compiler";
+} from "@code-id-labs/compiler";
 import { resolveSlots } from "../src/utils/ui";
 import { escapeClass, tv } from "../src/utils/variants";
 
 const modalTheme = tv(createModalTheme());
 const MODAL_RUNTIME_DIR = resolve(__dirname, "../src/runtime/modal");
 
-describe("modalTheme runtime resolution (@code-ui/components)", () => {
+describe("modalTheme runtime resolution (@code-id-labs/components)", () => {
   it("resolves closed iOS card classes by default", () => {
     const slots = resolveSlots(
       modalTheme({

@@ -1,4 +1,4 @@
-import { createAnatomy } from "@code-ui/anatomy";
+import { createAnatomy } from "@code-id-labs/anatomy";
 
 export const anatomy = /* @__PURE__ */ (() =>
   createAnatomy("tabs-item").parts(

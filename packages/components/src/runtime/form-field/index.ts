@@ -1,6 +1,6 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties } from "../_shared/machine";
-import { withFormField, withFormFieldWrapper } from "@code-ui/miniapp/behaviors/form";
+import { withFormField, withFormFieldWrapper } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/form-field";
 import { tv } from "../../utils/variants";
@@ -8,7 +8,7 @@ import {
   connectFormField,
   defaultFormFieldProps,
   formFieldMachine,
-} from "@code-ui/form-field";
+} from "@code-id-labs/form-field";
 
 const formFieldTheme = tv(themeConfig);
 

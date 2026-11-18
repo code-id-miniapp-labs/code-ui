@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import {
   createMachineBehavior,
   createProperties,

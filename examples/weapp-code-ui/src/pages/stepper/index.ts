@@ -1,4 +1,4 @@
-import { useComponentRef, type UseComponentRefReturn } from "@code-ui/composables";
+import { useComponentRef, type UseComponentRefReturn } from "@code-id-labs/composables";
 
 Page({
   data: {

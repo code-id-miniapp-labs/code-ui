@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME_COLORS, toastTheme } from "../src";
 
-describe("toastTheme (@code-ui/core)", () => {
+describe("toastTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = toastTheme();
     expect(theme.slots).toHaveProperty("root");

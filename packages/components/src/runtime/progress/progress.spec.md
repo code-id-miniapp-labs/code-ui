@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose:** Accessible progress indicator for tracking task completion, file uploads, or background loading in linear (`type="linear"`) or circular (`type="circular"`) form, supporting both determinate numeric values and indeterminate loading states.
-- **Architecture Tier:** **Tier 2 — Interactive / Stateful** (powered by the `@code-ui/progress` machine via `createMachineBehavior`, importing from `../_shared/base` and `../_shared/machine`).
+- **Architecture Tier:** **Tier 2 — Interactive / Stateful** (powered by the `@code-id-labs/progress` machine via `createMachineBehavior`, importing from `../_shared/base` and `../_shared/machine`).
 - **Compound Relations:** Standalone component (no parent/child compound components).
 - **Public Imperative Methods:** Component instances expose `setValue(value: number | null)`, `setToMin()`, `setToMax()`, and `reset()` via `selectComponent`.
 

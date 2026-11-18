@@ -1,4 +1,4 @@
-import { useColorMode, useToast } from "@code-ui/composables";
+import { useColorMode, useToast } from "@code-id-labs/composables";
 import {
   PRIMARY_COLOR_PRESETS,
   SECONDARY_COLOR_PRESETS,

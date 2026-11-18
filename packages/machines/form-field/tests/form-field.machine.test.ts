@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { formMachine, connectForm } from "@code-ui/form";
-import { provideFormHost, resolveContextRequest } from "@code-ui/form/context";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { formMachine, connectForm } from "@code-id-labs/form";
+import { provideFormHost, resolveContextRequest } from "@code-id-labs/form/context";
 import { formFieldMachine } from "../src/form-field.machine";
 import { connectFormField } from "../src/form-field.connect";
 

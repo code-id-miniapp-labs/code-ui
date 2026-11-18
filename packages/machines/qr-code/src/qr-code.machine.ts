@@ -1,4 +1,4 @@
-import { createMachine, getColors } from "@code-ui/core";
+import { createMachine, getColors } from "@code-id-labs/core";
 import {
   encode,
   type QrCodeGenerateOptions,

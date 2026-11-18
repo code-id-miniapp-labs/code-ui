@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MiniappMachine } from "../src/machine";
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 
 describe("MiniappMachine Event & Promise Interception", () => {
   const originalGetCurrentPages = (globalThis as any).getCurrentPages;

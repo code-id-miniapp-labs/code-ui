@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import type { PropFn } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
+import type { PropFn } from "@code-id-labs/core";
 import { defaultTabsItemProps } from "./tabs-item.props";
 import type { TabsItemMachine, TabsItemSchema } from "./tabs-item.types";
 

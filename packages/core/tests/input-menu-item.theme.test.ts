@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { inputMenuItemTheme } from "../src";
 
-describe("inputMenuItemTheme (@code-ui/core)", () => {
+describe("inputMenuItemTheme (@code-id-labs/core)", () => {
   it("provides all input-menu-item anatomy slots", () => {
     const theme = inputMenuItemTheme();
     expect(theme.slots).toHaveProperty("root");

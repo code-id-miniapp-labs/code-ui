@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   progressTheme as createProgressTheme,
   toastTheme as createToastTheme,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
 const toastTheme = tv(createToastTheme());
 const progressTheme = tv(createProgressTheme());
 
-describe("toastTheme runtime resolution (@code-ui/components)", () => {
+describe("toastTheme runtime resolution (@code-id-labs/components)", () => {
   it.each(["top", "bottom"] as const)(
     "keeps native %s placement centered",
     (placement) => {

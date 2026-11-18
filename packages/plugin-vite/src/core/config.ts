@@ -4,7 +4,7 @@ import {
   ICON_COLLECTION_PRESETS,
   getActiveCollections,
   type CodeUIConfig,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import type {
   AppWrapperOptions,
   AutoImportOptions,
@@ -100,11 +100,11 @@ export function resolveAutoImportOptions(
 
   const enable = Boolean(raw.enable);
   const prefix = raw.prefix || "c";
-  const library = raw.library || "@code-ui/components";
+  const library = raw.library || "@code-id-labs/components";
   const compDir =
     raw.componentDir !== undefined
       ? raw.componentDir
-      : library === "@code-ui/components"
+      : library === "@code-id-labs/components"
         ? "runtime"
         : "";
   const dirPrefix = compDir ? `${compDir}/` : "";
@@ -132,7 +132,7 @@ export function resolveTreeShakeOptions(
 
   return {
     enable: Boolean(raw.enable),
-    library: raw.library || "@code-ui/components",
+    library: raw.library || "@code-id-labs/components",
   };
 }
 

@@ -1,5 +1,5 @@
-import { isNotNull } from "@code-ui/utils";
-import type { PropFn } from "@code-ui/core";
+import { isNotNull } from "@code-id-labs/utils";
+import type { PropFn } from "@code-id-labs/core";
 import type { StepperSchema } from "./stepper.types";
 
 export function clampValue(val: number, min: number, max: number): number {

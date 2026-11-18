@@ -1,11 +1,11 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import {
   cleanupFormFieldSync,
   createFormFieldComputed,
   hasFormFieldErrors,
   setupFormFieldSync,
-} from "@code-ui/form/context";
-import { isEmpty, isEqual, isNotEmpty } from "@code-ui/utils";
+} from "@code-id-labs/form/context";
+import { isEmpty, isEqual, isNotEmpty } from "@code-id-labs/utils";
 import type {
   PinInputMachine,
   PinInputParams,

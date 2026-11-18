@@ -5,14 +5,14 @@ import {
   removeToast,
   updateToast,
   updateToastHostConfig,
-} from "@code-ui/miniapp/behaviors/toast";
+} from "@code-id-labs/miniapp/behaviors/toast";
 import type {
   ToastAction,
   ToastCloseProps,
   ToastEntry,
   ToastSlotName,
   ToastUI,
-} from "@code-ui/miniapp/behaviors/toast";
+} from "@code-id-labs/miniapp/behaviors/toast";
 
 export interface ToastOptions {
   id?: string | undefined;

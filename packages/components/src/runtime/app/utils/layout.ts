@@ -1,4 +1,4 @@
-import type { AppMetrics } from "@code-ui/miniapp/behaviors/app";
+import type { AppMetrics } from "@code-id-labs/miniapp/behaviors/app";
 
 export interface AppLayoutInput {
   safeArea?: string | undefined;

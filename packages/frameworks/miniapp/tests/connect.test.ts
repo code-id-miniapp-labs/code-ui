@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { signal } from "alien-signals";
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import { connectToPage } from "../src/connect";
 import { MiniappMachine } from "../src/machine";
 

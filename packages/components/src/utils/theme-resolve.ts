@@ -1,4 +1,4 @@
-import { getComponentConfig, getConfig } from "@code-ui/core";
+import { getComponentConfig, getConfig } from "@code-id-labs/core";
 import { cn, tv } from "./variants";
 
 const themeCache = new Map<string, any>();

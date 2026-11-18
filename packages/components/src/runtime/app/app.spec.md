@@ -6,7 +6,7 @@ Root application shell and host component for WeChat MiniProgram pages. It manag
 
 - **Architecture Tier**: **Tier 3 Domain**
   - Uses `computedBehavior` and `createComponentOptions` from `../_shared/base` (no FSM machine in `packages/machines/app`).
-  - Composes domain behaviors from `@code-ui/miniapp/behaviors/app` (`cuiAppParentBehavior`, `createAppHostBehavior`, `setupAppRelations`), `@code-ui/miniapp/behaviors/theme` (`createAppThemeBehavior`), and `@code-ui/miniapp/behaviors/toast` (`createToastHostBehavior`).
+  - Composes domain behaviors from `@code-id-labs/miniapp/behaviors/app` (`cuiAppParentBehavior`, `createAppHostBehavior`, `setupAppRelations`), `@code-id-labs/miniapp/behaviors/theme` (`createAppThemeBehavior`), and `@code-id-labs/miniapp/behaviors/toast` (`createToastHostBehavior`).
 - **Related Components**:
   - Registers parent-side app relations (`setupAppRelations(relations, "parent")`) for child components that coordinate with the app host.
   - Internally renders `<c-toast>` instances inside its `toaster` container.

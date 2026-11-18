@@ -14,7 +14,7 @@ import {
   normalizeProps as normalizeUtilProps,
   runIfFn,
   warn,
-} from "@code-ui/utils";
+} from "@code-id-labs/utils";
 import {
   createRefs,
   createScope,
@@ -25,7 +25,7 @@ import {
   MachineStatus,
   matchesState,
   resolveStateValue,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import { bindable } from "./bindable";
 import { createMachinePropGetter } from "./prop-getter";
 import type {
@@ -45,7 +45,7 @@ import type {
   Scope,
   Service,
   Transition,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 
 type Dict = Record<string, any>;
 type AnyFn = (...args: any[]) => any;

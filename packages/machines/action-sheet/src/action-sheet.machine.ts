@@ -1,11 +1,11 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import type {
   ActionSheetMachine,
   ActionSheetSchema,
 } from "./action-sheet.types";
 import { defaultActionSheetProps } from "./action-sheet.props";
 import * as dom from "./action-sheet.dom";
-import { isMiniApp, isNotNull, isPromise, queryAnimationDuration } from "@code-ui/utils";
+import { isMiniApp, isNotNull, isPromise, queryAnimationDuration } from "@code-id-labs/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 

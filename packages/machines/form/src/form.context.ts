@@ -5,10 +5,10 @@ import {
   provide,
   resolveContextRequest,
   CONTEXT_REQUEST_EVENT,
-} from "@code-ui/context";
+} from "@code-id-labs/context";
 import { effect, getActiveSub, setActiveSub, signal } from "alien-signals";
-import type { InjectionKey } from "@code-ui/context";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { InjectionKey } from "@code-id-labs/context";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type {
   FormHostContext,
   FormFieldValidationState,

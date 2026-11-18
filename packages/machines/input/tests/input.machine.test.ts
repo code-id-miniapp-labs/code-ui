@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { formMachine, connectForm } from "@code-ui/form";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { formMachine, connectForm } from "@code-id-labs/form";
 import { inputMachine } from "../src/input.machine";
 import { connectInput } from "../src/input.connect";
 

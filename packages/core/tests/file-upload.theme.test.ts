@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fileUploadTheme } from "../src";
 
-describe("fileUploadTheme (@code-ui/core)", () => {
+describe("fileUploadTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = fileUploadTheme();
     expect(theme.slots).toHaveProperty("root");

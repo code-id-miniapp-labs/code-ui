@@ -10,7 +10,7 @@ import {
   connectProgress,
   defaultProgressProps,
   type ProgressApi,
-} from "@code-ui/progress";
+} from "@code-id-labs/progress";
 import themeConfig from "virtual:cui/theme/progress";
 import { tv } from "../../utils/variants";
 

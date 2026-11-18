@@ -1,6 +1,6 @@
 {
-  "name": "@code-ui/plugin-vite",
-  "version": "0.0.1",
+  "name": "@code-id-labs/plugin-vite",
+  "version": "1.0.0",
   "description": "Vite plugin for Code-UI — provides cui.config.ts loading, virtual modules, HMR, and Tailwind template scanning",
   "files": [
     "dist"
@@ -36,9 +36,9 @@
     "c12": "^2.0.1"
   },
   "devDependencies": {
-    "@code-ui/compiler": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*",
+    "@code-id-labs/compiler": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*",
     "@types/node": "^26.2.0",
     "tsdown": "^0.23.0",
     "typescript": "^5.5.4",

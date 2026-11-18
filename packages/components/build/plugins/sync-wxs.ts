@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "weapp-vite";
-import { transformWxmlSlots } from "@code-ui/compiler";
+import { transformWxmlSlots } from "@code-id-labs/compiler";
 import { findFilesByExt } from "../utils/fs";
 import { minifyWxml } from "../utils/minify-wxml";
 import { minifyWxs } from "../utils/minify-wxs";

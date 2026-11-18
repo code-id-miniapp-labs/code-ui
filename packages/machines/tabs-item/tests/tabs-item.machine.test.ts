@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { signal } from "alien-signals";
-import { MiniappMachine } from "@code-ui/miniapp";
-import type { TabsGroupContext } from "@code-ui/tabs";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import type { TabsGroupContext } from "@code-id-labs/tabs";
 import { tabsItemMachine, connectTabsItem } from "../src";
 
 function flush(): Promise<void> {

@@ -1,4 +1,4 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties } from "../_shared/machine";
 import { resolveSlots } from "../../utils/ui";
@@ -8,7 +8,7 @@ import {
   connectModal,
   defaultModalProps,
   modalMachine,
-} from "@code-ui/modal";
+} from "@code-id-labs/modal";
 import themeConfig from "virtual:cui/theme/modal";
 import { tv } from "../../utils/variants";
 

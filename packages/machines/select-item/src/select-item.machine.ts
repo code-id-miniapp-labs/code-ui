@@ -1,5 +1,5 @@
-import { createMachine, type PropFn } from "@code-ui/core";
-import type { SelectScalarValue } from "@code-ui/select";
+import { createMachine, type PropFn } from "@code-id-labs/core";
+import type { SelectScalarValue } from "@code-id-labs/select";
 import { defaultSelectItemProps } from "./select-item.props";
 import type { SelectItemMachine, SelectItemSchema } from "./select-item.types";
 

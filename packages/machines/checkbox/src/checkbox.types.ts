@@ -2,16 +2,16 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
 import type {
   BoundFormField,
   FormHostContext,
   FormRule,
   FormValidateOn,
-} from "@code-ui/form";
-import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/form";
+import type { CheckboxGroupContext } from "@code-id-labs/checkbox-group";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./checkbox.anatomy";
 
 export type CheckboxState = "checked" | "unchecked" | "indeterminate";

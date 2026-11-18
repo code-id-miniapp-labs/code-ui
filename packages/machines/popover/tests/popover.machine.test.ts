@@ -1,5 +1,5 @@
-import { MiniappMachine } from "@code-ui/miniapp";
-import { diffSnapshot } from "@code-ui/utils";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { diffSnapshot } from "@code-id-labs/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   computeFloatingPosition,
@@ -10,7 +10,7 @@ import {
 const flush = () =>
   new Promise<void>((resolve) => queueMicrotask(() => queueMicrotask(resolve)));
 
-describe("popoverMachine (@code-ui/popover)", () => {
+describe("popoverMachine (@code-id-labs/popover)", () => {
   afterEach(() => {
     vi.useRealTimers();
   });

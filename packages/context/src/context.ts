@@ -1,6 +1,6 @@
 /// <reference types="miniprogram-api-typings" />
 
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 
 /**
  * @example

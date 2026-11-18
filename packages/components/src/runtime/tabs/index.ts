@@ -4,14 +4,14 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withTabs } from "@code-ui/miniapp/behaviors/tabs";
-import type { MiniAppEventLike } from "@code-ui/utils";
+import { withTabs } from "@code-id-labs/miniapp/behaviors/tabs";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
   tabsMachine,
   connectTabs,
   defaultTabsProps,
-} from "@code-ui/tabs";
+} from "@code-id-labs/tabs";
 import themeConfig from "virtual:cui/theme/tabs";
 import { tv } from "../../utils/variants";
 

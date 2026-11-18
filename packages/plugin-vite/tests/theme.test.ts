@@ -151,7 +151,7 @@ import {
   codeUI,
   compileComponentTheme,
 } from "../src/index";
-import { buttonTheme, defineTheme, drawerTheme } from "@code-ui/core";
+import { buttonTheme, defineTheme, drawerTheme } from "@code-id-labs/core";
 
 const colorModeFixtureTheme = () =>
   defineTheme({
@@ -348,7 +348,7 @@ describe("codeUI virtual themes", () => {
     );
   });
 
-  it("injects @plugin @code-ui/plugin-vite/icons with built-in Lucide by default", async () => {
+  it("injects @plugin @code-id-labs/plugin-vite/icons with built-in Lucide by default", async () => {
     const configManager = new PluginConfigManager({
       icons: { autoPlugin: true },
     });
@@ -360,19 +360,19 @@ describe("codeUI virtual themes", () => {
       () => {},
     );
     expect(result).not.toBeNull();
-    expect(result?.code).toContain('@plugin "@code-ui/plugin-vite/icons";');
+    expect(result?.code).toContain('@plugin "@code-id-labs/plugin-vite/icons";');
 
     const { resolveCodeUIIconCollections } = await import("../src/icons");
     const collections = resolveCodeUIIconCollections("/test");
     expect(collections).toHaveProperty("lucide");
   });
 
-  it("does not duplicate @plugin when @code-ui/plugin-vite/icons is already present", () => {
+  it("does not duplicate @plugin when @code-id-labs/plugin-vite/icons is already present", () => {
     const configManager = new PluginConfigManager({
       icons: { autoPlugin: true },
     });
     const existing =
-      '@import "tailwindcss";\n@plugin "@code-ui/plugin-vite/icons";';
+      '@import "tailwindcss";\n@plugin "@code-id-labs/plugin-vite/icons";';
     const result = transformAppStyle(
       existing,
       "/test/src/app.css",
@@ -381,7 +381,7 @@ describe("codeUI virtual themes", () => {
       () => {},
     );
     const matches = result?.code.match(
-      /@plugin "@code-ui\/plugin-vite\/icons"/g,
+      /@plugin "@code-id-labs\/plugin-vite\/icons"/g,
     );
     expect(matches?.length).toBe(1);
   });
@@ -416,7 +416,7 @@ describe("codeUI virtual themes", () => {
         path.join(root, "app.json"),
         JSON.stringify({
           usingComponents: {
-            "my-checkbox": "@code-ui/components/runtime/checkbox/index",
+            "my-checkbox": "@code-id-labs/components/runtime/checkbox/index",
           },
         }),
       );

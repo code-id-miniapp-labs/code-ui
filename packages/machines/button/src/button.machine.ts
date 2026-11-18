@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isPromise } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isPromise } from "@code-id-labs/utils";
 import type { ButtonMachine, ButtonSchema } from "./button.types";
 import { defaultButtonProps } from "./button.props";
 

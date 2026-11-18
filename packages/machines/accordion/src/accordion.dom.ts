@@ -1,4 +1,4 @@
-import { itemPartId, partId } from "@code-ui/core";
+import { itemPartId, partId } from "@code-id-labs/core";
 
 export interface AccordionDomScope {
   id?: string | undefined;

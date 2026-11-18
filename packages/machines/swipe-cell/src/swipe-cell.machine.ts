@@ -1,10 +1,10 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import {
   isMiniApp,
   isNotNull,
   queryRect,
   type MiniAppRect,
-} from "@code-ui/utils";
+} from "@code-id-labs/utils";
 import type {
   SwipeCellAction,
   SwipeCellMachine,

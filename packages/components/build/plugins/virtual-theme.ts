@@ -1,13 +1,13 @@
 import type { Plugin } from "weapp-vite";
-import { DEFAULT_THEME_COLORS, componentThemes } from "@code-ui/core";
-import { serializeCompactThemeModule } from "@code-ui/compiler";
+import { DEFAULT_THEME_COLORS, componentThemes } from "@code-id-labs/core";
+import { serializeCompactThemeModule } from "@code-id-labs/compiler";
 
 const VIRTUAL_THEME_PREFIX = "virtual:cui/theme/";
 const RESOLVED_VIRTUAL_THEME_PREFIX = "\0virtual:cui/theme/";
 
 /**
- * Resolves and compiles `virtual:cui/theme/<component>` directly from `@code-ui/core`
- * without pulling `@code-ui/plugin-vite` into `@code-ui/components`.
+ * Resolves and compiles `virtual:cui/theme/<component>` directly from `@code-id-labs/core`
+ * without pulling `@code-id-labs/plugin-vite` into `@code-id-labs/components`.
  */
 export function virtualThemePlugin(): Plugin {
   const cache = new Map<string, string>();

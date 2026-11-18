@@ -1,4 +1,4 @@
-import type { DOMQueryHelpers, MiniAppComponent } from "@code-ui/utils";
+import type { DOMQueryHelpers, MiniAppComponent } from "@code-id-labs/utils";
 
 type Dict = Record<string, any>;
 
@@ -7,7 +7,7 @@ export interface Scope {
   ids?: Record<string, any> | undefined;
   /** The component/page instance used to scope SelectorQuery */
   component?: MiniAppComponent | undefined;
-  /** Optional DOM query helpers (use tree-shakeable queryRect/queryFields from @code-ui/utils directly) */
+  /** Optional DOM query helpers (use tree-shakeable queryRect/queryFields from @code-id-labs/utils directly) */
   dom?: DOMQueryHelpers | undefined;
   toJSON?: () => { id?: string | undefined; ids?: Record<string, any> | undefined } | undefined;
 }

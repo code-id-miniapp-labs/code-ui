@@ -4,14 +4,14 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withSelectItem } from "@code-ui/miniapp/behaviors/select";
+import { withSelectItem } from "@code-id-labs/miniapp/behaviors/select";
 import {
   connectSelectItem,
   defaultSelectItemProps,
   selectItemMachine,
   type SelectItemColor,
   type SelectItemSize,
-} from "@code-ui/select-item";
+} from "@code-id-labs/select-item";
 import themeConfig from "virtual:cui/theme/select-item";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";

@@ -9,7 +9,7 @@ export default defineConfig({
   target: "es2020",
   fixedExtension: false,
   deps: {
-    alwaysBundle: [/^@code-ui\//],
+    alwaysBundle: [/^@code-id-labs\//],
     onlyBundle: false,
   },
 });

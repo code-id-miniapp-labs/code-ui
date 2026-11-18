@@ -1,5 +1,5 @@
 import { computed, effect, signal } from "alien-signals";
-import type { MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import type {
   CodeUiComponentInstance,
   ToastOwnerInstance,

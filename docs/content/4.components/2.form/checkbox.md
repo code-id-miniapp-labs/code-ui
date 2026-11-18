@@ -33,7 +33,7 @@ Use `label` to render text beside the checkbox and `defaultChecked` for uncontro
 ```json [index.json]
 {
   "usingComponents": {
-    "c-checkbox": "@code-ui/components/checkbox/index"
+    "c-checkbox": "@code-id-labs/components/checkbox/index"
   }
 }
 ```

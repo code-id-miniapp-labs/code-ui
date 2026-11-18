@@ -1,12 +1,12 @@
-import { MiniappMachine } from "@code-ui/miniapp";
-import { connectSelect, selectMachine } from "@code-ui/select";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { connectSelect, selectMachine } from "@code-id-labs/select";
 import { describe, expect, it, vi } from "vitest";
 import { connectSelectItem, selectItemMachine } from "../src";
 
 const flush = () =>
   new Promise<void>((resolve) => queueMicrotask(() => queueMicrotask(resolve)));
 
-describe("selectItemMachine (@code-ui/select-item)", () => {
+describe("selectItemMachine (@code-id-labs/select-item)", () => {
   it("syncs selection and disabled state via live SelectGroupContext facade", async () => {
     const parent = new MiniappMachine(selectMachine, {
       multiple: true,

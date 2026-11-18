@@ -9,7 +9,7 @@ import type {
   Params,
 } from "./types";
 import { ensureStateIndex } from "./state";
-import { createDefu, defu, isPlainObject, toArray } from "@code-ui/utils";
+import { createDefu, defu, isPlainObject, toArray } from "@code-id-labs/utils";
 
 function mergeFn(baseFn?: (params: any) => any, extFn?: (params: any) => any) {
   if (!baseFn && !extFn) return undefined;

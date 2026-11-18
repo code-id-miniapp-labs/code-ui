@@ -1,1 +1,1 @@
-export * from "@code-ui/miniapp/behaviors/app";
+export * from "@code-id-labs/miniapp/behaviors/app";

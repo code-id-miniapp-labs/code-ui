@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { fileUploadMachine } from "../src/file-upload.machine";
 import {
   cleanExtensions,

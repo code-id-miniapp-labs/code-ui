@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Swipeable list cell container for WeChat MiniProgram that reveals left and/or right action panels on horizontal touch drag or programmatic control.
-- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (`createMachineBehavior` backed by `@code-ui/swipe-cell` with `exportApi: true`, `computedBehavior`, and a WXS touch gesture handler).
+- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (`createMachineBehavior` backed by `@code-id-labs/swipe-cell` with `exportApi: true`, `computedBehavior`, and a WXS touch gesture handler).
 - **Related Components**: Standalone component (uses `c-icon` internally to render icons on data-driven `left` / `right` action items; not a parent/child compound group).
 
 ---

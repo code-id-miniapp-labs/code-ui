@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Slide-over modal sheet with backdrop overlay, drag-to-dismiss grabber gesture, keyboard height awareness, and optional background scaling coordination with `<c-app>`.
-- **Architecture Tier**: **Tier 2 — Interactive** (backed by the `@code-ui/drawer` finite state machine, using `../_shared/base`, `../_shared/machine`, and `withAppScale` from `@code-ui/miniapp/behaviors/app`).
+- **Architecture Tier**: **Tier 2 — Interactive** (backed by the `@code-id-labs/drawer` finite state machine, using `../_shared/base`, `../_shared/machine`, and `withAppScale` from `@code-id-labs/miniapp/behaviors/app`).
 - **Related Components**:
   - `<c-app>` (optional parent page wrapper scaled when `shouldScaleBackground` is `true`)
   - `<c-button>` (rendered internally as the default close trigger when no custom `close` slot is provided)

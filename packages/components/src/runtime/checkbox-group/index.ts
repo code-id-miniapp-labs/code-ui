@@ -3,18 +3,18 @@ import type {
   CheckboxGroupOrientation,
   CheckboxGroupSize,
   CheckboxGroupVariant,
-} from "@code-ui/checkbox-group";
-import type { MiniAppEventLike } from "@code-ui/utils";
+} from "@code-id-labs/checkbox-group";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withCheckboxGroup } from "@code-ui/miniapp/behaviors/checkbox";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withCheckboxGroup } from "@code-id-labs/miniapp/behaviors/checkbox";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   checkboxGroupMachine,
   connectCheckboxGroup,
   defaultCheckboxGroupProps,
-} from "@code-ui/checkbox-group";
+} from "@code-id-labs/checkbox-group";
 import themeConfig from "virtual:cui/theme/checkbox-group";
 import { tv } from "../../utils/variants";
 

@@ -1,6 +1,6 @@
-import type { MachineSchema, Service } from "@code-ui/core";
-import type { ConnectFn, MiniappMachine } from "@code-ui/miniapp";
-import { diffSnapshot, warn } from "@code-ui/utils";
+import type { MachineSchema, Service } from "@code-id-labs/core";
+import type { ConnectFn, MiniappMachine } from "@code-id-labs/miniapp";
+import { diffSnapshot, warn } from "@code-id-labs/utils";
 
 /**
  * Universal MiniProgram instance type supporting both Page and Component contexts.

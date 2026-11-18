@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { swipeCellMachine } from "../src/swipe-cell.machine";
 import { connectSwipeCell } from "../src/swipe-cell.connect";
 

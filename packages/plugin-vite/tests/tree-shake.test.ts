@@ -23,8 +23,8 @@ describe("tree-shake", () => {
       "utf-8",
     );
 
-    // Create mock @code-ui/components in node_modules
-    const pkgDir = path.join(tmpRoot, "node_modules", "@code-ui", "components");
+    // Create mock @code-id-labs/components in node_modules
+    const pkgDir = path.join(tmpRoot, "node_modules", "@code-id-labs", "components");
     libDir = path.join(pkgDir, "dist");
     fs.mkdirSync(path.join(libDir, "runtime", "button"), { recursive: true });
     fs.mkdirSync(path.join(libDir, "runtime", "drawer"), { recursive: true });
@@ -33,7 +33,7 @@ describe("tree-shake", () => {
     fs.writeFileSync(
       path.join(pkgDir, "package.json"),
       JSON.stringify({
-        name: "@code-ui/components",
+        name: "@code-id-labs/components",
         miniprogram: "dist",
       }),
       "utf-8",
@@ -79,12 +79,12 @@ describe("tree-shake", () => {
       "utf-8",
     );
 
-    // Copy to dist/miniprogram_npm/@code-ui/components
+    // Copy to dist/miniprogram_npm/@code-id-labs/components
     distLibDir = path.join(
       tmpRoot,
       "dist",
       "miniprogram_npm",
-      "@code-ui",
+      "@code-id-labs",
       "components",
     );
     fs.cpSync(libDir, distLibDir, { recursive: true });
@@ -101,7 +101,7 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-drawer": "@code-ui/components/runtime/drawer/index",
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
           },
         }),
       },
@@ -139,7 +139,7 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-drawer": "@code-ui/components/runtime/drawer/index",
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
           },
         }),
       },
@@ -160,8 +160,8 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-drawer": "@code-ui/components/runtime/drawer/index",
-            "c-button": "@code-ui/components/runtime/button/index",
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+            "c-button": "@code-id-labs/components/runtime/button/index",
           },
         }),
       },
@@ -207,10 +207,10 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-button": "@code-ui/components/runtime/button/index",
-            "c-card": "@code-ui/components/runtime/card/index",
-            "c-chip": "@code-ui/components/runtime/chip/index",
-            "c-pin-input": "@code-ui/components/runtime/pin-input/index",
+            "c-button": "@code-id-labs/components/runtime/button/index",
+            "c-card": "@code-id-labs/components/runtime/card/index",
+            "c-chip": "@code-id-labs/components/runtime/chip/index",
+            "c-pin-input": "@code-id-labs/components/runtime/pin-input/index",
           },
         }),
       },
@@ -289,7 +289,7 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-drawer": "@code-ui/components/runtime/drawer/index",
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
           },
         }),
       },
@@ -315,8 +315,8 @@ describe("tree-shake", () => {
         type: "asset",
         source: JSON.stringify({
           usingComponents: {
-            "c-drawer": "@code-ui/components/runtime/drawer/index",
-            "c-button": "@code-ui/components/runtime/button/index",
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+            "c-button": "@code-id-labs/components/runtime/button/index",
           },
         }),
       },

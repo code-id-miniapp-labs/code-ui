@@ -1,4 +1,4 @@
-import type { SwipeActionItem, SwipeSide } from "@code-ui/swipe-cell";
+import type { SwipeActionItem, SwipeSide } from "@code-id-labs/swipe-cell";
 
 interface MessageItem {
   id: number;

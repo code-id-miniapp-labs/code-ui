@@ -1,6 +1,6 @@
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { describe, test } from "vitest";
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const outDir = fileURLToPath(
@@ -27,8 +27,8 @@ async function loadBundledMachine() {
     tsconfig: false,
     logLevel: "silent",
     alias: {
-      "@code-ui/core": `${root}packages/core/src/index.ts`,
-      "@code-ui/utils": `${root}packages/utils/src/index.ts`,
+      "@code-id-labs/core": `${root}packages/core/src/index.ts`,
+      "@code-id-labs/utils": `${root}packages/utils/src/index.ts`,
     },
     deps: { alwaysBundle: [/.*/] },
     define: { "process.env.NODE_ENV": JSON.stringify("production") },

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { actionSheetMachine } from "../src/action-sheet.machine";
 import { connectActionSheet } from "../src/action-sheet.connect";
 import type {
@@ -454,7 +454,7 @@ describe("ActionSheet Machine", () => {
     it("integrates with c-button loading state via controlled loading prop", async () => {
       vi.useRealTimers();
 
-      const { buttonMachine, connectButton } = await import("@code-ui/button");
+      const { buttonMachine, connectButton } = await import("@code-id-labs/button");
 
       let resolvePromise!: () => void;
       const asyncPromise = new Promise<void>((resolve) => {

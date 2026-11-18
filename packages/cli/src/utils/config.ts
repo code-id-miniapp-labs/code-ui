@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadConfig } from "c12";
-import type { CodeUIConfig } from "@code-ui/core";
+import type { CodeUIConfig } from "@code-id-labs/core";
 
 export const DEFAULT_CONFIG: CodeUIConfig = {
   prefix: "cui",

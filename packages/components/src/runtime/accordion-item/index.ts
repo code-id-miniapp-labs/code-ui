@@ -1,18 +1,18 @@
-import type { AccordionSize, AccordionVariant } from "@code-ui/accordion";
+import type { AccordionSize, AccordionVariant } from "@code-id-labs/accordion";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withAccordionItem } from "@code-ui/miniapp/behaviors/accordion";
+import { withAccordionItem } from "@code-id-labs/miniapp/behaviors/accordion";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
   accordionItemMachine,
   connectAccordionItem,
   defaultAccordionItemProps,
-} from "@code-ui/accordion-item";
+} from "@code-id-labs/accordion-item";
 import themeConfig from "virtual:cui/theme/accordion-item";
 import { tv } from "../../utils/variants";
 

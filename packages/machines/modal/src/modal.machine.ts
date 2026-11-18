@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-id-labs/utils";
 import * as dom from "./modal.dom";
 import { defaultModalProps } from "./modal.props";
 import type { ModalMachine, ModalParams, ModalSchema } from "./modal.types";

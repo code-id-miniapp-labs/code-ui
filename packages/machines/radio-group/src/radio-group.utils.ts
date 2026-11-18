@@ -1,6 +1,6 @@
-import { isNotNull } from "@code-ui/utils";
+import { isNotNull } from "@code-id-labs/utils";
 import type { RadioGroupSchema } from "./radio-group.types";
-import type { BindableRefs, PropFn } from "@code-ui/core";
+import type { BindableRefs, PropFn } from "@code-id-labs/core";
 
 export function resolveInitialValue(
   prop: PropFn<RadioGroupSchema>,

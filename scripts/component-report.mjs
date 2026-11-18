@@ -43,7 +43,7 @@ for (const name of runtimeComponents) {
   const indexTs = join(runtimeDir, name, "index.ts");
   if (!existsSync(indexTs)) continue;
   const code = readFileSync(indexTs, "utf8");
-  if (code.includes("../_shared/machine") || code.includes("@code-ui/miniapp/behaviors/")) {
+  if (code.includes("../_shared/machine") || code.includes("@code-id-labs/miniapp/behaviors/")) {
     statefulComponents.push(name);
   } else {
     presentationalComponents.push(name);

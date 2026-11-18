@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/swipe-cell",
+  "name": "@code-id-labs/swipe-cell",
   "version": "0.0.1",
   "private": true,
   "description": "SwipeCell state machine for code-ui",
@@ -27,9 +27,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/anatomy": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/anatomy": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

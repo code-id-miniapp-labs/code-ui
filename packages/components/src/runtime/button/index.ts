@@ -11,7 +11,7 @@ import {
   buttonMachine,
   connectButton,
   defaultButtonProps,
-} from "@code-ui/button";
+} from "@code-id-labs/button";
 import themeConfig from "virtual:cui/theme/button";
 import { tv } from "../../utils/variants";
 

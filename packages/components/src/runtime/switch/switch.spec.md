@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: An interactive toggle switch for switching between checked and unchecked states, with support for labels, descriptions, thumb/loading icons, controlled/uncontrolled state, and form field integration.
-- **Architecture Tier**: **Tier 2 Interactive** (uses `@code-ui/switch` via `switchMachine` and `connectSwitch` with `createMachineBehavior`) + **Tier 3 Domain** (attaches `withFormField()` from `@code-ui/miniapp/behaviors/form` for `<c-form>` / `<c-form-field>` integration).
+- **Architecture Tier**: **Tier 2 Interactive** (uses `@code-id-labs/switch` via `switchMachine` and `connectSwitch` with `createMachineBehavior`) + **Tier 3 Domain** (attaches `withFormField()` from `@code-id-labs/miniapp/behaviors/form` for `<c-form>` / `<c-form-field>` integration).
 - **Related Components**: Standalone interactive component (not a compound parent/child pair). Integrates optionally with form containers via `withFormField()`. Uses `<c-icon>` internally when rendering `checkedIcon`, `uncheckedIcon`, or `loadingIcon` props without custom slots.
 
 ---

@@ -5,8 +5,8 @@
 `c-form-field` is a form field layout and validation wrapper component. It renders an optional label, required indicator, hint, description, wrapped form control container, and validation error or help text, while integrating with an enclosing form host and child form controls.
 
 - **Architecture Tier**: **Tier 3 — Domain**
-  - Uses `@code-ui/form-field` (`formFieldMachine`, `connectFormField`) via `../_shared/machine` (`createMachineBehavior`, `createProperties`) and `../_shared/base` (`computedBehavior`, `createComponentOptions`).
-  - Integrates domain form behaviors from `@code-ui/miniapp/behaviors/form` (`withFormField({ native: false })`, `withFormFieldWrapper()`), with `exportApi: true`.
+  - Uses `@code-id-labs/form-field` (`formFieldMachine`, `connectFormField`) via `../_shared/machine` (`createMachineBehavior`, `createProperties`) and `../_shared/base` (`computedBehavior`, `createComponentOptions`).
+  - Integrates domain form behaviors from `@code-id-labs/miniapp/behaviors/form` (`withFormField({ native: false })`, `withFormFieldWrapper()`), with `exportApi: true`.
 - **Related Components**:
   - **Parent**: Form container (e.g. `c-form`) providing form host context (`formContext` or injected via `form`).
   - **Children**: Form input/control components placed in the default slot, which receive field state and validation context from `withFormFieldWrapper()`.

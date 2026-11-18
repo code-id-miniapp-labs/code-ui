@@ -1,7 +1,7 @@
-import { createMachine } from "@code-ui/core";
-import type { PropFn } from "@code-ui/core";
-import { isNotNull } from "@code-ui/utils";
-import type { StepperStatus } from "@code-ui/stepper";
+import { createMachine } from "@code-id-labs/core";
+import type { PropFn } from "@code-id-labs/core";
+import { isNotNull } from "@code-id-labs/utils";
+import type { StepperStatus } from "@code-id-labs/stepper";
 import type {
   StepperItemMachine,
   StepperItemSchema,

@@ -1,11 +1,11 @@
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -13,7 +13,7 @@ import {
   connectFileUpload,
   defaultFileUploadProps,
   type FileUploadSize,
-} from "@code-ui/file-upload";
+} from "@code-id-labs/file-upload";
 import themeConfig from "virtual:cui/theme/file-upload";
 import { tv } from "../../utils/variants";
 

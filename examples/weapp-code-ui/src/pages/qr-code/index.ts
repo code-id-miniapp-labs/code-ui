@@ -1,4 +1,4 @@
-import { useToast } from "@code-ui/composables";
+import { useToast } from "@code-id-labs/composables";
 import { useTheme } from "../../utils/theme";
 
 const toast = useToast();

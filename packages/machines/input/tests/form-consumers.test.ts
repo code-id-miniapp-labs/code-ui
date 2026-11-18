@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { connectForm, formMachine } from "@code-ui/form";
-import { provideFormHost } from "@code-ui/form/context";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { connectForm, formMachine } from "@code-id-labs/form";
+import { provideFormHost } from "@code-id-labs/form/context";
 import { inputMachine } from "../src/input.machine";
 import type { InputProps } from "../src/input.types";
 import { textareaMachine } from "../../textarea/src/textarea.machine";

@@ -4,7 +4,7 @@
 
 `c-modal` is a dialog overlay component for WeChat MiniProgram with controlled/uncontrolled open state, backdrop overlay, close button, internal or outer scrolling, fullscreen layout, keyboard-height padding adjustment, and enter/leave transitions.
 
-- **Tier**: Tier 2 — Interactive / Stateful (`createMachineBehavior` with `modalMachine` and `connectModal` from `@code-ui/modal`, plus `computedBehavior` and `createComponentOptions` from `../_shared/base`).
+- **Tier**: Tier 2 — Interactive / Stateful (`createMachineBehavior` with `modalMachine` and `connectModal` from `@code-id-labs/modal`, plus `computedBehavior` and `createComponentOptions` from `../_shared/base`).
 - **Compound Relations**: None (standalone component; internally renders `<c-button>` as the default close trigger when `close` is enabled and the `close` slot is not used).
 
 ## Props

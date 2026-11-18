@@ -1,5 +1,5 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import {
   createMachineBehavior,
   createProperties,
@@ -8,7 +8,7 @@ import {
 import {
   cuiAppChildBehavior,
   setupAppRelations,
-} from "@code-ui/miniapp/behaviors/app";
+} from "@code-id-labs/miniapp/behaviors/app";
 import { resolveSlots } from "../../utils/ui";
 import {
   resolveSubcomponentList,
@@ -20,7 +20,7 @@ import {
   connectToast,
   defaultToastProps,
   toastMachine,
-} from "@code-ui/toast";
+} from "@code-id-labs/toast";
 import themeConfig from "virtual:cui/theme/toast";
 import { tv } from "../../utils/variants";
 

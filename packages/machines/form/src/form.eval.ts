@@ -1,4 +1,4 @@
-import { isEmpty } from "@code-ui/utils";
+import { isEmpty } from "@code-id-labs/utils";
 import type {
   FormRule,
   FormRuleObject,

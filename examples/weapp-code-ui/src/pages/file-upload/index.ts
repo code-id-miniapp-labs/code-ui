@@ -1,4 +1,4 @@
-import type { FileUploadFile } from "@code-ui/file-upload";
+import type { FileUploadFile } from "@code-id-labs/file-upload";
 
 interface FormRef {
   submit?: () => Promise<any>;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { avatarGroupTheme } from "../src";
 
-describe("avatarGroupTheme (@code-ui/core)", () => {
+describe("avatarGroupTheme (@code-id-labs/core)", () => {
   it("provides root, base, and counter slots", () => {
     const theme = avatarGroupTheme();
     expect(theme.slots).toHaveProperty("root");

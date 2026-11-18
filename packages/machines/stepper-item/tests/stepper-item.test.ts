@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { signal } from "alien-signals";
-import { MiniappMachine } from "@code-ui/miniapp";
-import type { StepperGroupContext } from "@code-ui/stepper";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import type { StepperGroupContext } from "@code-id-labs/stepper";
 import { stepperItemMachine, connectStepperItem } from "../src";
 
 function flush(): Promise<void> {

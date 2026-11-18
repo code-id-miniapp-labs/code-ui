@@ -1,4 +1,4 @@
-import type { MiniAppRect } from "@code-ui/utils";
+import type { MiniAppRect } from "@code-id-labs/utils";
 import type { SliderOrientation } from "./slider.types";
 
 export function clampValue(val: number, min: number, max: number): number {

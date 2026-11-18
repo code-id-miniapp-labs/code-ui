@@ -1,4 +1,4 @@
-import { createAnatomy } from "@code-ui/anatomy";
+import { createAnatomy } from "@code-id-labs/anatomy";
 
 export const anatomy = createAnatomy("input-menu-item").parts(
   "root",

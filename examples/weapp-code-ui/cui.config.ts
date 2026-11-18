@@ -1,4 +1,4 @@
-import { defineConfig } from "@code-ui/plugin-vite";
+import { defineConfig } from "@code-id-labs/plugin-vite";
 
 export default defineConfig({
   prefix: "c",

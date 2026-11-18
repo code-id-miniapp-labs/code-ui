@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { pullDownRefreshMachine } from "../src/pull-down-refresh.machine";
 import { connectPullDownRefresh } from "../src/pull-down-refresh.connect";
 import type { PullDownRefreshRefreshDetails } from "../src/pull-down-refresh.types";

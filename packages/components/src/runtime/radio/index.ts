@@ -1,6 +1,6 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withRadioItem } from "@code-ui/miniapp/behaviors/radio";
+import { withRadioItem } from "@code-id-labs/miniapp/behaviors/radio";
 import { resolveSlots } from "../../utils/ui";
 import {
   radioMachine,
@@ -9,7 +9,7 @@ import {
   type RadioColor,
   type RadioSize,
   type RadioVariant,
-} from "@code-ui/radio";
+} from "@code-id-labs/radio";
 import themeConfig from "virtual:cui/theme/radio";
 import { tv } from "../../utils/variants";
 

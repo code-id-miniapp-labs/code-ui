@@ -4,7 +4,7 @@
 
 - **Purpose**: Interactive button component with Nuxt UI v4-inspired theming (`variant`, `color`, `size`, `block`), leading/trailing icons, loading indicator (including automatic async loading support), disabled handling, and native WeChat `<button>` integration (`open-type`, `form-type`, hover props, and open-ability callbacks).
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
-  - Uses `@code-ui/button` (`buttonMachine` + `connectButton`) via `createMachineBehavior` and imports runtime helpers from `../_shared/base` and `../_shared/machine`.
+  - Uses `@code-id-labs/button` (`buttonMachine` + `connectButton`) via `createMachineBehavior` and imports runtime helpers from `../_shared/base` and `../_shared/machine`.
 - **Compound / Related Components**: Standalone component (not part of a compound parent/child relation). Internally renders `c-icon` as the fallback for icons and the loading spinner when custom slots are not provided.
 
 ---

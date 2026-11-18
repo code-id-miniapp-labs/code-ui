@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { swipeCellTheme } from "../src";
 
-describe("swipeCellTheme (@code-ui/core)", () => {
+describe("swipeCellTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = swipeCellTheme();
     expect(theme.slots).toHaveProperty("root");

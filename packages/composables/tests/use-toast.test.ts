@@ -3,7 +3,7 @@ import {
   registerToastHost,
   unregisterToastHost,
   __resetToastRegistry,
-} from "@code-ui/miniapp/behaviors/toast";
+} from "@code-id-labs/miniapp/behaviors/toast";
 import { useToast } from "../src/use-toast";
 
 describe("useToast Composable", () => {

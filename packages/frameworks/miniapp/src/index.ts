@@ -1,5 +1,5 @@
 /**
- * @code-ui/miniapp
+ * @code-id-labs/miniapp
  *
  * MiniApp framework integration for code-ui FSM.
  */

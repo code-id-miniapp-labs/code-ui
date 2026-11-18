@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import type { MiniAppComponent } from "@code-ui/utils";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import {
   pinInputMachine,
   connectPinInput,
   type PinInputProps,
   type PinInputSchema,
-} from "@code-ui/pin-input";
+} from "@code-id-labs/pin-input";
 import {
   formMachine,
   connectForm,
@@ -60,7 +60,7 @@ async function registerFieldRules(
 }
 
 describe("formMachine & PinInput integration", () => {
-  it("provides FormHost on parent component and injects it into child PinInput via @code-ui/context", async () => {
+  it("provides FormHost on parent component and injects it into child PinInput via @code-id-labs/context", async () => {
     const formComp = createMockComponent();
     const pinComp = createMockComponent(formComp);
 

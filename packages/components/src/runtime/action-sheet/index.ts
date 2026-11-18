@@ -4,7 +4,7 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import type { MiniAppBaseEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
   resolveSubcomponentList,
@@ -19,7 +19,7 @@ import {
   actionSheetMachine,
   connectActionSheet,
   defaultActionSheetProps,
-} from "@code-ui/action-sheet";
+} from "@code-id-labs/action-sheet";
 import themeConfig from "virtual:cui/theme/action-sheet";
 
 const actionSheetTheme = tv(themeConfig);

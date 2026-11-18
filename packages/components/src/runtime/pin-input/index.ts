@@ -1,14 +1,14 @@
-import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-ui/utils";
+import type { MiniAppBaseEventLike, MiniAppEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   pinInputMachine,
   connectPinInput,
   defaultPinInputProps,
   type PinInputSize,
-} from "@code-ui/pin-input";
+} from "@code-id-labs/pin-input";
 import themeConfig from "virtual:cui/theme/pin-input";
 import { tv } from "../../utils/variants";
 

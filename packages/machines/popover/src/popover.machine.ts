@@ -1,5 +1,5 @@
-import { createMachine } from "@code-ui/core";
-import { isEqual, isMiniApp, isNotNull, queryRect } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import { isEqual, isMiniApp, isNotNull, queryRect } from "@code-id-labs/utils";
 import * as dom from "./popover.dom";
 import {
   computeFloatingPosition,

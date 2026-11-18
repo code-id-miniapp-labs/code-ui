@@ -1,12 +1,12 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withStepperItem } from "@code-ui/miniapp/behaviors/stepper";
+import { withStepperItem } from "@code-id-labs/miniapp/behaviors/stepper";
 import { resolveSlots } from "../../utils/ui";
 import {
   stepperItemMachine,
   connectStepperItem,
   defaultStepperItemProps,
-} from "@code-ui/stepper-item";
+} from "@code-id-labs/stepper-item";
 import themeConfig from "virtual:cui/theme/stepper-item";
 import { tv } from "../../utils/variants";
 

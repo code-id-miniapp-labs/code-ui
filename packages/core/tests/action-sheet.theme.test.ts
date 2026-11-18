@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { actionSheetTheme } from "../src";
 
-describe("actionSheetTheme (@code-ui/core)", () => {
+describe("actionSheetTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = actionSheetTheme();
     expect(theme.slots).toHaveProperty("root");

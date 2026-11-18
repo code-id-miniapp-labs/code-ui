@@ -1,4 +1,4 @@
-import type { MachineSchema } from "@code-ui/core";
+import type { MachineSchema } from "@code-id-labs/core";
 
 /**
  * Runtime identifier returned by MiniProgram `Behavior(...)`.
@@ -65,7 +65,7 @@ export interface CodeUiComponentInstance<
   id?: string | undefined;
   /** Component properties and reactive `setData` state (`this.data`). */
   data?: TData | undefined;
-  /** Stable identifier cached by `@code-ui/miniapp`. */
+  /** Stable identifier cached by `@code-id-labs/miniapp`. */
   __codeUiId?: string | undefined;
   __codeUiMachine?: TMachine | null | undefined;
   __codeUiApi?: Record<string, unknown> | undefined;

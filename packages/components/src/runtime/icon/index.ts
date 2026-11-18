@@ -1,6 +1,6 @@
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
-import { getIcon } from "@code-ui/core/icons";
+import { getIcon } from "@code-id-labs/core/icons";
 import themeConfig from "virtual:cui/theme/icon";
 import { tv } from "../../utils/variants";
 

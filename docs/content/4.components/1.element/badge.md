@@ -23,7 +23,7 @@ Use the `label` prop to display text inside a badge.
 ```json [index.json]
 {
   "usingComponents": {
-    "c-badge": "@code-ui/components/badge/index"
+    "c-badge": "@code-id-labs/components/badge/index"
   }
 }
 ```

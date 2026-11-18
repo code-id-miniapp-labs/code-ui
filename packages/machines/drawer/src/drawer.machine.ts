@@ -1,8 +1,8 @@
-import { createMachine } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
 import type { DrawerMachine, DrawerSchema } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
 import * as dom from "./drawer.dom";
-import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-ui/utils";
+import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-id-labs/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 

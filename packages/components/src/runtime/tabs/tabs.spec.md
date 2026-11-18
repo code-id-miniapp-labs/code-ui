@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Tabbed navigation container that coordinates a tab list and tab panels, supporting horizontal scrollable and vertical layouts, `pill` and `link` visual variants, and both data-driven (`items` prop) and declarative compound (`<c-tabs-item>` children) usage.
-- **Architecture Tier**: **Tier 3 Domain** — backed by the `@code-ui/tabs` finite state machine (`tabsMachine`, `connectTabs`) via `createMachineBehavior` and linked to child items via the `withTabs()` domain relation plugin (`@code-ui/miniapp/behaviors/tabs`).
+- **Architecture Tier**: **Tier 3 Domain** — backed by the `@code-id-labs/tabs` finite state machine (`tabsMachine`, `connectTabs`) via `createMachineBehavior` and linked to child items via the `withTabs()` domain relation plugin (`@code-id-labs/miniapp/behaviors/tabs`).
 - **Compound Components**:
   - Parent container: `c-tabs` (`packages/components/src/runtime/tabs/`)
   - Child item: `c-tabs-item` (rendered automatically in `mode="trigger"` and `mode="panel"` when using `items`, or placed directly in the default slot in compound mode)

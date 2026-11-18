@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { createMachine } from "@code-ui/core";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { createMachine } from "@code-id-labs/core";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { useComponentRef } from "../src/use-component-ref";
 
 function flush(): Promise<void> {

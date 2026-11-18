@@ -1,4 +1,4 @@
-import type { DOMQueryHelpers, MiniAppComponent } from "@code-ui/utils";
+import type { DOMQueryHelpers, MiniAppComponent } from "@code-id-labs/utils";
 import type { Scope } from "./types";
 
 interface ScopeProps {

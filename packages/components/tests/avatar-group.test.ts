@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { avatarGroupTheme as createAvatarGroupTheme } from "@code-ui/core";
+import { avatarGroupTheme as createAvatarGroupTheme } from "@code-id-labs/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
 const avatarGroupTheme = tv(createAvatarGroupTheme());
 
-describe("avatarGroupTheme runtime resolution (@code-ui/components)", () => {
+describe("avatarGroupTheme runtime resolution (@code-id-labs/components)", () => {
   it("resolves default avatar group slots", () => {
     const theme = avatarGroupTheme();
     const slots = resolveSlots(theme, {}, "");

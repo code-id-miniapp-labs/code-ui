@@ -9,8 +9,8 @@
 
 **Architecture Tier**: **Tier 3 Domain**
 
-- Powered by `@code-ui/select` (`selectMachine`, `connectSelect`), `createMachineBehavior` (`../_shared/machine`), and `computedBehavior` (`../_shared/base`).
-- Integrates domain behaviors from `@code-ui/miniapp/behaviors/select` (`withSelect`), `@code-ui/miniapp/behaviors/form` (`withFormField`), and `@code-ui/miniapp/behaviors/theme` (`createAppThemeBehavior`).
+- Powered by `@code-id-labs/select` (`selectMachine`, `connectSelect`), `createMachineBehavior` (`../_shared/machine`), and `computedBehavior` (`../_shared/base`).
+- Integrates domain behaviors from `@code-id-labs/miniapp/behaviors/select` (`withSelect`), `@code-id-labs/miniapp/behaviors/form` (`withFormField`), and `@code-id-labs/miniapp/behaviors/theme` (`createAppThemeBehavior`).
 - **Related components**:
   - `c-select-item` (child option component used both for data-driven `items` rendering and declarative compound children via `<slot />`).
   - `c-form` / `c-form-field` (parent form integration for `name`, `form`, `rules`, `validateOn`, `invalid`, and `fieldDisabled`).

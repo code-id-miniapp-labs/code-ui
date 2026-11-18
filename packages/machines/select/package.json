@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/select",
+  "name": "@code-id-labs/select",
   "version": "0.0.1",
   "private": true,
   "description": "Select state machine for code-ui",
@@ -26,11 +26,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/anatomy": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/popover": "workspace:*",
-    "@code-ui/form": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/anatomy": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/popover": "workspace:*",
+    "@code-id-labs/form": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

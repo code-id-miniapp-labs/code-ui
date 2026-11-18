@@ -4,12 +4,12 @@ import type {
   AccordionUI,
   AccordionValueChangeDetails,
   AccordionVariant,
-} from "@code-ui/accordion";
+} from "@code-id-labs/accordion";
 import type {
   AccordionItemProps,
   AccordionItemOpenChangeDetails,
   AccordionItemUI,
-} from "@code-ui/accordion-item";
+} from "@code-id-labs/accordion-item";
 import type {
   ActionSheetAction,
   ActionSheetActionDetails,
@@ -17,7 +17,7 @@ import type {
   ActionSheetItem,
   ActionSheetSelectDetails,
   ActionSheetUI,
-} from "@code-ui/action-sheet";
+} from "@code-id-labs/action-sheet";
 import type {
   BannerBadgeProps,
   BannerButtonProps,
@@ -30,19 +30,19 @@ import type {
   BannerSize,
   BannerUI,
   BannerVariant,
-} from "@code-ui/banner";
+} from "@code-id-labs/banner";
 import type {
   ButtonColor,
   ButtonSize,
   ButtonUI,
   ButtonVariant,
-} from "@code-ui/button";
+} from "@code-id-labs/button";
 import type {
   CheckboxCheckedChangeDetails,
   CheckboxColor,
   CheckboxSize,
   CheckboxUI,
-} from "@code-ui/checkbox";
+} from "@code-id-labs/checkbox";
 import type {
   CheckboxGroupColor,
   CheckboxGroupOrientation,
@@ -51,8 +51,8 @@ import type {
   CheckboxGroupUI,
   CheckboxGroupValueChangeDetails,
   CheckboxGroupVariant,
-} from "@code-ui/checkbox-group";
-import type { DrawerCloseProps, DrawerProps, DrawerUI } from "@code-ui/drawer";
+} from "@code-id-labs/checkbox-group";
+import type { DrawerCloseProps, DrawerProps, DrawerUI } from "@code-id-labs/drawer";
 import type {
   FileUploadChangeDetails,
   FileUploadColor,
@@ -63,7 +63,7 @@ import type {
   FileUploadSize,
   FileUploadUI,
   FileUploadVariant,
-} from "@code-ui/file-upload";
+} from "@code-id-labs/file-upload";
 import type {
   FloatingAlign,
   FloatingMatchWidth,
@@ -71,7 +71,7 @@ import type {
   PopoverUI,
   FloatingSide,
   FloatingTriggerMode,
-} from "@code-ui/popover";
+} from "@code-id-labs/popover";
 import type {
   FormErrorDetails,
   FormRule,
@@ -79,7 +79,7 @@ import type {
   FormUI,
   FormValidateOn,
   FormValidationResult,
-} from "@code-ui/form";
+} from "@code-id-labs/form";
 import type {
   InputColor,
   InputSize,
@@ -87,7 +87,7 @@ import type {
   InputUI,
   InputValueChangeDetails,
   InputVariant,
-} from "@code-ui/input";
+} from "@code-id-labs/input";
 import type {
   InputMenuColor,
   InputMenuContentConfig,
@@ -104,18 +104,18 @@ import type {
   InputMenuValue,
   InputMenuValueChangeDetails,
   InputMenuVariant,
-} from "@code-ui/input-menu";
+} from "@code-id-labs/input-menu";
 import type {
   InputMenuItemColor,
   InputMenuItemSize,
   InputMenuItemUI,
-} from "@code-ui/input-menu-item";
+} from "@code-id-labs/input-menu-item";
 import type {
   ModalCloseProps,
   ModalOpenChangeDetails,
   ModalSize,
   ModalUI,
-} from "@code-ui/modal";
+} from "@code-id-labs/modal";
 import type {
   PinInputColor,
   PinInputProps,
@@ -124,7 +124,7 @@ import type {
   PinInputValueChangeDetails,
   PinInputValueInvalidDetails,
   PinInputVariant,
-} from "@code-ui/pin-input";
+} from "@code-id-labs/pin-input";
 import type {
   ProgressAnimation,
   ProgressColor,
@@ -134,20 +134,20 @@ import type {
   ProgressType,
   ProgressUI,
   ProgressValueChangeDetails,
-} from "@code-ui/progress";
+} from "@code-id-labs/progress";
 import type {
   PullDownRefreshChangeDetails,
   PullDownRefreshDragDetails,
   PullDownRefreshRefreshDetails,
   PullDownRefreshScrollDetails,
   PullDownRefreshUI,
-} from "@code-ui/pull-down-refresh";
+} from "@code-id-labs/pull-down-refresh";
 import type {
   QrCodeProps,
   QrCodeSize,
   QrCodeUI,
   QrCodeValueChangeDetails,
-} from "@code-ui/qr-code";
+} from "@code-id-labs/qr-code";
 import type {
   RadioGroupColor,
   RadioGroupOrientation,
@@ -155,13 +155,13 @@ import type {
   RadioGroupSize,
   RadioGroupUI,
   RadioGroupValueChangeDetails,
-} from "@code-ui/radio-group";
+} from "@code-id-labs/radio-group";
 import type {
   RadioColor,
   RadioSize,
   RadioUI,
   RadioVariant,
-} from "@code-ui/radio";
+} from "@code-id-labs/radio";
 import type {
   SelectColor,
   SelectColumnChangeDetails,
@@ -178,12 +178,12 @@ import type {
   SelectValue,
   SelectValueChangeDetails,
   SelectVariant,
-} from "@code-ui/select";
+} from "@code-id-labs/select";
 import type {
   SelectItemColor,
   SelectItemSize,
   SelectItemUI,
-} from "@code-ui/select-item";
+} from "@code-id-labs/select-item";
 import type {
   StepperColor,
   StepperOrientation,
@@ -192,21 +192,21 @@ import type {
   StepperStepChangeDetails,
   StepperUI,
   StepperVariant,
-} from "@code-ui/stepper";
-import type { StepperItemUI } from "@code-ui/stepper-item";
+} from "@code-id-labs/stepper";
+import type { StepperItemUI } from "@code-id-labs/stepper-item";
 import type {
   SliderChangeDetails,
   SliderProps,
   SliderSize,
   SliderUI,
-} from "@code-ui/slider";
-import type { SwitchColor, SwitchSize, SwitchUI } from "@code-ui/switch";
+} from "@code-id-labs/slider";
+import type { SwitchColor, SwitchSize, SwitchUI } from "@code-id-labs/switch";
 import type {
   SwipeCellActionClickDetails,
   SwipeCellOpenChangeDetails,
   SwipeCellProps,
   SwipeCellUI,
-} from "@code-ui/swipe-cell";
+} from "@code-id-labs/swipe-cell";
 import type {
   TabsColor,
   TabsOrientation,
@@ -215,8 +215,8 @@ import type {
   TabsUI,
   TabsValueChangeDetails,
   TabsVariant,
-} from "@code-ui/tabs";
-import type { TabsItemProps, TabsItemUI } from "@code-ui/tabs-item";
+} from "@code-id-labs/tabs";
+import type { TabsItemProps, TabsItemUI } from "@code-id-labs/tabs-item";
 import type {
   TextareaColor,
   TextareaLineChangeDetails,
@@ -224,7 +224,7 @@ import type {
   TextareaUI,
   TextareaValueChangeDetails,
   TextareaVariant,
-} from "@code-ui/textarea";
+} from "@code-id-labs/textarea";
 import type {
   ToastCloseProps,
   ToastColor,
@@ -234,8 +234,8 @@ import type {
   ToastProps,
   ToastUI,
   ToastVariant,
-} from "@code-ui/toast";
-import type { ThemeColor } from "@code-ui/core";
+} from "@code-id-labs/toast";
+import type { ThemeColor } from "@code-id-labs/core";
 
 export interface CuiCommonElementProps {
   id?: string;

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { componentThemes, getActiveCollections } from "@code-ui/core";
+import { componentThemes, getActiveCollections } from "@code-id-labs/core";
 import { THEME_TAG } from "./theme";
 import type { PluginConfigManager } from "./config";
 import { collectUsedComponents, toKebabCase } from "./used-components";
@@ -38,7 +38,7 @@ function resolveComponentScanTarget(
   let compGlobPattern = "**/*.{ts,js,wxml}";
 
   try {
-    const compPkg = require.resolve("@code-ui/components/package.json", {
+    const compPkg = require.resolve("@code-id-labs/components/package.json", {
       paths: [projectRoot, styleDir],
     });
     const compRoot = path.dirname(compPkg);
@@ -55,7 +55,7 @@ function resolveComponentScanTarget(
       compScanDir = compRoot;
     }
   } catch {
-    // @code-ui/components not installed
+    // @code-id-labs/components not installed
   }
 
   const resolved: ResolvedPackageScanTarget = {
@@ -71,7 +71,7 @@ function isBuiltinIconsEntryAvailable(
   styleDir: string,
 ): boolean {
   try {
-    require.resolve("@code-ui/plugin-vite/icons", {
+    require.resolve("@code-id-labs/plugin-vite/icons", {
       paths: [projectRoot, styleDir, ...PLUGIN_SEARCH_PATHS],
     });
     return true;
@@ -123,8 +123,8 @@ function resolveIconsPluginDirective(
   configManager: PluginConfigManager,
 ): string {
   if (
-    code.includes('@plugin "@code-ui/plugin-vite/icons"') ||
-    code.includes("@plugin '@code-ui/plugin-vite/icons'") ||
+    code.includes('@plugin "@code-id-labs/plugin-vite/icons"') ||
+    code.includes("@plugin '@code-id-labs/plugin-vite/icons'") ||
     code.includes('@plugin "@egoist/tailwindcss-icons"') ||
     code.includes("@plugin '@egoist/tailwindcss-icons'")
   ) {
@@ -160,7 +160,7 @@ function resolveIconsPluginDirective(
   }
 
   const pluginTarget = useBuiltinEntry
-    ? "@code-ui/plugin-vite/icons"
+    ? "@code-id-labs/plugin-vite/icons"
     : "@egoist/tailwindcss-icons";
 
   const hasCustomOptions =
@@ -278,7 +278,7 @@ export function transformAppStyle(
     injection += iconsDirective;
   }
 
-  // All @code-ui/core theme definitions (plus user color & component overrides)
+  // All @code-id-labs/core theme definitions (plus user color & component overrides)
   // are already compiled in memory and emitted via @source inline(...) below.
   injection += configManager.getInlineThemeClassesDirective(usedComponents);
 

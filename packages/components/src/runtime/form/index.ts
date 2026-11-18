@@ -4,7 +4,7 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormParent } from "@code-ui/miniapp/behaviors/form";
+import { withFormParent } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   formMachine,
@@ -13,8 +13,8 @@ import {
   type FormApi,
   type FormErrorBag,
   type FormFieldError,
-} from "@code-ui/form";
-import type { MiniAppEventLike } from "@code-ui/utils";
+} from "@code-id-labs/form";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import themeConfig from "virtual:cui/theme/form";
 import { tv } from "../../utils/variants";
 

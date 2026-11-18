@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Bottom action sheet dialog for presenting a list of selectable menu items, an optional header (`title`, `description`, close trigger), and optional footer action buttons.
-- **Architecture Tier**: **Tier 2 Interactive** (uses `@code-ui/action-sheet` machine + connect layer via `createMachineBehavior`, runtime `../_shared/base` + `../_shared/machine`, and theme definitions from `@code-ui/core`).
+- **Architecture Tier**: **Tier 2 Interactive** (uses `@code-id-labs/action-sheet` machine + connect layer via `createMachineBehavior`, runtime `../_shared/base` + `../_shared/machine`, and theme definitions from `@code-id-labs/core`).
 - **Related Components**: Not a compound parent/child relation component. Internally renders `<c-button>` for the default close trigger and `actions`, and `<c-icon>` for item icons and loading indicators.
 
 ## Props

@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/qr-code",
+  "name": "@code-id-labs/qr-code",
   "version": "0.0.1",
   "private": true,
   "description": "QR Code state machine for code-ui",
@@ -26,9 +26,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/anatomy": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*",
+    "@code-id-labs/anatomy": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*",
     "uqr": "^0.1.2"
   },
   "devDependencies": {

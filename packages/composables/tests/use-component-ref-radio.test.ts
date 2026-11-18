@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
-import { radioGroupMachine, connectRadioGroup } from "@code-ui/radio-group";
-import { radioMachine, connectRadio } from "@code-ui/radio";
+import { MiniappMachine } from "@code-id-labs/miniapp";
+import { radioGroupMachine, connectRadioGroup } from "@code-id-labs/radio-group";
+import { radioMachine, connectRadio } from "@code-id-labs/radio";
 import { useComponentRef } from "../src/use-component-ref";
 
 function flush(): Promise<void> {

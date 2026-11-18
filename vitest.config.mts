@@ -5,151 +5,151 @@ export default defineConfig({
   root: import.meta.dirname,
   resolve: {
     alias: {
-      "@code-ui/anatomy": resolve(import.meta.dirname, "packages/anatomy/src"),
-      "@code-ui/compiler": resolve(
+      "@code-id-labs/anatomy": resolve(import.meta.dirname, "packages/anatomy/src"),
+      "@code-id-labs/compiler": resolve(
         import.meta.dirname,
         "packages/compiler/src",
       ),
-      "@code-ui/context": resolve(import.meta.dirname, "packages/context/src"),
-      "@code-ui/core": resolve(import.meta.dirname, "packages/core/src"),
-      "@code-ui/utils": resolve(import.meta.dirname, "packages/utils/src"),
-      "@code-ui/miniapp": resolve(
+      "@code-id-labs/context": resolve(import.meta.dirname, "packages/context/src"),
+      "@code-id-labs/core": resolve(import.meta.dirname, "packages/core/src"),
+      "@code-id-labs/utils": resolve(import.meta.dirname, "packages/utils/src"),
+      "@code-id-labs/miniapp": resolve(
         import.meta.dirname,
         "packages/frameworks/miniapp/src",
       ),
-      "@code-ui/accordion": resolve(
+      "@code-id-labs/accordion": resolve(
         import.meta.dirname,
         "packages/machines/accordion/src",
       ),
-      "@code-ui/action-sheet": resolve(
+      "@code-id-labs/action-sheet": resolve(
         import.meta.dirname,
         "packages/machines/action-sheet/src",
       ),
-      "@code-ui/accordion-item": resolve(
+      "@code-id-labs/accordion-item": resolve(
         import.meta.dirname,
         "packages/machines/accordion-item/src",
       ),
-      "@code-ui/banner": resolve(
+      "@code-id-labs/banner": resolve(
         import.meta.dirname,
         "packages/machines/banner/src",
       ),
-      "@code-ui/button": resolve(
+      "@code-id-labs/button": resolve(
         import.meta.dirname,
         "packages/machines/button/src",
       ),
-      "@code-ui/checkbox": resolve(
+      "@code-id-labs/checkbox": resolve(
         import.meta.dirname,
         "packages/machines/checkbox/src",
       ),
-      "@code-ui/checkbox-group": resolve(
+      "@code-id-labs/checkbox-group": resolve(
         import.meta.dirname,
         "packages/machines/checkbox-group/src",
       ),
-      "@code-ui/drawer": resolve(
+      "@code-id-labs/drawer": resolve(
         import.meta.dirname,
         "packages/machines/drawer/src",
       ),
-      "@code-ui/file-upload": resolve(
+      "@code-id-labs/file-upload": resolve(
         import.meta.dirname,
         "packages/machines/file-upload/src",
       ),
-      "@code-ui/popover": resolve(
+      "@code-id-labs/popover": resolve(
         import.meta.dirname,
         "packages/machines/popover/src",
       ),
-      "@code-ui/form/context": resolve(
+      "@code-id-labs/form/context": resolve(
         import.meta.dirname,
         "packages/machines/form/src/form.context.ts",
       ),
-      "@code-ui/form": resolve(
+      "@code-id-labs/form": resolve(
         import.meta.dirname,
         "packages/machines/form/src",
       ),
-      "@code-ui/form-field": resolve(
+      "@code-id-labs/form-field": resolve(
         import.meta.dirname,
         "packages/machines/form-field/src",
       ),
-      "@code-ui/input": resolve(
+      "@code-id-labs/input": resolve(
         import.meta.dirname,
         "packages/machines/input/src",
       ),
-      "@code-ui/input-menu": resolve(
+      "@code-id-labs/input-menu": resolve(
         import.meta.dirname,
         "packages/machines/input-menu/src",
       ),
-      "@code-ui/input-menu-item": resolve(
+      "@code-id-labs/input-menu-item": resolve(
         import.meta.dirname,
         "packages/machines/input-menu-item/src",
       ),
-      "@code-ui/modal": resolve(
+      "@code-id-labs/modal": resolve(
         import.meta.dirname,
         "packages/machines/modal/src",
       ),
-      "@code-ui/pin-input": resolve(
+      "@code-id-labs/pin-input": resolve(
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
-      "@code-ui/progress": resolve(
+      "@code-id-labs/progress": resolve(
         import.meta.dirname,
         "packages/machines/progress/src",
       ),
-      "@code-ui/pull-down-refresh": resolve(
+      "@code-id-labs/pull-down-refresh": resolve(
         import.meta.dirname,
         "packages/machines/pull-down-refresh/src",
       ),
-      "@code-ui/qr-code": resolve(
+      "@code-id-labs/qr-code": resolve(
         import.meta.dirname,
         "packages/machines/qr-code/src",
       ),
-      "@code-ui/radio": resolve(
+      "@code-id-labs/radio": resolve(
         import.meta.dirname,
         "packages/machines/radio/src",
       ),
-      "@code-ui/radio-group": resolve(
+      "@code-id-labs/radio-group": resolve(
         import.meta.dirname,
         "packages/machines/radio-group/src",
       ),
-      "@code-ui/select": resolve(
+      "@code-id-labs/select": resolve(
         import.meta.dirname,
         "packages/machines/select/src",
       ),
-      "@code-ui/select-item": resolve(
+      "@code-id-labs/select-item": resolve(
         import.meta.dirname,
         "packages/machines/select-item/src",
       ),
-      "@code-ui/slider": resolve(
+      "@code-id-labs/slider": resolve(
         import.meta.dirname,
         "packages/machines/slider/src",
       ),
-      "@code-ui/stepper": resolve(
+      "@code-id-labs/stepper": resolve(
         import.meta.dirname,
         "packages/machines/stepper/src",
       ),
-      "@code-ui/stepper-item": resolve(
+      "@code-id-labs/stepper-item": resolve(
         import.meta.dirname,
         "packages/machines/stepper-item/src",
       ),
-      "@code-ui/swipe-cell": resolve(
+      "@code-id-labs/swipe-cell": resolve(
         import.meta.dirname,
         "packages/machines/swipe-cell/src",
       ),
-      "@code-ui/switch": resolve(
+      "@code-id-labs/switch": resolve(
         import.meta.dirname,
         "packages/machines/switch/src",
       ),
-      "@code-ui/tabs": resolve(
+      "@code-id-labs/tabs": resolve(
         import.meta.dirname,
         "packages/machines/tabs/src",
       ),
-      "@code-ui/tabs-item": resolve(
+      "@code-id-labs/tabs-item": resolve(
         import.meta.dirname,
         "packages/machines/tabs-item/src",
       ),
-      "@code-ui/textarea": resolve(
+      "@code-id-labs/textarea": resolve(
         import.meta.dirname,
         "packages/machines/textarea/src",
       ),
-      "@code-ui/toast": resolve(
+      "@code-id-labs/toast": resolve(
         import.meta.dirname,
         "packages/machines/toast/src",
       ),

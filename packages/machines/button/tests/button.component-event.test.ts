@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { buttonMachine } from "../src/button.machine";
 import { connectButton } from "../src/button.connect";
 

@@ -73,7 +73,7 @@ function collectTransitiveJsDeps(
 
 interface LibraryDependencyGraph {
   sourceDir: string;
-  /** component id (e.g. "@code-ui/components/runtime/drawer/index") -> direct component ids */
+  /** component id (e.g. "@code-id-labs/components/runtime/drawer/index") -> direct component ids */
   componentDeps: Map<string, string[]>;
   /** component id -> direct WXS relative paths (e.g. "wxs/drawer-gesture.wxs") */
   componentWxs: Map<string, string[]>;
@@ -406,7 +406,7 @@ export function handleTreeShake(
   viteConfigObj: { build?: { outDir?: string } } | null | undefined,
   bundle?: OutputBundleLike,
 ): void {
-  const treeLibrary = treeShakeOpts.library || "@code-ui/components";
+  const treeLibrary = treeShakeOpts.library || "@code-id-labs/components";
   const outDir = viteConfigObj?.build?.outDir || "dist";
   const distRoot = path.resolve(projectRoot, outDir);
   const miniprogramNpmPath = path.resolve(

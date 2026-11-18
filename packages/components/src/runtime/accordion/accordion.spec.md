@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Collapsible panel container that manages expanded/collapsed state across one or more items, supporting both data-driven (`items`) and declarative compound usage.
-- **Architecture Tier**: **Tier 3 Domain** — uses the `@code-ui/accordion` state machine (`createMachineBehavior`) together with the domain relation behavior `withAccordion()` from `@code-ui/miniapp/behaviors/accordion`.
+- **Architecture Tier**: **Tier 3 Domain** — uses the `@code-id-labs/accordion` state machine (`createMachineBehavior`) together with the domain relation behavior `withAccordion()` from `@code-id-labs/miniapp/behaviors/accordion`.
 - **Compound Components**:
   - Parent: `c-accordion`
   - Child: `c-accordion-item` (used both in programmatic `items` loops and as declarative children inside the default `<slot />`)

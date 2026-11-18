@@ -2,7 +2,7 @@
 
 ## Overview & Tier
 
-- **Purpose**: Renders an icon from the `@code-ui/core/icons` registry (as a CSS icon class on a `<view>`) or an image/SVG asset path or URL (via `<image mode="aspectFit">`), with support for named or custom sizes, theme or raw CSS colors, and spin animation.
+- **Purpose**: Renders an icon from the `@code-id-labs/core/icons` registry (as a CSS icon class on a `<view>`) or an image/SVG asset path or URL (via `<image mode="aspectFit">`), with support for named or custom sizes, theme or raw CSS colors, and spin animation.
 - **Architecture Tier**: **Tier 1 — Presentational** (no FSM machine; runtime imports only `computedBehavior` and `createComponentOptions` from `../_shared/base`).
 - **Compound Relationships**: None (standalone leaf component).
 

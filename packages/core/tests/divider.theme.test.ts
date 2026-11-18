@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME_COLORS, dividerTheme } from "../src";
 
-describe("dividerTheme (@code-ui/core)", () => {
+describe("dividerTheme (@code-id-labs/core)", () => {
   it("provides all required slots", () => {
     const theme = dividerTheme();
     expect(theme.slots).toHaveProperty("root");

@@ -1,5 +1,5 @@
 import { signal } from "alien-signals";
-import { isMiniApp, queryRect } from "@code-ui/utils";
+import { isMiniApp, queryRect } from "@code-id-labs/utils";
 import { nextTick } from "../machine";
 import type { MachinePlugin } from "../plugin";
 import type { TypedRelationOption } from "./inherit";

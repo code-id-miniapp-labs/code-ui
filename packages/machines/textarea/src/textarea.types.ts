@@ -2,15 +2,15 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
 import type {
   BoundFormField,
   FormHostContext,
   FormRule,
   FormValidateOn,
-} from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/form";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./textarea.anatomy";
 
 export type TextareaState = "idle" | "focused";

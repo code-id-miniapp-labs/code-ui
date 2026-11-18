@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { selectItemTheme } from "../src";
 
-describe("selectItemTheme (@code-ui/core)", () => {
+describe("selectItemTheme (@code-id-labs/core)", () => {
   it("provides all select-item anatomy slots", () => {
     const theme = selectItemTheme();
     expect(theme.slots).toHaveProperty("root");

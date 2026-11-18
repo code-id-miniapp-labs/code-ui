@@ -1,4 +1,4 @@
-import type { NormalizeProps, PropTypes } from "@code-ui/core";
+import type { NormalizeProps, PropTypes } from "@code-id-labs/core";
 import type { ButtonApi, ButtonService, ButtonTapDetail } from "./button.types";
 import * as dom from "./button.dom";
 

@@ -1,4 +1,4 @@
-import { ensure, invariant } from "@code-ui/utils";
+import { ensure, invariant } from "@code-id-labs/utils";
 import type {
   Machine,
   MachineSchema,

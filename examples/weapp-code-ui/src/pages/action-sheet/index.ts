@@ -3,7 +3,7 @@ import type {
   ActionSheetActionDetails,
   ActionSheetItem,
   ActionSheetSelectDetails,
-} from "@code-ui/action-sheet";
+} from "@code-id-labs/action-sheet";
 
 interface CustomShareOption {
   id: string;

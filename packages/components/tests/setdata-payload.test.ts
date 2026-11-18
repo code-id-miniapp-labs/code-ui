@@ -3,13 +3,13 @@ import {
   MiniappMachine,
   connectToComponent,
   setupComputed,
-} from "@code-ui/miniapp";
-import { checkboxMachine, connectCheckbox } from "@code-ui/checkbox";
-import { sliderMachine, connectSlider } from "@code-ui/slider";
-import { stepperMachine, connectStepper } from "@code-ui/stepper";
-import { tabsMachine, connectTabs } from "@code-ui/tabs";
-import { drawerMachine, connectDrawer } from "@code-ui/drawer";
-import { modalMachine, connectModal } from "@code-ui/modal";
+} from "@code-id-labs/miniapp";
+import { checkboxMachine, connectCheckbox } from "@code-id-labs/checkbox";
+import { sliderMachine, connectSlider } from "@code-id-labs/slider";
+import { stepperMachine, connectStepper } from "@code-id-labs/stepper";
+import { tabsMachine, connectTabs } from "@code-id-labs/tabs";
+import { drawerMachine, connectDrawer } from "@code-id-labs/drawer";
+import { modalMachine, connectModal } from "@code-id-labs/modal";
 
 const flush = () =>
   new Promise<void>((resolve) => queueMicrotask(() => queueMicrotask(resolve)));

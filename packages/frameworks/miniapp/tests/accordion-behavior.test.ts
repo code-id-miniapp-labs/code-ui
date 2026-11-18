@@ -6,8 +6,8 @@ import {
   handleAccordionAttached,
   handleAccordionReady,
 } from "../src/behaviors/accordion";
-import { accordionMachine } from "@code-ui/accordion";
-import { accordionItemMachine } from "@code-ui/accordion-item";
+import { accordionMachine } from "@code-id-labs/accordion";
+import { accordionItemMachine } from "@code-id-labs/accordion-item";
 import { MiniappMachine } from "../src/machine";
 
 function flush(): Promise<void> {

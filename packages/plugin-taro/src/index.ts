@@ -7,16 +7,16 @@ import { generateTypes } from "./runtime/types";
 
 export type { CodeUIPluginOptions };
 
-const PLUGIN_NAME = "@code-ui/plugin-taro";
+const PLUGIN_NAME = "@code-id-labs/plugin-taro";
 
 /**
  * @example
  * ```ts
  * // config/index.ts
- * plugins: ["@code-ui/plugin-taro"]
+ * plugins: ["@code-id-labs/plugin-taro"]
  *
  * // with options:
- * plugins: [["@code-ui/plugin-taro", { components: ["drawer"] }]]
+ * plugins: [["@code-id-labs/plugin-taro", { components: ["drawer"] }]]
  * ```
  */
 export default (ctx: IPluginContext, options: CodeUIPluginOptions = {}) => {
@@ -29,7 +29,7 @@ export default (ctx: IPluginContext, options: CodeUIPluginOptions = {}) => {
     const appPath = ctx.paths?.appPath ?? process.cwd();
     const sourcePath =
       resolvedOptions.sourcePath ??
-      path.join(appPath, "node_modules", "@code-ui", "components", "dist");
+      path.join(appPath, "node_modules", "@code-id-labs", "components", "dist");
 
     const targetComponents =
       resolvedOptions.components ?? (await discoverComponents(sourcePath));
@@ -39,7 +39,7 @@ export default (ctx: IPluginContext, options: CodeUIPluginOptions = {}) => {
       : `all (auto-discovered)`;
 
     console.log(
-      `\n[@code-ui/plugin-taro] Plugin active\n` +
+      `\n[@code-id-labs/plugin-taro] Plugin active\n` +
         `  Components : ${componentLabel}\n` +
         `  Types      : ${resolvedOptions.injectTypes !== false ? "injected" : "skipped"}\n`,
     );

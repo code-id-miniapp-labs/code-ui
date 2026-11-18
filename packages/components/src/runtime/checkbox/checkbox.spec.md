@@ -4,8 +4,8 @@
 
 - **Purpose**: A form-capable checkbox control supporting checked, unchecked, and indeterminate states, optional label/description text, custom indicator icons or slots, and standalone or grouped selection.
 - **Architecture Tier**: **Tier 3 — Domain**
-  - Driven by `@code-ui/checkbox` (`checkboxMachine` + `connectCheckbox`) via `createMachineBehavior` (`../_shared/machine`).
-  - Integrates domain relation behaviors `withFormField()` (`@code-ui/miniapp/behaviors/form`) and `withCheckboxItem()` (`@code-ui/miniapp/behaviors/checkbox`), exporting its machine API (`exportApi: true`).
+  - Driven by `@code-id-labs/checkbox` (`checkboxMachine` + `connectCheckbox`) via `createMachineBehavior` (`../_shared/machine`).
+  - Integrates domain relation behaviors `withFormField()` (`@code-id-labs/miniapp/behaviors/form`) and `withCheckboxItem()` (`@code-id-labs/miniapp/behaviors/checkbox`), exporting its machine API (`exportApi: true`).
 - **Related Components**:
   - **Parent**: `<c-checkbox-group>` (provides `groupContext`, `groupSize`, `groupColor`, `groupVariant` via `withCheckboxItem`) and `<c-form>` / form field containers (provides `formContext`, `fieldSize`, `fieldDisabled` via `withFormField`).
   - **Child**: `<c-icon>` (rendered internally for the default check and indeterminate indicator icons).
@@ -49,7 +49,7 @@ All slots are declared in the MiniProgram `slots` map (`default`, `indicator`, `
 
 ## Events
 
-No custom `this.triggerEvent(...)` calls are declared directly in `packages/components/src/runtime/checkbox/index.ts`; tap interaction on the root element (`bind:tap="handleTap"`) forwards to `cCheckbox.handleTap()`, and state updates are communicated through the `@code-ui/checkbox` machine contract (`CheckboxProps.onChange`) and parent group/form bindings:
+No custom `this.triggerEvent(...)` calls are declared directly in `packages/components/src/runtime/checkbox/index.ts`; tap interaction on the root element (`bind:tap="handleTap"`) forwards to `cCheckbox.handleTap()`, and state updates are communicated through the `@code-id-labs/checkbox` machine contract (`CheckboxProps.onChange`) and parent group/form bindings:
 
 | Event / Callback | Detail Payload | Description |
 | --- | --- | --- |

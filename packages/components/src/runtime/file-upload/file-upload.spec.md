@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: A WeChat MiniProgram file upload component supporting a configurable dropzone or compact trigger button, native WeChat file/media selection (`auto`, `media`, `messageFile`), validation (`maxFiles`, `maxSize`, `minSize`, `accept`), list or grid file previews, upload progress bars, file removal, and form field integration.
-- **Architecture Tier**: **Tier 3 (Domain / Form Relations)** — backed by the `@code-ui/file-upload` FSM (`createMachineBehavior` with `exportApi: true`) and integrated with `@code-ui/miniapp/behaviors/form` (`withFormField()`), alongside `computedBehavior` and `createComponentOptions` from `../_shared/base`.
+- **Architecture Tier**: **Tier 3 (Domain / Form Relations)** — backed by the `@code-id-labs/file-upload` FSM (`createMachineBehavior` with `exportApi: true`) and integrated with `@code-id-labs/miniapp/behaviors/form` (`withFormField()`), alongside `computedBehavior` and `createComponentOptions` from `../_shared/base`.
 - **Compound Relationships**: Standalone component (not a parent/child compound group); renders internal `<c-icon>` and `<c-progress>` components and optionally registers with a parent `<c-form>` / `<c-form-field>` via `withFormField()`.
 
 ## Props

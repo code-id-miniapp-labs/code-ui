@@ -1,13 +1,13 @@
-import type { MiniAppEventLike } from "@code-ui/utils";
-import { isEqual } from "@code-ui/utils";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
+import { isEqual } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
   createProperties,
   getApi,
 } from "../_shared/machine";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
-import { withInputMenu } from "@code-ui/miniapp/behaviors/input-menu";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
+import { withInputMenu } from "@code-id-labs/miniapp/behaviors/input-menu";
 import {
   connectInputMenu,
   defaultInputMenuProps,
@@ -15,7 +15,7 @@ import {
   type InputMenuContentConfig,
   type InputMenuItem,
   type InputMenuSize,
-} from "@code-ui/input-menu";
+} from "@code-id-labs/input-menu";
 import themeConfig from "virtual:cui/theme/input-menu";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";

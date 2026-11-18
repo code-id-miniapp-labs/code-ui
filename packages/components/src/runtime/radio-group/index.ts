@@ -3,18 +3,18 @@ import type {
   RadioGroupOrientation,
   RadioGroupSize,
   RadioGroupVariant,
-} from "@code-ui/radio-group";
-import type { MiniAppEventLike } from "@code-ui/utils";
+} from "@code-id-labs/radio-group";
+import type { MiniAppEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import { createMachineBehavior, createProperties, getApi } from "../_shared/machine";
-import { withRadioGroup } from "@code-ui/miniapp/behaviors/radio";
-import { withFormField } from "@code-ui/miniapp/behaviors/form";
+import { withRadioGroup } from "@code-id-labs/miniapp/behaviors/radio";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { resolveSlots } from "../../utils/ui";
 import {
   radioGroupMachine,
   connectRadioGroup,
   defaultRadioGroupProps,
-} from "@code-ui/radio-group";
+} from "@code-id-labs/radio-group";
 import themeConfig from "virtual:cui/theme/radio-group";
 import { tv } from "../../utils/variants";
 

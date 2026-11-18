@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/miniapp",
+  "name": "@code-id-labs/miniapp",
   "version": "0.0.1",
   "private": true,
   "description": "MiniApp framework runtime and machine adapter for code-ui",
@@ -95,8 +95,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

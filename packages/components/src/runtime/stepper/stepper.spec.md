@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Displays progress through a sequence of numbered or labeled steps in a multi-step workflow, wizard, or timeline. Supports horizontal scrollable auto-slide and vertical layouts, linear progression enforcement, declarative compound children, and data-driven `items` rendering.
-- **Architecture Tier**: **Tier 3 Domain** (Interactive stateful component backed by `@code-ui/stepper` and domain relation behavior `withStepper` from `@code-ui/miniapp/behaviors/stepper`).
+- **Architecture Tier**: **Tier 3 Domain** (Interactive stateful component backed by `@code-id-labs/stepper` and domain relation behavior `withStepper` from `@code-id-labs/miniapp/behaviors/stepper`).
 - **Related Components**:
   - Parent: `<c-stepper>` (`packages/components/src/runtime/stepper/`)
   - Child: `<c-stepper-item>` (`packages/components/src/runtime/stepper-item/`) — coordinated via MiniProgram `relations` in declarative mode or rendered automatically via `wx:for` in data-driven mode.

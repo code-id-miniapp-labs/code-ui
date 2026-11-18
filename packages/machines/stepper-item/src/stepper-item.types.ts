@@ -2,10 +2,10 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { MiniAppComponent } from "@code-ui/utils";
-import type { StepperGroupContext, StepperStatus } from "@code-ui/stepper";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
+import type { MiniAppComponent } from "@code-id-labs/utils";
+import type { StepperGroupContext, StepperStatus } from "@code-id-labs/stepper";
 import type { anatomy } from "./stepper-item.anatomy";
 
 export type StepperItemState = StepperStatus;

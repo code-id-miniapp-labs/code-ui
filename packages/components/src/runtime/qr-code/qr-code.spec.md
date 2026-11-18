@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Renders a QR code as an SVG data URL inside an `<image>` element from a string or URL payload, with configurable error correction, quiet zone border, encoding options, theme sizing/colors, and an optional centered overlay.
-- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (backed by the `@code-ui/qr-code` state machine via `createMachineBehavior` in `packages/components/src/runtime/qr-code/index.ts`, alongside `computedBehavior` from `../_shared/base`).
+- **Architecture Tier**: **Tier 2 — Interactive / Stateful** (backed by the `@code-id-labs/qr-code` state machine via `createMachineBehavior` in `packages/components/src/runtime/qr-code/index.ts`, alongside `computedBehavior` from `../_shared/base`).
 - **Compound Relationships**: Standalone component (no parent/child compound components).
 
 ---

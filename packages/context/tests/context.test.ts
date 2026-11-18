@@ -27,7 +27,7 @@ function createMockComponent(owner?: any) {
   };
 }
 
-describe("@code-ui/context - cui-context-request handshake", () => {
+describe("@code-id-labs/context - cui-context-request handshake", () => {
   const TestKey = createInjectionKey<string>("test-key");
 
   it("resolves context synchronously when parent has already called provide", () => {

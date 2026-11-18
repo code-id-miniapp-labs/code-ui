@@ -1,7 +1,7 @@
 import type {
   NormalizeProps,
   PropTypes,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 import type { ToastApi, ToastService } from "./toast.types";
 import * as dom from "./toast.dom";
 

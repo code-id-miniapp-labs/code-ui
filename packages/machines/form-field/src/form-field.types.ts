@@ -1,6 +1,6 @@
-import type { Machine, Params, Service } from "@code-ui/core";
-import type { FormHostContext, FormRule } from "@code-ui/form";
-import type { MiniAppComponent } from "@code-ui/utils";
+import type { Machine, Params, Service } from "@code-id-labs/core";
+import type { FormHostContext, FormRule } from "@code-id-labs/form";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 
 
 export type FormFieldSize = "xs" | "sm" | "md" | "lg" | "xl";

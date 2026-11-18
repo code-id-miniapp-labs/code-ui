@@ -1,13 +1,13 @@
-import { createMachine } from "@code-ui/core";
-import type { BindableRefs, PropFn } from "@code-ui/core";
+import { createMachine } from "@code-id-labs/core";
+import type { BindableRefs, PropFn } from "@code-id-labs/core";
 import {
   cleanupFormFieldSync,
   createFormFieldComputed,
   hasFormFieldErrors,
   setupFormFieldSync,
-} from "@code-ui/form/context";
-import type { CheckboxGroupContext } from "@code-ui/checkbox-group";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+} from "@code-id-labs/form/context";
+import type { CheckboxGroupContext } from "@code-id-labs/checkbox-group";
+import { isNotEmpty, isNotNull } from "@code-id-labs/utils";
 import type {
   CheckboxMachine,
   CheckboxSchema,

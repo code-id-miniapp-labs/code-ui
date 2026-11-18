@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { drawerTheme } from "../src";
 
-describe("drawerTheme (@code-ui/core)", () => {
+describe("drawerTheme (@code-id-labs/core)", () => {
   it("keeps top and bottom placements full-width while constraining side drawers", () => {
     const theme = drawerTheme();
 

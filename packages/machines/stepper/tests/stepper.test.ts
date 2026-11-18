@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import {
   stepperMachine,
   connectStepper,
@@ -7,7 +7,7 @@ import {
 import {
   stepperItemMachine,
   connectStepperItem,
-} from "@code-ui/stepper-item";
+} from "@code-id-labs/stepper-item";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));

@@ -1,5 +1,5 @@
 /**
- * @code-ui/miniapp - Event normalization
+ * @code-id-labs/miniapp - Event normalization
  *
  * Normalizes MiniProgram and machine event payloads into a consistent
  * WeChat event structure, enabling framework-agnostic FSM machines.

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { actionSheetTheme as createActionSheetTheme } from "@code-ui/core";
+import { actionSheetTheme as createActionSheetTheme } from "@code-id-labs/core";
 import { tv } from "../src/utils/variants";
 import { resolveSlots } from "../src/utils/ui";
 
@@ -11,7 +11,7 @@ const ACTION_SHEET_RUNTIME_DIR = resolve(
   "../src/runtime/action-sheet",
 );
 
-describe("actionSheetTheme runtime resolution (@code-ui/components)", () => {
+describe("actionSheetTheme runtime resolution (@code-id-labs/components)", () => {
   it("resolves default slots correctly when closed", () => {
     const slots = resolveSlots(
       actionSheetTheme({

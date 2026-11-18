@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { progressMachine } from "../src/progress.machine";
 import { connectProgress } from "../src/progress.connect";
 

@@ -1,6 +1,6 @@
 {
-  "name": "@code-ui/composables",
-  "version": "0.0.1",
+  "name": "@code-id-labs/composables",
+  "version": "1.0.0",
   "description": "Vue-inspired reactive composition functions and hooks for WeChat MiniProgram",
   "files": [
     "dist"
@@ -32,8 +32,8 @@
     "miniprogram-api-typings": "^5.2.3",
     "tsdown": "^0.23.0",
     "typescript": "^5.5.4",
-    "@code-ui/miniapp": "workspace:*",
-    "@code-ui/core": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/miniapp": "workspace:*",
+    "@code-id-labs/core": "workspace:*",
+    "@code-id-labs/utils": "workspace:*"
   }
 }

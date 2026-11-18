@@ -29,7 +29,7 @@ function loadJson(filePath: string): any | null {
 }
 
 /**
- * Resolves the built-in Lucide collection from `@code-ui/plugin-vite`'s own
+ * Resolves the built-in Lucide collection from `@code-id-labs/plugin-vite`'s own
  * dependencies plus any additional `@iconify-json/*` or `@iconify/json`
  * collections installed in the user's project.
  */
@@ -92,7 +92,7 @@ export function resolveCodeUIIconCollections(
 }
 
 /**
- * Tailwind CSS v4 plugin entrypoint used by `@plugin "@code-ui/plugin-vite/icons"`.
+ * Tailwind CSS v4 plugin entrypoint used by `@plugin "@code-id-labs/plugin-vite/icons"`.
  * Ships with `@iconify-json/lucide` built in so components render icons with
  * zero extra setup, while automatically picking up any user-installed
  * `@iconify-json/<collection>` packages.

@@ -18,6 +18,6 @@ export default defineConfig({
       "@egoist/tailwindcss-icons",
       "@iconify-json/lucide",
     ],
-    alwaysBundle: ["@code-ui/core", "@code-ui/compiler", "@code-ui/utils"],
+    alwaysBundle: ["@code-id-labs/core", "@code-id-labs/compiler", "@code-id-labs/utils"],
   },
 });

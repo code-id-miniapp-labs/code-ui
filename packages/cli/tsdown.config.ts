@@ -12,6 +12,6 @@ export default defineConfig({
     js: "#!/usr/bin/env node",
   },
   deps: {
-    alwaysBundle: ["@code-ui/core", "@code-ui/utils"],
+    alwaysBundle: ["@code-id-labs/core", "@code-id-labs/utils"],
   },
 });

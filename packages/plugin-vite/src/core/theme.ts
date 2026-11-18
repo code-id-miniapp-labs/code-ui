@@ -3,7 +3,7 @@ import {
   type CodeUIConfig,
   type ColorSystem,
   type ColorValue,
-} from "@code-ui/core";
+} from "@code-id-labs/core";
 
 export const THEME_TAG = "/* @code-ui:theme */";
 

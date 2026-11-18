@@ -1,8 +1,8 @@
 import { describe, it, vi } from "vitest";
-import { MiniappMachine } from "@code-ui/miniapp";
+import { MiniappMachine } from "@code-id-labs/miniapp";
 import { buttonMachine } from "../src/button.machine";
 import { connectButton } from "../src/button.connect";
-import { diffSnapshot } from "@code-ui/utils";
+import { diffSnapshot } from "@code-id-labs/utils";
 import { effectScope, effect } from "alien-signals";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

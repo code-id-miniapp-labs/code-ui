@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   transformWxmlSlots,
   type TransformWxmlSlotsOptions,
-} from "@code-ui/compiler";
+} from "@code-id-labs/compiler";
 import {
   isBundleAsset,
   type OutputBundleLike,

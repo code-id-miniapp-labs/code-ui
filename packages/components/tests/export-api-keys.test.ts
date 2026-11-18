@@ -1,9 +1,9 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { createMachineBehavior } from "@code-ui/miniapp";
-import { connectModal, modalMachine } from "@code-ui/modal";
-import { connectStepper, stepperMachine } from "@code-ui/stepper";
+import { createMachineBehavior } from "@code-id-labs/miniapp";
+import { connectModal, modalMachine } from "@code-id-labs/modal";
+import { connectStepper, stepperMachine } from "@code-id-labs/stepper";
 
 const RUNTIME_DIR = resolve(__dirname, "../src/runtime");
 const FORBIDDEN_INTERNAL_KEYS = new Set([
@@ -36,7 +36,7 @@ function extractBehaviorOptionKeys(source: string): string[] | null {
   return Array.from(body.matchAll(/["']([^"']+)["']/g), (m) => m[1] as string);
 }
 
-describe("@code-ui/components exportApiKeys configuration", () => {
+describe("@code-id-labs/components exportApiKeys configuration", () => {
   it("configures explicit non-empty exportApiKeys on every machine component with exportApi: true", () => {
     const dirs = readdirSync(RUNTIME_DIR, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))

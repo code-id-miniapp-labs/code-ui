@@ -53,7 +53,7 @@ function createAvatar(data: Record<string, any> = {}) {
   return avatar;
 }
 
-describe("avatar-group behavior (@code-ui/miniapp)", () => {
+describe("avatar-group behavior (@code-id-labs/miniapp)", () => {
   it("configures relations for parent and child correctly", () => {
     const parentRels: Record<string, any> = {};
     setupAvatarGroupRelations(parentRels, "parent");

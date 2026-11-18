@@ -60,15 +60,15 @@ import {
   type TreeShakeOptions,
 } from "./types";
 
-export { defineConfig } from "@code-ui/core";
+export { defineConfig } from "@code-id-labs/core";
 export {
   COMPONENT_SLOTS_MANIFEST,
   transformWxmlSlots,
   type TransformWxmlSlotsOptions,
   type TransformWxmlSlotsResult,
-} from "@code-ui/compiler";
+} from "@code-id-labs/compiler";
 export { serializeCompactThemeModule } from "./core/serialize";
-export type { CodeUIConfig, ComponentConfig } from "@code-ui/core";
+export type { CodeUIConfig, ComponentConfig } from "@code-id-labs/core";
 export type {
   AppWrapperOptions,
   AutoImportOptions,

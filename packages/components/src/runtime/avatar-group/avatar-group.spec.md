@@ -5,7 +5,7 @@
 - **Purpose**: Displays a stacked horizontal group of overlapping avatars with an optional overflow counter (`+<overflowCount>`) rendered via `<c-avatar>` when the number of child avatars exceeds `max`.
 - **Architecture Tier**:
   - **Tier 1 (Presentational)** base runtime: imports `computedBehavior` and `createComponentOptions` from `../_shared/base` (no FSM machine).
-  - **Tier 3 (Domain Relations)**: integrates `cuiAvatarGroupBehavior` and `setupAvatarGroupRelations(relations, "parent")` from `@code-ui/miniapp/behaviors/avatar-group` to coordinate parent/child avatar state (`totalCount`, `overflowCount`).
+  - **Tier 3 (Domain Relations)**: integrates `cuiAvatarGroupBehavior` and `setupAvatarGroupRelations(relations, "parent")` from `@code-id-labs/miniapp/behaviors/avatar-group` to coordinate parent/child avatar state (`totalCount`, `overflowCount`).
 - **Related Components**:
   - Child: `c-avatar` (passed into the default slot, and also rendered internally as the overflow counter `<c-avatar isGroupCounter="{{true}}" />` when `overflowCount > 0`).
 

@@ -4,9 +4,9 @@
 
 - **Purpose**: Anchored floating menu / popover surface positioned relative to a trigger element, with collision handling, optional directional arrow, optional `<root-portal>` rendering, backdrop dismissal, and enter/exit visibility transitions.
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
-  - State machine & connect layer: `@code-ui/popover` (`packages/machines/popover`)
+  - State machine & connect layer: `@code-id-labs/popover` (`packages/machines/popover`)
   - Theme definition: `packages/core/src/theme/definitions/popover.ts`
-  - MiniProgram runtime: `packages/components/src/runtime/popover` (`../_shared/base` + `../_shared/machine`, plus `createAppThemeBehavior` from `@code-ui/miniapp/behaviors/theme` for portal theme CSS variables)
+  - MiniProgram runtime: `packages/components/src/runtime/popover` (`../_shared/base` + `../_shared/machine`, plus `createAppThemeBehavior` from `@code-id-labs/miniapp/behaviors/theme` for portal theme CSS variables)
 - **Compound Structure**: Standalone component (no parent/child relation components). Exposes its machine API on the component instance (`exportApi: true` under key `"popover"`).
 
 ## Props

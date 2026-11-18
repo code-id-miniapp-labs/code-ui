@@ -61,7 +61,7 @@
         bind:change="onAccordionChange"
       >
         <c-accordion-item value="getting-started" label="Getting Started" description="Installation and initial configuration" icon="i-lucide-rocket">
-          <text class="text-xs text-muted leading-relaxed">Install @code-ui/components and wire codeUI() inside weapp-vite.config.ts.</text>
+          <text class="text-xs text-muted leading-relaxed">Install @code-id-labs/components and wire codeUI() inside weapp-vite.config.ts.</text>
         </c-accordion-item>
         <c-accordion-item value="components" label="Custom Trailing Icon" description="Overrides trailing chevron with sparkles" icon="i-lucide-box" trailing-icon="i-lucide-sparkles">
           <text class="text-xs text-muted leading-relaxed">Supports custom leading/trailing icons as well as slot="content".</text>

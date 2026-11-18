@@ -3,7 +3,7 @@
 ## Overview & Tier
 
 - **Purpose**: Displays a circular avatar image with automatic fallback to a custom `icon` slot, a `<c-icon>` via the `icon` prop, a `default` slot, or computed initials/text when `src` is omitted or fails to load.
-- **Architecture Tier**: **Tier 1 (Presentational)** (`../_shared/base` via `computedBehavior` and `createComponentOptions`, no FSM machine), with **Tier 3 (Domain)** relation integration via `cuiAvatarItemBehavior` and `setupAvatarGroupRelations(relations, "child")` from `@code-ui/miniapp/behaviors/avatar-group`.
+- **Architecture Tier**: **Tier 1 (Presentational)** (`../_shared/base` via `computedBehavior` and `createComponentOptions`, no FSM machine), with **Tier 3 (Domain)** relation integration via `cuiAvatarItemBehavior` and `setupAvatarGroupRelations(relations, "child")` from `@code-id-labs/miniapp/behaviors/avatar-group`.
 - **Compound Components**: Child item of `c-avatar-group` (receives group layout/sizing data such as `groupSize`, `groupAttached`, `groupHidden`, `groupOrder`, `groupZIndex`, `groupIsEdge`, and `groupBaseClass` when linked).
 
 ## Props

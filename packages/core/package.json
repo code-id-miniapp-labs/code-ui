@@ -1,5 +1,5 @@
 {
-  "name": "@code-ui/core",
+  "name": "@code-id-labs/core",
   "version": "0.0.1",
   "private": true,
   "description": "Core FSM types and machine infrastructure for code-ui",
@@ -31,7 +31,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@code-ui/utils": "workspace:*"
+    "@code-id-labs/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

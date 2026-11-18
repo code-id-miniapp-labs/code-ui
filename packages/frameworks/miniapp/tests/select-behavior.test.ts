@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { selectMachine } from "@code-ui/select";
-import { selectItemMachine } from "@code-ui/select-item";
+import { selectMachine } from "@code-id-labs/select";
+import { selectItemMachine } from "@code-id-labs/select-item";
 import {
   handleSelectAttached,
   linkSelectItemToParent,

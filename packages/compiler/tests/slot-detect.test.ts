@@ -17,7 +17,7 @@ function evaluateWxsModule(code: string, moduleName = "__cuiSlots"): Record<stri
   return mod.exports;
 }
 
-describe("@code-ui/compiler - transformWxmlSlots", () => {
+describe("@code-id-labs/compiler - transformWxmlSlots", () => {
   describe("1. Empty, self-closing & non-component tags", () => {
     it("leaves self-closing and empty component tags unchanged", () => {
       const src = `<c-input placeholder="Enter" /><c-card>   <!-- comment -->  </c-card>`;

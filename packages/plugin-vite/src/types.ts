@@ -1,4 +1,4 @@
-import type { CodeUIConfig } from "@code-ui/core";
+import type { CodeUIConfig } from "@code-id-labs/core";
 
 export interface AutoImportOptions {
   enable?: boolean;

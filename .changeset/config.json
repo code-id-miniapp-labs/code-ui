@@ -4,10 +4,10 @@
   "commit": false,
   "fixed": [
     [
-      "@code-ui/components",
-      "@code-ui/plugin-vite",
-      "@code-ui/cli",
-      "@code-ui/composables"
+      "@code-id-labs/components",
+      "@code-id-labs/plugin-vite",
+      "@code-id-labs/cli",
+      "@code-id-labs/composables"
     ]
   ],
   "linked": [],

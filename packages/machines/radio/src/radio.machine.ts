@@ -1,7 +1,7 @@
-import { createMachine } from "@code-ui/core";
-import type { PropFn } from "@code-ui/core";
-import type { RadioGroupContext } from "@code-ui/radio-group";
-import { isNotEmpty, isNotNull } from "@code-ui/utils";
+import { createMachine } from "@code-id-labs/core";
+import type { PropFn } from "@code-id-labs/core";
+import type { RadioGroupContext } from "@code-id-labs/radio-group";
+import { isNotEmpty, isNotNull } from "@code-id-labs/utils";
 import type { RadioMachine, RadioSchema } from "./radio.types";
 import { defaultRadioProps } from "./radio.props";
 

@@ -1,4 +1,4 @@
 export {
   computedBehavior,
   createComponentOptions,
-} from "@code-ui/miniapp/computed";
+} from "@code-id-labs/miniapp/computed";

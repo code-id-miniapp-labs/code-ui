@@ -2,10 +2,10 @@ import type {
   AnatomyPartName,
   ComponentUI,
   ResolvedUI,
-} from "@code-ui/anatomy";
-import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { TabsGroupContext } from "@code-ui/tabs";
-import type { MiniAppComponent } from "@code-ui/utils";
+} from "@code-id-labs/anatomy";
+import type { Machine, MachineSchema, Params, Service } from "@code-id-labs/core";
+import type { TabsGroupContext } from "@code-id-labs/tabs";
+import type { MiniAppComponent } from "@code-id-labs/utils";
 import type { anatomy } from "./tabs-item.anatomy";
 
 export type TabsItemAnatomyPart = AnatomyPartName<typeof anatomy>;
