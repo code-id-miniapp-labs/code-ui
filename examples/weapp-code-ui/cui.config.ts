@@ -1,7 +1,7 @@
 import { defineConfig } from "@code-ui/plugin-vite";
 
 export default defineConfig({
-  prefix: "cui",
+  prefix: "c",
   icons: {
     collections: ["lucide", "tabler"],
     loading: "i-lucide-loader",
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   ui: {
     colors: {
-      primary: "red",
+      primary: "stone",
       secondary: "amber",
       danger: "red",
     },

@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { FloatingMenuContentConfig } from "@code-ui/floating-menu";
+import type { PopoverContentConfig } from "@code-ui/popover";
 import type {
   BoundFormField,
   FormHostContext,
@@ -94,7 +94,7 @@ export interface SelectPickerColumnItem {
   index: number;
 }
 
-export interface SelectContentConfig extends FloatingMenuContentConfig {}
+export interface SelectContentConfig extends PopoverContentConfig {}
 
 export interface SelectValueChangeDetails {
   value: SelectValue;

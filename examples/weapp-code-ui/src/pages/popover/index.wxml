@@ -1,0 +1,75 @@
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header title="Popover" badge="Navigation" subtitle="Anchored floating menu surface with collision handling, directional arrow, portal rendering, and backdrop dismissal." />
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Basic (Tap Trigger + Arrow) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <text class="text-sm font-semibold text-highlighted">Basic (Tap Trigger & Arrow)</text>
+      <c-popover trigger-mode="tap" arrow="{{true}}" matchTriggerWidth="{{false}}">
+        <view slot="trigger" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-inverted text-sm font-medium">
+          <text>Open Menu</text>
+          <c-icon name="i-lucide-chevron-down" size="sm" />
+        </view>
+        <view class="p-1 flex flex-col gap-0.5">
+          <view class="px-3 py-2 text-sm rounded-md" data-action="Profile" bind:tap="handleItemTap">
+            Profile
+          </view>
+          <view class="px-3 py-2 text-sm rounded-md" data-action="Settings" bind:tap="handleItemTap">
+            Settings
+          </view>
+          <view class="px-3 py-2 text-sm rounded-md text-error" data-action="Logout" bind:tap="handleItemTap">
+            Logout
+          </view>
+        </view>
+      </c-popover>
+    </view>
+    <!-- 2. Controlled Open State -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view class="flex items-center justify-between">
+        <text class="text-sm font-semibold text-highlighted">Controlled</text>
+        <text class="text-xs text-muted">open: {{controlledOpen}}</text>
+      </view>
+      <c-popover open="{{controlledOpen}}" bind:openChange="handleOpenChange">
+        <view slot="trigger">
+          <c-button label="{{'Toggle Controlled'}}" color="primary" bind:tap="toggleControlled" />
+        </view>
+        <view class="p-2 flex flex-col gap-1">
+          <text class="text-xs text-muted px-2 py-1">Controlled via page state</text>
+          <c-button size="xs" variant="soft" label="Close" bind:tap="closeControlled" />
+        </view>
+      </c-popover>
+    </view>
+    <!-- 3. Placement (Top / End) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <text class="text-sm font-semibold text-highlighted">
+        Placement (side="top", align="end")
+      </text>
+      <view class="flex justify-end">
+        <view class="w-full">
+          <c-popover trigger-mode="tap" side="top" align="end" side-offset="{{8}}" arrow="{{true}}">
+            <view slot="trigger" class="w-full text-center px-3 py-2 rounded-lg border border-default bg-default text-sm font-medium">
+              Top End
+            </view>
+            <view class="p-2 text-sm">
+              <text class="block py-1">Opens above trigger</text>
+            </view>
+          </c-popover>
+        </view>
+      </view>
+    </view>
+    <!-- 4. Portal Mode -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <text class="text-sm font-semibold text-highlighted">Portal (&lt;root-portal&gt;)</text>
+      <c-popover trigger-mode="tap" portal="{{true}}" arrow="{{true}}">
+        <view slot="trigger" class="inline-flex items-center px-3 py-2 rounded-lg bg-elevated text-default text-sm font-medium">
+          Open in Portal
+        </view>
+        <view class="p-3 text-sm">
+          <text class="block">
+            Rendered inside &lt;root-portal&gt; to escape overflow-hidden containers.
+          </text>
+        </view>
+      </c-popover>
+    </view>
+    <view wx:if="{{lastAction}}" class="text-xs text-muted px-1">Last action: {{lastAction}}</view>
+  </view>
+</view>

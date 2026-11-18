@@ -70,9 +70,9 @@ declare module "virtual:cui/theme/file-upload" {
   export default theme;
 }
 
-declare module "virtual:cui/theme/floating-menu" {
-  import type { default as floatingMenuTheme } from "@code-ui/core/src/theme/definitions/floating-menu";
-  const theme: ReturnType<typeof floatingMenuTheme>;
+declare module "virtual:cui/theme/popover" {
+  import type { default as popoverTheme } from "@code-ui/core/src/theme/definitions/popover";
+  const theme: ReturnType<typeof popoverTheme>;
   export default theme;
 }
 

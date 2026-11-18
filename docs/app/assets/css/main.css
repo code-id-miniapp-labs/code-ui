@@ -5,21 +5,70 @@
 
 @theme static {
   --container-8xl: 90rem;
-  --font-sans: 'Public Sans', sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  /* Code.id Typography: Plus Jakarta Sans (UI & body) + Lexend Deca (display/wordmark) */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-lexend: "Lexend Deca", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Code.id Primary Crimson Red (#e62024) */
+  --color-red-50: #fdf2f2;
+  --color-red-100: #fde8e8;
+  --color-red-200: #fbd5d5;
+  --color-red-300: #f8b4b4;
+  --color-red-400: #f87171;
+  --color-red-500: #e62024;
+  --color-red-600: #c81e1e;
+  --color-red-700: #9b1c1c;
+  --color-red-800: #771d1d;
+  --color-red-900: #5b1414;
+  --color-red-950: #3b0a0a;
+
+  /* Code.id Secondary Indigo Navy (#101860) */
+  --color-blue-50: #f0f2fb;
+  --color-blue-100: #dfe4f7;
+  --color-blue-200: #c0caf0;
+  --color-blue-300: #8fa1e3;
+  --color-blue-400: #4e6bd0;
+  --color-blue-500: #101860;
+  --color-blue-600: #0d134e;
+  --color-blue-700: #0a0e3b;
+  --color-blue-800: #070a29;
+  --color-blue-900: #040618;
+  --color-blue-950: #02030c;
+
+  /* Code.id Emerald Success (#00a859) */
+  --color-green-50: #ecfdf4;
+  --color-green-100: #d1fae3;
+  --color-green-200: #a7f3cc;
+  --color-green-300: #6ee7b7;
+  --color-green-400: #34d399;
+  --color-green-500: #00a859;
+  --color-green-600: #048a4b;
+  --color-green-700: #066d3d;
+  --color-green-800: #05522e;
+  --color-green-900: #043722;
+  --color-green-950: #022014;
+
+  /* Code.id Warm Amber/Yellow Accent (#fbb016) */
+  --color-yellow-50: #fef9ec;
+  --color-yellow-100: #fef0c7;
+  --color-yellow-200: #fce3a1;
+  --color-yellow-300: #fad36e;
+  --color-yellow-400: #f8c33e;
+  --color-yellow-500: #fbb016;
+  --color-yellow-600: #d69308;
+  --color-yellow-700: #a87206;
+  --color-yellow-800: #7a5204;
+  --color-yellow-900: #523703;
+  --color-yellow-950: #332101;
 }
 
 :root {
   --ui-container: var(--container-8xl);
+  --ui-radius: 0.375rem;
+}
+
+.font-lexend {
+  font-family: var(--font-lexend);
 }

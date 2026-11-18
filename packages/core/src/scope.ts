@@ -49,21 +49,9 @@ export function optPartId(scope: Scope, part: string): string | undefined {
   return typeof custom === "string" ? custom : undefined;
 }
 
-export function isMinimalDataAttrs(): boolean {
-  const cfg = (
-    typeof globalThis !== "undefined"
-      ? (globalThis as Record<string, any>)
-      : undefined
-  )?.__CODE_UI_GLOBAL_CONFIG__;
-  return (
-    (cfg?.components?.dataAttributes ?? cfg?.dataAttributes) === "minimal"
-  );
-}
-
 export function dataAttrs(
   optional: Record<string, unknown>,
 ): Record<string, any> {
-  if (isMinimalDataAttrs()) return {};
   const out: Record<string, any> = {};
   for (const k in optional) {
     const v = optional[k];
@@ -85,7 +73,7 @@ export function dataControlState(
   if (state !== undefined) out["data-state"] = state;
   if (disabled !== undefined) out["data-disabled"] = String(disabled);
   if (focused !== undefined) out["data-focused"] = String(focused);
-  if (optional && !isMinimalDataAttrs()) {
+  if (optional) {
     for (const k in optional) {
       const v = optional[k];
       if (v !== undefined) {

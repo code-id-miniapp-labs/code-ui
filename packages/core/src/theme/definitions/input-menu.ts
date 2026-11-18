@@ -26,7 +26,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
       tagsItemDeleteIcon:
         "inline-flex items-center justify-center shrink-0 leading-none",
       nativeInput:
-        "flex-1 min-w-0 min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
+        "flex-1 min-w-0 w-full min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
       trailing: "shrink-0 flex items-center justify-center gap-1 text-dimmed",
       trailingIcon:
         "inline-flex items-center justify-center shrink-0 leading-none transition-transform duration-200",
@@ -124,7 +124,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
         true: {
           base: "h-auto py-1",
           tagsWrapper: "flex-wrap gap-y-1",
-          nativeInput: "min-w-[60px] h-[1.5em]",
+          nativeInput: "min-w-[60px] h-6",
         },
         false: {},
       },
@@ -240,21 +240,21 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
           base: `border-${errorColor} ring-2 ring-${errorColor}/20`,
         },
       },
-      // ...(
-      //   [
-      //     ["xs", "min-h-7"],
-      //     ["sm", "min-h-8"],
-      //     ["md", "min-h-9"],
-      //     ["lg", "min-h-10"],
-      //     ["xl", "min-h-11"],
-      //   ] as const
-      // ).map(([size, minHeight]) => ({
-      //   multiple: true as const,
-      //   size,
-      //   class: {
-      //     base: minHeight,
-      //   },
-      // })),
+      ...(
+        [
+          ["xs", "min-h-7"],
+          ["sm", "min-h-8"],
+          ["md", "min-h-9"],
+          ["lg", "min-h-10"],
+          ["xl", "min-h-11"],
+        ] as const
+      ).map(([size, minHeight]) => ({
+        multiple: true as const,
+        size,
+        class: {
+          base: minHeight,
+        },
+      })),
     ],
     defaultVariants: {
       variant: "outline",

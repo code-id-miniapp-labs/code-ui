@@ -1,111 +1,144 @@
-# Progress Component Specification
+# Progress (`c-progress`)
 
-## 1. Overview
+## Overview & Tier
 
-- **Purpose:** Accessible progress indicators for tracking task completion, file uploads, step progress, or background loading across both linear bars and circular rings.
-- **Category:** Interactive / Stateful Machine (Zag.js-inspired FSM + Connect pattern).
-- **Core Engine:** Built with `@code-ui/progress` machine, following `@zag-js/progress` and Nuxt UI `UProgress` styling.
-- **Modes Supported:** Both **Linear** (`type="linear"`, default) and **Circular** (`type="circular"`). Supports determinate numeric values and indeterminate animated loading states (`value={null}`).
-
----
-
-## 2. Anatomy
-
-Defined in `packages/machines/progress/src/progress.anatomy.ts` via `createAnatomy("progress")`:
-
-- **root:** The outer container wrapper (`data-part="root"`).
-- **track:** The linear background track container (`data-part="track"`).
-- **range:** The active indicator filling the track or circle (`data-part="range"`).
-- **label:** Accessible text label describing what is progressing (`data-part="label"`).
-- **valueText:** Visual formatted readout of current value or percentage (`data-part="value-text"`).
-- **view:** The SVG wrapper container for circular mode (`data-part="view"`).
-- **circle:** The root SVG element for circular progress (`data-part="circle"`).
-- **circleTrack:** The background circle path for circular progress (`data-part="circle-track"`).
-- **circleRange:** The active indicator circle path for circular progress (`data-part="circle-range"`).
+- **Purpose:** Accessible progress indicator for tracking task completion, file uploads, or background loading in linear (`type="linear"`) or circular (`type="circular"`) form, supporting both determinate numeric values and indeterminate loading states.
+- **Architecture Tier:** **Tier 2 — Interactive / Stateful** (powered by the `@code-ui/progress` machine via `createMachineBehavior`, importing from `../_shared/base` and `../_shared/machine`).
+- **Compound Relations:** Standalone component (no parent/child compound components).
+- **Public Imperative Methods:** Component instances expose `setValue(value: number | null)`, `setToMin()`, `setToMax()`, and `reset()` via `selectComponent`.
 
 ---
 
-## 3. State Machine Specification
+## Props
 
-_Implemented in `packages/machines/progress/`_
-
-### Context (`ProgressContext`)
-
-| Property | Type | Default | Description |
+| Name | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `value` | `number \| null` | `null` | The progress value. When `null`, the component enters indeterminate state. |
-| `min` | `number` | `0` | Minimum allowed value. |
-| `max` | `number` | `100` | Maximum allowed value. |
-| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction/orientation of the progress bar. |
-| `type` | `"linear" \| "circular"` | `"linear"` | Visual display type. |
-
-### Computed Values (`ProgressComputed`)
-
-| Property | Type | Description |
-| :--- | :--- | :--- |
-| `isIndeterminate` | `boolean` | `true` when `value` is `null` or `undefined`. |
-| `percent` | `number` | Percentage progress from 0 to 100 clamped, or `-1` if indeterminate. |
-| `isComplete` | `boolean` | `true` when `percent >= 100`. |
-| `progressState` | `"indeterminate" \| "loading" \| "complete"` | Semantic status flag. |
-| `valueAsString` | `string` | Formatted percentage string (e.g. `"45%"`) or custom formatted translation. |
-| `circleRadius` | `number` | Radius used for SVG circle rendering (default `42`). |
-| `circleCircumference` | `number` | Calculated SVG circle circumference (`2 * π * r`). |
-| `circleDashOffset` | `number` | SVG stroke dashoffset reflecting progress. |
-
-### Machine API (`ProgressApi` via `connectProgress`)
-
-- **State Properties:** `state`, `value`, `min`, `max`, `percent`, `isIndeterminate`, `isComplete`, `valueAsString`, `orientation`, `type`, `size`, `color`, `striped`, `animated`, `inverted`.
-- **Methods:**
-  - `setValue(value: number | null)`: Updates the progress value and triggers `onValueChange`.
-  - `setToMin()`: Jumps progress to minimum threshold.
-  - `setToMax()`: Jumps progress to maximum threshold.
-  - `reset()`: Resets progress back to `defaultValue` or `null`.
-- **Prop Getters:** `rootProps`, `trackProps`, `rangeProps`, `labelProps`, `valueTextProps`, `viewProps`, `circleProps`, `circleTrackProps`, `circleRangeProps`.
+| `value` | `number \| null` | `null` | Current progress value. When `null` (or `indeterminate` is `true`), renders in indeterminate mode. |
+| `defaultValue` | `number \| null` | `null` | Initial value used when `reset()` is called. |
+| `min` | `number` | `0` | Minimum progress bound (`aria-valuemin`). |
+| `max` | `number` | `100` | Maximum progress bound (`aria-valuemax`). |
+| `indeterminate` | `boolean` | `false` | Forces indeterminate loading state regardless of `value`. |
+| `type` | `"linear" \| "circular"` | `"linear"` | Visual presentation mode. |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Bar direction when `type="linear"`. |
+| `size` | `"2xs" \| "xs" \| "sm" \| "md" \| "lg" \| "xl" \| "2xl"` | `"md"` | Track thickness / circle size and label typography scale. |
+| `color` | `ThemeColor \| string` | `"primary"` | Theme color token (or `"neutral"`); in `circular` mode, CSS colors (`#...`, `rgb(...)`, `hsl(...)`, `oklch(...)`) are also applied directly via `color`. |
+| `trackColor` | `string` | `"#e5e7eb"` | CSS color passed as `--cui-progress-track-color` in `circular` mode. |
+| `striped` | `boolean` | `false` | Applies striped styling to the linear indicator range. |
+| `animated` | `boolean` | `false` | Animates the linear indicator range. |
+| `animation` | `"carousel" \| "carousel-inverse" \| "swing" \| "elastic" \| string` | `"carousel"` | Animation style name. |
+| `inverted` | `boolean` | `false` | Reverses the progress fill direction (`rotate-180` on track in linear mode; `scaleX(-1)` in circular mode). |
+| `circleRadius` | `number` | `42` | Circle radius configuration for `circular` mode. |
+| `strokeWidth` | `number` | `8` | Ring stroke thickness in `px` (`--cui-progress-stroke-width`) for `circular` mode. |
+| `label` | `string` | `""` | Text label rendered in the header above the linear bar when `type !== "circular"`. |
+| `showValue` | `boolean` | `false` | Displays the formatted value readout (`valueAsString`) in the linear header or inside the circular ring overlay. |
+| `ui` | `Record<string, string>` | `{}` | Per-slot class overrides keyed by theme slot name. |
+| `className` | `string` | `""` | Additional CSS classes merged onto the `root` slot (runtime property name for `class` on `c-progress`). |
 
 ---
 
-## 4. Visual Specification (Theme)
+## Slots
 
-_Implemented in `packages/core/src/theme/definitions/progress.ts`_
+WeChat MiniProgram `<slot>` elements are static (scoped slots are not supported) and do not support nested fallback content inside `<slot>...</slot>`, so `c-progress` uses `wx:if` / `wx:else` conditional rendering for fallbacks:
 
-### Slots & Styling
-
-- **`root`**: Flexible layout adapting to `horizontal`, `vertical`, or `circular` mode.
-- **`track`**: Rounded overflow-hidden neutral background (`bg-neutral-200`).
-- **`range`**: Smooth width transition (`duration-300 ease-out`), striped gradients, and keyframe animations.
-- **`circle` / `circleTrack` / `circleRange`**: Full SVG stroke rendering with dasharray/dashoffset calculations and rotation.
-
-### Variants
-
-- **`color`**: `primary`, `neutral`, `success`, `warning`, `danger`, `info`.
-- **`size`**: `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`.
-- **`type`**: `linear`, `circular`.
-- **`orientation`**: `horizontal`, `vertical`.
-- **`indeterminate`**: `true`, `false` (triggers `progress-carousel` keyframe or circular spin).
-- **`striped`**: `true`, `false` (45-degree diagonal stripes).
-- **`animated`**: `true`, `false` (smooth striped animation).
-- **`inverted`**: `true`, `false`.
+| Slot | Behavior & Constraints |
+| :--- | :--- |
+| `label` | Rendered in the header when `type !== "circular"` and the `label` prop is empty (`wx:if="{{label}}"` renders `<text>{{label}}</text>`, `wx:else` renders `<slot name="label" />`). Note: the header container is only rendered when `type !== "circular"` and at least one of `label`, `showValue`, `slots.label`, or `slots.valueText` is truthy. |
+| `value-text` | Rendered in the header when `type !== "circular"` and `showValue` is `false` (`wx:if="{{showValue}}"` renders `<text>` with the formatted value, `wx:else` renders `<slot name="value-text" />`). |
+| *(default)* | In `type="circular"` mode, rendered centered inside `circleContent` when `showValue` is `false` (when `showValue` is `true`, `circleOverlay` displays the formatted value instead). In `type !== "circular"` mode, rendered below the track. |
 
 ---
 
-## 5. MiniApp Runtime Component Usage
+## Events
+
+None — the MiniProgram runtime component does not emit `bind:*` events.
+
+---
+
+## Theme
+
+Defined in `packages/core/src/theme/definitions/progress.ts`:
+
+- **Slots:** `root`, `header`, `track`, `range`, `label`, `valueText`, `view`, `circle`, `circleTrack`, `circleRange`, `circleOverlay`, `circleContent`
+- **Variants:**
+  - `color`: theme colors (`DEFAULT_THEME_COLORS`) + `"neutral"` (with compound variant mapping `"error"` to `bg-danger` / `text-danger`)
+  - `size`: `"2xs"`, `"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`, `"2xl"`
+  - `orientation`: `"horizontal"`, `"vertical"`
+  - `type`: `"linear"`, `"circular"`
+  - `indeterminate`: `true`, `false`
+  - `striped`: `true`, `false`
+  - `animated`: `true`, `false`
+  - `inverted`: `true`, `false`
+- **Default Variants:**
+  - `color`: `"primary"`
+  - `size`: `"md"`
+  - `type`: `"linear"`
+  - `orientation`: `"horizontal"`
+  - `indeterminate`: `false`
+  - `striped`: `false`
+  - `animated`: `false`
+  - `inverted`: `false`
+
+---
+
+## Examples
+
+### WXML
 
 ```wxml
-<!-- Basic Linear Determinate Progress -->
-<c-progress value="{{60}}" label="Upload Progress" showValue />
+<!-- Determinate linear progress with label and value readout -->
+<c-progress
+  id="upload-progress"
+  value="{{progress}}"
+  label="Uploading file"
+  showValue="{{true}}"
+  color="primary"
+  size="md"
+/>
 
-<!-- Indeterminate Loading Bar -->
-<c-progress value="{{null}}" label="Loading data..." />
+<!-- Indeterminate linear progress -->
+<c-progress indeterminate="{{true}}" label="Syncing..." />
 
-<!-- Striped & Animated -->
-<c-progress value="{{75}}" color="success" striped animated />
+<!-- Striped & animated linear progress with custom slot overrides -->
+<c-progress
+  value="{{75}}"
+  color="success"
+  striped="{{true}}"
+  animated="{{true}}"
+  className="my-4"
+  ui="{{ { track: 'bg-neutral-200', range: 'rounded-none' } }}"
+/>
 
-<!-- Circular Progress -->
-<c-progress type="circular" value="{{80}}" showValue size="lg" color="primary" />
+<!-- Circular progress with built-in value overlay -->
+<c-progress
+  type="circular"
+  value="{{80}}"
+  size="lg"
+  showValue="{{true}}"
+  strokeWidth="{{6}}"
+/>
 
-<!-- Circular Progress with custom center slot -->
+<!-- Circular progress with custom centered default slot -->
 <c-progress type="circular" value="{{100}}" size="xl" color="success">
-  <c-icon name="i-lucide-check" class="text-success text-2xl" />
+  <text class="text-xs font-medium">Done</text>
 </c-progress>
 ```
 
+### TypeScript (Page / Parent Component)
+
+```ts
+Page({
+  data: {
+    progress: 40,
+  },
+
+  onAdvance() {
+    const comp = this.selectComponent("#upload-progress");
+    comp?.setValue(85);
+  },
+
+  onReset() {
+    const comp = this.selectComponent("#upload-progress");
+    comp?.reset();
+  },
+});
+```

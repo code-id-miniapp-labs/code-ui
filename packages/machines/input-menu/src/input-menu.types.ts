@@ -4,7 +4,7 @@ import type {
   ResolvedUI,
 } from "@code-ui/anatomy";
 import type { Machine, MachineSchema, Params, Service } from "@code-ui/core";
-import type { FloatingMenuContentConfig } from "@code-ui/floating-menu";
+import type { PopoverContentConfig } from "@code-ui/popover";
 import type {
   BoundFormField,
   FormHostContext,
@@ -111,7 +111,7 @@ export interface InputMenuTagItem {
   groupIndex: number;
 }
 
-export interface InputMenuContentConfig extends FloatingMenuContentConfig {}
+export interface InputMenuContentConfig extends PopoverContentConfig {}
 
 export interface InputMenuValueChangeDetails {
   value: InputMenuValue;

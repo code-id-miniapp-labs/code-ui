@@ -138,7 +138,7 @@ Page({
     const acc = this.selectComponent("#interactive-accordion") as {
       toggle?: (val: string) => void;
     } | null;
+    console.log(acc);
     acc?.toggle?.("getting-started");
   },
 });
-

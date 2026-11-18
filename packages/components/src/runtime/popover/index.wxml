@@ -1,0 +1,18 @@
+<view id="{{popover.rootProps.id}}" class="{{classes.root}}" data-scope="popover" data-part="root" data-state="{{popover.state}}">
+  <view id="{{popover.triggerProps.id}}" class="{{classes.trigger}}" data-scope="popover" data-part="trigger" bindtap="handleTriggerTap">
+    <slot name="trigger" />
+  </view>
+  <root-portal enable="{{portal}}">
+    <view class="{{portal ? themeMode : ''}}" style="{{wrapperStyle}}" hidden="{{!popover.visible}}">
+      <view id="{{popover.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="popover" data-part="backdrop" data-state="{{popover.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" catchtap="handleBackdropTap" catchtouchmove="noop" />
+      <view id="{{popover.positionerProps.id}}" class="{{classes.positioner}}" style="{{popover.positionerStyle}}" data-scope="popover" data-part="positioner" data-side="{{popover.resolvedSide}}" data-align="{{popover.resolvedAlign}}" data-state="{{popover.state}}">
+        <view id="{{popover.contentProps.id}}" class="{{classes.content}}" style="{{popover.contentStyle}}" data-scope="popover" data-part="content" data-side="{{popover.resolvedSide}}" data-align="{{popover.resolvedAlign}}" data-state="{{popover.state}}" aria-hidden="{{!popover.open}}">
+          <view wx:if="{{arrow}}" class="{{classes.arrow}}" style="{{popover.arrowStyle}}" data-scope="popover" data-part="arrow" data-side="{{popover.resolvedSide}}" aria-hidden="{{true}}" />
+          <view class="{{classes.body}}" style="{{bodyStyle}}" data-scope="popover" data-part="body">
+            <slot />
+          </view>
+        </view>
+      </view>
+    </view>
+  </root-portal>
+</view>

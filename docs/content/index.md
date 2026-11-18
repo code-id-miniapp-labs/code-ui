@@ -1,6 +1,6 @@
 ---
-title: Nuxt Docs Template
-description: Create stunning, fast and SEO-optimized documentation sites with Nuxt UI.
+title: Code UI
+description: A headless + Tailwind-styled WeChat MiniProgram component library.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -9,12 +9,13 @@ orientation: horizontal
 ---
 #top
 :hero-background
+:stars-bg
 
 #title
-Ship Beautiful [Documentation]{.text-primary}.
+Build Beautiful [MiniProgram UIs]{.text-primary .font-lexend}.
 
 #description
-Build professional documentation with Nuxt UI's powerful components, enhanced typography, and seamless Nuxt Content integration. The same system trusted by the entire [Nuxt ecosystem](https://nuxt.com).
+A headless + Tailwind-styled WeChat MiniProgram component library. Powered by finite state machines, variant-based theming, and compile-time WXML optimization with [@code-ui](https://github.com/code-id-miniapp-labs/code-ui).
 
 #links
   :::u-button
@@ -32,59 +33,37 @@ Build professional documentation with Nuxt UI's powerful components, enhanced ty
   color: neutral
   variant: outline
   size: xl
-  to: https://github.com/nuxt-ui-templates/docs
+  to: https://github.com/code-id-miniapp-labs/code-ui
   target: _blank
   ---
-  Use this template
+  View on GitHub
   :::
 
 #default
-  :::prose-pre
-  ---
-  code: |
-    export default defineNuxtConfig({
-      modules: [
-        '@nuxt/ui',
-        '@nuxt/content',
-        'nuxt-og-image',
-        'nuxt-llms'
-      ],
-
-      css: ['~/assets/css/main.css']
-    })
-  filename: nuxt.config.ts
-  ---
-
-  ```ts [nuxt.config.ts]
-  export default defineNuxtConfig({
-    modules: [
-      '@nuxt/ui',
-      '@nuxt/content',
-      'nuxt-og-image',
-      'nuxt-llms'
-    ],
-
-    css: ['~/assets/css/main.css']
-  })
-  ```
-  :::
+```html [index.wxml]
+<c-card
+  title="Welcome to Code UI"
+  description="Headless + Tailwind-styled WeChat MiniProgram components."
+>
+  <c-button label="Get started" color="primary" />
+</c-card>
+```
 ::
 
 ::u-page-section{class="dark:bg-neutral-950"}
 #title
-Powered by Nuxt UI components
+Powered by @code-ui architecture
 
 #links
   :::u-button
   ---
   color: neutral
   size: lg
-  target: _blank
-  to: https://ui.nuxt.com/docs/getting-started/installation/nuxt
+  to: /getting-started
   trailingIcon: i-lucide-arrow-right
   variant: subtle
   ---
-  Explore Nuxt UI
+  Explore Code UI
   :::
 
 #features
@@ -93,21 +72,21 @@ Powered by Nuxt UI components
   icon: i-lucide-palette
   ---
   #title
-  100+ UI Components
+  35+ MiniProgram Components
 
   #description
-  Access the complete Nuxt UI component library. From badges to modals, everything styled and accessible out of the box.
+  From buttons and cards to tabs, drawers, and form controls, everything is styled and accessible out of the box.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-type
+  icon: i-lucide-cpu
   ---
   #title
-  Beautiful Typography
+  Headless State Machines
 
   #description
-  Pre-styled prose components with perfect visual harmony. No need for @tailwindcss/typography - get precise control over every element.
+  Interactive components are driven by finite state machines, keeping runtime components thin and predictable.
   :::
 
   :::u-page-feature
@@ -115,32 +94,32 @@ Powered by Nuxt UI components
   icon: i-lucide-layers
   ---
   #title
-  Rich Prose Components
+  Variant-Based Theming
 
   #description
-  Accordions, cards, callouts, tabs, steps, code blocks, and more - all provided by Nuxt UI for interactive documentation.
+  Customize any component globally with `cui.config.ts`, or per instance with the `ui` and `class` props.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-search
+  icon: i-lucide-zap
   ---
   #title
-  Built-in Search
+  Auto-Imported Components
 
   #description
-  Full-text search with ContentSearch component. No need for Algolia - instant, relevant results with keyboard shortcuts (⌘K).
+  The Vite plugin scans your WXML templates and injects `usingComponents` entries at build time.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-navigation
+  icon: i-lucide-sliders-horizontal
   ---
   #title
-  Smart Navigation
+  Compile-Time Slot Detection
 
   #description
-  Auto-generated navigation with ContentNavigation and ContentToc components. Sticky table of contents and prev/next links.
+  The compiler detects which named slots you use, so components switch between prop content and slot content automatically.
   :::
 
   :::u-page-feature
@@ -151,92 +130,7 @@ Powered by Nuxt UI components
   Dark Mode Ready
 
   #description
-  Automatic theme switching with smooth transitions. Respects system preferences and remembers user choice.
-  :::
-::
-
-::u-page-section{class="dark:bg-neutral-950"}
-#title
-Enhanced with Nuxt Content
-
-#links
-  :::u-button
-  ---
-  color: neutral
-  size: lg
-  target: _blank
-  to: https://content.nuxt.com/docs/getting-started/installation
-  trailingIcon: i-lucide-arrow-right
-  variant: subtle
-  ---
-  Explore Nuxt Content
-  :::
-
-#features
-  :::u-page-feature
-  ---
-  icon: i-simple-icons-markdown
-  ---
-  #title
-  MDC Enhanced Markdown
-
-  #description
-  Write in Markdown while embedding Vue components. Seamlessly integrate interactive elements in your content.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-file-text
-  ---
-  #title
-  File-based Routing
-
-  #description
-  Organize content in folders and files. Your documentation structure automatically becomes your navigation.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-code
-  ---
-  #title
-  Syntax Highlighting
-
-  #description
-  Beautiful code blocks with language detection, line numbers, and copy buttons. Support for 100+ languages.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-database
-  ---
-  #title
-  Content Database
-
-  #description
-  Query your content with a MongoDB-like API. Filter, sort, and search through your documentation programmatically.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-file-code
-  ---
-  #title
-  Frontmatter Support
-
-  #description
-  Add metadata to your content files. Define SEO tags, navigation properties, and custom fields.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-git-branch
-  ---
-  #title
-  Version Control
-
-  #description
-  Content lives in your repository. Branch, review, and deploy documentation alongside your code.
+  Semantic color tokens keep components consistent in light and dark modes.
   :::
 ::
 
@@ -247,13 +141,8 @@ Enhanced with Nuxt Content
     - label: Start building
       to: '/getting-started'
       trailingIcon: i-lucide-arrow-right
-    - label: View on GitHub
-      to: 'https://github.com/nuxt-ui-templates/docs'
-      target: _blank
-      variant: subtle
-      icon: i-simple-icons-github
-  title: Ready to build an amazing documentation?
-  description: Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today.
+  title: Ready to build with Code UI?
+  description: Start building accessible, Tailwind-styled WeChat MiniProgram apps with @code-ui today.
   class: dark:bg-neutral-950
   ---
 

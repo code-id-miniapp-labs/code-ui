@@ -41,7 +41,7 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
   divider: ["default", "leading", "trailing"],
   drawer: ["default", "header", "close", "footer"],
   "file-upload": ["default", "icon", "loadingIcon", "title", "description"],
-  "floating-menu": ["default", "trigger"],
+  "popover": ["default", "trigger"],
   form: ["default"],
   "form-field": ["default", "label", "hint", "description", "error", "help"],
   input: ["trailing", "leading", "loadingIcon"],

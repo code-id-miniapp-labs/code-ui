@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { transformWxmlSlots } from "@code-ui/compiler";
 import {
-  floatingMenuTheme as createFloatingMenuTheme,
+  popoverTheme as createPopoverTheme,
   selectItemTheme as createSelectItemTheme,
   selectTheme as createSelectTheme,
 } from "@code-ui/core";
@@ -14,13 +14,13 @@ import { tv } from "../src/utils/variants";
 
 const selectTheme = tv(createSelectTheme());
 const selectItemTheme = tv(createSelectItemTheme());
-const floatingMenuTheme = tv(createFloatingMenuTheme());
+const popoverTheme = tv(createPopoverTheme());
 
 const RUNTIME_DIR = resolve(__dirname, "../src/runtime");
 const flush = () =>
   new Promise<void>((done) => queueMicrotask(() => queueMicrotask(done)));
 
-describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
+describe("Select, SelectItem & Popover runtime & theme resolution", () => {
   it("resolves select trigger, dropdown, and picker theme slots across variants", () => {
     const outlineClosed = resolveSlots(
       selectTheme({
@@ -53,7 +53,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(openPrimary.base).toContain("h-10");
   });
 
-  it("resolves select-item and floating-menu theme slots", () => {
+  it("resolves select-item and popover theme slots", () => {
     const itemSlots = resolveSlots(
       selectItemTheme({
         color: "primary",
@@ -68,7 +68,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(itemSlots.trailingIcon).toContain("text-primary");
 
     const fmSlots = resolveSlots(
-      floatingMenuTheme({
+      popoverTheme({
         portal: true,
         open: true,
         visible: true,
@@ -86,7 +86,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(fmSlots.arrow).toContain("border-b");
 
     const fmInlineSlots = resolveSlots(
-      floatingMenuTheme({ portal: false, open: true, visible: true }),
+      popoverTheme({ portal: false, open: true, visible: true }),
       {},
       "",
     );
@@ -119,11 +119,11 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
       "utf8",
     );
     const menuWxml = readFileSync(
-      resolve(RUNTIME_DIR, "floating-menu/index.wxml"),
+      resolve(RUNTIME_DIR, "popover/index.wxml"),
       "utf8",
     );
 
-    expect(selectWxml).toContain("<c-floating-menu");
+    expect(selectWxml).toContain("<c-popover");
     expect(selectWxml).toContain("<picker-view");
     expect(selectWxml).toContain("<picker-view-column");
     expect(selectWxml).toContain("cui-picker-indicator");
@@ -132,7 +132,7 @@ describe("Select, SelectItem & FloatingMenu runtime & theme resolution", () => {
     expect(itemWxml).toContain('aria-role="option"');
     expect(menuWxml).toContain("<root-portal");
     expect(menuWxml).toContain('data-part="arrow"');
-    expect(menuWxml).toContain("overflow-hidden");
+    expect(menuWxml).toContain('data-part="body"');
   });
 
   it("connects selectMachine to MiniProgram instance with <= 1 setData call per selection", async () => {

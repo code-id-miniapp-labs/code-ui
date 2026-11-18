@@ -34,7 +34,8 @@
     "pages/tabs/index",
     "pages/toast/index",
     "pages/banner/index",
-    "pages/action-sheet/index"
+    "pages/action-sheet/index",
+    "pages/popover/index"
   ],
   "usingComponents": {
     "demo-header": "/components/demo-header/index"

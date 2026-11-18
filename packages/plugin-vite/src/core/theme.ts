@@ -888,6 +888,22 @@ export function isPlainObject(val: unknown): val is Record<string, any> {
   return Boolean(val) && typeof val === "object" && !Array.isArray(val);
 }
 
+function flattenClassValue(val: unknown): string {
+  if (!val) return "";
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) {
+    return val.map(flattenClassValue).filter(Boolean).join(" ");
+  }
+  return "";
+}
+
+function mergeSlotValue(baseVal: unknown, overrideVal: unknown): unknown {
+  if (typeof overrideVal === "function") {
+    return overrideVal(flattenClassValue(baseVal));
+  }
+  return baseVal ? [baseVal, overrideVal] : overrideVal;
+}
+
 export function mergeComponentConfig(
   base: Record<string, any> = {},
   overrides?: Record<string, any>,
@@ -903,14 +919,21 @@ export function mergeComponentConfig(
     result.base = [base.base, overrides.base];
   }
 
-  if (base.slots || overrides.slots) {
+  const overrideSlots =
+    isPlainObject(overrides.slots) && isPlainObject(overrides.ui)
+      ? { ...overrides.ui, ...overrides.slots }
+      : isPlainObject(overrides.slots)
+        ? overrides.slots
+        : isPlainObject(overrides.ui)
+          ? overrides.ui
+          : undefined;
+
+  if (base.slots || overrideSlots) {
     result.slots = { ...base.slots };
-    if (isPlainObject(overrides.slots)) {
-      for (const [slotKey, slotVal] of Object.entries(overrides.slots)) {
+    if (overrideSlots) {
+      for (const [slotKey, slotVal] of Object.entries(overrideSlots)) {
         if (slotVal === undefined) continue;
-        result.slots[slotKey] = base.slots?.[slotKey]
-          ? [base.slots[slotKey], slotVal]
-          : slotVal;
+        result.slots[slotKey] = mergeSlotValue(result.slots[slotKey], slotVal);
       }
     }
   }
@@ -933,11 +956,11 @@ export function mergeComponentConfig(
             const mergedSlots: Record<string, any> = { ...baseVal };
             for (const [sKey, sVal] of Object.entries(vVal)) {
               if (sVal === undefined) continue;
-              mergedSlots[sKey] = baseVal[sKey] ? [baseVal[sKey], sVal] : sVal;
+              mergedSlots[sKey] = mergeSlotValue(baseVal[sKey], sVal);
             }
             result.variants[vGroup][vKey] = mergedSlots;
           } else {
-            result.variants[vGroup][vKey] = baseVal ? [baseVal, vVal] : vVal;
+            result.variants[vGroup][vKey] = mergeSlotValue(baseVal, vVal);
           }
         }
       }
@@ -953,10 +976,16 @@ export function mergeComponentConfig(
     ];
   }
 
-  if (base.defaultVariants || overrides.defaultVariants) {
+  const overrideDefaults =
+    isPlainObject(overrides.defaultVariants) &&
+    isPlainObject(overrides.defaultProps)
+      ? { ...overrides.defaultProps, ...overrides.defaultVariants }
+      : (overrides.defaultVariants ?? overrides.defaultProps);
+
+  if (base.defaultVariants || overrideDefaults) {
     result.defaultVariants = {
       ...base.defaultVariants,
-      ...overrides.defaultVariants,
+      ...overrideDefaults,
     };
   }
 
@@ -971,11 +1000,8 @@ export function compileComponentTheme(
   const userColors = resolvedConfig.ui?.colors
     ? Object.keys(resolvedConfig.ui.colors).filter((c) => c !== "neutral")
     : [];
-  const replaceColors =
-    resolvedConfig.ui?.colorsMode === "replace" && userColors.length > 0;
-  const allColors = replaceColors
-    ? userColors
-    : userColors.length > 0
+  const allColors =
+    userColors.length > 0
       ? Array.from(new Set([...DEFAULT_THEME_COLORS, ...userColors]))
       : DEFAULT_THEME_COLORS;
 

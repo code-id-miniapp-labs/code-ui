@@ -127,14 +127,6 @@ export interface UIConfig {
   /** Design token colors */
   colors?: UIColorsConfig;
   /**
-   * How `colors` interacts with the built-in semantic colors.
-   * - `"extend"` (default): user colors are added to the defaults.
-   * - `"replace"`: only user colors are compiled into component themes.
-   *   Include `primary`/`neutral` for default variants and `danger`/`error`
-   *   when using validation or error states.
-   */
-  colorsMode?: "extend" | "replace";
-  /**
    * Controls the color scheme compiled into component themes.
    * - `"system"` (default): compile both light and `dark:` classes.
    * - `"light"`: compile only light classes and skip dark token overrides.
@@ -201,13 +193,9 @@ export interface IconsConfig {
   [iconName: string]: unknown;
 }
 
-export type DataAttributesMode = "minimal" | "full";
-
 export interface CodeUIConfig {
   /** Global prefix for custom components */
   prefix?: string | undefined;
-  /** Global attribute emission mode ("full" by default in 0.x) */
-  dataAttributes?: DataAttributesMode | undefined;
   /** Global design token configuration (colors, radius, transitions) */
   ui?: UIConfig | undefined;
   /** Global default icons used by components (check, minus, close, loading) */
@@ -215,11 +203,8 @@ export interface CodeUIConfig {
   /** Component-level styling and configuration overrides */
   components?:
     | ({
-        /** Attribute emission mode ("full" by default in 0.x; "minimal" omits optional data-* hooks) */
-        dataAttributes?: DataAttributesMode | undefined;
-      } & {
         [K in keyof ComponentRegistry]?: ComponentConfig<ComponentRegistry[K]>;
-      } & Record<string, ComponentConfig<any> | DataAttributesMode | undefined>)
+      } & Record<string, ComponentConfig<any> | undefined>)
     | undefined;
 }
 
