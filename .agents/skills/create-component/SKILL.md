@@ -58,7 +58,7 @@ Follow this checklist whenever adding a new component `<name>` (e.g., `card`, `c
 
 ## Step 2: (Interactive Only) Create Machine in `packages/machines/<name>`
 
-Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and the `watch` policy.
+Follow `agent/.skilss/fsm-machine-guide.md` for context/computed/state/ref ownership and the `watch` policy.
 
 1. Create directory `packages/machines/<name>/src/`.
 2. Create `src/<name>.anatomy.ts` using `createAnatomy("<name>").parts(...)`. Export it from `src/index.ts` for tooling/types, but **do not import `parts` into `*.connect.ts`**.
@@ -84,7 +84,7 @@ Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and 
      - Component properties registered via runtime `createProperties(defaultProps, { ... })` already live in `this.data` and are consumed directly in WXML, runtime `classes()`, and runtime `computed` formatters (`resolvedBadge`, `resolvedActions`, `resolvedItems`).
      - Parent-to-child visual inheritance (`fieldSize`, `groupSize`, `groupColor`, `groupVariant`, etc.) happens directly on `this.data` inside `@code-ui/miniapp/behaviors/<domain>`, NEVER via machine `effective*` computed values or `api?.size ?? this.data.size` fallbacks.
      - Do **NOT** include `variant`, `color`, `size`, `highlight`, `block`, `mode`, `title`, `description`, `label`, `icon`, `ui`, or visual formatting of `badge`/`actions`/`items` on `<Name>Props` or `<Name>Api`, and do **NOT** emit unused `data-variant`, `data-color`, or `data-size` attributes inside `rootProps`.
-     - *Narrow exceptions (machine-internal only when genuinely required)*:
+     - _Narrow exceptions (machine-internal only when genuinely required)_:
        1. **Geometry / SVG / cell-driving props** read internally to compute derived styles, SVG `dataUrl`, or cell slots (`orientation` / `inverted` in `slider`, `color` SVG fill in `qr-code`, `placeholder` / `mask` / `separator` in `pin-input`) — return the computed output (`trackStyle`, `dataUrl`, `cells`), not raw theme props.
        2. **Behavior-driving placement/mode** that governs FSM swipe direction or transition tags (`placement` in `drawer`).
      - Return **only**:
@@ -162,7 +162,7 @@ Follow `docs/fsm-machine-guide.md` for context/computed/state/ref ownership and 
    - **Light/Dark Contrast**: Avoid ad-hoc `dark:` classes that assume dark page backgrounds unless the container itself is explicitly dark. Keep neutral tokens readable in both light and dark modes.
 2. Export `{ default as <camelName> } from "./<name>"` in `packages/core/src/theme/definitions/index.ts`.
 3. Export `{ default as <camelName>Theme } from "./theme/definitions/<name>"` in `packages/core/src/index.ts`.
-   *(Slots are automatically extracted by `ComponentRegistry` from `defineTheme` via `ExtractSlots` — no manual slot registration needed in `packages/core/src/config.ts`).*
+   _(Slots are automatically extracted by `ComponentRegistry` from `defineTheme` via `ExtractSlots` — no manual slot registration needed in `packages/core/src/config.ts`)._
 
 ---
 
@@ -207,7 +207,8 @@ If your component introduces a new native WeChat parent-child relation (e.g. `ac
   "usingComponents": {}
 }
 ```
-*(Note: `options: { multipleSlots: true, styleIsolation: "apply-shared", virtualHost: true }` is automatically merged by `createComponentOptions` at runtime; omitting `"styleIsolation"` from `index.json` saves dist bytes. Add internal `<c-*>` dependencies under `"usingComponents"` when needed, e.g. `"c-icon": "../icon/index"`.)*
+
+_(Note: `options: { multipleSlots: true, styleIsolation: "apply-shared", virtualHost: true }` is automatically merged by `createComponentOptions` at runtime; omitting `"styleIsolation"` from `index.json` saves dist bytes. Add internal `<c-*>` dependencies under `"usingComponents"` when needed, e.g. `"c-icon": "../icon/index"`.)_
 
 ### 5.2 Declare `slots` & Register in `@code-ui/compiler`
 
@@ -225,12 +226,12 @@ Whenever the component exposes ANY `<slot />` or `<slot name="..." />`:
      ```
    - `createComponentOptions` automatically injects `properties.slots`, installs `"slots.**"` observer + `created`/`attached` normalization via `normalizeComponentSlots()`, and makes `this.data.slots.<key>` reactive inside `computed` getters (such as `classes()` and `hasContent()`).
    - **CRITICAL — CamelCase keys for multi-word slots**: Always use **camelCase** keys inside `slots: { ... }`, WXML guards (`slots.loadingIcon`, `slots.completedIndicator`, `slots.listTrailing`, `slots.valueText`), JS `this.data.slots.<key>`, and `COMPONENT_SLOTS_MANIFEST`.
-     - *Why*: WeChat MiniProgram's `wcc` compiler throws a runtime `TypeError: Cannot read properties of undefined (reading '0') at rev` if a WXML object literal contains quoted keys (e.g. `slots="{{ { 'completed-indicator': true } }}"`). Therefore `@code-ui/compiler` always converts kebab-case user slot attributes (`slot="completed-indicator"`) into unquoted camelCase keys (`{ completedIndicator: true }`), and `normalizeComponentSlots()` ensures camelCase keys are populated on `this.data.slots`.
+     - _Why_: WeChat MiniProgram's `wcc` compiler throws a runtime `TypeError: Cannot read properties of undefined (reading '0') at rev` if a WXML object literal contains quoted keys (e.g. `slots="{{ { 'completed-indicator': true } }}"`). Therefore `@code-ui/compiler` always converts kebab-case user slot attributes (`slot="completed-indicator"`) into unquoted camelCase keys (`{ completedIndicator: true }`), and `normalizeComponentSlots()` ensures camelCase keys are populated on `this.data.slots`.
      - For new components, prefer camelCase `<slot name="loadingIcon" />` consistently; if exposing a kebab-case `<slot name="completed-indicator" />`, still read `slots.completedIndicator` in WXML/JS.
 
 2. **Register slots in `COMPONENT_SLOTS_MANIFEST`** (`packages/compiler/src/index.ts`):
    - Add `"<name>": [...]` with all valid **camelCase** slot keys (including `"default"` if supported).
-   - *Why*: When callers pass dynamic slot names (`<view slot="{{slotVar}}">`) onto `<c-<name>>`, `@code-ui/compiler` uses `COMPONENT_SLOTS_MANIFEST["<name>"]` to enumerate candidate slots; unregistered tags fall back to `["default"]` only.
+   - _Why_: When callers pass dynamic slot names (`<view slot="{{slotVar}}">`) onto `<c-<name>>`, `@code-ui/compiler` uses `COMPONENT_SLOTS_MANIFEST["<name>"]` to enumerate candidate slots; unregistered tags fall back to `["default"]` only.
 
 3. **Zero manual slot flags**: Never add boolean props like `showHeader`, `hasLeading`, or `customIndicator` to toggle slots. `@code-ui/plugin-vite` (`slotDetect`, enabled by default) statically analyzes caller WXML templates (including `wx:if`/`wx:elif`/`wx:else`, `<block>`, `wx:for`, dynamic `slot="{{...}}"`, and WXS loop predicates) and injects `slots="{{ { ... } }}"` onto `<c-<name>>` tags at build time.
 
@@ -269,6 +270,7 @@ Whenever the component exposes ANY `<slot />` or `<slot name="..." />`:
 > Instantiate the machine behavior separately via `createMachineBehavior({ machine, connect, key, plugins, exportApi })` and add it to `behaviors: [<camelName>Behavior, computedBehavior]`.
 
 - **Tier 1: Presentational**:
+
   ```ts
   import { computedBehavior, createComponentOptions } from "../_shared/base";
   import { resolveSlots } from "../../utils/ui";
@@ -309,6 +311,7 @@ Whenever the component exposes ANY `<slot />` or `<slot name="..." />`:
   ```
 
 - **Tier 2: Interactive (FSM Machine)**:
+
   ```ts
   import { computedBehavior, createComponentOptions } from "../_shared/base";
   import {

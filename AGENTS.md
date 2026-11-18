@@ -44,7 +44,7 @@ packages/
 4. **TypeScript & Linter Constraints**:
    - `tsconfig.base.json` sets `"exactOptionalPropertyTypes": true`.
    - `.oxlintrc.json` forbids non-null assertions (`!`) (`typescript(no-non-null-assertion)`) and inline `import()` type annotations (`typescript(consistent-type-imports)`).
-5. **Machine Efficiency**: Before creating or refactoring a machine, read `docs/fsm-machine-guide.md` (single-source-of-truth rules, `watch` policy, anti-patterns, refactor playbook).
+5. **Machine Efficiency**: Before creating or refactoring a machine, read `agent/.skilss/fsm-machine-guide.md` (single-source-of-truth rules, `watch` policy, anti-patterns, refactor playbook).
 6. **Runtime Components are Thin Adapters (Zero Business Logic / DOM Measurements in Runtime)**:
    - Runtime `index.ts` files under `packages/components/src/runtime/<name>/` must NEVER contain business logic, manual state management, DOM measurements (`createSelectorQuery`, `boundingClientRect`, `scrollOffset`), timers (`setTimeout`, `setInterval`), or custom `observers`.
    - ALL state, logic, DOM attributes, keyboard navigation, and event handling MUST live exclusively inside the state machine (`packages/machines/<name>`) and its connect layer (`<name>.connect.ts`).
