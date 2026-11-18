@@ -26,6 +26,7 @@
     "nuxt": "^4.6.4",
     "nuxt-llms": "0.3.2",
     "nuxt-og-image": "^7.0.7",
+    "nuxt-qrcode": "^0.4.10",
     "tailwindcss": "^4.3.5",
     "ufo": "^1.6.4",
     "unist-util-visit": "^5.2.0",

@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/pull-down-refresh",
   "version": "0.0.1",
+  "private": true,
   "description": "Pull-to-refresh state machine for code-ui",
   "files": [
     "dist"

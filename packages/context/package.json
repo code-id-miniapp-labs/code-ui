@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/context",
   "version": "0.0.1",
+  "private": true,
   "description": "Dependency injection and event bus context primitives for MiniApp native components",
   "files": [
     "dist"

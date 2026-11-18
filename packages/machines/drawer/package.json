@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/drawer",
   "version": "0.0.1",
+  "private": true,
   "description": "Drawer state machine for code-ui",
   "files": [
     "dist"

@@ -2,6 +2,9 @@
   "name": "@code-ui/components",
   "version": "0.0.1",
   "description": "Prebuilt native WeChat MiniProgram UI components for code-ui",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist",
     "index.css",

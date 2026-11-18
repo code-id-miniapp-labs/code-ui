@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/popover",
   "version": "0.0.1",
+  "private": true,
   "description": "Floating menu positioning and overlay state machine for code-ui",
   "files": [
     "dist"

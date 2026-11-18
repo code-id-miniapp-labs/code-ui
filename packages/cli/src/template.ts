@@ -1,6 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 
+function getCodeUiDepRange(): string {
+  try {
+    const pkgPath = new URL("../package.json", import.meta.url);
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8")) as {
+      version?: string;
+    };
+    if (pkg.version) return `^${pkg.version}`;
+  } catch {}
+  return "^1.0.0";
+}
+
 export interface StarterTemplateOptions {
   projectName: string;
   appId: string;
@@ -13,6 +24,7 @@ export function generateStarterFiles(
   options: StarterTemplateOptions,
 ): Record<string, string> {
   const { projectName, appId, primaryColor, iconCollection, prefix } = options;
+  const codeUiRange = getCodeUiDepRange();
 
   return {
     ".gitignore": [
@@ -39,8 +51,8 @@ export function generateStarterFiles(
           postinstall: "wv prepare",
         },
         dependencies: {
-          "@code-ui/components": "^0.0.1",
-          "@code-ui/plugin-vite": "^0.0.1",
+          "@code-ui/components": codeUiRange,
+          "@code-ui/plugin-vite": codeUiRange,
         },
         devDependencies: {
           ...(iconCollection !== "lucide"

@@ -15,10 +15,9 @@ export default defineConfig({
     neverBundle: [
       "vite",
       "c12",
-      "@code-ui/core",
-      "@code-ui/compiler",
       "@egoist/tailwindcss-icons",
       "@iconify-json/lucide",
     ],
+    alwaysBundle: ["@code-ui/core", "@code-ui/compiler", "@code-ui/utils"],
   },
 });

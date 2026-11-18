@@ -41,9 +41,9 @@
 		"ignore": [],
 		"include": []
 	},
-	"appid": "touristappid",
-	"TCSASappid": "touristId",
-	"projectname": "weapp-code-ui-dev",
+	"appid": "mpqql87p5gn88dm2",
+	"TCSASappid": "mpqql87p5gn88dm2",
+	"projectname": "weapp-code-ui-dist",
 	"scripts": {},
 	"condition": {
 		"search": {

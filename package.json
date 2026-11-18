@@ -17,9 +17,13 @@
     "lint": "oxlint packages",
     "lint:fix": "oxlint --fix packages",
     "format": "oxfmt packages",
-    "format:check": "oxfmt --check packages"
+    "format:check": "oxfmt --check packages",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && pnpm test && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.4",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "typescript": "^5.5.4",

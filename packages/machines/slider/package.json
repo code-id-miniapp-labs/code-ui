@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/slider",
   "version": "0.0.1",
+  "private": true,
   "description": "Slider state machine for code-ui",
   "files": [
     "dist"
@@ -41,4 +42,3 @@
     "alien-signals": ">=3.0.0"
   }
 }
-

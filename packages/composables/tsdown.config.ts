@@ -8,4 +8,8 @@ export default defineConfig({
   clean: true,
   target: "es2020",
   fixedExtension: false,
+  deps: {
+    alwaysBundle: [/^@code-ui\//],
+    onlyBundle: false,
+  },
 });

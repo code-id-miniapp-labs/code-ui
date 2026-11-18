@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/toast",
   "version": "0.0.1",
+  "private": true,
   "description": "Toast state machine for code-ui",
   "files": [
     "dist"
@@ -39,4 +40,3 @@
     "alien-signals": ">=3.0.0"
   }
 }
-

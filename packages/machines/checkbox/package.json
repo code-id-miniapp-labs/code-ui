@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/checkbox",
   "version": "0.0.1",
+  "private": true,
   "description": "Checkbox state machine for code-ui",
   "files": [
     "dist"

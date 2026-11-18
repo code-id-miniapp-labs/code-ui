@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/anatomy",
   "version": "0.0.1",
+  "private": true,
   "description": "Component anatomy and part definition utilities for code-ui",
   "files": [
     "dist"

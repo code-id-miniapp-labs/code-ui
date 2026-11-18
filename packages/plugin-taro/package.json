@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/plugin-taro",
   "version": "0.0.1",
+  "private": true,
   "description": "Taro plugin for @code-ui — auto-configures webpack compile rules, asset copy, and JSX types",
   "files": [
     "dist"

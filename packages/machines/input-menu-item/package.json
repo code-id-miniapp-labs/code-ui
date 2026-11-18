@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/input-menu-item",
   "version": "0.0.1",
+  "private": true,
   "description": "Input menu item state machine for code-ui",
   "files": [
     "dist"

@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/checkbox-group",
   "version": "0.0.1",
+  "private": true,
   "description": "CheckboxGroup state machine for code-ui",
   "files": [
     "dist"

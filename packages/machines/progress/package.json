@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/progress",
   "version": "0.0.1",
+  "private": true,
   "description": "Progress state machine for code-ui (linear and circular)",
   "files": [
     "dist"
@@ -39,4 +40,3 @@
     "alien-signals": ">=3.0.0"
   }
 }
-

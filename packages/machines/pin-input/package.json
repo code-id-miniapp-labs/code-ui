@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/pin-input",
   "version": "0.0.1",
+  "private": true,
   "description": "Pin input state machine for code-ui",
   "files": [
     "dist"

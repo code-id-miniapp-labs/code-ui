@@ -57,6 +57,14 @@ const { header } = useAppConfig()
     </template>
 
     <template #right>
+      <UBadge
+        label="Base Library 2.3.5"
+        color="neutral"
+        variant="subtle"
+        size="sm"
+        class="hidden sm:inline-flex rounded-full"
+      />
+
       <UContentSearchButton
         v-if="header?.search"
         class="lg:hidden"

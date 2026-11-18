@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/stepper",
   "version": "0.0.1",
+  "private": true,
   "description": "Stepper state machine for code-ui",
   "files": [
     "dist"

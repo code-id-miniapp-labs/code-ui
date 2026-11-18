@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/banner",
   "version": "0.0.1",
+  "private": true,
   "description": "Banner state machine for code-ui",
   "files": [
     "dist"
@@ -40,4 +41,3 @@
     "alien-signals": ">=3.0.0"
   }
 }
-

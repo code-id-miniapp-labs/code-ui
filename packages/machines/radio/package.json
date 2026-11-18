@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/radio",
   "version": "0.0.1",
+  "private": true,
   "description": "Radio state machine for code-ui",
   "files": [
     "dist"

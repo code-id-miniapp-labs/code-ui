@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/switch",
   "version": "0.0.1",
+  "private": true,
   "description": "Switch state machine for code-ui",
   "files": [
     "dist"

@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/button",
   "version": "0.0.1",
+  "private": true,
   "description": "Button state machine for code-ui",
   "files": [
     "dist"

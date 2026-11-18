@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/select-item",
   "version": "0.0.1",
+  "private": true,
   "description": "Select item state machine for code-ui",
   "files": [
     "dist"

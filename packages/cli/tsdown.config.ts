@@ -11,4 +11,7 @@ export default defineConfig({
   banner: {
     js: "#!/usr/bin/env node",
   },
+  deps: {
+    alwaysBundle: ["@code-ui/core", "@code-ui/utils"],
+  },
 });

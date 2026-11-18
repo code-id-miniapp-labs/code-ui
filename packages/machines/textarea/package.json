@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/textarea",
   "version": "0.0.1",
+  "private": true,
   "description": "Textarea state machine for code-ui",
   "files": [
     "dist"

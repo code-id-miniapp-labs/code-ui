@@ -27,14 +27,18 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@code-ui/compiler": "workspace:*",
-    "@code-ui/core": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.9.2",
     "@iconify-json/lucide": "^1.2.146",
     "c12": "^2.0.1"
   },
   "devDependencies": {
+    "@code-ui/compiler": "workspace:*",
+    "@code-ui/core": "workspace:*",
+    "@code-ui/utils": "workspace:*",
     "@types/node": "^26.2.0",
     "tsdown": "^0.23.0",
     "typescript": "^5.5.4",

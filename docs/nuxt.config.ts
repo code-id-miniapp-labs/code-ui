@@ -9,7 +9,12 @@ export default defineNuxtConfig({
     "nuxt-llms",
     "@nuxtjs/i18n",
     "@nuxtjs/seo",
+    "nuxt-qrcode",
   ],
+
+  qrcode: {
+    global: true,
+  },
 
   devServer: {
     host: "0.0.0.0.0",
@@ -92,6 +97,13 @@ export default defineNuxtConfig({
         contentCollection: "docs",
         contentFilters: [
           { field: "path", operator: "LIKE", value: "/components%" },
+        ],
+      },
+      {
+        title: "Composables",
+        contentCollection: "docs",
+        contentFilters: [
+          { field: "path", operator: "LIKE", value: "/composables%" },
         ],
       },
     ],

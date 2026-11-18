@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/form-field",
   "version": "0.0.1",
+  "private": true,
   "description": "Form field state machine for code-ui",
   "files": [
     "dist"

@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/tabs-item",
   "version": "0.0.1",
+  "private": true,
   "description": "Tabs item state machine for code-ui",
   "files": [
     "dist"

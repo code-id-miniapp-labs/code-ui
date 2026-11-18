@@ -1,6 +1,7 @@
 {
   "name": "@code-ui/utils",
   "version": "0.0.1",
+  "private": true,
   "description": "Shared DOM and event utilities for MiniApp native components",
   "files": [
     "dist"

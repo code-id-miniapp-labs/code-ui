@@ -23,16 +23,17 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@code-ui/miniapp": "workspace:*",
-    "@code-ui/utils": "workspace:*"
+  "publishConfig": {
+    "access": "public"
   },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^26.2.0",
     "miniprogram-api-typings": "^5.2.3",
     "tsdown": "^0.23.0",
     "typescript": "^5.5.4",
     "@code-ui/miniapp": "workspace:*",
-    "@code-ui/core": "workspace:*"
+    "@code-ui/core": "workspace:*",
+    "@code-ui/utils": "workspace:*"
   }
 }
