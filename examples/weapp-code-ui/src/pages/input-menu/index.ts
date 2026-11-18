@@ -50,6 +50,15 @@ Page({
     this.setData({ multipleValue: e.detail.value });
   },
 
+  onSearchTermChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
+    console.log({
+      term: e,
+    });
+    this.setData({
+      searchTerm: e.detail.value,
+    });
+  },
+
   onCreatableChange(e: WechatMiniprogram.CustomEvent<{ value: string[] }>) {
     this.setData({ creatableValue: e.detail.value });
   },

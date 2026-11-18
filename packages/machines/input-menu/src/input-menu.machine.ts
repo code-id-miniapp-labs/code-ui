@@ -250,7 +250,7 @@ export const inputMenuMachine: InputMenuMachine =
           value: isNotNull(rawSearch) ? String(rawSearch) : undefined,
           defaultValue: prop("defaultSearchTerm") ?? "",
           onChange: (nextSearch) => {
-            prop("onSearchTermChange")?.({ searchTerm: nextSearch });
+            prop("onSearchTermChange")?.({ value: nextSearch });
           },
         };
       }),
@@ -277,13 +277,13 @@ export const inputMenuMachine: InputMenuMachine =
       isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
           context.get("invalid") ||
-            hasFormFieldErrors(prop, refs, scope, "input-menu"),
+          hasFormFieldErrors(prop, refs, scope, "input-menu"),
         ),
       isDisabled: ({ prop, computed }) =>
         Boolean(
           computed("formDisabled") ||
-            computed("fieldDisabled") ||
-            prop("disabled"),
+          computed("fieldDisabled") ||
+          prop("disabled"),
         ),
       isReadOnly: ({ prop, computed }) =>
         Boolean(prop("readOnly") || computed("formReadOnly")),
@@ -335,7 +335,8 @@ export const inputMenuMachine: InputMenuMachine =
         if (prop("multiple")) {
           return context.get("searchTerm");
         }
-        if (isNotNull(prop("searchTerm"))) {
+
+        if (prop("searchTerm")) {
           return context.get("searchTerm");
         }
         if (state.hasTag("open") && context.get("isFiltering")) {
@@ -353,8 +354,8 @@ export const inputMenuMachine: InputMenuMachine =
       isClearable: ({ prop, computed, context }) =>
         Boolean(
           prop("clearable") &&
-            computed("isInteractive") &&
-            (computed("hasValue") || context.get("searchTerm").length > 0),
+          computed("isInteractive") &&
+          (computed("hasValue") || context.get("searchTerm").length > 0),
         ),
 
       showCreateItem: ({ prop, computed, context }) => {
@@ -386,17 +387,18 @@ export const inputMenuMachine: InputMenuMachine =
     entry: ["setupFormField"],
     exit: ["cleanupFormField"],
 
-    watch: ({ prop, state }) => {
-      const rawOpen = prop("open");
-      if (!isNotNull(rawOpen)) return;
-
-      const shouldBeOpen = Boolean(rawOpen);
-      const isCurrentlyOpen = state.hasTag("open");
-      if (shouldBeOpen && !isCurrentlyOpen) {
-        state.set("open");
-      } else if (!shouldBeOpen && isCurrentlyOpen) {
-        state.set("closing");
-      }
+    watch: ({ prop, state, track }) => {
+      track([() => prop("open")], () => {
+        const rawOpen = prop("open");
+        if (!isNotNull(rawOpen)) return;
+        const shouldBeOpen = Boolean(rawOpen);
+        const isCurrentlyOpen = state.hasTag("open");
+        if (shouldBeOpen && !isCurrentlyOpen) {
+          state.set("open");
+        } else if (!shouldBeOpen && isCurrentlyOpen) {
+          state.set("closing");
+        }
+      });
     },
 
     on: {
@@ -519,7 +521,8 @@ export const inputMenuMachine: InputMenuMachine =
           computed("isInteractive") && Boolean(prop("openOnClick")),
         shouldOpenOnInput: ({ computed, prop }) =>
           computed("isInteractive") && Boolean(prop("openOnInput")),
-        closeOnBackdropClick: ({ prop }) => Boolean(prop("closeOnBackdropClick")),
+        closeOnBackdropClick: ({ prop }) =>
+          Boolean(prop("closeOnBackdropClick")),
         canSelectDropdownItem: ({ computed, event }) => {
           if (!computed("isInteractive") || event.type !== "SELECT_ITEM") {
             return false;
@@ -658,7 +661,10 @@ export const inputMenuMachine: InputMenuMachine =
         },
 
         resetSearchOnClosed: ({ context, prop }) => {
-          if (prop("resetSearchTermOnBlur") || prop("resetSearchTermOnSelect")) {
+          if (
+            prop("resetSearchTermOnBlur") ||
+            prop("resetSearchTermOnSelect")
+          ) {
             context.set("isFiltering", false);
             if (prop("resetSearchTermOnBlur")) {
               context.set("searchTerm", "");

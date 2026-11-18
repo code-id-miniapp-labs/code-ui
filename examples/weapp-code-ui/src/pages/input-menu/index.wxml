@@ -7,33 +7,38 @@
         <text class="block text-sm font-semibold text-highlighted">Searchable Combobox</text>
         <text class="block text-xs text-muted mt-0.5">Selected: {{ basicValue || 'None' }}</text>
       </view>
-      <c-input-menu value="{{ basicValue }}" items="{{ basicItems }}" placeholder="Search status..." clearable="{{ true }}" arrow="{{ true }}" bind:change="onBasicChange" />
+      <c-input-menu searchTerm="{{searchTerm}}" bind:searchTermChange="onSearchTermChange" value="{{ basicValue }}" items="{{ basicItems }}" placeholder="Search status..." clearable="{{ true }}" arrow="{{ true }}" bind:change="onBasicChange" />
       <c-input-menu items="{{ groupedItems }}" filter-fields="{{ ['label', 'description'] }}" placeholder="Search grouped items or descriptions..." />
     </view>
-
     <!-- 2. Multiple Selection with Removable Tags -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
         <text class="block text-sm font-semibold text-highlighted">Multiple Selection (Tags)</text>
-        <text class="block text-xs text-muted mt-0.5">Selected count: {{ multipleValue.length }}</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Selected count: {{ multipleValue.length }}
+        </text>
       </view>
       <c-input-menu multiple="{{ true }}" value="{{ multipleValue }}" items="{{ multipleItems }}" placeholder="Add fruits..." clearable="{{ true }}" leading-icon="i-lucide-tags" bind:change="onMultipleChange" />
     </view>
-
     <!-- 3. Create New Item (createItem) -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
         <text class="block text-sm font-semibold text-highlighted">Create Item on the Fly</text>
-        <text class="block text-xs text-muted mt-0.5">Type a new label to create and select it dynamically.</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Type a new label to create and select it dynamically.
+        </text>
       </view>
       <c-input-menu multiple="{{ true }}" value="{{ creatableValue }}" items="{{ creatableItems }}" create-item="always" create-icon="i-lucide-plus" placeholder="Search or create tag..." bind:change="onCreatableChange" bind:create="onCreateTag" />
     </view>
-
     <!-- 4. Custom c-input-menu-item Composition -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
-        <text class="block text-sm font-semibold text-highlighted">Custom c-input-menu-item Slots</text>
-        <text class="block text-xs text-muted mt-0.5">Declarative items filter automatically as you type.</text>
+        <text class="block text-sm font-semibold text-highlighted">
+          Custom c-input-menu-item Slots
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Declarative items filter automatically as you type.
+        </text>
       </view>
       <c-input-menu value="{{ assigneeValue }}" placeholder="Search reviewer..." clearable="{{ true }}" bind:change="onAssigneeChange">
         <c-input-menu-item value="alice" label="Alice Wang" description="Design Systems">
@@ -48,12 +53,15 @@
         </c-input-menu-item>
       </c-input-menu>
     </view>
-
     <!-- 5. Variants, Sizes & FormField -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
-        <text class="block text-sm font-semibold text-highlighted">Variants, Sizes & FormField</text>
-        <text class="block text-xs text-muted mt-0.5">Matches c-input visual tokens and FormField context.</text>
+        <text class="block text-sm font-semibold text-highlighted">
+          Variants, Sizes & FormField
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Matches c-input visual tokens and FormField context.
+        </text>
       </view>
       <view class="flex flex-col gap-2">
         <c-input-menu wx:for="{{ variants }}" wx:key="*this" variant="{{ item }}" items="{{ basicItems }}" placeholder="Variant: {{ item }}" />

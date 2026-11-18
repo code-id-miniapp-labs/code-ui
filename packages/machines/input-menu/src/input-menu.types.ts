@@ -34,7 +34,10 @@ export type InputMenuUI = ComponentUI<typeof anatomy>;
 export type InputMenuResolvedUI = ResolvedUI<typeof anatomy>;
 
 export type InputMenuScalarValue = string | number | boolean;
-export type InputMenuValue = InputMenuScalarValue | InputMenuScalarValue[] | null;
+export type InputMenuValue =
+  | InputMenuScalarValue
+  | InputMenuScalarValue[]
+  | null;
 export type InputMenuItemType = "item" | "label" | "separator";
 
 export type InputMenuCreateItemPosition = "top" | "bottom";
@@ -127,7 +130,7 @@ export interface InputMenuOpenChangeDetails {
 }
 
 export interface InputMenuSearchTermChangeDetails {
-  searchTerm: string;
+  value: string;
 }
 
 export interface InputMenuCreateDetails {
