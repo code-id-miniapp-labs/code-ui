@@ -18,6 +18,7 @@ const qrCodeBehavior = createMachineBehavior({
   connect: connectQrCode,
   key: "qrCode",
   exportApi: true,
+  exportApiKeys: ["value", "dataUrl", "setValue", "setEncoding", "getDataUrl"],
 });
 
 Component(

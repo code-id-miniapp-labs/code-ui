@@ -91,29 +91,46 @@ function normalizeShorthand(
 export function useToast(
   optionsOrTarget?: UseToastOptions | any,
 ): UseToastReturn {
-  let target =
-    optionsOrTarget &&
+  const isOptionsObject =
+    Boolean(optionsOrTarget) &&
     typeof optionsOrTarget === "object" &&
-    "target" in optionsOrTarget
-      ? optionsOrTarget.target
-      : optionsOrTarget;
+    ("target" in optionsOrTarget || "max" in optionsOrTarget);
 
-  if (!target && typeof getCurrentPages === "function") {
-    try {
-      const pages = getCurrentPages();
-      target = pages && pages[pages.length - 1];
-    } catch {}
-  }
+  const explicitTarget = isOptionsObject
+    ? optionsOrTarget.target
+    : optionsOrTarget;
 
-  if (
-    optionsOrTarget &&
-    typeof optionsOrTarget === "object" &&
-    typeof optionsOrTarget.max === "number"
-  ) {
-    updateToastHostConfig(target, { max: optionsOrTarget.max });
+  let pendingMax: number | undefined =
+    isOptionsObject && typeof optionsOrTarget.max === "number"
+      ? optionsOrTarget.max
+      : undefined;
+
+  const resolveTarget = () => {
+    if (explicitTarget) return explicitTarget;
+    if (typeof getCurrentPages === "function") {
+      try {
+        const pages = getCurrentPages();
+        return pages && pages[pages.length - 1];
+      } catch {}
+    }
+    return undefined;
+  };
+
+  const applyPendingMax = (target: any) => {
+    if (pendingMax !== undefined) {
+      updateToastHostConfig(target, { max: pendingMax });
+      pendingMax = undefined;
+    }
+  };
+
+  const initialTarget = resolveTarget();
+  if (initialTarget && pendingMax !== undefined) {
+    applyPendingMax(initialTarget);
   }
 
   const add = (toast: ToastOptions): string => {
+    const target = resolveTarget();
+    applyPendingMax(target);
     return addToast(toast, target);
   };
 
@@ -121,12 +138,14 @@ export function useToast(
     add,
     show: add,
     update: (id: string, patch: Partial<ToastOptions>) =>
-      updateToast(id, patch, target),
-    remove: (id: string) => removeToast(id, target),
-    dismiss: (id: string) => dismissToast(id, target),
-    clear: () => clearToasts(target),
-    config: (opts: { max?: number | undefined }) =>
-      updateToastHostConfig(target, opts),
+      updateToast(id, patch, resolveTarget()),
+    remove: (id: string) => removeToast(id, resolveTarget()),
+    dismiss: (id: string) => dismissToast(id, resolveTarget()),
+    clear: () => clearToasts(resolveTarget()),
+    config: (opts: { max?: number | undefined }) => {
+      pendingMax = undefined;
+      updateToastHostConfig(resolveTarget(), opts);
+    },
     success: (
       titleOrOptions: ToastShorthandArg,
       opts?: Omit<ToastOptions, "title" | "color">,

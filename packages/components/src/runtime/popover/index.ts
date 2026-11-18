@@ -21,6 +21,15 @@ const popoverBehavior = createMachineBehavior({
   connect: connectPopover,
   key: "popover",
   exportApi: true,
+  exportApiKeys: [
+    "open",
+    "visible",
+    "setOpen",
+    "openMenu",
+    "closeMenu",
+    "toggle",
+    "reposition",
+  ],
 });
 
 const appThemeBehavior =
@@ -56,7 +65,9 @@ Component(
         const base = this.data.portal ? this.data.themeCssVars || "" : "";
         if (visible) return base;
         if (!base) return "display:none;";
-        return base.endsWith(";") ? `${base}display:none;` : `${base};display:none;`;
+        return base.endsWith(";")
+          ? `${base}display:none;`
+          : `${base};display:none;`;
       },
 
       bodyStyle(): string {

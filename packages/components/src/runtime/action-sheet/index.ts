@@ -38,6 +38,16 @@ const actionSheetBehavior = createMachineBehavior({
   connect: connectActionSheet,
   key: "actionSheet",
   exportApi: true,
+  exportApiKeys: [
+    "open",
+    "visible",
+    "loadingActionIndex",
+    "setOpen",
+    "openActionSheet",
+    "closeActionSheet",
+    "select",
+    "handleAction",
+  ],
 });
 
 Component(

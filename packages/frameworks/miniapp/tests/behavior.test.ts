@@ -333,4 +333,103 @@ describe("createMachineBehavior - formParent & formField relations", () => {
       expect(item.behaviors).toContain(cuiStepperItemBehavior);
     });
   });
+
+  describe("exportApi & exportApiKeys", () => {
+    const toggleMachine = createMachine({
+      props: () => ({ defaultOpen: false }),
+      context: ({ prop, bindable }) => ({
+        open: bindable(() => ({ defaultValue: Boolean(prop("defaultOpen")) })),
+      }),
+      initialState: () => "ready",
+      states: {
+        ready: {
+          on: {
+            OPEN: { actions: ["setOpen"] },
+            CLOSE: { actions: ["setClosed"] },
+          },
+        },
+      },
+      implementations: {
+        actions: {
+          setOpen: ({ context }) => context.set("open", true),
+          setClosed: ({ context }) => context.set("open", false),
+        },
+      },
+    });
+
+    const connectToggle = (service: any) => ({
+      open: Boolean(service.context.get("open")),
+      setOpen: (next: boolean) =>
+        service.send({ type: next ? "OPEN" : "CLOSE" }),
+      openModal: () => service.send({ type: "OPEN" }),
+      closeModal: () => service.send({ type: "CLOSE" }),
+      handleBackdropTap: () => service.send({ type: "CLOSE" }),
+      rootProps: { id: "root", "data-state": "ready" },
+    });
+
+    it("omits getSnapshot even when exportApiKeys is not provided", () => {
+      const behavior = createMachineBehavior({
+        machine: toggleMachine,
+        connect: connectToggle,
+        exportApi: true,
+      });
+
+      const comp: any = {
+        id: "t1",
+        data: {},
+        setData: vi.fn(),
+      };
+      behavior.lifetimes.attached.call(comp);
+      const api = behavior.export.call(comp);
+
+      expect(typeof api.openModal).toBe("function");
+      expect((api as any).getSnapshot).toBeUndefined();
+      expect(api.__codeUiInstance).toBe(comp);
+    });
+
+    it("exports only whitelisted exportApiKeys while keeping __codeUiInstance unwrap intact", async () => {
+      const behavior = createMachineBehavior({
+        machine: toggleMachine,
+        connect: connectToggle,
+        exportApi: true,
+        exportApiKeys: ["open", "openModal", "closeModal"],
+      });
+
+      const comp: any = {
+        id: "t2",
+        data: {},
+        setData: vi.fn(),
+        customMethod: vi.fn(),
+      };
+      behavior.lifetimes.attached.call(comp);
+      const api = behavior.export.call(comp);
+
+      expect(Object.keys(api)).toEqual(["open", "openModal", "closeModal"]);
+      expect(api.open).toBe(false);
+      expect(typeof api.openModal).toBe("function");
+      expect(typeof api.closeModal).toBe("function");
+
+      // Internal keys and non-whitelisted connect props/handlers stay hidden
+      expect((api as any).rootProps).toBeUndefined();
+      expect((api as any).handleBackdropTap).toBeUndefined();
+      expect((api as any).send).toBeUndefined();
+      expect((api as any).service).toBeUndefined();
+      expect((api as any).getSnapshot).toBeUndefined();
+      expect((api as any).customMethod).toBeUndefined();
+      expect("rootProps" in api).toBe(false);
+      expect("send" in api).toBe(false);
+
+      // Internal unwrapping for useComponentRef / Context still works
+      expect(api.__codeUiInstance).toBe(comp);
+
+      // Calling whitelisted imperative method updates live exported getter after microtask flush
+      api.openModal();
+      await Promise.resolve();
+      expect(api.open).toBe(true);
+
+      api.closeModal();
+      await Promise.resolve();
+      expect(api.open).toBe(false);
+    });
+  });
 });

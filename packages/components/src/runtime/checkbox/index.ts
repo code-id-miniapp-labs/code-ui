@@ -22,6 +22,14 @@ const checkboxBehavior = createMachineBehavior({
   key: "cCheckbox",
   plugins: [withFormField(), withCheckboxItem()],
   exportApi: true,
+  exportApiKeys: [
+    "checked",
+    "indeterminate",
+    "setChecked",
+    "setIndeterminate",
+    "toggle",
+    "resetChecked",
+  ],
 });
 
 Component(

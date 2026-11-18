@@ -21,6 +21,7 @@ const radioBehavior = createMachineBehavior({
   key: "cRadio",
   plugins: [withRadioItem()],
   exportApi: true,
+  exportApiKeys: ["checked"],
 });
 
 Component(

@@ -25,6 +25,7 @@ const inputBehavior = createMachineBehavior({
   key: "input",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: ["value", "setValue", "clearValue", "resetValue", "focus", "blur"],
 });
 
 Component(

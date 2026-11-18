@@ -23,6 +23,16 @@ const tabsBehavior = createMachineBehavior({
   key: "tabs",
   plugins: [withTabs()],
   exportApi: true,
+  exportApiKeys: [
+    "value",
+    "selectedIndex",
+    "setValue",
+    "select",
+    "selectNext",
+    "selectPrev",
+    "selectFirst",
+    "selectLast",
+  ],
 });
 
 Component(

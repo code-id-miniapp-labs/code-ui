@@ -1,6 +1,8 @@
 import { useToast } from "@code-ui/composables";
 import { useTheme } from "../../utils/theme";
 
+const toast = useToast();
+
 interface QrCodeRef {
   setValue?: (value: string) => void;
   getDataUrl?: (type?: "svg") => string;
@@ -87,7 +89,7 @@ Page({
     const qr = this.selectComponent("#demo-qr") as QrCodeRef | null;
     const url = qr?.getDataUrl?.("svg") ?? "";
     this.setData({ dataUrlPreview: url ? `${url.slice(0, 72)}... (${url.length} chars)` : "Empty" });
-    useToast(this).success("Exported QR Data URL", {
+    toast.success("Exported QR Data URL", {
       description: `Generated ${url.length}-char SVG data URI.`,
     });
   },

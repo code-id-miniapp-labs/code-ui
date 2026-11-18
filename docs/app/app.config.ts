@@ -37,7 +37,7 @@ export default defineAppConfig({
     }]
   },
   footer: {
-    credits: `Code UI (@code-ui) • © ${new Date().getFullYear()}`,
+    credits: `Code UI • © ${new Date().getFullYear()}`,
     colorMode: false,
     links: [{
       'icon': 'i-simple-icons-github',

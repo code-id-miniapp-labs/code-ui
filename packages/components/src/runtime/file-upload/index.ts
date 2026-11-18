@@ -25,6 +25,18 @@ const fileUploadBehavior = createMachineBehavior({
   key: "fileUpload",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: [
+    "files",
+    "fileCount",
+    "hasFiles",
+    "isUploading",
+    "chooseFiles",
+    "addFiles",
+    "removeFile",
+    "previewFile",
+    "clearFiles",
+    "setFiles",
+  ],
 });
 
 Component(

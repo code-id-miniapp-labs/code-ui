@@ -30,6 +30,23 @@ const inputMenuBehavior = createMachineBehavior({
   syncProps: ["rules", "validateOn"],
   plugins: [withFormField(), withInputMenu()],
   exportApi: true,
+  exportApiKeys: [
+    "open",
+    "visible",
+    "value",
+    "searchTerm",
+    "openInputMenu",
+    "closeInputMenu",
+    "toggle",
+    "setOpen",
+    "setValue",
+    "setSearchTerm",
+    "selectValue",
+    "removeTag",
+    "createItem",
+    "clearValue",
+    "resetValue",
+  ],
 });
 
 function resolveRawItemEntry(

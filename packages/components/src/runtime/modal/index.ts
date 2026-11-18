@@ -19,6 +19,7 @@ const modalBehavior = createMachineBehavior({
   connect: connectModal,
   key: "modal",
   exportApi: true,
+  exportApiKeys: ["open", "visible", "setOpen", "openModal", "closeModal", "toggle"],
 });
 
 Component(

@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import { MiniappMachine } from "@code-ui/miniapp";
 import { radioGroupMachine, connectRadioGroup } from "@code-ui/radio-group";
 import { radioMachine, connectRadio } from "@code-ui/radio";
-import { useChild } from "../src/use-child";
+import { useComponentRef } from "../src/use-component-ref";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
 }
 
-describe("useChild with radio-group", () => {
+describe("useComponentRef with radio-group", () => {
   it("reproduces: empty -> option1 -> option2 -> clear", async () => {
     const groupComp: any = {
       setData: vi.fn((data: any) => {
@@ -68,7 +68,7 @@ describe("useChild with radio-group", () => {
       selectComponent: vi.fn(() => groupComp),
     };
 
-    const child = useChild(parent as any, "#group", {
+    const child = useComponentRef(parent as any, "#group", {
       key: "group",
       onChange: (s) => {
         snapshots.push(s.value);

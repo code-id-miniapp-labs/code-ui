@@ -26,6 +26,7 @@ const checkboxGroupBehavior = createMachineBehavior({
   key: "cCheckboxGroup",
   plugins: [withFormField(), withCheckboxGroup()],
   exportApi: true,
+  exportApiKeys: ["value", "setValue", "toggleValue", "selectAll", "clear"],
 });
 
 Component(

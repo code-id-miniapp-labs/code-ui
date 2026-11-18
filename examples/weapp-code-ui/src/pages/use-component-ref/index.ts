@@ -1,21 +1,21 @@
-import { useChild } from "@code-ui/composables";
-import type { UseChildReturn } from "@code-ui/composables";
+import { useComponentRef } from "@code-ui/composables";
+import type { UseComponentRefReturn } from "@code-ui/composables";
 import type { PinInputApi } from "@code-ui/pin-input";
 import type { InputApi } from "@code-ui/input";
 
 Page({
   data: {
-    // Synced automatically via useChild
+    // Synced automatically via useComponentRef
     otp: {} as Record<string, any>,
     user: {} as Record<string, any>,
     submitResult: "",
   },
 
-  otpChild: null as UseChildReturn<any, PinInputApi> | null,
-  userChild: null as UseChildReturn<any, InputApi> | null,
+  otpRef: null as UseComponentRefReturn<any, PinInputApi> | null,
+  userRef: null as UseComponentRefReturn<any, InputApi> | null,
 
   onReady() {
-    this.otpChild = useChild<PinInputApi>(this, "#otpInput", {
+    this.otpRef = useComponentRef<PinInputApi>(this, "#otpInput", {
       key: "otp",
       onChange: (snapshot) => {
         if (snapshot.isValueComplete) {
@@ -28,26 +28,26 @@ Page({
       },
     });
 
-    this.userChild = useChild<InputApi>(this, "#userInput", {
+    this.userRef = useComponentRef<InputApi>(this, "#userInput", {
       key: "user",
     });
   },
 
   handleClearOtp() {
-    if (this.otpChild) {
-      this.otpChild.api.clear?.();
+    if (this.otpRef) {
+      this.otpRef.api.clear?.();
     }
   },
 
   handleClearUser() {
-    if (this.userChild) {
-      this.userChild.api.clearValue?.();
+    if (this.userRef) {
+      this.userRef.api.clearValue?.();
     }
   },
 
   handleSubmit() {
-    const otpSnap = this.otpChild?.getSnapshot();
-    const userSnap = this.userChild?.getSnapshot();
+    const otpSnap = this.otpRef?.getSnapshot();
+    const userSnap = this.userRef?.getSnapshot();
 
     const otpValue = Array.isArray(otpSnap?.value)
       ? otpSnap?.value.join("")

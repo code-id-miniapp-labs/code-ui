@@ -23,6 +23,16 @@ const accordionBehavior = createMachineBehavior({
   key: "accordion",
   plugins: [withAccordion()],
   exportApi: true,
+  exportApiKeys: [
+    "value",
+    "setValue",
+    "toggle",
+    "expand",
+    "collapse",
+    "expandAll",
+    "collapseAll",
+    "isOpen",
+  ],
 });
 
 Component(

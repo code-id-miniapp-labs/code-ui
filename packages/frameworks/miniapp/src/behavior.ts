@@ -48,6 +48,11 @@ export interface CreateMachineBehaviorOptions<
    */
   exportApi?: boolean;
   /**
+   * Whitelist of API / method keys exposed via `'wx://component-export'`.
+   * When omitted while `exportApi: true`, all keys returned by `connect` (plus `send` and `service`) are exported.
+   */
+  exportApiKeys?: Array<keyof Data | (string & {})>;
+  /**
    * Delay `machine.start()` until the first `send()` call.
    * @default false
    */
@@ -104,6 +109,7 @@ export function createMachineBehavior<
     connect,
     key,
     exportApi = false,
+    exportApiKeys,
     deferred = false,
     plugins = [],
   } = options;
@@ -251,21 +257,73 @@ export function createMachineBehavior<
           : undefined);
 
       const initialApi = getApi() ?? {};
-      const exported: Record<string, any> = {
-        ...initialApi,
-        __codeUiInstance: this,
-        send: (event: T["event"]) => this.__codeUiMachine?.send(event),
-        service: this.__codeUiMachine?.service,
-        getSnapshot: () => getApi(),
-      };
+      const hasWhitelist = Array.isArray(exportApiKeys);
+      const allowedKeys = hasWhitelist
+        ? new Set(exportApiKeys.map(String))
+        : null;
+
+      const exported: Record<string, any> = {};
+      if (allowedKeys) {
+        for (const allowedKey of allowedKeys) {
+          if (typeof this[allowedKey] === "function") {
+            exported[allowedKey] = this[allowedKey].bind(this);
+          } else if (allowedKey === "send") {
+            exported.send = (event: T["event"]) =>
+              this.__codeUiMachine?.send(event);
+          } else if (allowedKey === "service") {
+            exported.service = this.__codeUiMachine?.service;
+          } else if (allowedKey in initialApi) {
+            const val = initialApi[allowedKey];
+            exported[allowedKey] =
+              typeof val === "function" ? val.bind(initialApi) : val;
+          }
+        }
+      } else {
+        Object.assign(exported, initialApi, {
+          send: (event: T["event"]) => this.__codeUiMachine?.send(event),
+          service: this.__codeUiMachine?.service,
+        });
+      }
+
+      // Preserve internal instance lookup for useComponentRef and Context without
+      // exposing __codeUiInstance in Object.keys() of the exported ref.
+      Object.defineProperty(exported, "__codeUiInstance", {
+        value: this,
+        enumerable: false,
+        configurable: true,
+      });
 
       if (typeof Proxy !== "undefined") {
+        const resolveAllowedMember = (prop: string) => {
+          if (typeof this[prop] === "function") {
+            return this[prop].bind(this);
+          }
+          if (prop === "send") {
+            return exported.send ?? ((event: T["event"]) => this.__codeUiMachine?.send(event));
+          }
+          if (prop === "service") {
+            return this.__codeUiMachine?.service;
+          }
+          const liveApi = getApi();
+          if (liveApi && prop in liveApi) {
+            const val = (liveApi as any)[prop];
+            return typeof val === "function" ? val.bind(liveApi) : val;
+          }
+          return undefined;
+        };
+
         return new Proxy(exported, {
           get: (target, prop, receiver) => {
             if (prop === "__codeUiInstance") return this;
+            if (allowedKeys) {
+              if (typeof prop !== "string" || !allowedKeys.has(prop)) {
+                return undefined;
+              }
+              return resolveAllowedMember(prop);
+            }
+
             if (prop === "send") return target.send;
             if (prop === "service") return this.__codeUiMachine?.service;
-            if (prop === "getSnapshot") return target.getSnapshot;
 
             if (typeof this[prop] === "function") {
               return this[prop].bind(this);
@@ -276,6 +334,61 @@ export function createMachineBehavior<
               return typeof val === "function" ? val.bind(liveApi) : val;
             }
             return Reflect.get(target, prop, receiver);
+          },
+          has: (target, prop) => {
+            if (!allowedKeys) {
+              return prop in target;
+            }
+            if (typeof prop !== "string" || !allowedKeys.has(prop)) {
+              return false;
+            }
+            const liveApi = getApi();
+            return (
+              typeof this[prop] === "function" ||
+              prop === "send" ||
+              prop === "service" ||
+              Boolean(liveApi && prop in liveApi)
+            );
+          },
+          ownKeys: (target) => {
+            if (!allowedKeys) {
+              return Reflect.ownKeys(target);
+            }
+            const liveApi = getApi();
+            const keys: string[] = [];
+            for (const keyName of allowedKeys) {
+              if (
+                typeof this[keyName] === "function" ||
+                keyName === "send" ||
+                keyName === "service" ||
+                Boolean(liveApi && keyName in liveApi)
+              ) {
+                keys.push(keyName);
+              }
+            }
+            return keys;
+          },
+          getOwnPropertyDescriptor: (target, prop) => {
+            if (!allowedKeys) {
+              return Reflect.getOwnPropertyDescriptor(target, prop);
+            }
+            if (typeof prop === "string" && allowedKeys.has(prop)) {
+              const liveApi = getApi();
+              if (
+                typeof this[prop] === "function" ||
+                prop === "send" ||
+                prop === "service" ||
+                Boolean(liveApi && prop in liveApi)
+              ) {
+                return {
+                  configurable: true,
+                  enumerable: true,
+                  writable: true,
+                  value: resolveAllowedMember(prop),
+                };
+              }
+            }
+            return undefined;
           },
         });
       }

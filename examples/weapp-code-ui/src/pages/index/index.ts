@@ -1,16 +1,18 @@
-import { useToast } from "@code-ui/composables";
+import { useColorMode, useToast } from "@code-ui/composables";
 import {
   PRIMARY_COLOR_PRESETS,
   SECONDARY_COLOR_PRESETS,
   normalizeExampleColorInput,
   resetExampleTheme,
-  setExampleColorMode,
   setExampleColors,
   syncNavigationBarTheme,
   useTheme,
   type AppColorMode,
   type AppThemeState,
 } from "../../utils/theme";
+
+const toast = useToast();
+const colorMode = useColorMode();
 
 type CategoryId =
   | "all"
@@ -381,14 +383,14 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["useToast()", "queue", "programmatic"],
   },
   {
-    id: "use-child",
-    name: "Use Child",
-    path: "/pages/use-child/index",
+    id: "use-component-ref",
+    name: "Use Component Ref",
+    path: "/pages/use-component-ref/index",
     category: "composable",
     categoryLabel: "Composable",
     desc: "Type-safe composable hook connecting page scripts to child component FSM APIs by selector.",
     icon: "i-lucide-cpu",
-    highlights: ["useChild()", "FSM API", "type-safe"],
+    highlights: ["useComponentRef()", "FSM API", "type-safe"],
   },
   {
     id: "popover",
@@ -514,7 +516,8 @@ Page({
   onSelectColorMode(e: WechatMiniprogram.TouchEvent) {
     const mode = e.currentTarget.dataset?.mode as AppColorMode | undefined;
     if (!mode) return;
-    setExampleColorMode(mode);
+    colorMode.setMode(mode);
+    syncNavigationBarTheme(colorMode.resolvedMode);
   },
 
   onSelectPrimaryColor(e: WechatMiniprogram.TouchEvent) {
@@ -560,7 +563,7 @@ Page({
     const target = this.data.customTarget;
     setExampleColors({ [target]: normalized });
     this.setData({ hexError: "" });
-    useToast(this).add({
+    toast.add({
       title: `Updated ${target} color`,
       description: `Applied runtime palette: ${normalized}`,
       color: "success",
@@ -573,7 +576,7 @@ Page({
   onResetTheme() {
     resetExampleTheme();
     this.setData({ customHex: "", hexError: "" });
-    useToast(this).add({
+    toast.add({
       title: "Theme reset",
       description: "Restored default Stone & Amber colors.",
       color: "neutral",

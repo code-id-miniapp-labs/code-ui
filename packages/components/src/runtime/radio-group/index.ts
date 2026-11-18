@@ -26,6 +26,7 @@ const radioGroupBehavior = createMachineBehavior({
   key: "cRadioGroup",
   plugins: [withFormField(), withRadioGroup()],
   exportApi: true,
+  exportApiKeys: ["value", "setValue", "clear"],
 });
 
 Component(

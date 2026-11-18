@@ -1,5 +1,7 @@
 import { useToast } from "@code-ui/composables";
 
+const toast = useToast();
+
 Page({
   data: {
     count: 0,
@@ -59,7 +61,7 @@ Page({
   },
 
   onOpenSetting() {
-    useToast(this).info("Returned from WeChat Open Setting");
+    toast.info("Returned from WeChat Open Setting");
   },
 
   onShareAppMessage() {

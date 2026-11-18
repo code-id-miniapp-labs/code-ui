@@ -63,6 +63,7 @@ const sliderBehavior = createMachineBehavior({
   key: "slider",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: ["value", "values", "setValue", "stepUp", "stepDown", "reset"],
 });
 
 Component(

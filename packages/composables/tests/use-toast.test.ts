@@ -152,4 +152,25 @@ describe("useToast Composable", () => {
       root: "backdrop-blur-md",
     });
   });
+
+  it("resolves target lazily so useToast() can be initialized outside Page() / Component()", () => {
+    const prevGetCurrentPages = (globalThis as any).getCurrentPages;
+    let activePages: any[] = [];
+    (globalThis as any).getCurrentPages = () => activePages;
+
+    try {
+      // Initialized at module top-level before any page is mounted
+      const toast = useToast({ max: 2 });
+
+      // Later, page mounts
+      activePages = [mockHost];
+      const id = toast.success("From module scope");
+
+      expect(hostToasts).toHaveLength(1);
+      expect(hostToasts[0]?.id).toBe(id);
+      expect(hostToasts[0]?.title).toBe("From module scope");
+    } finally {
+      (globalThis as any).getCurrentPages = prevGetCurrentPages;
+    }
+  });
 });

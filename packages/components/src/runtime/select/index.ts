@@ -31,6 +31,20 @@ const selectBehavior = createMachineBehavior({
   syncProps: ["rules", "validateOn"],
   plugins: [withFormField(), withSelect()],
   exportApi: true,
+  exportApiKeys: [
+    "open",
+    "visible",
+    "value",
+    "displayLabel",
+    "openSelect",
+    "closeSelect",
+    "toggle",
+    "setOpen",
+    "setValue",
+    "selectValue",
+    "clearValue",
+    "resetValue",
+  ],
 });
 
 const appThemeBehavior =
@@ -53,10 +67,7 @@ function resolveRawItemEntry(
     : undefined;
 }
 
-function resolveButtonText(
-  raw: unknown,
-  fallback: string,
-): string {
+function resolveButtonText(raw: unknown, fallback: string): string {
   if (raw === false || raw === null || raw === "") return "";
   if (raw === true || raw === undefined) return fallback;
   return String(raw);
@@ -214,7 +225,11 @@ Component(
           selectedSnap.groupIndex,
           selectedSnap.rawIndex,
         );
-        if (rawObj && typeof rawObj.icon === "string" && isEqual(selectedSnap.value, api.value)) {
+        if (
+          rawObj &&
+          typeof rawObj.icon === "string" &&
+          isEqual(selectedSnap.value, api.value)
+        ) {
           return rawObj.icon;
         }
         return rawObj && typeof rawObj.icon === "string" ? rawObj.icon : "";
@@ -256,7 +271,9 @@ Component(
 
       popoverUi() {
         const classes = this.data.classes as Record<string, string> | undefined;
-        const ui = this.data.ui as { popover?: Record<string, string> } | undefined;
+        const ui = this.data.ui as
+          | { popover?: Record<string, string> }
+          | undefined;
         return {
           content: classes?.content ?? "",
           ...(ui?.popover ?? {}),
@@ -284,7 +301,7 @@ Component(
             apiItem.groupIndex,
             apiItem.rawIndex,
           ) as SelectItem | undefined;
-          const descRaw = rawObj ? rawObj[descKey] ?? rawObj.description : "";
+          const descRaw = rawObj ? (rawObj[descKey] ?? rawObj.description) : "";
           return {
             key: apiItem.key,
             domId: apiItem.domId,

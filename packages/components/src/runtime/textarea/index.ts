@@ -21,6 +21,15 @@ const textareaBehavior = createMachineBehavior({
   key: "textarea",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: [
+    "value",
+    "characterCount",
+    "setValue",
+    "clearValue",
+    "resetValue",
+    "focus",
+    "blur",
+  ],
 });
 
 Component(

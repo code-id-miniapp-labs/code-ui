@@ -2,7 +2,7 @@
   <demo-header
     title="Radio"
     badge="Form"
-    subtitle="Exclusive choice control & RadioGroup with useChild control, card variant, slots, 7 colors & validation."
+    subtitle="Exclusive choice control & RadioGroup with useComponentRef control, card variant, slots, 7 colors & validation."
   />
 
   <view class="px-4 flex flex-col gap-4">
@@ -24,11 +24,11 @@
       </view>
     </view>
 
-    <!-- 2. Programmatic useChild Control -->
+    <!-- 2. Programmatic useComponentRef Control -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
-        <text class="block text-sm font-semibold text-highlighted">Programmatic useChild() Control</text>
-        <text class="block text-xs text-muted mt-0.5">API synced snapshot: {{ useChildLastValue }}</text>
+        <text class="block text-sm font-semibold text-highlighted">Programmatic useComponentRef() Control</text>
+        <text class="block text-xs text-muted mt-0.5">API synced snapshot: {{ componentRefLastValue }}</text>
       </view>
       <c-radio-group id="programmatic-radio-group" default-value="pro">
         <c-radio value="starter" label="Starter" />
@@ -36,9 +36,9 @@
         <c-radio value="enterprise" label="Enterprise" />
       </c-radio-group>
       <view class="flex flex-wrap gap-2">
-        <c-button size="xs" variant="soft" color="primary" label="setValue('starter')" bind:tap="useChildSetStarter" />
-        <c-button size="xs" variant="soft" color="secondary" label="setValue('enterprise')" bind:tap="useChildSetEnterprise" />
-        <c-button size="xs" variant="outline" color="neutral" label="clear()" bind:tap="useChildClear" />
+        <c-button size="xs" variant="soft" color="primary" label="setValue('starter')" bind:tap="componentRefSetStarter" />
+        <c-button size="xs" variant="soft" color="secondary" label="setValue('enterprise')" bind:tap="componentRefSetEnterprise" />
+        <c-button size="xs" variant="outline" color="neutral" label="clear()" bind:tap="componentRefClear" />
       </view>
     </view>
 

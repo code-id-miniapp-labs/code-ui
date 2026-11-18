@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { createMachine } from "@code-ui/core";
 import { MiniappMachine } from "@code-ui/miniapp";
-import { useChild } from "../src/use-child";
+import { useComponentRef } from "../src/use-component-ref";
 
 function flush(): Promise<void> {
   return new Promise((resolve) => queueMicrotask(resolve));
 }
 
-describe("useChild composable", () => {
+describe("useComponentRef composable", () => {
   // A test state machine
   const counterMachine = createMachine({
     initialState: () => "idle",
@@ -67,12 +67,11 @@ describe("useChild composable", () => {
     return {
       compInstance,
       machine,
-      // Mock wx://component-export proxy
+      // Mock wx://component-export proxy (without getSnapshot, matching exportApi behavior)
       exportProxy: {
         __codeUiInstance: compInstance,
         service: machine.service,
         send: machine.send,
-        getSnapshot: () => compInstance.__codeUiApi,
         increment: () => machine.send({ type: "INC" }),
       },
     };
@@ -92,7 +91,7 @@ describe("useChild composable", () => {
     const { exportProxy } = createMockChildComponent("c1");
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", { key: "counter" });
+    const child = useComponentRef(parent as any, "#counter", { key: "counter" });
     await flush();
 
     expect(parent.setData).toHaveBeenCalledWith({
@@ -112,7 +111,7 @@ describe("useChild composable", () => {
     const { machine, exportProxy } = createMockChildComponent("c1");
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", { key: "counter" });
+    const child = useComponentRef(parent as any, "#counter", { key: "counter" });
     parent.setData.mockClear();
 
     // Transition child machine
@@ -130,7 +129,7 @@ describe("useChild composable", () => {
     const parent = createMockParentInstance({ "#counter": exportProxy });
     const onChange = vi.fn();
 
-    useChild(parent as any, "#counter", { onChange });
+    useComponentRef(parent as any, "#counter", { onChange });
 
     // Initial snapshot call
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -151,7 +150,7 @@ describe("useChild composable", () => {
     const { machine, exportProxy } = createMockChildComponent("c1");
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", {
+    const child = useComponentRef(parent as any, "#counter", {
       key: "custom",
       connect: (service) => ({
         customCount: (service.context.get("count") ?? 0) * 10,
@@ -172,7 +171,7 @@ describe("useChild composable", () => {
     const { machine, exportProxy } = createMockChildComponent("c1");
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", { key: "counter" });
+    const child = useComponentRef(parent as any, "#counter", { key: "counter" });
 
     // Object.keys(child.api) should enumerate methods and not be empty
     const apiKeys = Object.keys(child.api);
@@ -198,8 +197,8 @@ describe("useChild composable", () => {
       "#c2": child2.exportProxy,
     });
 
-    useChild(parent as any, "#c1", { key: "counter1" });
-    useChild(parent as any, "#c2", { key: "counter2" });
+    useComponentRef(parent as any, "#c1", { key: "counter1" });
+    useComponentRef(parent as any, "#c2", { key: "counter2" });
     await flush();
 
     expect(parent.data.counter1.count).toBe(0);
@@ -217,7 +216,7 @@ describe("useChild composable", () => {
     const { machine, exportProxy } = createMockChildComponent("c1");
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", { key: "counter" });
+    const child = useComponentRef(parent as any, "#counter", { key: "counter" });
     await flush();
     parent.setData.mockClear();
 
@@ -236,7 +235,7 @@ describe("useChild composable", () => {
       onUnload: vi.fn(),
     };
 
-    useChild(parent as any, "#counter", { key: "counter" });
+    useComponentRef(parent as any, "#counter", { key: "counter" });
     await flush();
     parent.setData.mockClear();
 
@@ -259,7 +258,7 @@ describe("useChild composable", () => {
     };
 
     // Child is not in childrenMap yet!
-    const child = useChild(parent as any, "#counter", { key: "counter" });
+    const child = useComponentRef(parent as any, "#counter", { key: "counter" });
     expect(child.snapshot).toBeUndefined();
 
     // Child attaches later, then onReady triggers
@@ -281,7 +280,7 @@ describe("useChild composable", () => {
       detached: vi.fn(),
     };
 
-    const child = useChild(componentParent as any, "#counter", {
+    const child = useComponentRef(componentParent as any, "#counter", {
       key: "counter",
     });
     expect(child.snapshot).toBeUndefined();
@@ -303,7 +302,7 @@ describe("useChild composable", () => {
     expect(componentParent.setData).not.toHaveBeenCalled();
   });
 
-  it("supports multiple useChild subscribers via __codeUiSnapshotListeners", async () => {
+  it("supports multiple useComponentRef subscribers via __codeUiSnapshotListeners", async () => {
     const compInstance = {
       id: "raw-comp",
       __codeUiApi: { value: "initial" },
@@ -314,8 +313,8 @@ describe("useChild composable", () => {
     const onChange1 = vi.fn();
     const onChange2 = vi.fn();
 
-    const child1 = useChild(parent as any, "#raw", { onChange: onChange1 });
-    const child2 = useChild(parent as any, "#raw", { onChange: onChange2 });
+    const child1 = useComponentRef(parent as any, "#raw", { onChange: onChange1 });
+    const child2 = useComponentRef(parent as any, "#raw", { onChange: onChange2 });
 
     expect(onChange1).toHaveBeenCalledWith({ value: "initial" });
     expect(onChange2).toHaveBeenCalledWith({ value: "initial" });
@@ -341,7 +340,7 @@ describe("useChild composable", () => {
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
     let computeCount = 0;
-    const child = useChild(parent as any, "#counter", {
+    const child = useComponentRef(parent as any, "#counter", {
       key: "counter",
       connect: (service) => {
         computeCount++;
@@ -368,12 +367,12 @@ describe("useChild composable", () => {
 
     const parent = createMockParentInstance({ "#counter": exportProxy });
 
-    const child = useChild(parent as any, "#counter", {
+    const child = useComponentRef(parent as any, "#counter", {
       key: "counter",
       connect: (service) => ({ count: service.context.get("count") }),
     });
 
-    // 1. Direct JSON serialization of useChild return object
+    // 1. Direct JSON serialization of useComponentRef return object
     expect(() => JSON.stringify(child)).not.toThrow();
     expect(JSON.stringify(child)).toBeUndefined();
 
@@ -393,5 +392,35 @@ describe("useChild composable", () => {
     // 3. service property is non-enumerable
     expect(Object.keys(child)).not.toContain("service");
     expect(child.service).toBeDefined();
+  });
+
+  it("works with minimal whitelisted exportApiKeys proxy (no send/service/getSnapshot on export)", async () => {
+    const { compInstance } = createMockChildComponent("c-whitelist");
+    const restrictedExport: Record<string, any> = {
+      increment: () => compInstance.__codeUiMachine.send({ type: "INC" }),
+    };
+    Object.defineProperty(restrictedExport, "__codeUiInstance", {
+      value: compInstance,
+      enumerable: false,
+      configurable: true,
+    });
+
+    const parent = createMockParentInstance({ "#restricted": restrictedExport });
+    const ref = useComponentRef<any, { count: number; isPositive: boolean; setCount: (n: number) => void }>(
+      parent as any,
+      "#restricted",
+      { key: "restricted" },
+    );
+
+    expect(ref.snapshot?.count).toBe(0);
+    expect(ref.getSnapshot()?.count).toBe(0);
+
+    ref.api.setCount(7);
+    await flush();
+    expect(ref.snapshot?.count).toBe(7);
+
+    ref.send({ type: "INC" });
+    await flush();
+    expect(ref.snapshot?.count).toBe(8);
   });
 });

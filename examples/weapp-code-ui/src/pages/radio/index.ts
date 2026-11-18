@@ -1,18 +1,18 @@
-import { useChild } from "@code-ui/composables";
-import type { UseChildReturn } from "@code-ui/composables";
+import { useComponentRef } from "@code-ui/composables";
+import type { UseComponentRefReturn } from "@code-ui/composables";
 import type { RadioGroupApi } from "@code-ui/radio-group";
 
 Page({
-  tierGroupRef: null as UseChildReturn<any, RadioGroupApi> | null,
+  tierGroupRef: null as UseComponentRefReturn<any, RadioGroupApi> | null,
 
   data: {
     // 1. Controlled State
     controlledPlan: "pro",
     lastEvent: "Initial (pro)",
 
-    // 2. useChild Programmatic State
+    // 2. useComponentRef Programmatic State
     programmaticGroup: {} as Record<string, any>,
-    useChildLastValue: "pro",
+    componentRefLastValue: "pro",
 
     // 3. Auto-rendered items prop
     fruitOptions: [
@@ -73,12 +73,12 @@ Page({
   },
 
   onReady() {
-    // Initialize useChild composable on the programmatically controlled group
-    this.tierGroupRef = useChild(this, "#programmatic-radio-group", {
+    // Initialize useComponentRef composable on the programmatically controlled group
+    this.tierGroupRef = useComponentRef(this, "#programmatic-radio-group", {
       key: "programmaticGroup",
       onChange: (snapshot) => {
         this.setData({
-          useChildLastValue: snapshot?.value ?? "(none)",
+          componentRefLastValue: snapshot?.value ?? "(none)",
         });
       },
     });
@@ -113,16 +113,16 @@ Page({
     });
   },
 
-  // useChild programmatic control handlers
-  useChildSetStarter() {
+  // useComponentRef programmatic control handlers
+  componentRefSetStarter() {
     this.tierGroupRef?.api?.setValue?.("starter");
   },
 
-  useChildSetEnterprise() {
+  componentRefSetEnterprise() {
     this.tierGroupRef?.api?.setValue?.("enterprise");
   },
 
-  useChildClear() {
+  componentRefClear() {
     this.tierGroupRef?.api?.clear?.();
   },
 

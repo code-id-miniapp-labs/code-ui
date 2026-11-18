@@ -24,6 +24,7 @@ const inputMenuItemBehavior = createMachineBehavior({
   key: "inputMenuItem",
   plugins: [withInputMenuItem()],
   exportApi: true,
+  exportApiKeys: ["value", "selected", "select"],
 });
 
 Component(

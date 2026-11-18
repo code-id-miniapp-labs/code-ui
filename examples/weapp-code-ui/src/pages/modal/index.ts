@@ -1,4 +1,6 @@
-import { useChild, useToast, type UseChildReturn } from "@code-ui/composables";
+import { useComponentRef, useToast, type UseComponentRefReturn } from "@code-ui/composables";
+
+const toast = useToast();
 
 type ModalSize = "xs" | "sm" | "md" | "lg" | "xl";
 type CloseMode = "default" | "hidden" | "customIcon" | "props";
@@ -155,7 +157,7 @@ Page({
       closeTrigger: "bg-primary/15 text-primary",
     },
 
-    // 5. Imperative useChild snapshot & Lifecycle Event Log
+    // 5. Imperative useComponentRef snapshot & Lifecycle Event Log
     imperativeSnap: {
       state: "closed",
       open: false,
@@ -164,11 +166,11 @@ Page({
     eventLogs: ["Modal page ready — tap any demo above."] as string[],
   },
 
-  imperativeChild: null as UseChildReturn<any, ModalApiShape> | null,
+  imperativeChild: null as UseComponentRefReturn<any, ModalApiShape> | null,
   activeTimers: [] as ReturnType<typeof setTimeout>[],
 
   onReady() {
-    this.imperativeChild = useChild<ModalApiShape>(this, "#imperative-modal", {
+    this.imperativeChild = useComponentRef<ModalApiShape>(this, "#imperative-modal", {
       key: "imperativeSnap",
     });
   },
@@ -259,7 +261,7 @@ Page({
   },
 
   confirmPlayground() {
-    useToast(this).success("Playground action confirmed");
+    toast.success("Playground action confirmed");
     this.setData({ playgroundOpen: false });
   },
 
@@ -468,7 +470,7 @@ Page({
           alertOpen: false,
         });
         this.pushLog("alert.asyncDelete(done)");
-        useToast(this).success("Workspace deleted", {
+        toast.success("Workspace deleted", {
           description: "All workspace resources were removed.",
         });
       }, 1100);
@@ -483,7 +485,7 @@ Page({
     };
 
     this.setData({ alertOpen: false });
-    useToast(this).success(messageMap[this.data.alertScenario]);
+    toast.success(messageMap[this.data.alertScenario]);
   },
 
   // --- Section 3: Modal Form ---
@@ -543,7 +545,7 @@ Page({
         lastFormStatus: "Submitted",
         lastFormOutput: JSON.stringify(values),
       });
-      useToast(this).success("Invitation sent", {
+      toast.success("Invitation sent", {
         description: "Team member invite dispatched successfully.",
       });
     }, 700);
@@ -601,7 +603,7 @@ Page({
         lastFormStatus: "Verified",
         lastFormOutput: JSON.stringify(values),
       });
-      useToast(this).success("Security PIN verified");
+      toast.success("Security PIN verified");
     }, 500);
   },
 
@@ -618,7 +620,7 @@ Page({
   },
 
   confirmTriggerModal() {
-    useToast(this).success("Uncontrolled modal confirmed");
+    toast.success("Uncontrolled modal confirmed");
     this.closeTriggerModalImperative();
   },
 
@@ -730,7 +732,7 @@ Page({
 
   onModalClosePrevent() {
     this.pushLog("event: closePrevent (backdrop blocked)");
-    useToast(this).warning("Backdrop dismissal blocked", {
+    toast.warning("Backdrop dismissal blocked", {
       description: "Use the action buttons to close this modal.",
       duration: 1800,
     });

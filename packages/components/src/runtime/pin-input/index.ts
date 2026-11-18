@@ -20,6 +20,15 @@ const pinInputBehavior = createMachineBehavior({
   key: "pinInput",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: [
+    "value",
+    "valueAsString",
+    "isValueComplete",
+    "setValue",
+    "clearValue",
+    "resetValue",
+    "focus",
+  ],
 });
 
 Component(

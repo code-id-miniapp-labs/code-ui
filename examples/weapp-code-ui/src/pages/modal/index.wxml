@@ -209,12 +209,12 @@
       <c-button size="sm" color="primary" variant="soft" leading-icon="i-lucide-palette" label="Custom ui &amp; className Theme" bind:tap="openThemedModal" />
     </view>
 
-    <!-- 5. Imperative useChild() API & Lifecycle Event Inspector -->
+    <!-- 5. Imperative useComponentRef() API & Lifecycle Event Inspector -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view class="flex items-center justify-between gap-2">
         <view>
           <text class="block text-sm font-semibold text-highlighted">Imperative API &amp; Lifecycle</text>
-          <text class="block text-xs text-muted mt-0.5">Control #imperative-modal via useChild() &amp; inspect events.</text>
+          <text class="block text-xs text-muted mt-0.5">Control #imperative-modal via useComponentRef() &amp; inspect events.</text>
         </view>
         <c-badge
           label="{{ imperativeSnap.state || 'closed' }}"
@@ -554,12 +554,12 @@
     </view>
   </c-modal>
 
-  <!-- Modal 5: Imperative useChild() Controlled Modal -->
+  <!-- Modal 5: Imperative useComponentRef() Controlled Modal -->
   <c-modal
     id="imperative-modal"
     size="sm"
     title="Imperative FSM Modal"
-    description="Opened and closed directly through useChild() -> ModalApi methods."
+    description="Opened and closed directly through useComponentRef() -> ModalApi methods."
     bind:openChange="onUncontrolledOpenChange"
     bind:enter="onModalEnter"
     bind:afterEnter="onModalAfterEnter"

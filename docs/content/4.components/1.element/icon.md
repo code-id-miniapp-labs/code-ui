@@ -1,11 +1,11 @@
 ---
 title: Icon
-description: Renders an icon from the @code-ui/core/icons registry or an image/SVG asset path or URL, with support for named or custom sizes, theme or raw CSS colors, and spin animation.
+description: Renders an Iconify icon, semantic alias, or image/SVG asset path or URL, with support for named or custom sizes, theme or raw CSS colors, and spin animation.
 ---
 
 ## Overview
 
-`c-icon` renders an icon from the `@code-ui/core/icons` registry (as a CSS icon class on a `<view>`) or an image/SVG asset path or URL (via `<image mode="aspectFit">`). It supports named or custom sizes, theme or raw CSS colors, and continuous spin animation.
+`c-icon` renders an Iconify CSS icon class (on a `<view>`) from built-in Lucide, additional `@iconify-json/*` collections, or custom `cui.config.ts` aliases, or renders an image/SVG asset path or URL (via `<image mode="aspectFit">`). It supports named or custom sizes, theme or raw CSS colors, and continuous spin animation.
 
 ::callout{icon="i-lucide-info" color="info"}
 This component declares `className` rather than `class` in `properties` for adding root classes, and renders nothing when `name` is empty.
@@ -15,7 +15,7 @@ This component declares `className` rather than `class` in `properties` for addi
 
 ### Basic
 
-Use the `name` prop with a `@code-ui/core/icons` registry identifier. When `name` is empty, `c-icon` renders nothing.
+Use the `name` prop with an Iconify class (`i-lucide-*`), collection shorthand (`lucide:home`), or semantic alias configured in `cui.config.ts`. When `name` is empty, `c-icon` renders nothing.
 
 ```html
 <c-icon name="lucide:home" />
@@ -99,7 +99,7 @@ Page({
 
 | Name | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `name` | `String` | `""` | Icon identifier resolved via `getIcon(name)` (falls back to raw `name`), or an image/SVG path or URL (`/`, `./`, `../`, `http(s)://`, `data:image/`, or `.svg`/`.png`/`.jpg`/`.jpeg`/`.webp`/`.gif`). Renders nothing when empty. |
+| `name` | `String` | `""` | Iconify class (`"i-lucide-home"`), shorthand (`"lucide:home"`), semantic alias (`"check"`), or an image/SVG path or URL (`/`, `./`, `../`, `http(s)://`, `data:image/`, or `.svg`/`.png`/`.jpg`/`.jpeg`/`.webp`/`.gif`). Renders nothing when empty. |
 | `size` | `String` | `""` | Named size variant (`"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`) or custom CSS size. Bare numeric strings (e.g. `"24"`) are normalized to `"24px"`; other CSS values (e.g. `"2rem"`, `"32rpx"`) are applied directly as inline `width`, `height`, and `font-size`. |
 | `color` | `String` | `""` | Theme color variant name (e.g. `"neutral"`, or any configured theme color) or a raw CSS color (`#...`, `rgb(...)`, `rgba(...)`, `hsl(...)`, `hsla(...)`, `oklch(...)`, `var(...)`) applied via inline `color` style. |
 | `spin` | `Boolean` | `false` | Enables continuous rotation animation (`animate-spin`) when `true`. |

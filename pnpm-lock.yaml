@@ -1322,6 +1322,12 @@ importers:
       '@code-ui/core':
         specifier: workspace:*
         version: link:../core
+      '@egoist/tailwindcss-icons':
+        specifier: ^1.9.2
+        version: 1.9.2(tailwindcss@4.3.3)
+      '@iconify-json/lucide':
+        specifier: ^1.2.146
+        version: 1.2.146
       c12:
         specifier: ^2.0.1
         version: 2.0.4

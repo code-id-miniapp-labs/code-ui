@@ -5,7 +5,7 @@ import { diffSnapshot, warn } from "@code-ui/utils";
 /**
  * Universal MiniProgram instance type supporting both Page and Component contexts.
  */
-export type UseChildInstance =
+export type UseComponentRefInstance =
   | WechatMiniprogram.Page.TrivialInstance
   | WechatMiniprogram.Component.TrivialInstance
   | WechatMiniprogram.Page.Instance<any, any>
@@ -18,65 +18,65 @@ export type UseChildInstance =
 /**
  * Target selector string or component instance reference.
  */
-export type UseChildTarget =
+export type UseComponentRefTarget =
   | string
   | WechatMiniprogram.Component.TrivialInstance
   | Record<string, any>;
 
-export interface UseChildBaseOptions<
+export interface UseComponentRefBaseOptions<
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 > {
   /**
-   * The data key under parent's `this.data` where the child snapshot is synced.
+   * The data key under parent's `this.data` where the component snapshot is synced.
    * e.g., key: 'email' -> access via `{{ email.value }}` in WXML.
    */
   key?: string | undefined;
 
   /**
-   * Reactive callback triggered whenever the child machine transitions.
+   * Reactive callback triggered whenever the component machine transitions.
    */
   onChange?: ((snapshot: Data) => void) | undefined;
 }
 
-export interface UseChildConnectOptions<
+export interface UseComponentRefConnectOptions<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
-> extends UseChildBaseOptions<Data> {
+> extends UseComponentRefBaseOptions<Data> {
   /**
    * Custom connect function to format or project the snapshot.
    */
   connect: ConnectFn<T, Data>;
 }
 
-export interface UseChildOptions<
+export interface UseComponentRefOptions<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
-> extends UseChildBaseOptions<Data> {
+> extends UseComponentRefBaseOptions<Data> {
   /**
    * Optional custom connect function to format or project the snapshot.
    */
   connect?: ConnectFn<T, Data> | undefined;
 }
 
-export type UseChildApi<Data> = Data & {
+export type UseComponentRefApi<Data> = Data & {
   clear?: () => void;
   reset?: () => void;
   [key: string]: any;
 };
 
-export interface UseChildReturn<
+export interface UseComponentRefReturn<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 > {
   /** Synchronous getter for the latest state snapshot in JS */
   getSnapshot: () => Data | undefined;
-  /** Getter property for immediate read: `child.snapshot` */
+  /** Getter property for immediate read: `ref.snapshot` */
   readonly snapshot: Data | undefined;
-  /** Callable public API methods of the child machine / component */
-  api: UseChildApi<Data>;
-  /** Send events directly to the child machine */
+  /** Callable public API methods of the component machine / component */
+  api: UseComponentRefApi<Data>;
+  /** Send events directly to the component machine */
   send: (event: T["event"]) => void;
-  /** The underlying child service */
+  /** The underlying component service */
   readonly service: Service<T> | undefined;
   /** Stop the subscription and dispose reactive bindings */
   stop: () => void;
@@ -86,7 +86,10 @@ export interface UseChildReturn<
 
 const LISTENER_SET_KEY = "__codeUiSnapshotListeners";
 
-function resolveChild(instance: UseChildInstance, target: UseChildTarget): any {
+function resolveChild(
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+): any {
   if (typeof target === "string") {
     if (instance && typeof instance.selectComponent === "function") {
       return instance.selectComponent(target);
@@ -127,52 +130,52 @@ function getChildService<T extends MachineSchema>(
 }
 
 //  With `connect` function — infers `Data` directly from `connect` return type
-export function useChild<
+export function useComponentRef<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-  options: UseChildConnectOptions<T, Data>,
-): UseChildReturn<T, Data>;
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+  options: UseComponentRefConnectOptions<T, Data>,
+): UseComponentRefReturn<T, Data>;
 
-// Single generic for Data / API type (e.g. useChild<PinInputApi>(this, '#otp', options))
-export function useChild<
+// Single generic for Data / API type (e.g. useComponentRef<PinInputApi>(this, '#otp', options))
+export function useComponentRef<
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-  options?: UseChildBaseOptions<Data>,
-): UseChildReturn<any, Data>;
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+  options?: UseComponentRefBaseOptions<Data>,
+): UseComponentRefReturn<any, Data>;
 
-// With explicit MachineSchema T and Data (e.g. useChild<PinInputSchema, PinInputApi>(...))
-export function useChild<
+// With explicit MachineSchema T and Data (e.g. useComponentRef<PinInputSchema, PinInputApi>(...))
+export function useComponentRef<
   T extends MachineSchema,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-  options?: UseChildBaseOptions<Data>,
-): UseChildReturn<T, Data>;
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+  options?: UseComponentRefBaseOptions<Data>,
+): UseComponentRefReturn<T, Data>;
 
-// Fallback when passing unified UseChildOptions<T, Data>
-export function useChild<
+// Fallback when passing unified UseComponentRefOptions<T, Data>
+export function useComponentRef<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-  options?: UseChildOptions<T, Data>,
-): UseChildReturn<T, Data>;
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+  options?: UseComponentRefOptions<T, Data>,
+): UseComponentRefReturn<T, Data>;
 
-export function useChild<
+export function useComponentRef<
   T extends MachineSchema = any,
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 >(
-  instance: UseChildInstance,
-  target: UseChildTarget,
-  options: UseChildOptions<T, Data> = {},
-): UseChildReturn<T, Data> {
+  instance: UseComponentRefInstance,
+  target: UseComponentRefTarget,
+  options: UseComponentRefOptions<T, Data> = {},
+): UseComponentRefReturn<T, Data> {
   const { key, connect, onChange } = options;
 
   let activeChild: any = resolveChild(instance, target);
@@ -228,10 +231,6 @@ export function useChild<
       return connect(service);
     }
 
-    if (typeof child.getSnapshot === "function") {
-      return child.getSnapshot();
-    }
-
     const comp = getChildInstance(child);
     if (comp?.__codeUiApi !== undefined) {
       return comp.__codeUiApi;
@@ -281,12 +280,6 @@ export function useChild<
     if (comp) {
       if (typeof comp.send === "function" && !("send" in apiTarget)) {
         apiTarget.send = comp.send.bind(comp);
-      }
-      if (
-        typeof comp.getSnapshot === "function" &&
-        !("getSnapshot" in apiTarget)
-      ) {
-        apiTarget.getSnapshot = comp.getSnapshot.bind(comp);
       }
     }
 
@@ -464,7 +457,7 @@ export function useChild<
     }
     warn(
       true,
-      `[useChild] Unable to send event; child component for target "${String(target)}" was not found.`,
+      `[useComponentRef] Unable to send event; child component for target "${String(target)}" was not found.`,
     );
   };
 
@@ -473,10 +466,10 @@ export function useChild<
     get snapshot() {
       return latestSnapshot ?? computeSnapshot();
     },
-    api: apiProxy as unknown as UseChildApi<Data>,
+    api: apiProxy as unknown as UseComponentRefApi<Data>,
     send,
     stop,
-  } as UseChildReturn<T, Data>;
+  } as UseComponentRefReturn<T, Data>;
 
   Object.defineProperty(returnObj, "service", {
     get() {

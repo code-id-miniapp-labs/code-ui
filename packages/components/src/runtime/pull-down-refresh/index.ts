@@ -22,6 +22,7 @@ const pullDownRefreshBehavior = createMachineBehavior({
   connect: connectPullDownRefresh,
   key: "pullDownRefresh",
   exportApi: true,
+  exportApiKeys: ["status", "refreshing", "refresh", "close"],
 });
 
 Component(

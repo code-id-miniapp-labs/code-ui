@@ -26,6 +26,24 @@ const formBehavior = createMachineBehavior({
   key: "form",
   plugins: [withFormParent()],
   exportApi: true,
+  exportApiKeys: [
+    "isValid",
+    "validate",
+    "submit",
+    "reset",
+    "resetValidation",
+    "clearErrors",
+    "setErrors",
+    "getErrors",
+    "getValues",
+    "getFieldValue",
+    "setValues",
+    "setFieldValue",
+    "focusFirstError",
+    "scrollToFirstError",
+    "handleSubmit",
+    "handleReset",
+  ],
 });
 
 Component(

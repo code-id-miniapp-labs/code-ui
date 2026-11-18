@@ -22,6 +22,7 @@ const buttonBehavior = createMachineBehavior({
   connect: connectButton,
   key: "button",
   exportApi: true,
+  exportApiKeys: ["loading", "disabled", "setLoading", "setDisabled"],
 });
 
 Component(

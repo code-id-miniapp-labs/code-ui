@@ -1,16 +1,16 @@
 <view class="min-h-screen bg-muted text-default pb-12">
   <demo-header
-    title="Use Child"
+    title="Use Component Ref"
     badge="Interaction"
-    subtitle="Reactive useChild() composable connecting page methods and live state snapshots to child FSM components."
+    subtitle="Reactive useComponentRef() composable connecting page methods and live state snapshots to child FSM components."
   />
 
   <view class="px-4 flex flex-col gap-4">
-    <!-- 1. Form Inputs Controlled via useChild -->
+    <!-- 1. Form Inputs Controlled via useComponentRef -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-4">
       <view>
-        <text class="block text-sm font-semibold text-highlighted">Direct FSM Control with useChild()</text>
-        <text class="block text-xs text-muted mt-0.5">Reads child snapshots reactively and calls api.clear() / api.clearValue() without prop boilerplate.</text>
+        <text class="block text-sm font-semibold text-highlighted">Direct FSM Control with useComponentRef()</text>
+        <text class="block text-xs text-muted mt-0.5">Reads component snapshots reactively and calls api.clear() / api.clearValue() without prop boilerplate.</text>
       </view>
 
       <c-form-field label="Username (#userInput)" help="Snapshot value synced to page.data.user">

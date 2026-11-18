@@ -10,7 +10,7 @@
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
         <text class="block text-sm font-semibold text-highlighted">Interactive Stepper & Linear Guard</text>
-        <text class="block text-xs text-muted mt-0.5">Active Step: {{ activeStep + 1 }} · useChild synced step: {{ stepper.step !== undefined ? stepper.step + 1 : 1 }}</text>
+        <text class="block text-xs text-muted mt-0.5">Active Step: {{ activeStep + 1 }} · useComponentRef synced step: {{ stepper.step !== undefined ? stepper.step + 1 : 1 }}</text>
       </view>
 
       <view class="flex flex-wrap gap-1.5">

@@ -1,4 +1,4 @@
-import { useChild, type UseChildReturn } from "@code-ui/composables";
+import { useComponentRef, type UseComponentRefReturn } from "@code-ui/composables";
 
 Page({
   data: {
@@ -49,10 +49,10 @@ Page({
     orderStep: 2,
   },
 
-  stepperChild: null as UseChildReturn<any, any | null> | null,
+  stepperRef: null as UseComponentRefReturn<any, any | null> | null,
 
   onReady() {
-    this.stepperChild = useChild(this, "#stepper-controlled", {
+    this.stepperRef = useComponentRef(this, "#stepper-controlled", {
       key: "stepper",
       onChange: (snapshot) => {
         console.log(snapshot);
@@ -79,15 +79,15 @@ Page({
   },
 
   nextStep() {
-    this.stepperChild?.api?.nextStep?.();
+    this.stepperRef?.api?.nextStep?.();
   },
 
   prevStep() {
-    this.stepperChild?.api?.prevStep?.();
+    this.stepperRef?.api?.prevStep?.();
   },
 
   resetStep() {
-    this.stepperChild?.api?.resetStep?.();
+    this.stepperRef?.api?.resetStep?.();
   },
 
   toggleLinear(e: WechatMiniprogram.CustomEvent) {
@@ -108,6 +108,6 @@ Page({
   },
 
   jumpToStepTwo() {
-    this.stepperChild?.api?.setStep?.(2);
+    this.stepperRef?.api?.setStep?.(2);
   },
 });

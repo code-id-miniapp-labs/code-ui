@@ -127,8 +127,7 @@ Component(
             : this.data.themeMode || "light";
         resolved.root = `${resolved.root} ${mode}`.trim();
         if (scaled) {
-          const bg =
-            this.data.hostScaleBackground || this.data.scaleBackground;
+          const bg = this.data.hostScaleBackground || this.data.scaleBackground;
           if (!bg.startsWith("#") && !bg.startsWith("rgb")) {
             resolved.root = `${resolved.root} ${bg}`.trim();
           }
@@ -163,8 +162,7 @@ Component(
           bottomInset,
         });
 
-        const bg =
-          this.data.hostScaleBackground || this.data.scaleBackground;
+        const bg = this.data.hostScaleBackground || this.data.scaleBackground;
         const bgStyle =
           this.data.scaled && (bg.startsWith("#") || bg.startsWith("rgb"))
             ? `background-color:${bg};`

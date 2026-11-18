@@ -31,6 +31,7 @@ const toastBehavior = createMachineBehavior({
   connect: connectToast,
   key: "toast",
   exportApi: true,
+  exportApiKeys: ["open", "visible", "dismiss", "pause", "resume", "handleAction"],
   syncProps: ["id", "open", "duration", "actions"],
 });
 

@@ -1,5 +1,15 @@
-export { useChild } from "./use-child";
+export { useComponentRef } from "./use-component-ref";
 export { useToast } from "./use-toast";
+export { useColorMode } from "./use-color-mode";
+
+export type {
+  UseColorModeOptions,
+  UseColorModeReturn,
+  AppColorMode,
+  AppThemeColors,
+  AppThemeState,
+  ResolvedThemeMode,
+} from "./use-color-mode";
 
 export type {
   ToastOptions,
@@ -10,11 +20,11 @@ export type {
 } from "./use-toast";
 
 export type {
-  UseChildBaseOptions,
-  UseChildConnectOptions,
-  UseChildOptions,
-  UseChildReturn,
-  UseChildApi,
-  UseChildInstance,
-  UseChildTarget,
-} from "./use-child";
+  UseComponentRefBaseOptions,
+  UseComponentRefConnectOptions,
+  UseComponentRefOptions,
+  UseComponentRefReturn,
+  UseComponentRefApi,
+  UseComponentRefInstance,
+  UseComponentRefTarget,
+} from "./use-component-ref";

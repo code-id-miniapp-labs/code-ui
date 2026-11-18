@@ -20,6 +20,7 @@ const switchBehavior = createMachineBehavior({
   key: "cSwitch",
   plugins: [withFormField()],
   exportApi: true,
+  exportApiKeys: ["checked", "setChecked", "toggle", "resetChecked"],
 });
 
 Component(

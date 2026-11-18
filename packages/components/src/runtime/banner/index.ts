@@ -34,6 +34,7 @@ const bannerBehavior = createMachineBehavior({
   connect: connectBanner,
   key: "banner",
   exportApi: true,
+  exportApiKeys: ["open", "visible", "dismiss", "handleAction"],
   plugins: [withAppBannerInset()],
 });
 

@@ -19,6 +19,21 @@ const stepperBehavior = createMachineBehavior({
   key: "stepper",
   plugins: [withStepper()],
   exportApi: true,
+  exportApiKeys: [
+    "step",
+    "value",
+    "hasNext",
+    "hasPrev",
+    "isCompleted",
+    "setStep",
+    "goToStep",
+    "nextStep",
+    "prevStep",
+    "resetStep",
+    "completeStep",
+    "scrollTo",
+    "scrollToStep",
+  ],
 });
 
 Component(

@@ -18,6 +18,7 @@ const formFieldBehavior = createMachineBehavior({
   key: "formField",
   plugins: [withFormField({ native: false }), withFormFieldWrapper()],
   exportApi: true,
+  exportApiKeys: ["invalid", "displayError"],
 });
 
 Component(

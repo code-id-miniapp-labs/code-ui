@@ -1,5 +1,7 @@
 import { useToast } from "@code-ui/composables";
 
+const toast = useToast();
+
 Page({
   data: {
     drawerOpen: false,
@@ -130,12 +132,12 @@ Page({
   },
 
   onConfirmAction() {
-    useToast(this).success("Action confirmed");
+    toast.success("Action confirmed");
     this.closeDrawer();
   },
 
   onFormSubmit(e: WechatMiniprogram.CustomEvent) {
-    useToast(this).success("Feedback submitted", {
+    toast.success("Feedback submitted", {
       description: JSON.stringify(e.detail.values),
     });
     this.closeDrawer();

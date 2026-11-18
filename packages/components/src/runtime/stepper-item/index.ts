@@ -18,6 +18,7 @@ const stepperItemBehavior = createMachineBehavior({
   key: "cStepperItem",
   plugins: [withStepperItem()],
   exportApi: true,
+  exportApiKeys: ["index", "value", "status", "isCompleted", "isCurrent"],
 });
 
 Component(

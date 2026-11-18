@@ -23,6 +23,7 @@ const swipeCellBehavior = createMachineBehavior({
   connect: connectSwipeCell,
   key: "swipeCell",
   exportApi: true,
+  exportApiKeys: ["openedSide", "open", "close", "toggle", "measure"],
 });
 
 Component(

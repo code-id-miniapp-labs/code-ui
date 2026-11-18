@@ -26,6 +26,7 @@ const drawerBehavior = createMachineBehavior({
   connect: connectDrawer,
   key: "drawer",
   exportApi: true,
+  exportApiKeys: ["open", "visible", "setOpen", "openDrawer", "closeDrawer"],
   syncProps: [
     "shouldScaleBackground",
     "scaleFactor",

@@ -24,6 +24,7 @@ const accordionItemBehavior = createMachineBehavior({
   key: "cAccordionItem",
   plugins: [withAccordionItem()],
   exportApi: true,
+  exportApiKeys: ["isOpen", "toggle", "open", "close", "measure"],
 });
 
 Component(

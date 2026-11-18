@@ -21,6 +21,15 @@ const progressBehavior = createMachineBehavior({
   connect: connectProgress,
   key: "progress",
   exportApi: true,
+  exportApiKeys: [
+    "value",
+    "percent",
+    "isComplete",
+    "setValue",
+    "setToMin",
+    "setToMax",
+    "reset",
+  ],
 });
 
 Component(

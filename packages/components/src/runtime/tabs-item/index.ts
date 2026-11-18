@@ -23,6 +23,7 @@ const tabsItemBehavior = createMachineBehavior({
   key: "tabsItem",
   plugins: [withTabsItem()],
   exportApi: true,
+  exportApiKeys: ["value", "isSelected", "select"],
 });
 
 Component(

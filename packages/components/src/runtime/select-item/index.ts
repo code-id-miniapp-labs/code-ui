@@ -24,6 +24,7 @@ const selectItemBehavior = createMachineBehavior({
   key: "selectItem",
   plugins: [withSelectItem()],
   exportApi: true,
+  exportApiKeys: ["value", "selected", "select"],
 });
 
 Component(

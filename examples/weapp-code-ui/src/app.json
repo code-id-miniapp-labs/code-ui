@@ -21,7 +21,7 @@
     "pages/select/index",
     "pages/input-menu/index",
     "pages/form/index",
-    "pages/use-child/index",
+    "pages/use-component-ref/index",
     "pages/textarea/index",
     "pages/icon/index",
     "pages/badge/index",
