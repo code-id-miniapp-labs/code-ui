@@ -2,6 +2,11 @@
   "name": "@code-id-labs/plugin-vite",
   "version": "1.0.0",
   "description": "Vite plugin for Code-UI — provides cui.config.ts loading, virtual modules, HMR, and Tailwind template scanning",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-id-miniapp-labs/code-ui.git",
+    "directory": "packages/plugin-vite"
+  },
   "files": [
     "dist"
   ],

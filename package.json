@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "description": "A framework-agnostic UI library for MiniApp environments powered by FSM + alien-signals",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-id-miniapp-labs/code-ui.git"
+  },
   "scripts": {
     "build": "pnpm -r run build",
     "dev": "pnpm -r run dev",

@@ -2,6 +2,11 @@
   "name": "@code-id-labs/components",
   "version": "1.0.0",
   "description": "Prebuilt native WeChat MiniProgram UI components for code-ui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-id-miniapp-labs/code-ui.git",
+    "directory": "packages/components"
+  },
   "publishConfig": {
     "access": "public"
   },

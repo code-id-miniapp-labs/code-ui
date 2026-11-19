@@ -2,6 +2,11 @@
   "name": "@code-id-labs/composables",
   "version": "1.0.0",
   "description": "Vue-inspired reactive composition functions and hooks for WeChat MiniProgram",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-id-miniapp-labs/code-ui.git",
+    "directory": "packages/composables"
+  },
   "files": [
     "dist"
   ],
