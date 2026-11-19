@@ -36,6 +36,29 @@ export function generateStarterFiles(
       "",
     ].join("\n"),
 
+    "pnpm-workspace.yaml": [
+      "allowBuilds:",
+      '  "@parcel/watcher": false',
+      '  "@swc/core": false',
+      '  "@tailwindcss/oxide": false',
+      "  core-js: false",
+      "  core-js-pure: false",
+      "  esbuild: true",
+      "  unrs-resolver: false",
+      "",
+      "onlyBuiltDependencies:",
+      "  - esbuild",
+      "",
+      "ignoredBuiltDependencies:",
+      '  - "@parcel/watcher"',
+      '  - "@swc/core"',
+      '  - "@tailwindcss/oxide"',
+      "  - core-js",
+      "  - core-js-pure",
+      "  - unrs-resolver",
+      "",
+    ].join("\n"),
+
     "package.json": JSON.stringify(
       {
         name: projectName,
@@ -60,6 +83,7 @@ export function generateStarterFiles(
             : {}),
           "@types/node": "^22.0.0",
           "miniprogram-api-typings": "^5.2.3",
+          tailwindcss: "^4.3.3",
           typescript: "^5.8.0",
           "weapp-vite": "^7.5.0",
         },
@@ -288,7 +312,7 @@ export default defineConfig({
         label="Increment"
         color="primary"
         leading-icon="i-${iconCollection}-plus"
-        bind:click="handleIncrement"
+        bind:tap="handleIncrement"
       />
     </view>
   </${prefix}-card>

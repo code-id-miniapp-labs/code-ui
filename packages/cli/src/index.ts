@@ -276,6 +276,17 @@ program
       }
     }
 
+    const pm = detectPackageManager(cwd);
+    const pnpmWorkspacePath = path.resolve(cwd, "pnpm-workspace.yaml");
+    if (pm === "pnpm" && !fs.existsSync(pnpmWorkspacePath)) {
+      fs.writeFileSync(
+        pnpmWorkspacePath,
+        files["pnpm-workspace.yaml"] ?? "",
+        "utf-8",
+      );
+      logger.success(`Created ${pc.green("pnpm-workspace.yaml")}`);
+    }
+
     if (cmdOpts.install) {
       const iconCol = cmdOpts.icons || "lucide";
       installDependencies(["@code-id-labs/components", "@code-id-labs/plugin-vite"], {
@@ -286,7 +297,6 @@ program
       }
       logger.success("Installed Code UI dependencies.");
     } else {
-      const pm = detectPackageManager(cwd);
       const addCmd = pm === "npm" ? "npm i" : `${pm} add`;
       const iconCol = cmdOpts.icons || "lucide";
       console.log(`\n${pc.bold("Install required packages:")}`);
