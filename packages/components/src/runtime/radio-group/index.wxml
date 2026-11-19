@@ -1,4 +1,4 @@
-<view class="{{classes.root}}" data-scope="radio-group" data-part="root" aria-role="radiogroup" aria-disabled="{{cRadioGroup.disabled}}" aria-invalid="{{cRadioGroup.invalid}}" aria-required="{{required}}">
+<view id="{{cRadioGroup.rootProps.id}}" class="{{classes.root}}" data-scope="radio-group" data-part="root" aria-role="radiogroup" aria-disabled="{{cRadioGroup.disabled}}" aria-invalid="{{cRadioGroup.invalid}}" aria-required="{{required}}">
   <view wx:if="{{legend}}" class="{{classes.legend}}">{{legend}}</view>
   <slot wx:else name="legend" />
   <view class="{{classes.fieldset}}">

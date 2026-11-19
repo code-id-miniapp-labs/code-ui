@@ -30,6 +30,18 @@ export function connectModal(service: ModalService): ModalApi {
       send({ type: "TOGGLE" });
     },
 
+    handleTriggerTap() {
+      send({ type: "TRIGGER.TAP" });
+    },
+
+    handleOverlayTap() {
+      send({ type: "OVERLAY.TAP" });
+    },
+
+    handleCloseTriggerTap() {
+      send({ type: "CLOSE_TRIGGER.TAP" });
+    },
+
     rootProps: {
       id: dom.getRootId(scope),
       "data-state": currentState,

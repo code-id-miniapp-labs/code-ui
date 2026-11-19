@@ -25,6 +25,7 @@ export type FileUploadColor =
 export type FileUploadSize = "sm" | "md" | "lg" | "xl";
 export type FileUploadLayout = "list" | "grid";
 export type FileUploadMode = "auto" | "media" | "messageFile";
+export type FileUploadPreviewMode = "overlay" | "native";
 export type FileUploadSourceType = "album" | "camera";
 export type FileUploadMediaType = "image" | "video";
 
@@ -104,6 +105,8 @@ export interface FileUploadProps {
   accept?: string | string[] | undefined;
   /** Selection mode: auto, media, messageFile */
   mode?: FileUploadMode | undefined;
+  /** Image preview mode: built-in fullscreen overlay or native wx.previewImage/previewMedia */
+  previewMode?: FileUploadPreviewMode | undefined;
   /** Source type for media picking */
   sourceType?: FileUploadSourceType[] | undefined;
   /** Media type for media picking */
@@ -146,6 +149,9 @@ export interface FileUploadContext {
   files: FileUploadFile[];
   invalid: boolean;
   failedThumbs: string[];
+  resolvedSources: Record<string, string>;
+  previewOpen: boolean;
+  previewIndex: number;
 }
 
 export interface FileUploadComputed {
@@ -166,6 +172,8 @@ export interface FileUploadRefs {
   initialFiles: FileUploadFile[];
   formField?: BoundFormField | undefined;
   chooseDone?: (() => void) | undefined;
+  resolvingPaths: Set<string>;
+  disposed: boolean;
 }
 
 export type FileUploadAction =
@@ -175,6 +183,8 @@ export type FileUploadAction =
   | "removeFile"
   | "clearFiles"
   | "previewFile"
+  | "closePreview"
+  | "setPreviewIndex"
   | "clickFile"
   | "markImageError"
   | "setUploading"
@@ -183,10 +193,11 @@ export type FileUploadAction =
   | "resolveChooseFromEvent"
   | "setupFormField"
   | "cleanupFormField"
-  | "cleanupAudio";
+  | "cleanupAudio"
+  | "markDisposed";
 
 export type FileUploadGuard = "isInteractive" | "canChoose" | "canAddFiles";
-export type FileUploadEffect = "pickWeChatFiles";
+export type FileUploadEffect = "pickWeChatFiles" | "hydrateLocalImages";
 
 export type FileUploadEvent =
   | { type: "CHOOSE"; onDone?: (() => void) | undefined }
@@ -200,6 +211,8 @@ export type FileUploadEvent =
       idOrIndex?: string | number | undefined;
     }
   | { type: "PREVIEW_FILE"; idOrIndex: string | number }
+  | { type: "PREVIEW_CLOSE" }
+  | { type: "PREVIEW_CHANGE"; index: number }
   | { type: "FILE_CLICK"; index: number }
   | { type: "IMAGE_ERROR"; index: number }
   | { type: "CLEAR_FILES" }
@@ -219,6 +232,7 @@ type FileUploadDefaultedKey =
   | "minSize"
   | "accept"
   | "mode"
+  | "previewMode"
   | "sourceType"
   | "mediaType"
   | "sizeType"
@@ -264,6 +278,14 @@ export interface FileUploadItemView extends FileUploadFile {
   previewProps: Record<string, any>;
 }
 
+export interface FileUploadPreviewItem {
+  id: string;
+  name: string;
+  formattedSize: string;
+  src: string;
+  fileIndex: number;
+}
+
 export interface FileUploadApi {
   state: FileUploadState;
   files: FileUploadItemView[];
@@ -276,6 +298,10 @@ export interface FileUploadApi {
   readOnly: boolean;
   invalid: boolean;
   interactive: boolean;
+  previewOpen: boolean;
+  previewIndex: number;
+  previewItems: FileUploadPreviewItem[];
+  activePreviewItem: FileUploadPreviewItem | null;
   rootProps: Record<string, any>;
   dropzoneProps: Record<string, any>;
   fileListProps: Record<string, any>;
@@ -285,7 +311,11 @@ export interface FileUploadApi {
   removeFile: (idOrIndex: string | number) => void;
   handleRemove: (index: number) => void;
   previewFile: (idOrIndex: string | number) => void;
+  closePreview: () => void;
+  setPreviewIndex: (index: number) => void;
   handlePreview: (index: number) => void;
+  handlePreviewClose: () => void;
+  handlePreviewChange: (index: number) => void;
   handleFileClick: (index: number) => void;
   handleImageError: (index: number) => void;
   clearFiles: () => void;

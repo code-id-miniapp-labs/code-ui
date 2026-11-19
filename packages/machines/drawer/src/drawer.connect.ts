@@ -9,11 +9,14 @@ export function connectDrawer(service: DrawerService): DrawerApi {
   const currentState = state.get();
   const placement = computed("placement");
   const keyboardHeight = context.get("keyboardHeight");
+  const keyboardOpen = keyboardHeight > 0;
 
   return {
     open,
     visible,
     state: currentState,
+    keyboardHeight,
+    keyboardOpen,
 
     setOpen(nextOpen: boolean) {
       send({ type: nextOpen ? "OPEN" : "CLOSE" });
@@ -27,11 +30,36 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       send({ type: "CLOSE" });
     },
 
+    handleBackdropTap() {
+      send({ type: "BACKDROP.TAP" });
+    },
+
+    handleCloseTriggerTap() {
+      send({ type: "CLOSE_TRIGGER.TAP" });
+    },
+
+    handleDragStart(data) {
+      send({ type: "DRAG_START", data });
+    },
+
+    handleDragMove(data) {
+      send({ type: "DRAG_MOVE", data });
+    },
+
+    handleDragEnd(passed, data) {
+      send({ type: "DRAG_END", passed, data });
+    },
+
     rootProps: {
       id: dom.getRootId(scope),
       "data-state": currentState,
       "data-placement": placement,
+      "data-keyboard-open": String(keyboardOpen),
+      "data-keyboard-height": keyboardHeight,
       hidden: !visible,
+      style: keyboardOpen
+        ? `padding-bottom: ${keyboardHeight}px; --keyboard-height: ${keyboardHeight}px;`
+        : "",
     },
 
     backdropProps: {
@@ -51,7 +79,7 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       "aria-modal": true,
       "aria-hidden": !open,
       hidden: !visible,
-      style: keyboardHeight > 0 ? `--keyboard-height: ${keyboardHeight}px;` : "",
+      style: keyboardOpen ? `--keyboard-height: ${keyboardHeight}px;` : "",
     },
 
     closeTriggerProps: {

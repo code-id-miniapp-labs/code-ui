@@ -105,6 +105,10 @@ export interface PopoverProps {
   maxHeight?: number | undefined;
   /** Close transition duration in ms */
   duration?: number | undefined;
+  /** Active virtual keyboard height in px to reserve bottom viewport space */
+  keyboardHeight?: number | undefined;
+  /** Optional reactive token to trigger anchor remeasurement when trigger dimensions change */
+  repositionKey?: string | number | undefined;
   /** Callback fired when open state changes */
   onOpenChange?: ((details: PopoverOpenChangeDetails) => void) | undefined;
   /** Callback fired when menu opens */
@@ -131,7 +135,9 @@ type PopoverDefaultedKey =
   | "avoidCollisions"
   | "matchTriggerWidth"
   | "maxHeight"
-  | "duration";
+  | "duration"
+  | "keyboardHeight"
+  | "repositionKey";
 
 export type PopoverResolvedProps = Omit<
   PopoverProps,

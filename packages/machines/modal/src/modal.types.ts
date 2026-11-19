@@ -54,6 +54,10 @@ export interface ModalProps {
   onClose?: (() => void) | undefined;
   /** Callback fired when dismissal is prevented while dismissible is false */
   onClosePrevent?: (() => void) | undefined;
+  /** Callback fired when the overlay is tapped */
+  onOverlayTap?: (() => void) | undefined;
+  /** Callback fired when the close trigger is tapped */
+  onCloseTriggerTap?: (() => void) | undefined;
   /** Callback fired when enter transition starts */
   onEnter?: (() => void) | undefined;
   /** Callback fired after enter transition finishes */
@@ -97,6 +101,8 @@ export type ModalAction =
   | "invokeOnClose"
   | "invokeOnAfterLeave"
   | "invokeOnClosePrevent"
+  | "invokeOnOverlayTap"
+  | "invokeOnCloseTriggerTap"
   | "setKeyboardHeight"
   | "resetKeyboardHeight";
 
@@ -138,6 +144,12 @@ export interface ModalApi {
   closeModal(): void;
   /** Toggle the modal open/closed state */
   toggle(): void;
+  /** Handle trigger tap */
+  handleTriggerTap(): void;
+  /** Handle overlay tap */
+  handleOverlayTap(): void;
+  /** Handle close trigger tap */
+  handleCloseTriggerTap(): void;
 
   /** WXML data & attributes for Root */
   rootProps: Record<string, any>;

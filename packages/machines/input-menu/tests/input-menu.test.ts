@@ -259,9 +259,53 @@ describe("inputMenuMachine", () => {
     await flush();
     expect(api().value).toEqual(["Bug"]);
     expect(api().state).toBe("open");
-    expect(api().focused).toBe(true);
+    expect(api().focused).toBe(false);
 
     machine.stop();
+  });
+
+  it("pulses focused false -> true across nextTick when creating an item while already focused", async () => {
+    const nextTickQueue: Array<() => void> = [];
+    (globalThis as any).wx = {
+      nextTick: (cb: () => void) => {
+        nextTickQueue.push(cb);
+      },
+    };
+    const onCreate = vi.fn();
+    try {
+      const { machine, api } = setupInputMenu({
+        multiple: true,
+        items: ["Bug", "Feature"],
+        createItem: { position: "bottom", when: "always" },
+        onCreate,
+      });
+
+      api().handleFocus();
+      api().handleInput("NewTag");
+      await flush();
+      expect(api().open).toBe(true);
+      expect(api().focused).toBe(true);
+
+      // Simulate native tap triggering CREATE_ITEM before native BLUR clears focused
+      api().createItem();
+      await flush();
+      expect(onCreate).toHaveBeenCalledWith({ value: "NewTag" });
+      expect(api().focused).toBe(false);
+
+      // Late native blur during refocus window does not abort refocusing
+      api().handleBlur();
+      await flush();
+
+      expect(nextTickQueue.length).toBe(1);
+      nextTickQueue.shift()?.();
+      await flush();
+      expect(api().state).toBe("open");
+      expect(api().focused).toBe(true);
+
+      machine.stop();
+    } finally {
+      delete (globalThis as any).wx;
+    }
   });
 
   it("syncs controlled props (open, value, searchTerm)", async () => {

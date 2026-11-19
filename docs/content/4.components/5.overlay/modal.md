@@ -289,6 +289,7 @@ Override any theme slot with `ui` or pass additional classes to the root element
 | `closeIcon` | `string` | `""` | Icon name for the default close button (falls back to `"close"` when empty). |
 | `transition` | `boolean` | `true` | Enables enter/leave transition classes and timing. |
 | `duration` | `number` | `300` | Transition duration in milliseconds. |
+| `portal` | `boolean` | `true` | Renders the modal overlay and dialog inside WeChat `<root-portal>` above page content and native inputs while keeping `trigger` inline. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides keyed by theme slot name. |
 | `className` (`class`) | `string` | `""` | Declared as `className` in component `properties` and passed to `resolveSlots` as the root class override. |
 
@@ -330,7 +331,7 @@ export default defineConfig({
   ui: {
     modal: {
       slots: {
-        root: "fixed inset-0 z-50 box-border overscroll-contain",
+        root: "fixed inset-0 z-modal box-border overscroll-contain",
         trigger: "inline-flex",
         overlay: "fixed inset-0 bg-black/35 backdrop-blur-md",
         container:

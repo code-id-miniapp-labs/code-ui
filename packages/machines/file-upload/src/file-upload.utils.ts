@@ -36,14 +36,45 @@ export function getFileExtension(fileNameOrPath?: string): string {
   return clean.slice(lastDot).toLowerCase();
 }
 
+export function isRemoteHttpUrl(path?: string): boolean {
+  if (!path) return false;
+  if (!/^https?:\/\//i.test(path)) return false;
+  // WeChat & MiniProgram local temp/user/store pseudo-URLs must not be treated as remote HTTP URLs.
+  return !/^https?:\/\/(?:tmp|usr|store)(?:\/|$)/i.test(path);
+}
+
+export function isLocalFilePath(path?: string): boolean {
+  if (!path) return false;
+  if (/^data:/i.test(path)) return false;
+  if (isRemoteHttpUrl(path)) return false;
+  return (
+    /^[a-z][a-z0-9+.-]*:\/\//i.test(path) ||
+    /^tmp\//i.test(path) ||
+    /^\/(?:var|private|data|storage|sdcard|tmp)\//i.test(path)
+  );
+}
+
+export function detectImageMimeFromBase64(
+  base64: string,
+  fallbackMime = "image/jpeg",
+): string {
+  if (base64.startsWith("/9j/")) return "image/jpeg";
+  if (base64.startsWith("iVBOR")) return "image/png";
+  if (base64.startsWith("R0lGOD")) return "image/gif";
+  if (base64.startsWith("UklGR")) return "image/webp";
+  if (base64.startsWith("Qk")) return "image/bmp";
+  return fallbackMime.startsWith("image/") ? fallbackMime : "image/jpeg";
+}
+
 export function isImageFile(
   type?: string,
   path?: string,
   name?: string,
 ): boolean {
   if (type === "image" || type?.startsWith("image/")) return true;
-  const check = path || name || "";
-  return IMAGE_EXT_RE.test(check.split("?")[0] || "");
+  const p = path?.split("?")[0] || "";
+  const n = name?.split("?")[0] || "";
+  return IMAGE_EXT_RE.test(p) || IMAGE_EXT_RE.test(n);
 }
 
 export function isVideoFile(
@@ -52,8 +83,9 @@ export function isVideoFile(
   name?: string,
 ): boolean {
   if (type === "video" || type?.startsWith("video/")) return true;
-  const check = path || name || "";
-  return VIDEO_EXT_RE.test(check.split("?")[0] || "");
+  const p = path?.split("?")[0] || "";
+  const n = name?.split("?")[0] || "";
+  return VIDEO_EXT_RE.test(p) || VIDEO_EXT_RE.test(n);
 }
 
 export function isAudioFile(
@@ -62,8 +94,9 @@ export function isAudioFile(
   name?: string,
 ): boolean {
   if (type === "audio" || type?.startsWith("audio/")) return true;
-  const check = path || name || "";
-  return AUDIO_EXT_RE.test(check.split("?")[0] || "");
+  const p = path?.split("?")[0] || "";
+  const n = name?.split("?")[0] || "";
+  return AUDIO_EXT_RE.test(p) || AUDIO_EXT_RE.test(n);
 }
 
 export function isDocumentFile(
@@ -84,12 +117,16 @@ export function isDocumentFile(
 
 export function hasDocumentExtension(acceptStr?: string): boolean {
   if (!acceptStr) return false;
-  return (
-    DOC_EXT_RE.test(acceptStr) ||
-    /(^|,)\s*(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar|csv)\s*(,|$)/i.test(
-      acceptStr,
-    )
-  );
+  return acceptStr
+    .split(",")
+    .map((part) => part.trim().toLowerCase())
+    .some(
+      (part) =>
+        DOC_EXT_RE.test(part) ||
+        part.startsWith("application/") ||
+        part.startsWith("text/") ||
+        /^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|md|zip|rar|7z)$/.test(part),
+    );
 }
 
 export function getFileType(file: {
@@ -106,8 +143,20 @@ export function getFileType(file: {
 export function resolveFileThumb(
   file: Pick<FileUploadFile, "type" | "path" | "name" | "thumb">,
   fileType: FileUploadItemType = getFileType(file),
+  resolvedSources?: Record<string, string>,
 ): string | undefined {
-  return file.thumb || (fileType === "image" ? file.path : undefined);
+  const rawThumb = file.thumb || (fileType === "image" ? file.path : undefined);
+  if (!rawThumb) return undefined;
+  return resolvedSources?.[rawThumb] ?? rawThumb;
+}
+
+export function resolveFileDisplaySrc(
+  file: Pick<FileUploadFile, "path" | "thumb">,
+  resolvedSources?: Record<string, string>,
+): string {
+  const rawPath = file.path || file.thumb || "";
+  if (!rawPath) return "";
+  return resolvedSources?.[rawPath] ?? rawPath;
 }
 
 export function getFileThumbKey(

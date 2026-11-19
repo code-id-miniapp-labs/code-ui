@@ -13,6 +13,30 @@ import type {
   PinInputType,
 } from "./pin-input.types";
 import { defaultPinInputProps } from "./pin-input.props";
+import * as dom from "./pin-input.dom";
+
+declare const wx: Record<string, any> | undefined;
+
+function getWx(): Record<string, any> | undefined {
+  if (typeof wx !== "undefined" && wx) return wx;
+  return (globalThis as Record<string, any>).wx;
+}
+
+function scheduleNextTick(cb: () => void): () => void {
+  let cancelled = false;
+  const run = () => {
+    if (!cancelled) cb();
+  };
+  const wxApi = getWx();
+  if (wxApi && typeof wxApi.nextTick === "function") {
+    wxApi.nextTick(run);
+  } else {
+    queueMicrotask(run);
+  }
+  return () => {
+    cancelled = true;
+  };
+}
 
 export function isValidCharacter(char: string, type: PinInputType): boolean {
   if (type === "numeric") return /^[0-9]$/.test(char);
@@ -109,6 +133,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
           ? normalizePinValue(raw, len)
           : Array(len).fill(""),
       formField: undefined,
+      cancelRefocus: undefined,
     };
   },
 
@@ -286,6 +311,7 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "pin-input",
+            rootId: dom.getRootId(scope),
             getFormId: () => prop("form") || "",
             getName: () => prop("name"),
             getValue: () => computed("valueAsString"),
@@ -296,6 +322,8 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
               );
             },
             resetValue: () => {
+              refs.get("cancelRefocus")?.();
+              refs.set("cancelRefocus", undefined);
               const len = context.get("length");
               const initial =
                 refs.get("initialValue") ??
@@ -308,12 +336,30 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
             },
             focus: () => {
               if (!computed("isInteractive")) return;
+              refs.get("cancelRefocus")?.();
+              refs.set("cancelRefocus", undefined);
               const firstEmptyIndex = context.get("value").findIndex(isEmpty);
+              const targetIdx = firstEmptyIndex !== -1 ? firstEmptyIndex : 0;
+              if (
+                state.matches("focused") &&
+                context.get("focusedIndex") === targetIdx
+              ) {
+                state.set("idle");
+                context.set("focusedIndex", -1);
+                refs.set(
+                  "cancelRefocus",
+                  scheduleNextTick(() => {
+                    refs.set("cancelRefocus", undefined);
+                    if (computed("isInteractive")) {
+                      state.set("focused");
+                      context.set("focusedIndex", targetIdx);
+                    }
+                  }),
+                );
+                return;
+              }
               state.set("focused");
-              context.set(
-                "focusedIndex",
-                firstEmptyIndex !== -1 ? firstEmptyIndex : 0,
-              );
+              context.set("focusedIndex", targetIdx);
             },
             getRules: () => prop("rules") ?? [],
             getValidateOn: () => prop("validateOn"),
@@ -324,6 +370,8 @@ export const pinInputMachine: PinInputMachine = createMachine<PinInputSchema>({
       },
 
       cleanupFormField: ({ refs }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         cleanupFormFieldSync(refs);
       },
 

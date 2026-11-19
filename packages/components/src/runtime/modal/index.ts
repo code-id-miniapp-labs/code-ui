@@ -1,9 +1,15 @@
 import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties } from "../_shared/machine";
+import {
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
 import { resolveSlots } from "../../utils/ui";
 import { resolveTriggerButtonProps } from "../../utils/subcomponent";
 import {
+  type ModalApi,
   type ModalCloseProps,
   connectModal,
   defaultModalProps,
@@ -22,9 +28,12 @@ const modalBehavior = createMachineBehavior({
   exportApiKeys: ["open", "visible", "setOpen", "openModal", "closeModal", "toggle"],
 });
 
+const appThemeBehavior =
+  typeof Behavior !== "undefined" ? createAppThemeBehavior() : ({} as any);
+
 Component(
   createComponentOptions({
-    behaviors: [modalBehavior, computedBehavior],
+    behaviors: [appThemeBehavior, modalBehavior, computedBehavior],
     slots: {
       default: false,
       trigger: false,
@@ -70,6 +79,10 @@ Component(
         type: String,
         value: "",
       },
+      portal: {
+        type: Boolean,
+        value: true,
+      },
       ui: {
         type: Object,
         value: {},
@@ -81,6 +94,10 @@ Component(
     }),
 
     computed: {
+      portalStyle(): string {
+        return this.data.portal ? this.data.themeCssVars || "" : "";
+      },
+
       resolvedClose() {
         const classes = this.data.classes as Record<string, string> | undefined;
         const closeIcon =
@@ -129,26 +146,23 @@ Component(
       noop() {},
 
       handleTriggerTap() {
-        this.send({ type: "TRIGGER.TAP" });
+        getApi<ModalApi>(this, "modal")?.handleTriggerTap();
       },
 
-      handleOverlayTap(ev: MiniAppBaseEventLike) {
-        this.send({ type: "OVERLAY.TAP" });
-        this.triggerEvent("overlayTap", ev);
+      handleOverlayTap() {
+        getApi<ModalApi>(this, "modal")?.handleOverlayTap();
       },
 
       handleContainerTap(ev: MiniAppBaseEventLike) {
         const targetId = ev?.target?.id;
         const currentId = ev?.currentTarget?.id;
         if (targetId && currentId && targetId === currentId) {
-          this.send({ type: "OVERLAY.TAP" });
-          this.triggerEvent("overlayTap", ev);
+          getApi<ModalApi>(this, "modal")?.handleOverlayTap();
         }
       },
 
-      handleCloseTap(ev: MiniAppBaseEventLike) {
-        this.send({ type: "CLOSE_TRIGGER.TAP" });
-        this.triggerEvent("closeTriggerTap", ev);
+      handleCloseTap() {
+        getApi<ModalApi>(this, "modal")?.handleCloseTriggerTap();
       },
     },
   }),

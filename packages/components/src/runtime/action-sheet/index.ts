@@ -4,6 +4,7 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
 import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { resolveSlots } from "../../utils/ui";
 import {
@@ -27,10 +28,15 @@ const actionSheetTheme = tv(themeConfig);
 function resolveActionSheetSlots(
   open: boolean,
   disabled: boolean,
+  closable: boolean,
   ui: Record<string, string> | undefined,
   className: string | undefined,
 ) {
-  return resolveSlots(actionSheetTheme({ open, disabled }), ui, className);
+  return resolveSlots(
+    actionSheetTheme({ open, disabled, closable }),
+    ui,
+    className,
+  );
 }
 
 const actionSheetBehavior = createMachineBehavior({
@@ -50,9 +56,12 @@ const actionSheetBehavior = createMachineBehavior({
   ],
 });
 
+const appThemeBehavior =
+  typeof Behavior !== "undefined" ? createAppThemeBehavior() : ({} as any);
+
 Component(
   createComponentOptions({
-    behaviors: [actionSheetBehavior, computedBehavior],
+    behaviors: [appThemeBehavior, actionSheetBehavior, computedBehavior],
     slots: {
       default: false,
       header: false,
@@ -63,6 +72,10 @@ Component(
     },
 
     computed: {
+      portalStyle(): string {
+        return this.data.portal ? this.data.themeCssVars || "" : "";
+      },
+
       resolvedItems() {
         const rawItems = (this.data.items || []) as ActionSheetItem[];
         return rawItems.map((item, index) => ({
@@ -138,6 +151,7 @@ Component(
         const { item, itemTitle, itemDescription } = resolveActionSheetSlots(
           false,
           true,
+          false,
           this.data.ui,
           this.data.className,
         );
@@ -146,9 +160,17 @@ Component(
 
       classes() {
         const isOpen = Boolean(this.data.actionSheet?.open);
+        const close = this.data.close;
+        const closable = Boolean(
+          this.data.slots?.close ||
+            close === true ||
+            (typeof close === "string" && close.length > 0) ||
+            (typeof close === "object" && close !== null),
+        );
         return resolveActionSheetSlots(
           isOpen,
           false,
+          closable,
           this.data.ui,
           this.data.className,
         );
@@ -171,6 +193,10 @@ Component(
       close: {
         type: null,
         value: false,
+      },
+      portal: {
+        type: Boolean,
+        value: true,
       },
       ui: {
         type: Object,

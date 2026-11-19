@@ -100,6 +100,9 @@ export function connectRadioGroup(service: RadioGroupService): RadioGroupApi {
     handleItemTap: (detail: RadioGroupItemTapDetail) => {
       send({ type: "SET_VALUE", value: detail.value });
     },
+    rootProps: {
+      id: dom.getRootId(scope),
+    },
     getItemProps,
     getItemControlProps,
     getItemIndicatorProps,

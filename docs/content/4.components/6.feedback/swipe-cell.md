@@ -475,9 +475,9 @@ export default defineConfig({
         wrapper:
           "relative flex flex-row w-full transition-transform duration-300 ease-out will-change-transform box-border",
         content: "relative z-10 w-full shrink-0 bg-default box-border",
-        left: "absolute left-0 top-0 bottom-0 z-0 flex flex-row h-full -translate-x-full box-border",
+        left: "absolute left-0 top-0 bottom-0 z-0 flex flex-row h-full box-border",
         right:
-          "absolute right-0 top-0 bottom-0 z-0 flex flex-row h-full translate-x-full box-border",
+          "absolute right-0 top-0 bottom-0 z-0 flex flex-row h-full box-border",
         action:
           "flex flex-row items-center justify-center h-full text-white transition-opacity active:opacity-85 select-none cursor-pointer box-border font-medium",
         actionText: "font-medium leading-none",

@@ -25,5 +25,12 @@ describe("drawerTheme (@code-id-labs/core)", () => {
     expect(theme.variants.placement.right.grabberBar).toContain("w-1.5 h-12");
     expect(theme.variants.placement.left.body).toContain("h-0");
     expect(theme.variants.placement.right.body).toContain("h-0");
+    expect(theme.variants.placement.bottom.container).toContain("flex-initial");
+    expect(theme.variants.placement.bottom.container).not.toContain("flex-1");
+    expect(theme.variants.placement.bottom.body).toContain("max-h-[60vh]");
+    expect(theme.variants.placement.top.container).toContain("flex-initial");
+    expect(theme.variants.placement.top.body).toContain("max-h-[60vh]");
+    expect(theme.variants.keyboardOpen.true.footer).toContain("pb-3");
+    expect(theme.defaultVariants.keyboardOpen).toBe(false);
   });
 });

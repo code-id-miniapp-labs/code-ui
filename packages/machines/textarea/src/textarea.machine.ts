@@ -12,9 +12,33 @@ import type {
   TextareaSchema,
 } from "./textarea.types";
 import { defaultTextareaProps } from "./textarea.props";
+import * as dom from "./textarea.dom";
 
 const toStringValue = (val: unknown): string | undefined =>
   isNotNull(val) ? String(val) : undefined;
+
+declare const wx: Record<string, any> | undefined;
+
+function getWx(): Record<string, any> | undefined {
+  if (typeof wx !== "undefined" && wx) return wx;
+  return (globalThis as Record<string, any>).wx;
+}
+
+function scheduleNextTick(cb: () => void): () => void {
+  let cancelled = false;
+  const run = () => {
+    if (!cancelled) cb();
+  };
+  const wxApi = getWx();
+  if (wxApi && typeof wxApi.nextTick === "function") {
+    wxApi.nextTick(run);
+  } else {
+    queueMicrotask(run);
+  }
+  return () => {
+    cancelled = true;
+  };
+}
 
 export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
   props: ({ props }) => ({
@@ -28,6 +52,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
     initialValue:
       toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "",
     formField: undefined,
+    cancelRefocus: undefined,
   }),
 
   context: ({ prop, bindable, getRefs }) => ({
@@ -150,6 +175,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "textarea",
+            rootId: dom.getRootId(scope),
             getFormId: () => prop("form") || "",
             getName: () => prop("name"),
             getValue: () => context.get("value"),
@@ -157,6 +183,8 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
               context.set("value", toStringValue(rawVal) ?? "");
             },
             resetValue: () => {
+              refs.get("cancelRefocus")?.();
+              refs.set("cancelRefocus", undefined);
               const initial =
                 refs.get("initialValue") ??
                 toStringValue(prop("defaultValue")) ??
@@ -167,6 +195,21 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
             },
             focus: () => {
               if (!computed("isInteractive")) return;
+              refs.get("cancelRefocus")?.();
+              refs.set("cancelRefocus", undefined);
+              if (state.matches("focused")) {
+                state.set("idle");
+                refs.set(
+                  "cancelRefocus",
+                  scheduleNextTick(() => {
+                    refs.set("cancelRefocus", undefined);
+                    if (computed("isInteractive")) {
+                      state.set("focused");
+                    }
+                  }),
+                );
+                return;
+              }
               state.set("focused");
             },
             getRules: () => prop("rules") ?? [],
@@ -178,6 +221,8 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       },
 
       cleanupFormField: ({ refs }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         cleanupFormFieldSync(refs);
       },
 
@@ -188,6 +233,8 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       },
 
       handleBlur: ({ context, prop, refs }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         const val = context.get("value");
         prop("onBlur")?.({ value: val });
         refs.get("formField")?.emitBlur(val);

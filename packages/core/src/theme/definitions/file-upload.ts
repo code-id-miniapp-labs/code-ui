@@ -33,6 +33,23 @@ export default function fileUploadTheme(options: ThemeOptions = {}) {
         "flex items-center justify-center rounded-lg text-dimmed hover:text-default transition-colors p-1",
       fileRemoveIcon: "w-4 h-4",
       fileProgress: "w-full mt-1.5",
+      previewOverlay:
+        "fixed inset-0 z-modal bg-black/95 flex flex-col select-none",
+      previewHeader:
+        "relative z-10 flex items-center justify-between px-4 pb-3 pt-[calc(var(--spacing)_*_3_+_env(safe-area-inset-top))] text-white shrink-0",
+      previewCounter:
+        "text-sm font-medium text-white/90 tabular-nums px-2.5 py-1 rounded-full bg-white/15",
+      previewClose:
+        "flex items-center justify-center w-9 h-9 rounded-full bg-white/15 text-white active:bg-white/25 transition-colors",
+      previewCloseIcon: "w-5 h-5 text-white",
+      previewSwiper: "flex-1 w-full h-0 min-h-0",
+      previewSlide:
+        "w-full h-full flex items-center justify-center px-3 box-border",
+      previewImage: "w-full h-full block",
+      previewFooter:
+        "relative z-10 flex flex-col gap-0.5 px-4 pt-3 pb-[calc(var(--spacing)_*_4_+_env(safe-area-inset-bottom))] text-center shrink-0 bg-black/60",
+      previewName: "text-sm font-medium text-white truncate",
+      previewMeta: "text-xs text-white/70",
     },
     variants: {
       color: Object.assign(

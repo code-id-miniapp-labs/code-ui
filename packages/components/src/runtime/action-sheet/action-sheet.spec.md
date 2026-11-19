@@ -68,8 +68,9 @@ Defined in `packages/core/src/theme/definitions/action-sheet.ts`:
 - **Variants**:
   - `open`: `true` | `false` — Controls `backdrop` visibility/pointer events and `content` slide translation (`compoundVariants`).
   - `disabled`: `true` | `false` — Applies disabled cursor, pointer-events, and opacity styles to `item`, `itemTitle`, and `itemDescription`.
+  - `closable`: `true` | `false` — Reserves symmetric horizontal padding (`px-14`) and minimum height (`min-h-14`) on `header` when `close` or the `close` slot is rendered so centered `title`/`description` text never collides with `closeTrigger`.
 - **Default Variants**:
-  `{ open: false, disabled: false }`
+  `{ open: false, disabled: false, closable: false }`
 
 ## Examples
 

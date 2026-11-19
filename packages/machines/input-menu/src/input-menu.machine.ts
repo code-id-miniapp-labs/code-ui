@@ -162,6 +162,8 @@ export const inputMenuMachine: InputMenuMachine =
       return {
         initialValue: initial,
         formField: undefined,
+        lastRefocusAt: 0,
+        cancelRefocus: undefined,
         groupContext: {
           value: () => context.get("value"),
           multiple: () => Boolean(prop("multiple")),
@@ -471,7 +473,7 @@ export const inputMenuMachine: InputMenuMachine =
             },
             {
               guard: "canSelectDropdownItem",
-              actions: ["selectItem", "refocusInput"],
+              actions: ["selectItem", "blurOnClose"],
             },
           ],
           CREATE_ITEM: [
@@ -586,7 +588,7 @@ export const inputMenuMachine: InputMenuMachine =
       },
 
       actions: {
-        setupFormField: ({ context, prop, refs, scope, computed, action }) => {
+        setupFormField: ({ context, prop, refs, scope, computed, action, send }) => {
           setupFormFieldSync(
             {
               component: prop("component"),
@@ -604,6 +606,9 @@ export const inputMenuMachine: InputMenuMachine =
               },
               resetValue: () => {
                 action(["resetValue"]);
+              },
+              focus: () => {
+                send({ type: "FOCUS" });
               },
               getRules: () => prop("rules") ?? [],
               getValidateOn: () => prop("validateOn"),
@@ -626,6 +631,11 @@ export const inputMenuMachine: InputMenuMachine =
         },
 
         setFocusedTrue: ({ context, prop, refs }) => {
+          const cancelRefocus = refs.get("cancelRefocus");
+          if (cancelRefocus) {
+            cancelRefocus();
+            refs.set("cancelRefocus", undefined);
+          }
           if (context.get("focused")) return;
           context.set("focused", true);
           const val = context.get("value");
@@ -637,6 +647,15 @@ export const inputMenuMachine: InputMenuMachine =
         },
 
         setFocusedFalse: ({ context, prop, refs, state }) => {
+          const lastRefocusAt = (refs.get("lastRefocusAt") as number) || 0;
+          if (lastRefocusAt > 0 && Date.now() - lastRefocusAt < 250) {
+            return;
+          }
+          const cancelRefocus = refs.get("cancelRefocus");
+          if (cancelRefocus) {
+            cancelRefocus();
+            refs.set("cancelRefocus", undefined);
+          }
           context.set("focused", false);
           if (state.matches("closed") && prop("resetSearchTermOnBlur")) {
             context.set("isFiltering", false);
@@ -650,14 +669,53 @@ export const inputMenuMachine: InputMenuMachine =
           });
         },
 
-        blurOnClose: ({ context }) => {
+        blurOnClose: ({ context, refs }) => {
+          const cancelRefocus = refs.get("cancelRefocus");
+          if (cancelRefocus) {
+            cancelRefocus();
+            refs.set("cancelRefocus", undefined);
+          }
+          refs.set("lastRefocusAt", 0);
           context.set("focused", false);
         },
 
-        // Tapping a dropdown option natively blurs the <input>; when the menu
-        // stays open (multiple mode) restore focus so the user can keep typing.
-        refocusInput: ({ context }) => {
-          context.set("focused", true);
+        // Restore focus after creating a tag so rapid multi-tag creation keeps typing.
+        refocusInput: ({ context, refs, state }) => {
+          const prevCancel = refs.get("cancelRefocus");
+          if (prevCancel) {
+            prevCancel();
+            refs.set("cancelRefocus", undefined);
+          }
+          refs.set("lastRefocusAt", Date.now());
+          if (!context.get("focused")) {
+            context.set("focused", true);
+            return;
+          }
+          // Native <input focus> only triggers focus when it observes false -> true across ticks.
+          context.set("focused", false);
+          let active = true;
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const finish = () => {
+            if (!active) return;
+            refs.set("cancelRefocus", undefined);
+            refs.set("lastRefocusAt", Date.now());
+            if (state.hasTag("open")) {
+              context.set("focused", true);
+            }
+          };
+          refs.set("cancelRefocus", () => {
+            active = false;
+            if (timer !== undefined) {
+              clearTimeout(timer);
+              timer = undefined;
+            }
+          });
+          const wxGlobal = (globalThis as Record<string, any>).wx;
+          if (wxGlobal && typeof wxGlobal.nextTick === "function") {
+            wxGlobal.nextTick(finish);
+          } else {
+            timer = setTimeout(finish, 16);
+          }
         },
 
         resetSearchOnClosed: ({ context, prop }) => {

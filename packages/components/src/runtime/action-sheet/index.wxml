@@ -1,4 +1,6 @@
-<view wx:if="{{actionSheet.visible}}" id="{{actionSheet.rootProps.id}}" class="{{classes.root}}" data-scope="action-sheet" data-part="root" data-state="{{actionSheet.state}}" catchtouchmove="noop">
+<root-portal wx:if="{{actionSheet.visible}}" enable="{{portal}}">
+  <view class="{{portal ? themeMode : ''}}" style="{{portalStyle}}">
+    <view id="{{actionSheet.rootProps.id}}" class="{{classes.root}}" data-scope="action-sheet" data-part="root" data-state="{{actionSheet.state}}" catchtouchmove="noop">
   <view id="{{actionSheet.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="action-sheet" data-part="backdrop" data-state="{{actionSheet.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" bindtap="handleBackdropTap" />
   <view id="{{actionSheet.contentProps.id}}" class="{{classes.content}}" data-scope="action-sheet" data-part="content" data-state="{{actionSheet.state}}" aria-role="dialog" aria-modal="{{true}}" aria-hidden="{{!actionSheet.open}}">
     <view wx:if="{{title || description || resolvedClose || slots.title || slots.description || slots.close}}" class="{{classes.header}}" data-scope="action-sheet" data-part="header">
@@ -50,3 +52,5 @@
     <slot wx:else name="actions" />
   </view>
 </view>
+  </view>
+</root-portal>

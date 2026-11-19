@@ -58,4 +58,26 @@
       </view>
     </block>
   </view>
+  <!-- Built-in Fullscreen Image Preview Overlay -->
+  <root-portal wx:if="{{fileUpload.previewOpen}}" enable="{{portal}}">
+    <view class="{{classes.previewOverlay}}" data-scope="file-upload" data-part="preview-overlay" catchtouchmove="noop">
+      <view class="{{classes.previewHeader}}" data-scope="file-upload" data-part="preview-header">
+        <view class="{{classes.previewCounter}}" data-scope="file-upload" data-part="preview-counter">
+          {{fileUpload.previewIndex + 1}} / {{fileUpload.previewItems.length}}
+        </view>
+        <view class="{{classes.previewClose}}" data-scope="file-upload" data-part="preview-close" aria-role="button" aria-label="Close preview" catchtap="handlePreviewClose">
+          <c-icon name="{{deleteIcon || 'close'}}" className="{{classes.previewCloseIcon}}" />
+        </view>
+      </view>
+      <swiper class="{{classes.previewSwiper}}" current="{{fileUpload.previewIndex}}" duration="{{220}}" bindchange="handlePreviewSwiperChange" data-scope="file-upload" data-part="preview-swiper">
+        <swiper-item wx:for="{{fileUpload.previewItems}}" wx:key="id" class="{{classes.previewSlide}}" data-scope="file-upload" data-part="preview-slide">
+          <image src="{{item.src}}" mode="aspectFit" class="{{classes.previewImage}}" data-scope="file-upload" data-part="preview-image" bindtap="handlePreviewClose" />
+        </swiper-item>
+      </swiper>
+      <view wx:if="{{fileUpload.activePreviewItem}}" class="{{classes.previewFooter}}" data-scope="file-upload" data-part="preview-footer">
+        <text class="{{classes.previewName}}" data-scope="file-upload" data-part="preview-name">{{fileUpload.activePreviewItem.name}}</text>
+        <text class="{{classes.previewMeta}}" data-scope="file-upload" data-part="preview-meta">{{fileUpload.activePreviewItem.formattedSize}}</text>
+      </view>
+    </view>
+  </root-portal>
 </view>

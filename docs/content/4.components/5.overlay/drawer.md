@@ -178,7 +178,7 @@ Control backdrop taps with `close-on-backdrop-click`, grabber drag dismissal wit
 
 ### Scale Background
 
-Enable `should-scale-background` alongside `<c-app>` to scale down the page container while the drawer is open, and tune the effect with `scale-factor` and `scale-background`.
+Enable `should-scale-background` alongside `<c-app>` to scale down the page container while the drawer is open, and tune the effect with `scale-factor` and `scale-background`. By default `portal="{{true}}"` renders the drawer inside `<root-portal>`; if you disable `portal`, pass `slot="overlay"` on `<c-drawer>` inside `<c-app>` so `<c-app>`'s scale transform does not trap `position: fixed`.
 
 ::code-group
 
@@ -218,6 +218,27 @@ Page({
 ```
 
 ::
+
+### Virtual Keyboard & Form Inputs
+
+`c-drawer` listens to `wx.onKeyboardHeightChange` and applies `padding-bottom` + `--keyboard-height` on the drawer `root` container so all placements (`"bottom"`, `"top"`, `"left"`, `"right"`) stay positioned and scrollable above the virtual keyboard without conflicting with WXS grabber drag transforms.
+
+When placing `<c-input>` or `<c-textarea>` inside `<c-drawer>`, set `adjust-position="{{ false }}"` on the input so native WebView page shifting does not double-offset the drawer:
+
+```html [index.wxml]
+<c-drawer open="{{isOpen}}" placement="bottom" bind:close="onClose">
+  <view slot="header" class="text-base font-semibold">Quick Reply</view>
+
+  <view class="flex flex-col gap-3 py-2">
+    <c-input placeholder="Subject" adjust-position="{{false}}" />
+    <c-textarea placeholder="Write your message..." adjust-position="{{false}}" />
+  </view>
+
+  <view slot="footer" class="flex justify-end gap-2">
+    <c-button label="Send" color="primary" bind:tap="onClose" />
+  </view>
+</c-drawer>
+```
 
 ### Slots
 
@@ -327,6 +348,7 @@ Use `ui` to override individual slot classes and `class-name` (`className`) to a
 | `scaleFactor` | `number` | `0.94` | Scale factor applied to `<c-app>` when `shouldScaleBackground` is enabled. |
 | `scaleBackground` | `string` | `"bg-black"` | Background color or utility class shown behind `<c-app>` while scaled. |
 | `close` | `boolean \| DrawerCloseProps \| null` | `true` | Controls the header close button. `false`/`null` hides it (unless the `close` slot is used); an object forwards props (`icon`, `leadingIcon`, `trailingIcon`, `label`, `loading`, `loadingIcon`, `color`, `variant`, `size`, `disabled`, `ui`, `className`) to `<c-button>`. |
+| `portal` | `boolean` | `true` | Renders the drawer overlay and sheet inside WeChat `<root-portal>` so fixed positioning stays anchored to the viewport above page content and scaling transforms. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged with the resolved theme classes. |
 | `className` | `string` | `""` | Additional class string applied to the `root` slot (`class-name` in WXML). |
 
@@ -359,9 +381,8 @@ export default defineConfig({
   ui: {
     drawer: {
       slots: {
-        root: "fixed inset-0 z-50 flex overflow-hidden overscroll-contain box-border",
-        backdrop:
-          "fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+        root: "fixed inset-0 z-drawer flex overflow-hidden overscroll-contain box-border transition-[padding-bottom] duration-150 ease-out",
+        backdrop: "fixed inset-0 bg-black/40 transition-opacity duration-300",
         content:
           "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden",
         container: "flex flex-col min-w-0 min-h-0 overflow-hidden",
@@ -375,7 +396,7 @@ export default defineConfig({
           "inline-flex items-center justify-center w-8 h-8 rounded-full text-dimmed hover:text-default hover:bg-elevated transition-colors shrink-0",
         closeButton: "p-0 w-full h-full rounded-full text-inherit",
         closeIcon: "w-4 h-4",
-        body: "flex-1 min-h-0 w-full box-border overflow-y-auto px-4 pt-3 pb-6 text-sm text-toned overscroll-contain",
+        body: "min-h-0 w-full box-border overflow-y-auto px-4 pt-3 pb-6 text-sm text-toned overscroll-contain",
         footer:
           "flex items-center justify-end gap-2 px-4 py-3 border-t border-muted shrink-0 box-border w-full pb-[calc(var(--spacing)_*_3_+_env(safe-area-inset-bottom))]",
       },
@@ -384,14 +405,16 @@ export default defineConfig({
           bottom: {
             root: "items-end justify-center",
             content: "flex-col w-full max-h-[85vh] rounded-t-xl",
-            container: "w-full flex-1",
+            container: "w-full flex-initial",
+            body: "flex-initial max-h-[60vh]",
             grabber: "w-full py-2.5",
             grabberBar: "w-12 h-1.5",
           },
           top: {
             root: "items-start justify-center",
             content: "flex-col w-full max-h-[85vh] rounded-b-xl",
-            container: "w-full flex-1",
+            container: "w-full flex-initial",
+            body: "flex-initial max-h-[60vh]",
             grabber: "w-full py-2.5",
             grabberBar: "w-12 h-1.5",
             header: "pt-[calc(var(--spacing)_*_3_+_env(safe-area-inset-top))]",
@@ -399,20 +422,18 @@ export default defineConfig({
           },
           left: {
             root: "items-center justify-start",
-            content:
-              "flex-row h-full w-4/5 max-w-sm md:max-w-md rounded-r-xl",
+            content: "flex-row h-full w-4/5 max-w-sm md:max-w-md rounded-none",
             container: "flex-1 h-full",
-            body: "h-0",
+            body: "flex-1 h-0",
             grabber: "h-full px-2.5",
             grabberBar: "w-1.5 h-12",
             header: "pt-[calc(var(--spacing)_*_3_+_env(safe-area-inset-top))]",
           },
           right: {
             root: "items-center justify-end",
-            content:
-              "flex-row h-full w-4/5 max-w-sm md:max-w-md rounded-l-xl",
+            content: "flex-row h-full w-4/5 max-w-sm md:max-w-md rounded-none",
             container: "flex-1 h-full",
-            body: "h-0",
+            body: "flex-1 h-0",
             grabber: "h-full px-2.5",
             grabberBar: "w-1.5 h-12",
             header: "pt-[calc(var(--spacing)_*_3_+_env(safe-area-inset-top))]",
@@ -428,8 +449,30 @@ export default defineConfig({
             backdrop: "opacity-0 pointer-events-none",
           },
         },
+        keyboardOpen: {
+          true: {
+            footer: "pb-3",
+          },
+          false: {},
+        },
       },
       compoundVariants: [
+        {
+          placement: "bottom",
+          keyboardOpen: true,
+          class: {
+            content: "max-h-[calc(100%_-_env(safe-area-inset-top))]",
+            body: "max-h-[calc(100vh_-_var(--keyboard-height,0px)_-_env(safe-area-inset-top,0px)_-_10rem)]",
+          },
+        },
+        {
+          placement: "top",
+          keyboardOpen: true,
+          class: {
+            content: "max-h-full",
+            body: "max-h-[calc(100vh_-_var(--keyboard-height,0px)_-_env(safe-area-inset-top,0px)_-_10rem)]",
+          },
+        },
         {
           placement: "bottom",
           open: true,
@@ -490,6 +533,7 @@ export default defineConfig({
       defaultVariants: {
         placement: "bottom",
         open: true,
+        keyboardOpen: false,
       },
     }
   }

@@ -18,6 +18,17 @@ export const anatomy = /* @__PURE__ */ (() =>
     "fileTrailing",
     "fileRemove",
     "fileProgress",
+    "previewOverlay",
+    "previewHeader",
+    "previewCounter",
+    "previewClose",
+    "previewCloseIcon",
+    "previewSwiper",
+    "previewSlide",
+    "previewImage",
+    "previewFooter",
+    "previewName",
+    "previewMeta",
   ))();
 
 export const parts = /* @__PURE__ */ (() => anatomy.build())();

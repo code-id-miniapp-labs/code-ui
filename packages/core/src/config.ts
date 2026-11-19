@@ -123,6 +123,17 @@ export type UIRadiusConfig =
       [key: string]: string | undefined;
     };
 
+export interface UIZIndexConfig {
+  popover?: number | string;
+  drawer?: number | string;
+  modal?: number | string;
+  actionSheet?: number | string;
+  picker?: number | string;
+  banner?: number | string;
+  toast?: number | string;
+  [key: string]: number | string | undefined;
+}
+
 export interface UIConfig {
   /** Design token colors */
   colors?: UIColorsConfig;
@@ -149,6 +160,8 @@ export interface UIConfig {
     mono?: string;
     [key: string]: string | undefined;
   };
+  /** Z-index layering tokens (generates `--z-<name>` and `z-<name>` utilities) */
+  zIndex?: UIZIndexConfig;
 }
 
 export type BuiltinIconCollection = "lucide" | "tabler" | "mdi" | "heroicons";

@@ -28,7 +28,7 @@ describe("compatMiniProgramTransforms", () => {
     expect(result).toContain(
       "transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));",
     );
-    expect(result).toContain(
+    expect(result).not.toContain(
       "translate: var(--tw-translate-x) var(--tw-translate-y);",
     );
   });
@@ -108,7 +108,7 @@ describe("compatMiniProgramTransforms", () => {
     const result = compatMiniProgramTransforms(css);
     expect(result).toContain("-webkit-transform: rotate(180deg);");
     expect(result).toContain("transform: rotate(180deg);");
-    expect(result).toContain("rotate: 180deg;}");
+    expect(result).not.toContain("rotate: 180deg;");
     expect(result).toContain(".touch-pan-y{--tw-pan-y:pan-y}");
   });
 });

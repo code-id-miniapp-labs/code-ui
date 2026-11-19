@@ -266,4 +266,43 @@ describe("popoverMachine (@code-id-labs/popover)", () => {
     machine.stop();
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("re-measures anchor when repositionKey changes while open", async () => {
+    let triggerTop = 100;
+    const mockComp: any = {
+      createSelectorQuery() {
+        return {
+          select() {
+            return this;
+          },
+          boundingClientRect(cb: (res: any) => void) {
+            cb({ left: 16, top: triggerTop, width: 200, height: 40 });
+            return this;
+          },
+          exec() {},
+        };
+      },
+    };
+    const machine = new MiniappMachine(popoverMachine, {
+      component: mockComp,
+      portal: true,
+      repositionKey: 0,
+    });
+    machine.start();
+
+    machine.send({ type: "OPEN" });
+    await flush();
+    expect(connectPopover(machine.service).positionerStyle).toContain(
+      "top: 144px;",
+    );
+
+    triggerTop = 140;
+    machine.updateProps({ repositionKey: 1 });
+    await flush();
+    expect(connectPopover(machine.service).positionerStyle).toContain(
+      "top: 184px;",
+    );
+
+    machine.stop();
+  });
 });

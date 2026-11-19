@@ -124,7 +124,7 @@ export default function inputMenuTheme(options: ThemeOptions = {}) {
         true: {
           base: "h-auto py-1",
           tagsWrapper: "flex-wrap gap-y-1",
-          nativeInput: "min-w-[60px] h-6",
+          nativeInput: "min-w-[80px] w-auto h-6",
         },
         false: {},
       },

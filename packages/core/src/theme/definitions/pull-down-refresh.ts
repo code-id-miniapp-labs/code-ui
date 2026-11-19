@@ -13,9 +13,7 @@ export default function pullDownRefreshTheme(_options: ThemeOptions = {}) {
     },
     variants: {
       disabled: {
-        true: {
-          root: "opacity-60",
-        },
+        true: {},
         false: {},
       },
       status: {

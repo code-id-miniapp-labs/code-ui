@@ -112,6 +112,9 @@ export function connectCheckboxGroup(
         checked: detail.checked,
       });
     },
+    rootProps: {
+      id: dom.getRootId(scope),
+    },
     getItemProps,
     getItemControlProps,
     getItemIndicatorProps,

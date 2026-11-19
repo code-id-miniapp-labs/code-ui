@@ -2,6 +2,7 @@ import type {
   FileUploadApi,
   FileUploadFile,
   FileUploadItemView,
+  FileUploadPreviewItem,
   FileUploadService,
 } from "./file-upload.types";
 import * as dom from "./file-upload.dom";
@@ -9,6 +10,7 @@ import {
   formatBytes,
   getFileThumbKey,
   getFileType,
+  resolveFileDisplaySrc,
   resolveFileThumb,
 } from "./file-upload.utils";
 
@@ -27,6 +29,9 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
   const currentState = state.get();
   const files = context.get("files");
   const failedThumbs = context.get("failedThumbs");
+  const resolvedSources = context.get("resolvedSources");
+  const rawPreviewOpen = context.get("previewOpen");
+  const rawPreviewIndex = context.get("previewIndex");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
   const invalid = computed("isInvalid");
@@ -42,20 +47,33 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     ? `Maximum ${maxFiles} files uploaded`
     : `Upload files, ${fileCount} of ${maxFiles} files selected`;
 
+  const previewItems: FileUploadPreviewItem[] = [];
+
   const items: FileUploadItemView[] = files.map((file, index) => {
     const fileType = getFileType(file);
     const fileId = file.id || String(index);
     const itemProgress = file.progress ?? progress ?? null;
-    const thumb = resolveFileThumb(file, fileType);
+    const formattedSize = formatBytes(file.size);
+    const thumb = resolveFileThumb(file, fileType, resolvedSources);
     const thumbKey = getFileThumbKey(file, thumb);
     const thumbFailed = Boolean(thumbKey && failedThumbs.includes(thumbKey));
+
+    if (fileType === "image" && file.path) {
+      previewItems.push({
+        id: fileId,
+        name: file.name,
+        formattedSize,
+        src: resolveFileDisplaySrc(file, resolvedSources),
+        fileIndex: index,
+      });
+    }
 
     return Object.assign({}, file, {
       index,
       thumb,
       thumbFailed,
       progress: itemProgress,
-      formattedSize: formatBytes(file.size),
+      formattedSize,
       fileType,
       itemProps: {
         id: dom.getFileId(scope, fileId),
@@ -74,6 +92,13 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     });
   });
 
+  const previewOpen = Boolean(rawPreviewOpen && previewItems.length > 0);
+  const previewIndex =
+    previewItems.length > 0
+      ? Math.max(0, Math.min(previewItems.length - 1, rawPreviewIndex))
+      : 0;
+  const activePreviewItem = previewItems[previewIndex] ?? null;
+
   const chooseFiles = (): Promise<void> =>
     new Promise<void>((resolve) => {
       send({ type: "CHOOSE", onDone: resolve });
@@ -91,6 +116,10 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     readOnly,
     invalid,
     interactive,
+    previewOpen,
+    previewIndex,
+    previewItems,
+    activePreviewItem,
     rootProps: {
       id: dom.getRootId(scope),
       "data-state": currentState,
@@ -134,9 +163,25 @@ export function connectFileUpload(service: FileUploadService): FileUploadApi {
     previewFile: (idOrIndex: string | number) => {
       send({ type: "PREVIEW_FILE", idOrIndex });
     },
+    closePreview: () => {
+      send({ type: "PREVIEW_CLOSE" });
+    },
+    setPreviewIndex: (index: number) => {
+      if (index >= 0) {
+        send({ type: "PREVIEW_CHANGE", index });
+      }
+    },
     handlePreview: (index: number) => {
       if (index >= 0) {
         send({ type: "PREVIEW_FILE", idOrIndex: index });
+      }
+    },
+    handlePreviewClose: () => {
+      send({ type: "PREVIEW_CLOSE" });
+    },
+    handlePreviewChange: (index: number) => {
+      if (index >= 0) {
+        send({ type: "PREVIEW_CHANGE", index });
       }
     },
     handleFileClick: (index: number) => {

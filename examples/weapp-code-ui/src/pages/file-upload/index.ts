@@ -29,6 +29,7 @@ Page({
         name: "product-specification.pdf",
         size: 3450000,
         type: "file",
+        path: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
         status: "success",
       },
       {
@@ -284,6 +285,7 @@ Page({
       name: `report-quarterly-q${(mockIdCounter % 4) + 1}.pdf`,
       size: 512 * 1024 * (1 + (mockIdCounter % 5)),
       type: "file",
+      path: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       status: "success",
     };
 

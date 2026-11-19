@@ -6,7 +6,7 @@ export default function popoverTheme(_options: ThemeOptions = {}) {
       root: "relative",
       trigger: "relative",
       backdrop: "fixed inset-0 z-40 bg-transparent",
-      positioner: "z-50 box-border",
+      positioner: "z-popover box-border",
       content:
         "relative w-full rounded-md bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
       body: "relative w-full overflow-hidden rounded-[inherit] bg-inherit",

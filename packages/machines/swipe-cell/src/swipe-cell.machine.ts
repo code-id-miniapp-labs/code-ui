@@ -75,65 +75,56 @@ function measureActionWidths(
 
   const left = prop("left");
   const right = prop("right");
-  const hasLeft = (Array.isArray(left) && left.length > 0) || hasExplicitLeft;
+  const compSlots = (
+    comp as unknown as {
+      data?: { slots?: { left?: boolean; right?: boolean } };
+    }
+  )?.data?.slots;
+
+  const hasLeft =
+    (Array.isArray(left) && left.length > 0) || Boolean(compSlots?.left);
   const hasRight =
-    (Array.isArray(right) && right.length > 0) || hasExplicitRight;
+    (Array.isArray(right) && right.length > 0) || Boolean(compSlots?.right);
 
   const shouldQueryLeft = !hasExplicitLeft && hasLeft;
   const shouldQueryRight = !hasExplicitRight && hasRight;
 
-  if (!shouldQueryLeft && !shouldQueryRight) {
-    if (hasExplicitLeft && context.get("leftWidth") !== explicitLeft) {
-      context.set("leftWidth", explicitLeft);
-    }
-    if (hasExplicitRight && context.get("rightWidth") !== explicitRight) {
-      context.set("rightWidth", explicitRight);
-    }
-    return;
+  if (hasExplicitLeft && context.get("leftWidth") !== explicitLeft) {
+    context.set("leftWidth", explicitLeft);
+  }
+  if (hasExplicitRight && context.get("rightWidth") !== explicitRight) {
+    context.set("rightWidth", explicitRight);
   }
 
-  const queries: [
-    Promise<MiniAppRect | null> | null,
-    Promise<MiniAppRect | null> | null,
-  ] = [
-    shouldQueryLeft ? queryRect(".cui-swipe-cell__left", comp) : null,
-    shouldQueryRight ? queryRect(".cui-swipe-cell__right", comp) : null,
-  ];
+  if (shouldQueryLeft) {
+    queryRect(".cui-swipe-cell__left", comp)
+      .then((leftRect: MiniAppRect | null) => {
+        if (
+          leftRect &&
+          typeof leftRect.width === "number" &&
+          leftRect.width > 0 &&
+          context.get("leftWidth") !== leftRect.width
+        ) {
+          context.set("leftWidth", leftRect.width);
+        }
+      })
+      .catch(() => {});
+  }
 
-  Promise.all(queries)
-    .then(([leftRect, rightRect]) => {
-      let leftWidth = hasExplicitLeft
-        ? explicitLeft
-        : context.get("leftWidth");
-      let rightWidth = hasExplicitRight
-        ? explicitRight
-        : context.get("rightWidth");
-
-      if (
-        shouldQueryLeft &&
-        leftRect &&
-        typeof leftRect.width === "number" &&
-        leftRect.width > 0
-      ) {
-        leftWidth = leftRect.width;
-      }
-      if (
-        shouldQueryRight &&
-        rightRect &&
-        typeof rightRect.width === "number" &&
-        rightRect.width > 0
-      ) {
-        rightWidth = rightRect.width;
-      }
-
-      if (context.get("leftWidth") !== leftWidth) {
-        context.set("leftWidth", leftWidth);
-      }
-      if (context.get("rightWidth") !== rightWidth) {
-        context.set("rightWidth", rightWidth);
-      }
-    })
-    .catch(() => {});
+  if (shouldQueryRight) {
+    queryRect(".cui-swipe-cell__right", comp)
+      .then((rightRect: MiniAppRect | null) => {
+        if (
+          rightRect &&
+          typeof rightRect.width === "number" &&
+          rightRect.width > 0 &&
+          context.get("rightWidth") !== rightRect.width
+        ) {
+          context.set("rightWidth", rightRect.width);
+        }
+      })
+      .catch(() => {});
+  }
 }
 
 const openActions: SwipeCellAction[] = [

@@ -59,6 +59,7 @@ export interface BindFormFieldOptions {
   host?: FormHostContext | undefined;
   getHost?: (() => FormHostContext | null | undefined) | undefined;
   id: string;
+  rootId?: string | undefined;
   getFormId?: (() => string | undefined) | undefined;
   getName: () => string;
   getValue: () => any;
@@ -142,6 +143,7 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
       unregister = host.register({
         name,
         id: options.id,
+        rootId: options.rootId,
         getValue: options.getValue,
         setValue: options.setValue,
         resetValue: options.resetValue,
@@ -192,6 +194,7 @@ export interface FormFieldSyncOptions {
   host?: FormHostContext | undefined;
   getHost?: (() => FormHostContext | null | undefined) | undefined;
   id?: string | undefined;
+  rootId?: string | undefined;
   getFormId?: (() => string | undefined) | undefined;
   getName: () => string;
   getValue: () => any;

@@ -97,6 +97,7 @@ export interface FormFieldState extends FormFieldValidationState {
 export interface FormFieldRegistration {
   name: string;
   id: string;
+  rootId?: string | undefined;
   getValue: () => any;
   setValue?: ((value: any) => void) | undefined;
   resetValue?: (() => void) | undefined;

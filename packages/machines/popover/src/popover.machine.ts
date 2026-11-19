@@ -56,7 +56,7 @@ function runMeasure(
   refs.set("measureToken", token);
 
   const isStale = () => isCancelled() || refs.get("measureToken") !== token;
-  const viewport = readViewportSize();
+  const viewport = readViewportSize(prop("keyboardHeight"));
 
   queryRect(`#${dom.getTriggerId(scope)}`, comp)
     .then((res) => {
@@ -168,7 +168,7 @@ export const popoverMachine: PopoverMachine =
         }),
     },
 
-    watch: ({ prop, state, track }) => {
+    watch: ({ prop, state, track, send }) => {
       track([() => prop("open")], () => {
         const rawOpen = prop("open");
         if (!isNotNull(rawOpen)) return;
@@ -179,6 +179,12 @@ export const popoverMachine: PopoverMachine =
           state.set("open");
         } else if (!shouldBeOpen && isCurrentlyOpen) {
           state.set("closing");
+        }
+      });
+
+      track([() => prop("keyboardHeight"), () => prop("repositionKey")], () => {
+        if (state.hasTag("open")) {
+          send({ type: "REPOSITION" });
         }
       });
     },

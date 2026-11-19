@@ -1,4 +1,4 @@
-<view class="{{classes.root}}" data-scope="checkbox-group" data-part="root" aria-role="group" aria-disabled="{{cCheckboxGroup.disabled}}" aria-invalid="{{cCheckboxGroup.invalid}}" aria-required="{{required}}">
+<view id="{{cCheckboxGroup.rootProps.id}}" class="{{classes.root}}" data-scope="checkbox-group" data-part="root" aria-role="group" aria-disabled="{{cCheckboxGroup.disabled}}" aria-invalid="{{cCheckboxGroup.invalid}}" aria-required="{{required}}">
   <view wx:if="{{legend}}" class="{{classes.legend}}">
     {{legend}}
   </view>

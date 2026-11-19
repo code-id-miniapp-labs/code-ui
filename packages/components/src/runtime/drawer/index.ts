@@ -1,16 +1,16 @@
-import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
-import { createMachineBehavior, createProperties } from "../_shared/machine";
 import {
-  notifyScaleGestureDragEnd,
-  notifyScaleGestureDragMove,
-  notifyScaleGestureDragStart,
-  withAppScale,
-} from "@code-id-labs/miniapp/behaviors/app";
+  createMachineBehavior,
+  createProperties,
+  getApi,
+} from "../_shared/machine";
+import { withAppScale } from "@code-id-labs/miniapp/behaviors/app";
+import { createAppThemeBehavior } from "@code-id-labs/miniapp/behaviors/theme";
 import { resolveSlots } from "../../utils/ui";
 import { resolveTriggerButtonProps } from "../../utils/subcomponent";
 
 import {
+  type DrawerApi,
   type DrawerCloseProps,
   drawerMachine,
   connectDrawer,
@@ -39,9 +39,12 @@ const drawerBehavior = createMachineBehavior({
   ],
 });
 
+const appThemeBehavior =
+  typeof Behavior !== "undefined" ? createAppThemeBehavior() : ({} as any);
+
 Component(
   createComponentOptions({
-    behaviors: [drawerBehavior, computedBehavior],
+    behaviors: [appThemeBehavior, drawerBehavior, computedBehavior],
     slots: {
       default: false,
       header: false,
@@ -50,6 +53,10 @@ Component(
     },
 
     computed: {
+      portalStyle(): string {
+        return this.data.portal ? this.data.themeCssVars || "" : "";
+      },
+
       resolvedClose() {
         const classes = this.data.classes as Record<string, string> | undefined;
         return resolveTriggerButtonProps<DrawerCloseProps>(
@@ -74,6 +81,7 @@ Component(
         const themeFns = drawerTheme({
           placement,
           open: isOpen,
+          keyboardOpen: Boolean(api?.keyboardOpen),
         });
 
         return resolveSlots(themeFns, ui, this.data.className);
@@ -83,6 +91,10 @@ Component(
     properties: createProperties(defaultDrawerProps, {
       close: {
         type: null,
+        value: true,
+      },
+      portal: {
+        type: Boolean,
         value: true,
       },
       ui: {
@@ -98,37 +110,28 @@ Component(
     methods: {
       noop() {},
 
-      handleBackdropTap(ev: MiniAppBaseEventLike) {
-        this.send({ type: "BACKDROP.TAP" });
-        this.triggerEvent("backdropTap", ev);
-        this.triggerEvent("close", { reason: "backdrop" });
+      handleBackdropTap() {
+        getApi<DrawerApi>(this, "drawer")?.handleBackdropTap();
       },
 
-      handleCloseTap(ev: MiniAppBaseEventLike) {
-        this.send({ type: "CLOSE_TRIGGER.TAP" });
-        this.triggerEvent("closeTriggerTap", ev);
-        this.triggerEvent("close", { reason: "close-trigger" });
+      handleCloseTap() {
+        getApi<DrawerApi>(this, "drawer")?.handleCloseTriggerTap();
       },
 
       handleTouchStart(value?: { offset?: number }) {
-        notifyScaleGestureDragStart(this);
-        this.send({ type: "DRAG_START" });
-        this.triggerEvent("dragstart", value || {});
+        getApi<DrawerApi>(this, "drawer")?.handleDragStart(value || {});
       },
 
       handleTouchMove(value?: { offset?: number }) {
-        this.triggerEvent("drag", value || {});
-        notifyScaleGestureDragMove(
-          this,
-          typeof value?.offset === "number" ? value.offset : 0,
-        );
+        getApi<DrawerApi>(this, "drawer")?.handleDragMove(value || {});
       },
 
       handleTouchEnd(value?: { passed: boolean; offset?: number }) {
         const passed = value ? value.passed : false;
-        notifyScaleGestureDragEnd(this, passed);
-        this.send({ type: "DRAG_END", passed });
-        this.triggerEvent("dragend", value || { passed: false });
+        getApi<DrawerApi>(this, "drawer")?.handleDragEnd(
+          passed,
+          value || { passed: false },
+        );
       },
     },
   }),

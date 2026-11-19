@@ -143,7 +143,10 @@ Component(
           return "";
         }
         const factor = this.data.hostScaleFactor || this.data.scaleFactor;
-        return `transform: scale(${factor}) translateY(var(--cui-top-offset));`;
+        const winWidth = appMetricsSignal().windowWidth || 375;
+        const topGap = Math.max(8, Math.round(((1 - factor) / 2) * winWidth));
+        const transformValue = `translate3d(0, calc(var(--cui-top-offset) + ${topGap}px), 0) scale3d(${factor}, ${factor}, 1)`;
+        return `-webkit-transform: ${transformValue}; transform: ${transformValue};`;
       },
 
       rootStyle() {

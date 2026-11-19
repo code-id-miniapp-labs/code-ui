@@ -147,6 +147,7 @@ export interface PinInputComputed {
 export interface PinInputRefs {
   initialValue?: string[] | undefined;
   formField?: BoundFormField | undefined;
+  cancelRefocus?: (() => void) | undefined;
 }
 
 type PinInputDefaultedKey =

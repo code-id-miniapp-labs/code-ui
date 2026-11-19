@@ -357,6 +357,11 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
           context.set("rect", event.rect);
         }
         const rect = context.get("rect") ?? refs.get("rect");
+        const comp = prop("component");
+        const canQuery = canQueryRect(comp);
+        const deferToFreshRect =
+          canQuery && prop("orientation") === "vertical" && !event.rect;
+
         const targetIndex = resolveThumbIndexForPoint(
           context.get("value"),
           prop,
@@ -366,22 +371,20 @@ export const sliderMachine: SliderMachine = createMachine<SliderSchema>({
         );
 
         context.set("activeThumbIndex", targetIndex);
-        if (rect) {
+        if (rect && !deferToFreshRect) {
           updateThumbFromPoint(context, prop, rect, event.point, targetIndex);
         }
 
-        const comp = prop("component");
-        if (canQueryRect(comp)) {
-          const pendingPoint = rect ? undefined : event.point;
+        if (canQuery) {
           const isTap = event.type === "TAP";
           queryRect(`#${dom.getControlId(scope)}`, comp).then((queried) => {
             if (queried) {
               send({
                 type: "RECT.RESOLVED",
                 rect: queried,
-                point: pendingPoint,
-                index: rect ? targetIndex : event.index,
-                commit: pendingPoint ? isTap : undefined,
+                point: event.point,
+                index: event.index,
+                commit: isTap ? true : undefined,
               });
             }
           });

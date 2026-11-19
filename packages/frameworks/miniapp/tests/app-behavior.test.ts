@@ -1,11 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   __resetAppRegistry,
+  createAppHostBehavior,
   cuiAppChildBehavior,
   cuiAppParentBehavior,
   getPageAppSignals,
   isAppScaled,
   linkAppChildToParent,
+  notifyScaleGestureDragEnd,
+  notifyScaleGestureDragMove,
+  notifyScaleGestureDragStart,
   registerAppHost,
   releaseAppScale,
   requestAppScale,
@@ -346,5 +350,55 @@ describe("Hybrid host resolution (relations + fallback)", () => {
     releaseAppScale(childInstance, "drawer:1");
     expect(isAppScaled(childInstance)).toBe(false);
     expect(getPageAppSignals(hostInstance).scale().scaled).toBe(false);
+  });
+
+  it("updates scale3d transform during drawer drag without mutating border-radius", () => {
+    pageStack = [{ getPageId: () => "p1" }];
+    const hostBehaviorDef: any = createAppHostBehavior({
+      detectBars: () => {},
+      extractTopBarHeight: () => 0,
+      extractBottomBarHeight: () => 0,
+    });
+
+    const hostData: Record<string, any> = {
+      scaled: true,
+      hostScaleFactor: 0.94,
+      scaleFactor: 0.94,
+      gestureScaleStyle: "",
+    };
+    const setData = vi.fn((patch: Record<string, any>) => {
+      Object.assign(hostData, patch);
+    });
+    const hostInstance: any = {
+      data: hostData,
+      setData,
+      getPageId: () => "p1",
+      startScaleGesture: hostBehaviorDef.methods.startScaleGesture,
+      applyScaleProgress: hostBehaviorDef.methods.applyScaleProgress,
+      endScaleGesture: hostBehaviorDef.methods.endScaleGesture,
+    };
+    hostBehaviorDef.lifetimes.attached.call(hostInstance);
+
+    const drawerInstance: any = {
+      data: { shouldScaleBackground: true, threshold: 80 },
+      getPageId: () => "p1",
+    };
+
+    notifyScaleGestureDragStart(drawerInstance);
+    notifyScaleGestureDragMove(drawerInstance, 0);
+    expect(setData).not.toHaveBeenCalled();
+
+    notifyScaleGestureDragMove(drawerInstance, 60);
+    expect(setData).toHaveBeenCalledTimes(1);
+    expect(hostData.gestureScaleStyle).toContain("scale3d(0.97, 0.97, 1)");
+    expect(hostData.gestureScaleStyle).not.toContain("border-radius");
+
+    notifyScaleGestureDragEnd(drawerInstance, false);
+    expect(hostData.gestureScaleStyle).toBe("");
+    expect(hostData.scaled).toBe(true);
+
+    notifyScaleGestureDragEnd(drawerInstance, true);
+    expect(hostData.scaled).toBe(false);
+    hostBehaviorDef.lifetimes.detached.call(hostInstance);
   });
 });

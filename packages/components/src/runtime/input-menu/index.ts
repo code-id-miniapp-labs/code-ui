@@ -46,6 +46,8 @@ const inputMenuBehavior = createMachineBehavior({
     "createItem",
     "clearValue",
     "resetValue",
+    "focus",
+    "blur",
   ],
 });
 
@@ -124,7 +126,7 @@ Component(
       },
       cursorSpacing: {
         type: Number,
-        value: 0,
+        value: 24,
       },
       confirmType: {
         type: String,
@@ -431,6 +433,13 @@ Component(
       handleMenuOpenChange(e: MiniAppEventLike<{ open?: boolean }>) {
         if (e?.detail && e.detail.open === false) {
           getApi(this, "inputMenu")?.closeInputMenu?.();
+        }
+      },
+
+      handleKeyboardHeightChange(e: MiniAppEventLike<{ height?: number }>) {
+        const nextHeight = Math.max(0, Number(e?.detail?.height ?? 0) || 0);
+        if (nextHeight !== (this.data.keyboardHeight ?? 0)) {
+          this.setData({ keyboardHeight: nextHeight });
         }
       },
     },

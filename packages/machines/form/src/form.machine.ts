@@ -573,8 +573,129 @@ export function focusFirstInvalidField(service: ServiceLike): boolean {
   return false;
 }
 
+declare const wx: Record<string, any> | undefined;
+
+function getWx(): Record<string, any> | undefined {
+  if (typeof wx !== "undefined" && wx) return wx;
+  return (globalThis as Record<string, any>).wx;
+}
+
+function scheduleNextTick(wxApi: Record<string, any> | undefined, cb: () => void) {
+  if (wxApi && typeof wxApi.nextTick === "function") {
+    wxApi.nextTick(cb);
+  } else {
+    cb();
+  }
+}
+
+interface FieldScrollTarget {
+  component: { createSelectorQuery?: () => any };
+  selector: string;
+}
+
+function resolveFieldScrollTargets(
+  targetReg: FormFieldRegistration,
+): FieldScrollTarget[] {
+  const targets: FieldScrollTarget[] = [];
+  const comp = targetReg.component as Record<string, any> | undefined;
+  if (!comp) return targets;
+
+  // Prefer the wrapping <c-form-field> so its label & description also scroll into view.
+  const wrapper = comp.__codeUiFieldWrapper as Record<string, any> | undefined;
+  const wrapperRootId = wrapper?.__codeUiApi?.rootProps?.id;
+  if (
+    wrapper &&
+    typeof wrapper.createSelectorQuery === "function" &&
+    typeof wrapperRootId === "string" &&
+    wrapperRootId.length > 0
+  ) {
+    targets.push({
+      component: wrapper as { createSelectorQuery: () => any },
+      selector: `#${wrapperRootId}`,
+    });
+  }
+
+  if (typeof comp.createSelectorQuery === "function") {
+    const controlRootId =
+      targetReg.rootId ||
+      (typeof comp.__codeUiApi?.rootProps?.id === "string"
+        ? comp.__codeUiApi.rootProps.id
+        : "") ||
+      targetReg.id;
+    if (controlRootId) {
+      targets.push({
+        component: comp as { createSelectorQuery: () => any },
+        selector: `#${controlRootId}`,
+      });
+    }
+  }
+
+  return targets;
+}
+
+function measureScrollTarget(
+  target: FieldScrollTarget,
+  wxApi: Record<string, any>,
+): Promise<{ scrollTop: number; rectTop: number | null }> {
+  return new Promise((resolve) => {
+    const compQuery =
+      typeof target.component.createSelectorQuery === "function"
+        ? target.component.createSelectorQuery()
+        : null;
+    const query =
+      compQuery &&
+      typeof compQuery.selectViewport === "function" &&
+      typeof compQuery.select === "function" &&
+      typeof compQuery.exec === "function"
+        ? compQuery
+        : typeof wxApi.createSelectorQuery === "function"
+          ? wxApi.createSelectorQuery().in(target.component)
+          : null;
+
+    if (!query) {
+      resolve({ scrollTop: 0, rectTop: null });
+      return;
+    }
+
+    query.selectViewport().scrollOffset();
+    query.select(target.selector).boundingClientRect();
+    query.exec(
+      (res: Array<{ scrollTop?: number; top?: number } | null> | null) => {
+        const viewport = res?.[0];
+        const rect = res?.[1];
+        resolve({
+          scrollTop:
+            typeof viewport?.scrollTop === "number" ? viewport.scrollTop : 0,
+          rectTop: typeof rect?.top === "number" ? rect.top : null,
+        });
+      },
+    );
+  });
+}
+
+function measureFirstTarget(
+  targets: FieldScrollTarget[],
+  wxApi: Record<string, any>,
+  index = 0,
+): Promise<{ scrollTop: number; rectTop: number | null }> {
+  const target = targets[index];
+  if (!target) {
+    return Promise.resolve({ scrollTop: 0, rectTop: null });
+  }
+  return measureScrollTarget(target, wxApi).then((result) => {
+    if (typeof result.rectTop === "number" || index + 1 >= targets.length) {
+      return result;
+    }
+    return measureFirstTarget(targets, wxApi, index + 1);
+  });
+}
+
 export async function scrollToFirstInvalidField(
   service: ServiceLike,
+  options?: {
+    duration?: number | undefined;
+    onComplete?: (() => void) | undefined;
+  },
 ): Promise<boolean> {
   const errorBag = service.context.get("errorBag");
   const fields = service.refs.get("fields");
@@ -592,14 +713,41 @@ export async function scrollToFirstInvalidField(
   if (!targetReg) return false;
 
   try {
-    const wxGlobal = (globalThis as Record<string, any>).wx;
-    if (wxGlobal && typeof wxGlobal.pageScrollTo === "function") {
-      wxGlobal.pageScrollTo({
-        selector: `#${targetReg.id}`,
-        offsetTop: -scrollOffset,
-        duration: 250,
-      });
-      return true;
+    const wxApi = getWx();
+    if (wxApi && typeof wxApi.pageScrollTo === "function") {
+      const duration = options?.duration ?? 250;
+      const targets = resolveFieldScrollTargets(targetReg);
+      const { scrollTop: measuredScrollTop, rectTop: measuredRectTop } =
+        await measureFirstTarget(targets, wxApi);
+
+      if (typeof measuredRectTop === "number") {
+        const targetScrollTop = Math.max(
+          0,
+          measuredScrollTop + measuredRectTop - scrollOffset,
+        );
+        if (Math.abs(targetScrollTop - measuredScrollTop) >= 2) {
+          wxApi.pageScrollTo({
+            scrollTop: targetScrollTop,
+            duration,
+          });
+        }
+        // Do not gate onComplete on wx.pageScrollTo's complete callback:
+        // WeChat/TCSAS can skip invoking complete (especially with duration: 0),
+        // which would prevent focusFirstInvalidField from ever running.
+        options?.onComplete?.();
+        return true;
+      }
+
+      // If no component measurement was available, only use page-level selector
+      // when scrolling without focus (page-level selector cannot pierce shadow DOM).
+      if (!options?.onComplete) {
+        wxApi.pageScrollTo({
+          selector: `#${targetReg.rootId || targetReg.id}`,
+          offsetTop: -scrollOffset,
+          duration,
+        });
+        return true;
+      }
     }
   } catch {
     // Ignore in non-MiniApp test environments
@@ -865,19 +1013,46 @@ export async function submitForm(
   if (!result.valid) {
     service.state.set("error");
 
-    if (service.prop("focusOnError")) {
-      focusFirstInvalidField(service);
-    }
-    if (service.prop("scrollToError")) {
-      void scrollToFirstInvalidField(service);
-    }
-
     const errorDetails = {
       errors: result.errors,
       errorBag: result.errorBag,
       values: result.values,
     };
     service.prop("onError")?.(errorDetails);
+
+    const shouldFocus = Boolean(service.prop("focusOnError"));
+    const shouldScroll = Boolean(
+      service.prop("scrollToError") || shouldFocus,
+    );
+    const wxApi = getWx();
+    const canPageScroll = Boolean(
+      shouldScroll && wxApi && typeof wxApi.pageScrollTo === "function",
+    );
+
+    if (canPageScroll) {
+      // Wait for validation error messages & onError UI updates to settle in layout.
+      // When focusing, use duration: 0 so there is no active scroll animation in flight
+      // to cancel/blur <input focus> on Simulator or real iOS/Android devices.
+      scheduleNextTick(wxApi, () => {
+        void scrollToFirstInvalidField(service, {
+          duration: shouldFocus ? 0 : 250,
+          onComplete: shouldFocus
+            ? () => {
+                scheduleNextTick(wxApi, () => {
+                  focusFirstInvalidField(service);
+                });
+              }
+            : undefined,
+        }).then((scrolled) => {
+          if (!scrolled && shouldFocus) {
+            focusFirstInvalidField(service);
+          }
+        });
+      });
+    } else if (shouldFocus) {
+      focusFirstInvalidField(service);
+    }
+
     return result;
   }
 

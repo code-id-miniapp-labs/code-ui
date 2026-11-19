@@ -140,13 +140,42 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
       on: {
         CLOSE: openCloseTransitions,
         TOGGLE: openCloseTransitions,
-        "CLOSE_TRIGGER.TAP": openCloseTransitions,
+        "CLOSE_TRIGGER.TAP": [
+          {
+            guard: "isInstantClose" as const,
+            target: "closed" as const,
+            actions: [
+              "invokeOnCloseTriggerTap" as const,
+              "invokeOnClose" as const,
+              "invokeOnAfterLeave" as const,
+            ],
+          },
+          {
+            target: "closing" as const,
+            actions: [
+              "invokeOnCloseTriggerTap" as const,
+              "invokeOnClose" as const,
+            ],
+          },
+        ],
         "OVERLAY.TAP": [
           {
             guard: "cannotDismissOnOverlay",
-            actions: ["invokeOnClosePrevent"],
+            actions: ["invokeOnOverlayTap", "invokeOnClosePrevent"],
           },
-          ...openCloseTransitions,
+          {
+            guard: "isInstantClose" as const,
+            target: "closed" as const,
+            actions: [
+              "invokeOnOverlayTap" as const,
+              "invokeOnClose" as const,
+              "invokeOnAfterLeave" as const,
+            ],
+          },
+          {
+            target: "closing" as const,
+            actions: ["invokeOnOverlayTap" as const, "invokeOnClose" as const],
+          },
         ],
         KEYBOARD_CHANGE: {
           actions: ["setKeyboardHeight"],
@@ -189,6 +218,12 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
       },
       invokeOnClosePrevent: ({ prop }) => {
         prop("onClosePrevent")?.();
+      },
+      invokeOnOverlayTap: ({ prop }) => {
+        prop("onOverlayTap")?.();
+      },
+      invokeOnCloseTriggerTap: ({ prop }) => {
+        prop("onCloseTriggerTap")?.();
       },
       setKeyboardHeight: ({ context, event }) => {
         if (event.type === "KEYBOARD_CHANGE") {

@@ -3,7 +3,7 @@ import { defineTheme, type ThemeOptions } from "../../theme";
 export default function modalTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
-      root: "fixed inset-0 z-50 box-border overscroll-contain",
+      root: "fixed inset-0 z-modal box-border overscroll-contain",
       trigger: "inline-flex",
       overlay: "fixed inset-0 bg-black/35 backdrop-blur-md",
       container:

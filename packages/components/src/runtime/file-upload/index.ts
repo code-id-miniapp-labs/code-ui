@@ -1,4 +1,7 @@
-import type { MiniAppBaseEventLike } from "@code-id-labs/utils";
+import type {
+  MiniAppBaseEventLike,
+  MiniAppEventLike,
+} from "@code-id-labs/utils";
 import { computedBehavior, createComponentOptions } from "../_shared/base";
 import {
   createMachineBehavior,
@@ -34,6 +37,7 @@ const fileUploadBehavior = createMachineBehavior({
     "addFiles",
     "removeFile",
     "previewFile",
+    "closePreview",
     "clearFiles",
     "setFiles",
   ],
@@ -111,6 +115,10 @@ Component(
         type: String,
         value: "outline",
       },
+      portal: {
+        type: Boolean,
+        value: true,
+      },
       ui: {
         type: Object,
         value: {},
@@ -186,6 +194,19 @@ Component(
           getApi(this, "fileUpload")?.handleImageError(index);
         }
       },
+
+      handlePreviewClose() {
+        getApi(this, "fileUpload")?.handlePreviewClose();
+      },
+
+      handlePreviewSwiperChange(e: MiniAppEventLike<{ current?: number }>) {
+        const current = Number(e?.detail?.current ?? 0);
+        if (!Number.isNaN(current)) {
+          getApi(this, "fileUpload")?.handlePreviewChange(current);
+        }
+      },
+
+      noop() {},
     },
   }),
 );

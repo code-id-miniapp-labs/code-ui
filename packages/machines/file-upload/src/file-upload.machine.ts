@@ -12,19 +12,32 @@ import type {
   FileUploadSchema,
 } from "./file-upload.types";
 import { defaultFileUploadProps } from "./file-upload.props";
+import * as dom from "./file-upload.dom";
 import {
   cleanExtensions,
+  detectImageMimeFromBase64,
+  getFileMimeType,
   getFileThumbKey,
   getFileType,
   hasDocumentExtension,
   isAudioFile,
   isImageFile,
+  isLocalFilePath,
+  isRemoteHttpUrl,
   isVideoFile,
   resolveFileThumb,
   validateFiles,
 } from "./file-upload.utils";
 
-const getWx = (): any => (globalThis as Record<string, unknown>).wx;
+const COMPRESS_THRESHOLD_BYTES = 300 * 1024;
+const MAX_INLINE_BASE64_LENGTH = 6 * 1024 * 1024;
+
+declare const wx: Record<string, any> | undefined;
+
+const getWx = (): any =>
+  typeof wx !== "undefined" && wx
+    ? wx
+    : (globalThis as Record<string, unknown>).wx;
 
 let fileIdCounter = 0;
 function generateFileId(): string {
@@ -121,9 +134,11 @@ function mapRawPickedFiles(rawFiles: unknown[]): FileUploadFile[] {
     const path = item.tempFilePath || item.path || "";
     const name = item.name || path.split("/").pop() || `file-${Date.now()}`;
     const size = item.size ?? 0;
-    const type =
+    const explicitType =
       item.fileType ||
-      item.type ||
+      (item.type && item.type !== "file" ? item.type : undefined);
+    const type =
+      explicitType ||
       (isImageFile(undefined, path, name)
         ? "image"
         : isVideoFile(undefined, path, name)
@@ -177,6 +192,8 @@ export const fileUploadMachine: FileUploadMachine =
       initialFiles: prop("value") ?? prop("defaultValue"),
       formField: undefined,
       chooseDone: undefined,
+      resolvingPaths: new Set<string>(),
+      disposed: false,
     }),
 
     context: ({ prop, bindable, getRefs }) => ({
@@ -211,6 +228,18 @@ export const fileUploadMachine: FileUploadMachine =
       failedThumbs: bindable<string[]>(() => ({
         defaultValue: [],
       })),
+
+      resolvedSources: bindable<Record<string, string>>(() => ({
+        defaultValue: {},
+      })),
+
+      previewOpen: bindable<boolean>(() => ({
+        defaultValue: false,
+      })),
+
+      previewIndex: bindable<number>(() => ({
+        defaultValue: 0,
+      })),
     }),
 
     computed: {
@@ -218,13 +247,13 @@ export const fileUploadMachine: FileUploadMachine =
       isInvalid: ({ prop, refs, context, scope }) =>
         Boolean(
           context.get("invalid") ||
-            hasFormFieldErrors(prop, refs, scope, "fileUpload"),
+          hasFormFieldErrors(prop, refs, scope, "fileUpload"),
         ),
       isDisabled: ({ prop, computed }) =>
         Boolean(
           computed("formDisabled") ||
-            computed("fieldDisabled") ||
-            prop("disabled"),
+          computed("fieldDisabled") ||
+          prop("disabled"),
         ),
       isReadOnly: ({ prop, computed }) =>
         Boolean(prop("readOnly") || computed("formReadOnly")),
@@ -251,8 +280,14 @@ export const fileUploadMachine: FileUploadMachine =
       });
     },
 
+    effects: ["hydrateLocalImages"],
     entry: ["setupFormField"],
-    exit: ["cleanupFormField", "cleanupAudio", "flushChooseCallback"],
+    exit: [
+      "markDisposed",
+      "cleanupFormField",
+      "cleanupAudio",
+      "flushChooseCallback",
+    ],
 
     on: {
       SET_VALUE: {
@@ -272,6 +307,12 @@ export const fileUploadMachine: FileUploadMachine =
       },
       PREVIEW_FILE: {
         actions: ["previewFile"],
+      },
+      PREVIEW_CLOSE: {
+        actions: ["closePreview"],
+      },
+      PREVIEW_CHANGE: {
+        actions: ["setPreviewIndex"],
       },
       FILE_CLICK: {
         actions: ["clickFile"],
@@ -337,6 +378,143 @@ export const fileUploadMachine: FileUploadMachine =
       },
 
       effects: {
+        hydrateLocalImages: ({ context, refs, track }) => {
+          track(
+            [
+              () =>
+                context
+                  .get("files")
+                  .map((f) => `${f.id ?? ""}:${f.path ?? ""}:${f.thumb ?? ""}`)
+                  .join("|"),
+            ],
+            () => {
+              if (refs.get("disposed")) return;
+              const files = context.get("files");
+              const resolving = refs.get("resolvingPaths");
+              const currentResolved = context.get("resolvedSources");
+
+              const activeLocalPaths = new Set<string>();
+              const candidates: Array<{
+                rawPath: string;
+                file: FileUploadFile;
+              }> = [];
+
+              for (const file of files) {
+                const fileType = getFileType(file);
+                if (fileType === "image" && isLocalFilePath(file.path)) {
+                  const rawPath = file.path as string;
+                  activeLocalPaths.add(rawPath);
+                  candidates.push({ rawPath, file });
+                }
+                if (
+                  file.thumb &&
+                  file.thumb !== file.path &&
+                  isLocalFilePath(file.thumb)
+                ) {
+                  activeLocalPaths.add(file.thumb);
+                  candidates.push({ rawPath: file.thumb, file });
+                }
+              }
+
+              // Prune stale resolved entries when files are removed or replaced
+              let pruned = false;
+              const nextResolved: Record<string, string> = {};
+              for (const key of Object.keys(currentResolved)) {
+                if (activeLocalPaths.has(key)) {
+                  nextResolved[key] = currentResolved[key] as string;
+                } else {
+                  pruned = true;
+                }
+              }
+              for (const key of Array.from(resolving)) {
+                if (!activeLocalPaths.has(key)) {
+                  resolving.delete(key);
+                }
+              }
+              if (pruned) {
+                context.set("resolvedSources", nextResolved);
+              }
+
+              const wxApi = getWx();
+              if (!wxApi || typeof wxApi.getFileSystemManager !== "function") {
+                return;
+              }
+              const fs = wxApi.getFileSystemManager();
+              if (!fs || typeof fs.readFile !== "function") return;
+
+              for (const { rawPath, file } of candidates) {
+                if (currentResolved[rawPath] || resolving.has(rawPath))
+                  continue;
+                resolving.add(rawPath);
+
+                const readAsDataUri = (targetPath: string) => {
+                  if (refs.get("disposed")) return;
+                  fs.readFile({
+                    filePath: targetPath,
+                    encoding: "base64",
+                    success: (res: { data?: string | ArrayBuffer }) => {
+                      if (refs.get("disposed")) return;
+                      const base64 =
+                        typeof res?.data === "string" ? res.data : "";
+                      if (!base64 || base64.length > MAX_INLINE_BASE64_LENGTH) {
+                        return;
+                      }
+                      const hintMime = getFileMimeType(
+                        file.name || rawPath,
+                        "image/jpeg",
+                      );
+                      const mime = detectImageMimeFromBase64(base64, hintMime);
+                      const dataUri = `data:${mime};base64,${base64}`;
+                      const prev = context.get("resolvedSources");
+                      if (prev[rawPath] !== dataUri) {
+                        context.set("resolvedSources", {
+                          ...prev,
+                          [rawPath]: dataUri,
+                        });
+                        const oldKey = getFileThumbKey(file, rawPath);
+                        if (oldKey) {
+                          const prevFailed = context.get("failedThumbs");
+                          if (prevFailed.includes(oldKey)) {
+                            context.set(
+                              "failedThumbs",
+                              prevFailed.filter((k) => k !== oldKey),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    fail: (err: unknown) => {
+                      console.warn(
+                        "[file-upload] Failed to read local preview image:",
+                        err,
+                      );
+                    },
+                  });
+                };
+
+                const shouldCompress =
+                  (file.size > COMPRESS_THRESHOLD_BYTES || !file.size) &&
+                  typeof wxApi.compressImage === "function";
+                if (shouldCompress) {
+                  wxApi.compressImage({
+                    src: rawPath,
+                    quality: 75,
+                    compressedWidth: 1280,
+                    success: (res: { tempFilePath?: string }) => {
+                      readAsDataUri(res?.tempFilePath || rawPath);
+                    },
+                    fail: () => {
+                      readAsDataUri(rawPath);
+                    },
+                  });
+                } else {
+                  readAsDataUri(rawPath);
+                }
+              }
+            },
+          );
+        },
+
         pickWeChatFiles: ({ prop, context, send }) => {
           const wxApi = getWx();
           if (!wxApi) {
@@ -358,18 +536,125 @@ export const fileUploadMachine: FileUploadMachine =
           ).toLowerCase();
           const hasDoc = hasDocumentExtension(acceptStr);
 
+          const runChooseMessageFile = () => {
+            if (typeof wxApi.chooseMessageFile !== "function") {
+              send({ type: "CHOOSE_COMPLETE" });
+              return;
+            }
+            const cleanExts = cleanExtensions(accept);
+            const useFileFilter =
+              cleanExts.length > 0 && !acceptStr.includes("*");
+            wxApi.chooseMessageFile({
+              count: remainingSlots,
+              type: useFileFilter ? "file" : "all",
+              ...(useFileFilter ? { extension: cleanExts } : {}),
+              success: (res: { tempFiles?: unknown[] }) => {
+                send({ type: "PICKED_RAW", files: res.tempFiles ?? [] });
+              },
+              fail: (err: { errMsg?: string }) => {
+                const msg = err?.errMsg ?? "";
+                if (msg && !msg.includes("cancel")) {
+                  console.warn("[file-upload] chooseMessageFile failed:", err);
+                  wxApi.showToast?.({
+                    title: "Unable to open file picker",
+                    icon: "none",
+                  });
+                }
+              },
+              complete: () => {
+                send({ type: "CHOOSE_COMPLETE" });
+              },
+            });
+          };
+
+          const runChooseMedia = (
+            overrideSourceType?: Array<"album" | "camera">,
+          ) => {
+            if (typeof wxApi.chooseMedia !== "function") {
+              runChooseMessageFile();
+              return;
+            }
+            wxApi.chooseMedia({
+              count: remainingSlots,
+              mediaType: prop("mediaType"),
+              sourceType: overrideSourceType ?? prop("sourceType"),
+              maxDuration: prop("maxDuration"),
+              sizeType: prop("sizeType"),
+              camera: prop("camera"),
+              success: (res: { tempFiles?: unknown[] }) => {
+                send({ type: "PICKED_RAW", files: res.tempFiles ?? [] });
+              },
+              fail: (err: { errMsg?: string }) => {
+                const msg = err?.errMsg ?? "";
+                if (msg && !msg.includes("cancel")) {
+                  console.warn("[file-upload] chooseMedia failed:", err);
+                }
+              },
+              complete: () => {
+                send({ type: "CHOOSE_COMPLETE" });
+              },
+            });
+          };
+
           if (mode === "messageFile" || (mode === "auto" && hasDoc)) {
             if (typeof wxApi.chooseMessageFile === "function") {
-              const cleanExts = cleanExtensions(accept);
-              wxApi.chooseMessageFile({
-                count: remainingSlots,
-                type: cleanExts.length > 0 ? "file" : "all",
-                extension: cleanExts.length > 0 ? cleanExts : undefined,
-                success: (res: { tempFiles?: unknown[] }) => {
-                  send({ type: "PICKED_RAW", files: res.tempFiles ?? [] });
+              runChooseMessageFile();
+              return;
+            }
+          }
+
+          const configuredSourceType = prop("sourceType");
+          const hasBothSources =
+            Array.isArray(configuredSourceType) &&
+            configuredSourceType.includes("album") &&
+            configuredSourceType.includes("camera");
+          const isUnrestrictedAccept =
+            !acceptStr || acceptStr === "*" || acceptStr === "*/*";
+
+          if (
+            mode === "auto" &&
+            typeof wxApi.showActionSheet === "function" &&
+            typeof wxApi.chooseMedia === "function"
+          ) {
+            if (
+              isUnrestrictedAccept &&
+              typeof wxApi.chooseMessageFile === "function"
+            ) {
+              wxApi.showActionSheet({
+                itemList: [
+                  "Photo / Video Album",
+                  "Take Photo / Video",
+                  "Choose Files",
+                ],
+                success: (res: { tapIndex?: number }) => {
+                  // Delay slightly on iOS so UIKit finishes dismissing ActionSheet
+                  // before presenting media/document picker.
+                  setTimeout(() => {
+                    if (res.tapIndex === 2) {
+                      runChooseMessageFile();
+                    } else if (res.tapIndex === 1) {
+                      runChooseMedia(["camera"]);
+                    } else {
+                      runChooseMedia(["album"]);
+                    }
+                  }, 150);
                 },
-                fail: () => {},
-                complete: () => {
+                fail: () => {
+                  send({ type: "CHOOSE_COMPLETE" });
+                },
+              });
+              return;
+            }
+
+            if (hasBothSources) {
+              wxApi.showActionSheet({
+                itemList: ["Choose from Album", "Take Photo / Video"],
+                success: (res: { tapIndex?: number }) => {
+                  setTimeout(() => {
+                    runChooseMedia(res.tapIndex === 1 ? ["camera"] : ["album"]);
+                  }, 150);
+                },
+                fail: () => {
                   send({ type: "CHOOSE_COMPLETE" });
                 },
               });
@@ -378,36 +663,12 @@ export const fileUploadMachine: FileUploadMachine =
           }
 
           if (typeof wxApi.chooseMedia === "function") {
-            wxApi.chooseMedia({
-              count: remainingSlots,
-              mediaType: prop("mediaType"),
-              sourceType: prop("sourceType"),
-              maxDuration: prop("maxDuration"),
-              sizeType: prop("sizeType"),
-              camera: prop("camera"),
-              success: (res: { tempFiles?: unknown[] }) => {
-                send({ type: "PICKED_RAW", files: res.tempFiles ?? [] });
-              },
-              fail: () => {},
-              complete: () => {
-                send({ type: "CHOOSE_COMPLETE" });
-              },
-            });
+            runChooseMedia();
             return;
           }
 
           if (typeof wxApi.chooseMessageFile === "function") {
-            wxApi.chooseMessageFile({
-              count: remainingSlots,
-              type: "all",
-              success: (res: { tempFiles?: unknown[] }) => {
-                send({ type: "PICKED_RAW", files: res.tempFiles ?? [] });
-              },
-              fail: () => {},
-              complete: () => {
-                send({ type: "CHOOSE_COMPLETE" });
-              },
-            });
+            runChooseMessageFile();
             return;
           }
 
@@ -439,6 +700,17 @@ export const fileUploadMachine: FileUploadMachine =
           if (event.type !== "SET_VALUE") return;
           context.set("files", event.value);
           context.set("failedThumbs", []);
+          if (context.get("previewOpen")) {
+            const imageCount = event.value.filter(
+              (f) => getFileType(f) === "image" && Boolean(f.path),
+            ).length;
+            if (imageCount === 0) {
+              context.set("previewOpen", false);
+              context.set("previewIndex", 0);
+            } else if (context.get("previewIndex") >= imageCount) {
+              context.set("previewIndex", imageCount - 1);
+            }
+          }
         },
 
         addFiles: ({ context, event, prop }) => {
@@ -504,9 +776,10 @@ export const fileUploadMachine: FileUploadMachine =
           context.set("files", next);
 
           if (removed) {
+            const resolvedSources = context.get("resolvedSources");
             const removedKey = getFileThumbKey(
               removed,
-              resolveFileThumb(removed),
+              resolveFileThumb(removed, undefined, resolvedSources),
             );
             if (removedKey) {
               const failed = context.get("failedThumbs");
@@ -515,6 +788,17 @@ export const fileUploadMachine: FileUploadMachine =
                   "failedThumbs",
                   failed.filter((k) => k !== removedKey),
                 );
+              }
+            }
+            if (context.get("previewOpen")) {
+              const imageCount = next.filter(
+                (f) => getFileType(f) === "image" && Boolean(f.path),
+              ).length;
+              if (imageCount === 0) {
+                context.set("previewOpen", false);
+                context.set("previewIndex", 0);
+              } else if (context.get("previewIndex") >= imageCount) {
+                context.set("previewIndex", imageCount - 1);
               }
             }
             prop("onRemove")?.({ file: removed, index });
@@ -536,20 +820,101 @@ export const fileUploadMachine: FileUploadMachine =
           prop("onPreview")?.({ file, index });
 
           const wxApi = getWx();
-          if (!wxApi || !file.path) return;
+          if (!file.path) {
+            wxApi?.showToast?.({
+              title: "No file path available to preview",
+              icon: "none",
+            });
+            return;
+          }
 
           const fileType = getFileType(file);
           if (fileType === "image") {
-            if (typeof wxApi.previewImage === "function") {
-              const imageUrls = files
-                .filter((f) => getFileType(f) === "image" && f.path)
-                .map((f) => f.path as string);
+            if (prop("previewMode") !== "native") {
+              const imageFiles = files.filter(
+                (f) => getFileType(f) === "image" && Boolean(f.path),
+              );
+              const targetIdx = Math.max(0, imageFiles.indexOf(file));
+              context.set("previewIndex", targetIdx);
+              context.set("previewOpen", true);
+              return;
+            }
+
+            if (!wxApi) return;
+            const isLocal = !isRemoteHttpUrl(file.path);
+            const imageUrls = files
+              .filter(
+                (f) =>
+                  getFileType(f) === "image" &&
+                  f.path &&
+                  isRemoteHttpUrl(f.path) === !isLocal,
+              )
+              .map((f) => f.path as string);
+            const urls = imageUrls.length > 0 ? imageUrls : [file.path];
+            const currentIdx = Math.max(0, urls.indexOf(file.path));
+
+            const tryPreviewMedia = (onFail?: () => void) => {
+              if (typeof wxApi.previewMedia !== "function") {
+                onFail?.();
+                return;
+              }
+              wxApi.previewMedia({
+                current: currentIdx,
+                sources: urls.map((url) => ({
+                  url,
+                  type: "image",
+                })),
+                fail: (err: unknown) => {
+                  if (onFail) {
+                    onFail();
+                    return;
+                  }
+                  console.warn("[file-upload] previewMedia failed:", err);
+                  wxApi.showToast?.({
+                    title: "Unable to preview image",
+                    icon: "none",
+                  });
+                },
+              });
+            };
+
+            const tryPreviewImage = (onFail?: () => void) => {
+              if (typeof wxApi.previewImage !== "function") {
+                onFail?.();
+                return;
+              }
               wxApi.previewImage({
                 current: file.path,
-                urls: imageUrls.length > 0 ? imageUrls : [file.path],
+                urls,
+                fail: (err: unknown) => {
+                  if (onFail) {
+                    onFail();
+                    return;
+                  }
+                  console.warn("[file-upload] previewImage failed:", err);
+                  wxApi.showToast?.({
+                    title: "Unable to preview image",
+                    icon: "none",
+                  });
+                },
+              });
+            };
+
+            if (isLocal) {
+              tryPreviewMedia(() => {
+                tryPreviewImage();
+              });
+            } else {
+              tryPreviewImage(() => {
+                tryPreviewMedia();
               });
             }
-          } else if (fileType === "video") {
+            return;
+          }
+
+          if (!wxApi) return;
+
+          if (fileType === "video") {
             if (typeof wxApi.previewMedia === "function") {
               wxApi.previewMedia({
                 current: 0,
@@ -568,14 +933,104 @@ export const fileUploadMachine: FileUploadMachine =
           } else if (fileType === "audio") {
             playAudio(file, wxApi);
           } else if (typeof wxApi.openDocument === "function") {
-            wxApi.openDocument({
-              filePath: file.path,
-              showMenu: true,
-              fail: (err: unknown) => {
-                console.warn("[file-upload] openDocument failed:", err);
-              },
-            });
+            const extMatch = (file.name || file.path)
+              .split("?")[0]
+              ?.match(/\.(doc|docx|xls|xlsx|ppt|pptx|pdf)$/i);
+            const docFileType = extMatch?.[1]?.toLowerCase();
+            const openLocalDocument = (
+              localPath: string,
+              allowUserDataRetry = true,
+            ) => {
+              wxApi.openDocument({
+                filePath: localPath,
+                ...(docFileType ? { fileType: docFileType } : {}),
+                showMenu: true,
+                fail: (err: unknown) => {
+                  const userDataPath = wxApi.env?.USER_DATA_PATH;
+                  const fs =
+                    typeof wxApi.getFileSystemManager === "function"
+                      ? wxApi.getFileSystemManager()
+                      : null;
+                  if (
+                    allowUserDataRetry &&
+                    !isRemoteHttpUrl(localPath) &&
+                    typeof userDataPath === "string" &&
+                    userDataPath &&
+                    fs &&
+                    typeof fs.copyFile === "function"
+                  ) {
+                    const extSuffix = docFileType ? `.${docFileType}` : "";
+                    const destPath = `${userDataPath}/cui-preview-${Date.now()}${extSuffix}`;
+                    fs.copyFile({
+                      srcPath: localPath,
+                      destPath,
+                      success: () => {
+                        openLocalDocument(destPath, false);
+                      },
+                      fail: () => {
+                        console.warn("[file-upload] openDocument failed:", err);
+                        wxApi.showToast?.({
+                          title: "Preview not supported for this file",
+                          icon: "none",
+                        });
+                      },
+                    });
+                    return;
+                  }
+                  console.warn("[file-upload] openDocument failed:", err);
+                  wxApi.showToast?.({
+                    title: "Preview not supported for this file",
+                    icon: "none",
+                  });
+                },
+              });
+            };
+
+            if (
+              isRemoteHttpUrl(file.path) &&
+              typeof wxApi.downloadFile === "function"
+            ) {
+              wxApi.downloadFile({
+                url: file.path,
+                success: (res: { tempFilePath?: string }) => {
+                  if (res.tempFilePath) {
+                    openLocalDocument(res.tempFilePath, false);
+                  }
+                },
+                fail: (err: unknown) => {
+                  console.warn("[file-upload] downloadFile failed:", err);
+                  wxApi.showToast?.({
+                    title: "Failed to load file preview",
+                    icon: "none",
+                  });
+                },
+              });
+            } else {
+              openLocalDocument(file.path, true);
+            }
           }
+        },
+
+        closePreview: ({ context }) => {
+          if (context.get("previewOpen")) {
+            context.set("previewOpen", false);
+          }
+        },
+
+        setPreviewIndex: ({ context, event }) => {
+          if (event.type !== "PREVIEW_CHANGE") return;
+          const imageCount = context
+            .get("files")
+            .filter(
+              (f) => getFileType(f) === "image" && Boolean(f.path),
+            ).length;
+          if (imageCount <= 0) {
+            context.set("previewIndex", 0);
+            context.set("previewOpen", false);
+            return;
+          }
+          const clamped = Math.max(0, Math.min(imageCount - 1, event.index));
+          context.set("previewIndex", clamped);
         },
 
         clickFile: ({ context, event, prop }) => {
@@ -590,7 +1045,10 @@ export const fileUploadMachine: FileUploadMachine =
           if (event.type !== "IMAGE_ERROR") return;
           const file = context.get("files")[event.index];
           if (!file) return;
-          const thumbKey = getFileThumbKey(file, resolveFileThumb(file));
+          const thumbKey = getFileThumbKey(
+            file,
+            resolveFileThumb(file, undefined, context.get("resolvedSources")),
+          );
           if (!thumbKey) return;
           const failed = context.get("failedThumbs");
           if (!failed.includes(thumbKey)) {
@@ -601,10 +1059,16 @@ export const fileUploadMachine: FileUploadMachine =
         clearFiles: ({ context }) => {
           context.set("files", []);
           context.set("failedThumbs", []);
+          context.set("previewOpen", false);
+          context.set("previewIndex", 0);
         },
 
         cleanupAudio: () => {
           stopActiveAudio();
+        },
+
+        markDisposed: ({ refs }) => {
+          refs.set("disposed", true);
         },
 
         setUploading: ({ state, event }) => {
@@ -622,6 +1086,7 @@ export const fileUploadMachine: FileUploadMachine =
               component: prop("component"),
               getHost: () => prop("formContext"),
               id: scope.id ?? "file-upload",
+              rootId: dom.getRootId(scope),
               getFormId: () => prop("form"),
               getName: () => prop("name"),
               getValue: () => context.get("files"),
@@ -643,4 +1108,3 @@ export const fileUploadMachine: FileUploadMachine =
       },
     },
   });
-

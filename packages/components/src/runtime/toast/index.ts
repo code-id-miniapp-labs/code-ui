@@ -238,15 +238,15 @@ Component(
         const placement = this.data.placement;
 
         if (placement === "center") {
-          return `--cui-toast-index:${index}; transform: translate3d(-50%, -50%, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; -webkit-transform: translate3d(-50%, -50%, 0); transform: translate3d(-50%, -50%, 0); z-index: ${100 + index};`;
         }
 
         if (placement === "top") {
-          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; transform: translate3d(-50%, ${offset}px, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, ${offset}px, 0); transform: translate3d(-50%, ${offset}px, 0); z-index: ${100 + index};`;
         }
 
         if (placement === "bottom") {
-          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; transform: translate3d(-50%, -${offset}px, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, -${offset}px, 0); transform: translate3d(-50%, -${offset}px, 0); z-index: ${100 + index};`;
         }
 
         return `--cui-toast-index:${index}; z-index: ${100 + index};`;

@@ -193,6 +193,8 @@ export interface CheckboxGroupApi {
   items: CheckboxGroupItem[];
   /** Change handler for precomputed wx:for items */
   handleItemTap: (detail: CheckboxGroupItemTapDetail) => void;
+  /** Root container props */
+  rootProps: Record<string, any>;
   /** Get accessible props for an item container */
   getItemProps: (item: {
     value: string;

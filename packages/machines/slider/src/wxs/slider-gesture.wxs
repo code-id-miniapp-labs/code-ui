@@ -189,7 +189,13 @@ function onTouchStart(event, ownerInstance) {
     _throttledCallMove.reset();
   }
 
-  if (rect && hasKnownIndex) {
+  state.pendingPoint = point;
+  var isRectStale =
+    orientation === 'vertical' &&
+    (!rect || point.y < rect.top - 24 || point.y > rect.bottom + 24);
+  state.waitingFreshRect = isRectStale;
+
+  if (rect && hasKnownIndex && !isRectStale) {
     updateVisuals(state, point, true);
   }
 
@@ -197,7 +203,7 @@ function onTouchStart(event, ownerInstance) {
     clientX: touch.clientX,
     clientY: touch.clientY,
     index: hasKnownIndex ? activeIndex : -1,
-    rect: rect || null
+    rect: isRectStale ? null : (rect || null)
   });
 }
 
@@ -213,7 +219,10 @@ function onTouchMove(event, ownerInstance) {
   }
 
   var point = { x: touch.clientX, y: touch.clientY };
-  updateVisuals(state, point, true);
+  state.pendingPoint = point;
+  if (!state.waitingFreshRect) {
+    updateVisuals(state, point, true);
+  }
 
   _throttledCallMove(ownerInstance, {
     clientX: touch.clientX,
@@ -225,6 +234,7 @@ function onTouchEnd(event, ownerInstance) {
   var state = ownerInstance.getState();
   if (!state.isDragging) return;
   state.isDragging = false;
+  state.waitingFreshRect = false;
 
   if (state.rect && state.currentPercents) {
     applyStyles(state, false);
@@ -250,6 +260,12 @@ function onRectChange(newVal, oldVal, ownerInstance) {
   if (newVal) {
     var state = ownerInstance.getState();
     state.rect = newVal;
+    if (state.waitingFreshRect) {
+      state.waitingFreshRect = false;
+      if (state.pendingPoint) {
+        updateVisuals(state, state.pendingPoint, Boolean(state.isDragging));
+      }
+    }
   }
 }
 

@@ -116,6 +116,7 @@ export interface InputComputed {
 export interface InputRefs {
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
+  cancelRefocus?: (() => void) | undefined;
 }
 
 export type InputAction =

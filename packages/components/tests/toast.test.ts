@@ -27,7 +27,7 @@ describe("toastTheme runtime resolution (@code-id-labs/components)", () => {
         `fixed ${placement === "top" ? "top-0" : "bottom-0"}`,
       );
       expect(slots.root).toContain("left-1_f2");
-      expect(slots.root).toContain("-translate-x-1_f2");
+      expect(slots.root).not.toContain("-translate-x-1_f2");
       expect(slots.root).not.toContain("inset-x-auto");
 
       expect(slots.title.split(" ")).toContain("text-white");

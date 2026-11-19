@@ -62,62 +62,63 @@
       </view>
     </view>
   </view>
-
-  <!-- Active Drawer Instance -->
-  <c-drawer
-    open="{{ drawerOpen }}"
-    placement="{{ placement }}"
-    should-scale-background="{{ shouldScaleBackground }}"
-    scale-background="{{ scaleBackground }}"
-    scale-factor="{{ scaleFactor }}"
-    close-on-backdrop-click="{{ closeOnBackdropClick }}"
-    close="{{ scenario === 'modal' ? customCloseProps : true }}"
-    bind:openChange="onOpenChange"
-    bind:close="onDrawerClose"
-  >
-    <view slot="header">
-      <text class="block text-base font-bold text-highlighted">{{ drawerTitle }}</text>
-      <text class="block text-xs text-muted mt-0.5">{{ drawerDescription }}</text>
-    </view>
-
-    <view wx:if="{{ useCustomCloseSlot }}" slot="close" class="px-2 py-1 rounded-full bg-elevated">
-      <text class="text-xs font-medium text-muted">ESC</text>
-    </view>
-
-    <!-- Body Scenarios -->
-    <view wx:if="{{ scenario === 'scrollable' }}" class="flex flex-col divide-y divide-muted">
-      <view wx:for="{{ scrollItems }}" wx:key="id" class="py-3">
-        <text class="block text-sm font-medium text-highlighted">{{ item.title }}</text>
-        <text class="block text-xs text-muted mt-0.5">{{ item.desc }}</text>
-      </view>
-    </view>
-
-    <view wx:elif="{{ scenario === 'form' }}" class="flex flex-col gap-3 py-1">
-      <c-form id="drawer-form" bind:submit="onFormSubmit">
-        <view class="flex flex-col gap-3">
-          <c-form-field name="subject" label="Subject" required="{{ true }}">
-            <c-input placeholder="Enter short subject..." />
-          </c-form-field>
-          <c-form-field name="notes" label="Notes">
-            <c-textarea placeholder="Keyboard height auto-adjusts drawer padding..." count="{{ true }}" maxlength="{{ 140 }}" />
-          </c-form-field>
-          <c-button form-type="submit" block="{{ true }}" color="primary" label="Submit Feedback" />
-        </view>
-      </c-form>
-    </view>
-
-    <view wx:else class="py-2 flex flex-col gap-3">
-      <view class="p-3.5 rounded-xl bg-muted border border-default">
-        <text class="block text-xs font-semibold text-highlighted">Gesture & Safe-Area Support</text>
-        <text class="block text-xs text-muted mt-1 leading-relaxed">
-          All four edges (bottom, top, left, right) enable native WXS touch swipe gestures on the grabber handle for smooth resistance and velocity dismissal.
-        </text>
-      </view>
-    </view>
-
-    <view slot="footer" class="flex items-center justify-end gap-2 w-full">
-      <c-button size="sm" variant="outline" color="neutral" label="Cancel" bind:tap="closeDrawer" />
-      <c-button size="sm" color="primary" label="Confirm" bind:tap="onConfirmAction" />
-    </view>
-  </c-drawer>
 </view>
+
+<!-- Active Drawer Instance (in c-app overlay slot so background scale transform never clips fixed sheets) -->
+<c-drawer
+  slot="overlay"
+  open="{{ drawerOpen }}"
+  placement="{{ placement }}"
+  should-scale-background="{{ shouldScaleBackground }}"
+  scale-background="{{ scaleBackground }}"
+  scale-factor="{{ scaleFactor }}"
+  close-on-backdrop-click="{{ closeOnBackdropClick }}"
+  close="{{ scenario === 'modal' ? customCloseProps : true }}"
+  bind:openChange="onOpenChange"
+  bind:close="onDrawerClose"
+>
+  <view slot="header">
+    <text class="block text-base font-bold text-highlighted">{{ drawerTitle }}</text>
+    <text class="block text-xs text-muted mt-0.5">{{ drawerDescription }}</text>
+  </view>
+
+  <view wx:if="{{ useCustomCloseSlot }}" slot="close" class="px-2 py-1 rounded-full bg-elevated">
+    <text class="text-xs font-medium text-muted">ESC</text>
+  </view>
+
+  <!-- Body Scenarios -->
+  <view wx:if="{{ scenario === 'scrollable' }}" class="flex flex-col divide-y divide-muted">
+    <view wx:for="{{ scrollItems }}" wx:key="id" class="py-3">
+      <text class="block text-sm font-medium text-highlighted">{{ item.title }}</text>
+      <text class="block text-xs text-muted mt-0.5">{{ item.desc }}</text>
+    </view>
+  </view>
+
+  <view wx:elif="{{ scenario === 'form' }}" class="flex flex-col gap-3 py-1">
+    <c-form id="drawer-form" bind:submit="onFormSubmit">
+      <view class="flex flex-col gap-3">
+        <c-form-field name="subject" label="Subject" required="{{ true }}">
+          <c-input adjust-position="{{ false }}" placeholder="Enter short subject..." />
+        </c-form-field>
+        <c-form-field name="notes" label="Notes">
+          <c-textarea adjust-position="{{ false }}" placeholder="Keyboard height auto-adjusts drawer padding..." count="{{ true }}" maxlength="{{ 140 }}" />
+        </c-form-field>
+        <c-button form-type="submit" block="{{ true }}" color="primary" label="Submit Feedback" />
+      </view>
+    </c-form>
+  </view>
+
+  <view wx:else class="py-2 flex flex-col gap-3">
+    <view class="p-3.5 rounded-xl bg-muted border border-default">
+      <text class="block text-xs font-semibold text-highlighted">Gesture & Safe-Area Support</text>
+      <text class="block text-xs text-muted mt-1 leading-relaxed">
+        All four edges (bottom, top, left, right) enable native WXS touch swipe gestures on the grabber handle for smooth resistance and velocity dismissal.
+      </text>
+    </view>
+  </view>
+
+  <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+    <c-button size="sm" variant="outline" color="neutral" label="Cancel" bind:tap="closeDrawer" />
+    <c-button size="sm" color="primary" label="Confirm" bind:tap="onConfirmAction" />
+  </view>
+</c-drawer>

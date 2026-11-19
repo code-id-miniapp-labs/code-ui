@@ -37,18 +37,28 @@ interface WxWindowApi {
   };
 }
 
-export function readViewportSize(): FloatingViewport {
+export function readViewportSize(keyboardHeight = 0): FloatingViewport {
   const wxApi = (globalThis as { wx?: WxWindowApi }).wx;
-  if (!wxApi) return DEFAULT_VIEWPORT;
+  const kb =
+    typeof keyboardHeight === "number" && keyboardHeight > 0
+      ? keyboardHeight
+      : 0;
+  if (!wxApi) {
+    return kb > 0
+      ? { ...DEFAULT_VIEWPORT, safeBottom: kb }
+      : DEFAULT_VIEWPORT;
+  }
 
   try {
     const info = wxApi.getWindowInfo?.() ?? wxApi.getSystemInfoSync?.();
     if (!info || !info.windowWidth || !info.windowHeight) {
-      return DEFAULT_VIEWPORT;
+      return kb > 0
+        ? { ...DEFAULT_VIEWPORT, safeBottom: kb }
+        : DEFAULT_VIEWPORT;
     }
     const height = info.windowHeight;
     const safeTop = info.safeArea?.top ?? 0;
-    const safeBottom =
+    const areaSafeBottom =
       info.safeArea?.bottom && info.safeArea.bottom <= height
         ? Math.max(0, height - info.safeArea.bottom)
         : 0;
@@ -56,10 +66,12 @@ export function readViewportSize(): FloatingViewport {
       width: info.windowWidth,
       height,
       safeTop,
-      safeBottom,
+      safeBottom: Math.max(areaSafeBottom, kb),
     };
   } catch {
-    return DEFAULT_VIEWPORT;
+    return kb > 0
+      ? { ...DEFAULT_VIEWPORT, safeBottom: kb }
+      : DEFAULT_VIEWPORT;
   }
 }
 

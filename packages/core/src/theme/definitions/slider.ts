@@ -21,7 +21,7 @@ export default function sliderTheme(options: ThemeOptions = {}) {
         "absolute rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center justify-center transition-[transform,shadow] duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       markerGroup: "absolute inset-0 pointer-events-none",
       marker:
-        "absolute flex flex-col items-center -translate-x-1/2 text-dimmed font-medium",
+        "absolute flex flex-col items-center text-dimmed font-medium",
       markerTick: "w-1 h-1 rounded-full bg-default",
       markerTickActive: "bg-white/90",
       markerLabel: "mt-2 tabular-nums select-none",

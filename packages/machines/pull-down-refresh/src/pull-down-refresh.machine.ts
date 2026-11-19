@@ -96,10 +96,10 @@ export const pullDownRefreshMachine: PullDownRefreshMachine =
       isPulling: ({ state }) => state.matches("pulling", "armed"),
       isArmed: ({ state }) => state.matches("armed"),
       isRefreshing: ({ state }) => state.matches("refreshing"),
-      isAtTop: ({ context }) => context.get("scrollTop") <= 0,
+      isAtTop: ({ context }) => context.get("scrollTop") <= 5,
       canPull: ({ state, prop, context }) =>
         !prop("disabled") &&
-        context.get("scrollTop") <= 0 &&
+        context.get("scrollTop") <= 5 &&
         state.matches("idle"),
 
       barHeight: ({ state, context, prop }) => {

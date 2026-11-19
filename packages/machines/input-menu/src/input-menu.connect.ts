@@ -95,6 +95,14 @@ export function connectInputMenu(service: InputMenuService): InputMenuApi {
       send({ type: "FOCUS" });
     },
 
+    focus() {
+      send({ type: "FOCUS" });
+    },
+
+    blur() {
+      send({ type: "BLUR" });
+    },
+
     handleBlur() {
       send({ type: "BLUR" });
     },

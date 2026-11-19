@@ -17,4 +17,6 @@ export const defaultPopoverProps: PopoverResolvedProps = {
   matchTriggerWidth: true,
   maxHeight: 240,
   duration: 150,
+  keyboardHeight: 0,
+  repositionKey: "",
 };

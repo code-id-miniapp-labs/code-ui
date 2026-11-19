@@ -29,7 +29,7 @@ export function compatMiniProgramTransforms(css: string): string {
     result = result.replace(
       /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*translate\s*\([^;}]+\)\s*;\s*)*translate\s*:\s*var\(--tw-translate-x\)\s+var\(--tw-translate-y\)\s*(?:;|(?=\s*\}))/g,
       (_, indent) =>
-        `${indent}-webkit-transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}translate: var(--tw-translate-x) var(--tw-translate-y);`,
+        `${indent}-webkit-transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));\n${indent}transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0));`,
     );
   }
 
@@ -37,7 +37,7 @@ export function compatMiniProgramTransforms(css: string): string {
     result = result.replace(
       /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*scale\s*\([^;}]+\)\s*;\s*)*scale\s*:\s*var\(--tw-scale-x\)\s+var\(--tw-scale-y\)\s*(?:;|(?=\s*\}))/g,
       (_, indent) =>
-        `${indent}-webkit-transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}scale: var(--tw-scale-x) var(--tw-scale-y);`,
+        `${indent}-webkit-transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));\n${indent}transform: scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));`,
     );
   }
 
@@ -45,7 +45,7 @@ export function compatMiniProgramTransforms(css: string): string {
     result = result.replace(
       /([ \t]*)(?:(?:-webkit-transform|transform)\s*:\s*rotate\s*\([^;}]+\)\s*;\s*)*(?<![\w-])rotate\s*:\s*([^;}]+?)\s*(?:;|(?=\s*\}))/g,
       (_, indent, val) =>
-        `${indent}-webkit-transform: rotate(${val});\n${indent}transform: rotate(${val});\n${indent}rotate: ${val};`,
+        `${indent}-webkit-transform: rotate(${val});\n${indent}transform: rotate(${val});`,
     );
   }
 

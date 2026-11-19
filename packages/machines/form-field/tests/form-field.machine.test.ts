@@ -255,4 +255,17 @@ describe("formFieldMachine", () => {
     expect(form.refs.get("fieldRules").get("deep")?.()).toEqual([]);
     form.stop();
   });
+
+  it("preserves unique service.scope.id on rootProps even when connectToComponent passes a 2nd normalizeProps arg", () => {
+    const machine = new MiniappMachine(formFieldMachine, {
+      id: "field-u1",
+      name: "username",
+    });
+    machine.start();
+    const api = (connectFormField as any)(machine.service, () => ({}));
+    expect(api.rootProps.id).toBe("ff-field-u1-r");
+    expect(api.labelProps.id).toBe("ff-field-u1-l");
+    expect(api.errorProps.id).toBe("ff-field-u1-e");
+    machine.stop();
+  });
 });

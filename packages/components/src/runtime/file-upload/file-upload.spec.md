@@ -26,6 +26,8 @@
 | `minSize` | `number` | `0` | Minimum allowed file size in bytes. |
 | `accept` | `string \| string[]` | `""` | Accepted MIME types or file extensions (e.g. `"image/*"`, `[".jpg", ".png"]`). |
 | `mode` | `"auto" \| "media" \| "messageFile"` | `"auto"` | WeChat file selection mode. |
+| `previewMode` | `"overlay" \| "native"` | `"overlay"` | Controls image preview behavior: `"overlay"` opens the built-in fullscreen swipeable `<root-portal>` lightbox (hydrating local temp paths to base64 data URIs for container compatibility while keeping `file.path` intact for upload); `"native"` delegates to WeChat `wx.previewMedia` / `wx.previewImage`. |
+| `portal` | `boolean` | `true` | Renders the built-in fullscreen preview overlay inside WeChat `<root-portal>`. |
 | `sourceType` | `Array<"album" \| "camera">` | `["album", "camera"]` | Allowed media sources when picking media. |
 | `mediaType` | `Array<"image" \| "video">` | `["image", "video"]` | Allowed media types when picking media. |
 | `sizeType` | `Array<"original" \| "compressed">` | `["original", "compressed"]` | Image quality options for media selection. |
@@ -59,6 +61,7 @@ Because `exportApi: true` is enabled on the component behavior, callers accessin
 - `addFiles(files: unknown[]): void`
 - `removeFile(idOrIndex: string | number): void`
 - `previewFile(idOrIndex: string | number): void`
+- `closePreview(): void`
 - `clearFiles(): void`
 - `setFiles(files: FileUploadFile[]): void`
 
@@ -94,7 +97,7 @@ Machine callbacks from `FileUploadProps` map to MiniProgram `bind:*` component e
 Defined in `packages/core/src/theme/definitions/file-upload.ts`:
 
 - **Slots**:
-  `root`, `dropzone`, `icon`, `iconInner`, `loadingIcon`, `content`, `title`, `description`, `fileList`, `file`, `fileLeading`, `fileImage`, `fileContent`, `fileName`, `fileSize`, `fileTrailing`, `fileIcon`, `fileRemove`, `fileRemoveIcon`, `fileProgress`
+  `root`, `dropzone`, `icon`, `iconInner`, `loadingIcon`, `content`, `title`, `description`, `fileList`, `file`, `fileLeading`, `fileImage`, `fileContent`, `fileName`, `fileSize`, `fileTrailing`, `fileIcon`, `fileRemove`, `fileRemoveIcon`, `fileProgress`, `previewOverlay`, `previewHeader`, `previewCounter`, `previewClose`, `previewCloseIcon`, `previewSwiper`, `previewSlide`, `previewImage`, `previewFooter`, `previewName`, `previewMeta`
 - **Variants**:
   - `color`: theme colors (`DEFAULT_THEME_COLORS`) and `"neutral"` (focus ring/border colors; compound variants add hover/active border colors when `disabled: false` and `invalid: false`)
   - `variant`: `"outline"`, `"soft"`, `"subtle"`, `"none"`

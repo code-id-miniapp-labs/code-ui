@@ -7,8 +7,16 @@ import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-id-labs/util
 const DEFAULT_ANIMATION_DURATION = 300;
 
 interface WxKeyboardApi {
-  onKeyboardHeightChange?: (cb: (res: { height: number }) => void) => void;
-  offKeyboardHeightChange?: (cb: (res: { height: number }) => void) => void;
+  onKeyboardHeightChange?: (cb: (res: { height?: number }) => void) => void;
+  offKeyboardHeightChange?: (cb: (res: { height?: number }) => void) => void;
+  hideKeyboard?: () => void;
+}
+
+declare const wx: WxKeyboardApi | undefined;
+
+function getWx(): WxKeyboardApi | undefined {
+  if (typeof wx !== "undefined" && wx) return wx;
+  return (globalThis as { wx?: WxKeyboardApi }).wx;
 }
 
 const closedTransitions = {
@@ -83,18 +91,32 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
           target: "closing",
           actions: ["invokeOnClose"],
         },
-        "BACKDROP.TAP": {
-          target: "closing",
-          guard: "closeOnBackdropClick",
-          actions: ["invokeOnClose"],
-        },
+        "BACKDROP.TAP": [
+          {
+            target: "closing",
+            guard: "closeOnBackdropClick",
+            actions: ["invokeOnBackdropTap", "invokeOnClose"],
+          },
+          {
+            actions: ["invokeOnBackdropTap"],
+          },
+        ],
         "CLOSE_TRIGGER.TAP": {
           target: "closing",
-          actions: ["invokeOnClose"],
+          actions: ["invokeOnCloseTriggerTap", "invokeOnClose"],
         },
-        DRAG_START: {
-          target: "dragging",
-          guard: "isDismissible",
+        DRAG_START: [
+          {
+            target: "dragging",
+            guard: "isDismissible",
+            actions: ["invokeOnDragStart"],
+          },
+          {
+            actions: ["invokeOnDragStart"],
+          },
+        ],
+        DRAG_MOVE: {
+          actions: ["invokeOnDrag"],
         },
         KEYBOARD_CHANGE: {
           actions: ["setKeyboardHeight"],
@@ -105,14 +127,18 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     dragging: {
       tags: ["open", "dragging"],
       on: {
+        DRAG_MOVE: {
+          actions: ["invokeOnDrag"],
+        },
         DRAG_END: [
           {
             target: "closing",
             guard: "dragPassed",
-            actions: ["invokeOnClose"],
+            actions: ["invokeOnDragEnd", "invokeOnClose"],
           },
           {
             target: "open",
+            actions: ["invokeOnDragEnd"],
           },
         ],
         KEYBOARD_CHANGE: {
@@ -149,13 +175,37 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       invokeOnOpen: ({ prop }) => {
         prop("onOpenChange")?.({ open: true });
       },
-      invokeOnClose: ({ prop }) => {
+      invokeOnClose: ({ context, prop }) => {
+        if (context.get("keyboardHeight") > 0) {
+          getWx()?.hideKeyboard?.();
+        }
         prop("onOpenChange")?.({ open: false });
         prop("onClose")?.();
       },
+      invokeOnBackdropTap: ({ prop }) => {
+        prop("onBackdropTap")?.();
+      },
+      invokeOnCloseTriggerTap: ({ prop }) => {
+        prop("onCloseTriggerTap")?.();
+      },
+      invokeOnDragStart: ({ prop, event }) => {
+        if (event.type === "DRAG_START") {
+          prop("onDragStart")?.(event.data ?? {});
+        }
+      },
+      invokeOnDrag: ({ prop, event }) => {
+        if (event.type === "DRAG_MOVE") {
+          prop("onDrag")?.(event.data ?? {});
+        }
+      },
+      invokeOnDragEnd: ({ prop, event }) => {
+        if (event.type === "DRAG_END") {
+          prop("onDragEnd")?.(event.data ?? { passed: event.passed });
+        }
+      },
       setKeyboardHeight: ({ context, event }) => {
         if (event.type === "KEYBOARD_CHANGE") {
-          context.set("keyboardHeight", event.height);
+          context.set("keyboardHeight", Math.max(0, Number(event.height) || 0));
         }
       },
       resetKeyboardHeight: ({ context }) => {
@@ -165,11 +215,14 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
     effects: {
       listenKeyboardHeight: ({ send }) => {
-        const wxApi = (globalThis as { wx?: WxKeyboardApi }).wx;
+        const wxApi = getWx();
         if (!wxApi?.onKeyboardHeightChange) return;
 
-        const handler = (res: { height: number }) => {
-          send({ type: "KEYBOARD_CHANGE", height: res.height });
+        const handler = (res: { height?: number }) => {
+          send({
+            type: "KEYBOARD_CHANGE",
+            height: Math.max(0, Number(res?.height) || 0),
+          });
         };
         wxApi.onKeyboardHeightChange(handler);
         return () => {

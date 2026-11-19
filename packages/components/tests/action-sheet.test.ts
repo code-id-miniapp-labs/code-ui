@@ -110,4 +110,28 @@ describe("actionSheetTheme runtime resolution (@code-id-labs/components)", () =>
       'data-disabled="{{item.disabled ? \'true\' : \'false\'}}"',
     );
   });
+
+  it("replaces header horizontal padding with symmetric clearance when closable", () => {
+    const defaultSlots = resolveSlots(
+      actionSheetTheme({ open: true, closable: false }),
+      {},
+      "",
+    );
+    expect(defaultSlots.header).toContain("px-6");
+    expect(defaultSlots.header).not.toContain("px-14");
+
+    const closableSlots = resolveSlots(
+      actionSheetTheme({ open: true, closable: true }),
+      {},
+      "",
+    );
+    expect(closableSlots.header).toContain("px-14");
+    expect(closableSlots.header).toContain("min-h-14");
+    expect(closableSlots.header).not.toContain("px-6");
+    expect(closableSlots.title).toContain("w-full");
+    expect(closableSlots.title).toContain("break-words");
+    expect(closableSlots.description).toContain("w-full");
+    expect(closableSlots.description).toContain("break-words");
+    expect(closableSlots.closeTrigger).toContain("z-10");
+  });
 });

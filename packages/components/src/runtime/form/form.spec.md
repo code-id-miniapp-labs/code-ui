@@ -10,27 +10,28 @@
 
 ## Props
 
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | `""` | Optional form name/identifier used to scope field bindings when multiple `<c-form>` instances share a page. |
-| `value` | `Record<string, any> \| null` | `null` | Initial or controlled map of form field values. |
-| `defaultValue` | `Record<string, any>` | `{}` | Default map of form field values used for initialization and reset. |
-| `rules` | `Record<string, FormRule[]>` | `{}` | Form-level validation rules keyed by field name (merged with field-level `rules`). Supports validator functions (`FormRuleFn`) and serializable `FormRuleObject` descriptors (`required`, `minLength`, `maxLength`, `exactLength`, `pattern`, `patternFlags`, `email`, `numeric`, `min`, `max`, `sameAs`, `message`, `validator`). |
-| `validateOn` | `FormValidateOn` (`FormValidateMode \| FormValidateTrigger[]`) | `["input", "change", "blur"]` | Event triggers that run field validation (`'input' \| 'change' \| 'blur' \| 'focus' \| 'submit' \| 'lazy' \| 'eager' \| '${trigger} lazy'`, or an array of triggers). |
-| `validateLazy` | `boolean` | `false` | When `true`, `input` and `change` triggers only validate a field after it has been blurred/touched or after the first submit attempt. |
-| `focusOnError` | `boolean` | `true` | Automatically focuses the first invalid field when submission fails validation. |
-| `scrollToError` | `boolean` | `false` | Scrolls the page viewport to the first invalid field when submission fails validation. |
-| `scrollOffset` | `number` | `24` | Top offset (in `px`) applied when scrolling to the first invalid field. |
-| `disabled` | `boolean` | `false` | Disables all fields inside the form and applies the `disabled` root variant styles. |
-| `readOnly` | `boolean` | `false` | Sets all fields inside the form to read-only. |
-| `showErrors` | `boolean` | `false` | Renders a form-level error summary list below the default slot whenever the form has active validation errors. |
-| `ui` | `FormUI` (`{ root?: string; errors?: string; error?: string }`) | `{}` | Per-slot class overrides merged with the resolved theme classes. |
-| `className` / `class` | `string` | `""` | Additional CSS class name(s) appended to the `root` slot (declared as `className` in component `properties`). |
+| Name                  | Type                                                            | Default                       | Description                                                                                                                                                                                                                                                                                                                        |
+| --------------------- | --------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | `string`                                                        | `""`                          | Optional form name/identifier used to scope field bindings when multiple `<c-form>` instances share a page.                                                                                                                                                                                                                        |
+| `value`               | `Record<string, any> \| null`                                   | `null`                        | Initial or controlled map of form field values.                                                                                                                                                                                                                                                                                    |
+| `defaultValue`        | `Record<string, any>`                                           | `{}`                          | Default map of form field values used for initialization and reset.                                                                                                                                                                                                                                                                |
+| `rules`               | `Record<string, FormRule[]>`                                    | `{}`                          | Form-level validation rules keyed by field name (merged with field-level `rules`). Supports validator functions (`FormRuleFn`) and serializable `FormRuleObject` descriptors (`required`, `minLength`, `maxLength`, `exactLength`, `pattern`, `patternFlags`, `email`, `numeric`, `min`, `max`, `sameAs`, `message`, `validator`). |
+| `validateOn`          | `FormValidateOn` (`FormValidateMode \| FormValidateTrigger[]`)  | `["input", "change", "blur"]` | Event triggers that run field validation (`'input' \| 'change' \| 'blur' \| 'focus' \| 'submit' \| 'lazy' \| 'eager' \| '${trigger} lazy'`, or an array of triggers).                                                                                                                                                              |
+| `validateLazy`        | `boolean`                                                       | `false`                       | When `true`, `input` and `change` triggers only validate a field after it has been blurred/touched or after the first submit attempt.                                                                                                                                                                                              |
+| `focusOnError`        | `boolean`                                                       | `true`                        | On failed submit, waits for error layout (`wx.nextTick`), scrolls the first invalid `<c-form-field>` / control into view via its `#id`, and focuses the control inside `wx.pageScrollTo`'s `complete` callback so the virtual keyboard does not fight page scrolling.                                                              |
+| `focusOnError`        | `boolean`                                                       | `true`                        | On failed submit, waits for error layout (`wx.nextTick`), scrolls the first invalid `<c-form-field>` / control into view via its `#id` (`duration: 0`), and focuses the control on the next render slice (`wx.nextTick`) without blocking on `wx.pageScrollTo`'s `complete` callback.                                              |
+| `scrollToError`       | `boolean`                                                       | `false`                       | Scrolls the page viewport to the first invalid `<c-form-field>` / control on failed submit (also enabled automatically when `focusOnError` is `true`).                                                                                                                                                                             |
+| `scrollOffset`        | `number`                                                        | `24`                          | Top offset (in `px`) applied when scrolling to the first invalid field.                                                                                                                                                                                                                                                            |
+| `disabled`            | `boolean`                                                       | `false`                       | Disables all fields inside the form and applies the `disabled` root variant styles.                                                                                                                                                                                                                                                |
+| `readOnly`            | `boolean`                                                       | `false`                       | Sets all fields inside the form to read-only.                                                                                                                                                                                                                                                                                      |
+| `showErrors`          | `boolean`                                                       | `false`                       | Renders a form-level error summary list below the default slot whenever the form has active validation errors.                                                                                                                                                                                                                     |
+| `ui`                  | `FormUI` (`{ root?: string; errors?: string; error?: string }`) | `{}`                          | Per-slot class overrides merged with the resolved theme classes.                                                                                                                                                                                                                                                                   |
+| `className` / `class` | `string`                                                        | `""`                          | Additional CSS class name(s) appended to the `root` slot (declared as `className` in component `properties`).                                                                                                                                                                                                                      |
 
 ## Slots
 
-| Slot | Behavior |
-| --- | --- |
+| Slot                   | Behavior                                                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `default` (`<slot />`) | Renders descendant form fields, inputs, and action buttons inside the native `<form>` element. Configured as a single default slot (`slots: { default: false }`). |
 
 - **Named Slots**: None.
@@ -40,13 +41,13 @@
 
 Native `<form>` `bindsubmit` and `bindreset` events are intercepted internally (`handleSubmit` / `handleReset`) and forwarded to the form controller, which triggers the corresponding lifecycle callbacks:
 
-| Event | `detail` Payload | Description |
-| --- | --- | --- |
-| `bind:submit` | `{ values: Record<string, any>, valid: boolean, errors: FormFieldError[], errorBag: FormErrorBag }` | Fired when validation succeeds on submit (`FormSubmitDetails`). |
-| `bind:error` | `{ errors: FormFieldError[], errorBag: FormErrorBag, values: Record<string, any> }` | Fired when validation fails on submit (`FormErrorDetails`). |
-| `bind:change` | `Record<string, any>` | Fired whenever any registered field value changes with the current form values map. |
-| `bind:reset` | `—` | Fired when the form is reset. |
-| `bind:validate` | `{ valid: boolean, errors: FormFieldError[], errorBag: FormErrorBag, values: Record<string, any> }` | Fired after validation completes (`FormValidationResult`). |
+| Event           | `detail` Payload                                                                                    | Description                                                                         |
+| --------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `bind:submit`   | `{ values: Record<string, any>, valid: boolean, errors: FormFieldError[], errorBag: FormErrorBag }` | Fired when validation succeeds on submit (`FormSubmitDetails`).                     |
+| `bind:error`    | `{ errors: FormFieldError[], errorBag: FormErrorBag, values: Record<string, any> }`                 | Fired when validation fails on submit (`FormErrorDetails`).                         |
+| `bind:change`   | `Record<string, any>`                                                                               | Fired whenever any registered field value changes with the current form values map. |
+| `bind:reset`    | `—`                                                                                                 | Fired when the form is reset.                                                       |
+| `bind:validate` | `{ valid: boolean, errors: FormFieldError[], errorBag: FormErrorBag, values: Record<string, any> }` | Fired after validation completes (`FormValidationResult`).                          |
 
 ## Theme
 

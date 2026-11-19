@@ -123,6 +123,7 @@ export interface TextareaComputed {
 export interface TextareaRefs {
   initialValue?: string | undefined;
   formField?: BoundFormField | undefined;
+  cancelRefocus?: (() => void) | undefined;
 }
 
 type TextareaDefaultedKey =

@@ -322,6 +322,8 @@ export interface InputMenuComputed {
 export interface InputMenuRefs {
   initialValue?: InputMenuValue | undefined;
   formField?: BoundFormField | undefined;
+  lastRefocusAt?: number | undefined;
+  cancelRefocus?: (() => void) | undefined;
   groupContext: InputMenuGroupContext;
 }
 
@@ -387,6 +389,8 @@ export interface InputMenuApi {
   handleTriggerTap(): void;
   handleFocus(): void;
   handleBlur(): void;
+  focus(): void;
+  blur(): void;
   handleInput(value: string): void;
   handleConfirm(value?: string): void;
   setOpen(open: boolean): void;

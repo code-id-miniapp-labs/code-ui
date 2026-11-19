@@ -33,7 +33,7 @@ describe("tabsItemTheme (@code-id-labs/core)", () => {
 
   it("includes transition and animation classes on indicator", () => {
     const theme = tabsItemTheme();
-    expect(theme.slots.indicator).toContain("transition-all");
+    expect(theme.slots.indicator).toContain("transition-[transform,opacity]");
     expect(theme.variants.selected.true.indicator).toContain("opacity-100");
     expect(theme.variants.selected.false.indicator).toContain("opacity-0");
   });

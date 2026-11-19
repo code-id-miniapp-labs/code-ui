@@ -1,12 +1,8 @@
-import type { Scope } from "@code-id-labs/core";
 import * as dom from "./form-field.dom";
 import type { FormFieldApi, FormFieldService } from "./form-field.types";
 
-export function connectFormField(
-  service: FormFieldService,
-  scope: Scope = service.scope,
-): FormFieldApi {
-  const { computed, prop } = service;
+export function connectFormField(service: FormFieldService): FormFieldApi {
+  const { computed, prop, scope } = service;
   const displayError = computed("displayError");
   const isInvalid = computed("invalid");
   const disabled = computed("isDisabled");

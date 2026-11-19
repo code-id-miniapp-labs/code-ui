@@ -871,11 +871,38 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   rootLines.push("  --tw-translate-y: 0;");
   rootLines.push("  --tw-translate-z: 0;");
 
+  const defaultZIndex: Record<string, number> = {
+    popover: 50,
+    drawer: 100,
+    modal: 110,
+    actionSheet: 120,
+    picker: 130,
+    banner: 140,
+    toast: 150,
+  };
+  const configuredZIndex: Record<string, number | string | undefined> = {
+    ...defaultZIndex,
+    ...ui?.zIndex,
+  };
+  const zUtilityBlocks: string[] = [];
+  for (const [zKey, zVal] of Object.entries(configuredZIndex)) {
+    if (zVal === undefined || zVal === null || zVal === "") continue;
+    const kebabKey = zKey.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    rootLines.push(`  --z-${kebabKey}: ${zVal};`);
+    zUtilityBlocks.push(
+      `.z-${kebabKey} {\n  z-index: var(--z-${kebabKey}, ${zVal});\n}`,
+    );
+  }
+
   if (colorMode === "dark") {
     rootLines.push(...darkLines);
   }
 
   let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page, :host {\n${rootLines.join("\n")}\n}\n`;
+
+  if (zUtilityBlocks.length > 0) {
+    css += `\n${zUtilityBlocks.join("\n\n")}\n`;
+  }
 
   if (colorMode === "system" && darkLines.length > 0) {
     css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="light"], .light, [data-theme="light"] {\n${lightResetLines.join("\n")}\n}\n\npage[data-theme="dark"], .dark, [data-theme="dark"] {\n${darkLines.join("\n")}\n}\n`;

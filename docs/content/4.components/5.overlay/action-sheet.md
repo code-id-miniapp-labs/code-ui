@@ -409,6 +409,7 @@ Override individual slot classes per instance with `ui`, or add classes to the `
 | `closeOnItem` | `boolean` | `true` | Whether tapping an enabled item automatically closes the sheet. |
 | `closeOnBackdropClick` | `boolean` | `true` | Whether tapping the backdrop closes the sheet. |
 | `duration` | `number` | `300` | Close transition duration in milliseconds. |
+| `portal` | `boolean` | `true` | Renders the action sheet overlay and content inside WeChat `<root-portal>`. |
 | `ui` | `ActionSheetUI` (`Record<string, string>`) | `{}` | Per-slot class overrides merged into the resolved theme slots. |
 | `className` | `string` | `""` | Additional class string applied to the `root` slot. |
 
@@ -459,7 +460,7 @@ export default defineConfig({
   ui: {
     actionSheet: {
       slots: {
-        root: "fixed inset-0 z-50 flex items-end justify-center overflow-hidden overscroll-contain box-border",
+        root: "fixed inset-0 z-action-sheet flex items-end justify-center overflow-hidden overscroll-contain box-border",
         backdrop:
           "cui-action-sheet-backdrop-enter fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
         content:
@@ -467,10 +468,11 @@ export default defineConfig({
         header:
           "relative flex flex-col items-center justify-center px-6 py-4 bg-default text-center border-b border-muted shrink-0 w-full box-border",
         title:
-          "text-xs font-semibold uppercase tracking-wider text-dimmed text-center leading-snug",
-        description: "text-xs text-muted text-center mt-1 leading-normal",
+          "w-full max-w-full break-words text-xs font-semibold uppercase tracking-wider text-dimmed text-center leading-snug",
+        description:
+          "w-full max-w-full break-words text-xs text-muted text-center mt-1 leading-normal",
         closeTrigger:
-          "absolute right-3.5 top-3.5 inline-flex items-center justify-center w-7 h-7 rounded-full bg-elevated text-muted shrink-0 cursor-pointer active:opacity-70 transition-opacity",
+          "absolute right-3.5 top-3.5 z-10 inline-flex items-center justify-center w-7 h-7 rounded-full bg-elevated text-muted shrink-0 cursor-pointer active:opacity-70 transition-opacity",
         closeButton: "p-0 w-full h-full rounded-full text-inherit",
         closeIcon: "w-4 h-4",
         body: "flex flex-col w-full bg-default overflow-y-auto max-h-[60vh] overscroll-contain box-border",
@@ -508,6 +510,12 @@ export default defineConfig({
           },
           false: {},
         },
+        closable: {
+          true: {
+            header: "px-14 min-h-14",
+          },
+          false: {},
+        },
       },
       compoundVariants: [
         {
@@ -526,6 +534,7 @@ export default defineConfig({
       defaultVariants: {
         open: false,
         disabled: false,
+        closable: false,
       },
     }
   }

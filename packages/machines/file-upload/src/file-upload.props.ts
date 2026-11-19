@@ -15,6 +15,7 @@ export const defaultFileUploadProps: FileUploadResolvedProps = {
   minSize: 0,
   accept: "",
   mode: "auto",
+  previewMode: "overlay",
   sourceType: ["album", "camera"],
   mediaType: ["image", "video"],
   sizeType: ["original", "compressed"],

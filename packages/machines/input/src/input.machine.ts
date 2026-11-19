@@ -8,9 +8,33 @@ import {
 import { isEmpty, isNotEmpty, isNotNull } from "@code-id-labs/utils";
 import type { InputMachine, InputSchema } from "./input.types";
 import { defaultInputProps } from "./input.props";
+import * as dom from "./input.dom";
 
 const toStringValue = (val: unknown): string | undefined =>
   isNotNull(val) ? String(val) : undefined;
+
+declare const wx: Record<string, any> | undefined;
+
+function getWx(): Record<string, any> | undefined {
+  if (typeof wx !== "undefined" && wx) return wx;
+  return (globalThis as Record<string, any>).wx;
+}
+
+function scheduleNextTick(cb: () => void): () => void {
+  let cancelled = false;
+  const run = () => {
+    if (!cancelled) cb();
+  };
+  const wxApi = getWx();
+  if (wxApi && typeof wxApi.nextTick === "function") {
+    wxApi.nextTick(run);
+  } else {
+    queueMicrotask(run);
+  }
+  return () => {
+    cancelled = true;
+  };
+}
 
 export const inputMachine: InputMachine = createMachine<InputSchema>({
   props: ({ props }) => ({
@@ -24,6 +48,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
     initialValue:
       toStringValue(prop("value")) ?? toStringValue(prop("defaultValue")) ?? "",
     formField: undefined,
+    cancelRefocus: undefined,
   }),
 
   context: ({ prop, bindable, getRefs }) => ({
@@ -150,6 +175,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
             component: prop("component"),
             getHost: () => prop("formContext"),
             id: scope.id ?? "input",
+            rootId: dom.getRootId(scope),
             getFormId: () => prop("form") || "",
             getName: () => prop("name"),
             getValue: () => context.get("value"),
@@ -161,6 +187,21 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
             },
             focus: () => {
               if (!computed("isInteractive")) return;
+              refs.get("cancelRefocus")?.();
+              refs.set("cancelRefocus", undefined);
+              if (state.matches("focused")) {
+                state.set("idle");
+                refs.set(
+                  "cancelRefocus",
+                  scheduleNextTick(() => {
+                    refs.set("cancelRefocus", undefined);
+                    if (computed("isInteractive")) {
+                      state.set("focused");
+                    }
+                  }),
+                );
+                return;
+              }
               state.set("focused");
             },
             getRules: () => prop("rules") ?? [],
@@ -172,6 +213,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       },
 
       cleanupFormField: ({ refs }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         cleanupFormFieldSync(refs);
       },
 
@@ -182,6 +225,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       },
 
       handleBlur: ({ context, prop, refs }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         const val = context.get("value");
         prop("onBlur")?.({ value: val });
         refs.get("formField")?.emitBlur(val);
@@ -202,6 +247,8 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       },
 
       resetValue: ({ context, prop, refs, state }) => {
+        refs.get("cancelRefocus")?.();
+        refs.set("cancelRefocus", undefined);
         const initial =
           refs.get("initialValue") ?? toStringValue(prop("defaultValue")) ?? "";
         context.set("value", initial);

@@ -310,12 +310,177 @@ describe("FileUpload Machine", () => {
       machine.stop();
     });
 
-    it("handles preview callback and wx API preview", async () => {
+    it("opens built-in fullscreen preview overlay by default and supports swipe/close", async () => {
+      const onPreview = vi.fn();
+      const machine = new MiniappMachine(fileUploadMachine, {
+        defaultValue: [
+          {
+            id: "1",
+            name: "first.jpg",
+            path: "https://example.com/first.jpg",
+            type: "image",
+            size: 500,
+          },
+          {
+            id: "2",
+            name: "doc.pdf",
+            path: "https://example.com/doc.pdf",
+            type: "file",
+            size: 1200,
+          },
+          {
+            id: "3",
+            name: "second.png",
+            path: "wxfile://tmp/second.png",
+            type: "image",
+            size: 2048,
+          },
+        ],
+        onPreview,
+      });
+      machine.start();
+
+      let api = connectFileUpload(machine.service);
+      expect(api.previewOpen).toBe(false);
+      expect(api.previewItems.length).toBe(2);
+
+      // Previewing the 2nd image (file index 2 -> preview index 1)
+      api.previewFile(2);
+      await flush();
+
+      expect(onPreview).toHaveBeenCalledWith(
+        expect.objectContaining({
+          index: 2,
+          file: expect.objectContaining({ name: "second.png" }),
+        }),
+      );
+
+      api = connectFileUpload(machine.service);
+      expect(api.previewOpen).toBe(true);
+      expect(api.previewIndex).toBe(1);
+      expect(api.activePreviewItem?.name).toBe("second.png");
+      expect(api.activePreviewItem?.src).toBe("wxfile://tmp/second.png");
+
+      // Swipe back to first image
+      api.handlePreviewChange(0);
+      await flush();
+
+      api = connectFileUpload(machine.service);
+      expect(api.previewIndex).toBe(0);
+      expect(api.activePreviewItem?.name).toBe("first.jpg");
+
+      // Close preview overlay
+      api.closePreview();
+      await flush();
+
+      api = connectFileUpload(machine.service);
+      expect(api.previewOpen).toBe(false);
+
+      machine.stop();
+    });
+
+    it("hydrates local temp image paths to base64 data URIs for thumbnails & overlay without mutating file.path", async () => {
+      const compressImage = vi.fn(
+        ({
+          src,
+          success,
+        }: {
+          src: string;
+          success: (res: { tempFilePath: string }) => void;
+        }) => {
+          success({ tempFilePath: `${src}.compressed.jpg` });
+        },
+      );
+      const readFile = vi.fn(
+        ({
+          filePath,
+          success,
+        }: {
+          filePath: string;
+          encoding?: string;
+          success: (res: { data: string }) => void;
+        }) => {
+          // PNG magic header for small.png, JPEG header for big photo
+          const data = filePath.includes("small")
+            ? "iVBORw0KGgo="
+            : "/9j/4AAQSkZJRg==";
+          success({ data });
+        },
+      );
+      (globalThis as any).wx = {
+        compressImage,
+        getFileSystemManager: () => ({ readFile }),
+      };
+
+      const machine = new MiniappMachine(fileUploadMachine, {
+        defaultValue: [
+          {
+            id: "remote-1",
+            name: "placeholder.jpg",
+            path: "https://picsum.photos/id/10/400/300",
+            type: "image",
+            size: 500000,
+          },
+          {
+            id: "local-small",
+            name: "small.png",
+            path: "http://tmp/small_upload",
+            type: "image",
+            size: 100 * 1024,
+          },
+          {
+            id: "local-big",
+            name: "camera.jpg",
+            path: "wxfile://tmp_camera_photo",
+            type: "image",
+            size: 2 * 1024 * 1024,
+          },
+        ],
+      });
+      machine.start();
+      await flush();
+
+      const api = connectFileUpload(machine.service);
+      // Remote placeholder untouched
+      expect(api.files[0]?.thumb).toBe("https://picsum.photos/id/10/400/300");
+
+      // Small local image read directly (no compression), magic bytes detect image/png
+      expect(api.files[1]?.path).toBe("http://tmp/small_upload");
+      expect(api.files[1]?.thumb).toBe("data:image/png;base64,iVBORw0KGgo=");
+      expect(api.previewItems[1]?.src).toBe(
+        "data:image/png;base64,iVBORw0KGgo=",
+      );
+
+      // Large local photo compressed before base64 hydration, raw file.path preserved for upload
+      expect(compressImage).toHaveBeenCalledTimes(1);
+      expect(compressImage).toHaveBeenCalledWith(
+        expect.objectContaining({ src: "wxfile://tmp_camera_photo" }),
+      );
+      expect(api.files[2]?.path).toBe("wxfile://tmp_camera_photo");
+      expect(api.files[2]?.thumb).toBe(
+        "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
+      );
+      expect(api.previewItems[2]?.src).toBe(
+        "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
+      );
+
+      // Removing a local file prunes its cached base64 entry
+      api.removeFile(2);
+      await flush();
+      expect(
+        machine.context.get("resolvedSources")["wxfile://tmp_camera_photo"],
+      ).toBeUndefined();
+
+      machine.stop();
+    });
+
+    it("handles preview callback and native wx API preview when previewMode is native", async () => {
       const previewImage = vi.fn();
       (globalThis as any).wx = { previewImage };
 
       const onPreview = vi.fn();
       const machine = new MiniappMachine(fileUploadMachine, {
+        previewMode: "native",
         defaultValue: [
           {
             id: "1",
@@ -339,10 +504,12 @@ describe("FileUpload Machine", () => {
           file: expect.objectContaining({ name: "pic.jpg" }),
         }),
       );
-      expect(previewImage).toHaveBeenCalledWith({
-        current: "wxfile://tmp/pic.jpg",
-        urls: ["wxfile://tmp/pic.jpg"],
-      });
+      expect(previewImage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          current: "wxfile://tmp/pic.jpg",
+          urls: ["wxfile://tmp/pic.jpg"],
+        }),
+      );
 
       machine.stop();
     });
@@ -914,6 +1081,89 @@ describe("FileUpload Machine", () => {
       expect(res.accepted[0]?.name).toBe("first.pdf");
       expect(res.rejected.length).toBe(1);
       expect(res.rejected[0]?.reason).toBe("max-files-exceeded");
+    });
+
+    it("prefers wx.previewMedia in native previewMode for local uploaded images and separates remote/local URLs", async () => {
+      const previewImage = vi.fn();
+      const previewMedia = vi.fn();
+      const openDocument = vi.fn();
+      const downloadFile = vi.fn();
+      (globalThis as any).wx = {
+        previewImage,
+        previewMedia,
+        openDocument,
+        downloadFile,
+      };
+
+      const machine = new MiniappMachine(fileUploadMachine, {
+        previewMode: "native",
+        defaultValue: [
+          {
+            id: "remote-1",
+            name: "remote.jpg",
+            path: "https://picsum.photos/id/10/400/300",
+            type: "image",
+            size: 1000,
+          },
+        ],
+      });
+      machine.start();
+
+      let api = connectFileUpload(machine.service);
+      // Ingest local image picked via chooseMessageFile where raw type='file'
+      api.addFiles([
+        {
+          tempFilePath: "http://tmp/picked_photo",
+          name: "receipt.jpg",
+          size: 2048,
+          type: "file",
+        },
+        {
+          tempFilePath: "http://tmp/report.pdf",
+          name: "report.pdf",
+          size: 4096,
+          type: "file",
+        },
+      ]);
+      await flush();
+
+      api = connectFileUpload(machine.service);
+      expect(api.files[1]?.fileType).toBe("image");
+      expect(api.files[2]?.fileType).toBe("file");
+
+      // Local uploaded image opens via previewMedia without mixing https placeholder URL
+      api.previewFile(1);
+      await flush();
+      expect(previewMedia).toHaveBeenCalledWith(
+        expect.objectContaining({
+          current: 0,
+          sources: [{ url: "http://tmp/picked_photo", type: "image" }],
+        }),
+      );
+      expect(previewImage).not.toHaveBeenCalled();
+
+      // Remote placeholder image opens via previewImage without mixing http://tmp local path
+      api.previewFile(0);
+      await flush();
+      expect(previewImage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          current: "https://picsum.photos/id/10/400/300",
+          urls: ["https://picsum.photos/id/10/400/300"],
+        }),
+      );
+
+      // Local http://tmp/*.pdf opens directly via openDocument instead of downloadFile
+      api.previewFile(2);
+      await flush();
+      expect(downloadFile).not.toHaveBeenCalled();
+      expect(openDocument).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filePath: "http://tmp/report.pdf",
+          fileType: "pdf",
+        }),
+      );
+
+      machine.stop();
     });
   });
 });

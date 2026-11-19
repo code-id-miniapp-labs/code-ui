@@ -31,12 +31,15 @@ describe("toastTheme (@code-id-labs/core)", () => {
 
   it("configures placement variants with CSS variable offsets", () => {
     const theme = toastTheme();
-    expect(theme.variants.placement.top.root).toContain("fixed top-0 left-1/2 -translate-x-1/2");
+    expect(theme.variants.placement.top.root).toContain("fixed top-0 left-1/2");
+    expect(theme.variants.placement.top.root).not.toContain("-translate-x-1/2");
     expect(theme.variants.placement.top.root).toContain("--cui-toast-top-offset");
 
     expect(theme.variants.placement.center.root).toContain("fixed top-1/2 left-1/2");
+    expect(theme.variants.placement.center.root).not.toContain("-translate-x-1/2");
 
-    expect(theme.variants.placement.bottom.root).toContain("fixed bottom-0 left-1/2 -translate-x-1/2");
+    expect(theme.variants.placement.bottom.root).toContain("fixed bottom-0 left-1/2");
+    expect(theme.variants.placement.bottom.root).not.toContain("-translate-x-1/2");
     expect(theme.variants.placement.bottom.root).toContain("--cui-toast-bottom-offset");
   });
 
@@ -52,10 +55,13 @@ describe("toastTheme (@code-id-labs/core)", () => {
       (cv) => cv.mode === "native" && cv.placement === "bottom",
     );
 
-    expect(nativeTop?.class?.root).toContain("fixed top-0 left-1/2 -translate-x-1/2");
+    expect(nativeTop?.class?.root).toContain("fixed top-0 left-1/2");
+    expect(nativeTop?.class?.root).not.toContain("-translate-x-1/2");
     expect(nativeTop?.class?.root).toContain("calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)");
-    expect(nativeCenter?.class?.root).toContain("fixed top-1/2 left-1/2 -translate-x-1/2");
-    expect(nativeBottom?.class?.root).toContain("fixed bottom-0 left-1/2 -translate-x-1/2");
+    expect(nativeCenter?.class?.root).toContain("fixed top-1/2 left-1/2");
+    expect(nativeCenter?.class?.root).not.toContain("-translate-x-1/2");
+    expect(nativeBottom?.class?.root).toContain("fixed bottom-0 left-1/2");
+    expect(nativeBottom?.class?.root).not.toContain("-translate-x-1/2");
     expect(nativeBottom?.class?.root).toContain("calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)");
   });
 

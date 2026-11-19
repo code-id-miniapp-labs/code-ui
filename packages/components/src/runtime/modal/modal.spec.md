@@ -4,7 +4,7 @@
 
 `c-modal` is a dialog overlay component for WeChat MiniProgram with controlled/uncontrolled open state, backdrop overlay, close button, internal or outer scrolling, fullscreen layout, keyboard-height padding adjustment, and enter/leave transitions.
 
-- **Tier**: Tier 2 — Interactive / Stateful (`createMachineBehavior` with `modalMachine` and `connectModal` from `@code-id-labs/modal`, plus `computedBehavior` and `createComponentOptions` from `../_shared/base`).
+- **Tier**: Tier 2 — Interactive / Stateful (`createMachineBehavior` with `modalMachine` and `connectModal` from `@code-id-labs/modal`, delegating UI interactions via `getApi(this, "modal")`, plus `createAppThemeBehavior`, `computedBehavior`, and `createComponentOptions` from `../_shared/base`).
 - **Compound Relations**: None (standalone component; internally renders `<c-button>` as the default close trigger when `close` is enabled and the `close` slot is not used).
 
 ## Props
@@ -25,10 +25,11 @@
 | `closeIcon` | `string` | `""` | Icon name for the default close button (falls back to `"close"` when empty). |
 | `transition` | `boolean` | `true` | Enables enter/leave transition classes and timing. |
 | `duration` | `number` | `300` | Transition duration in milliseconds. |
+| `portal` | `boolean` | `true` | Renders the modal overlay and dialog inside `<root-portal>` above page content and native inputs while keeping `trigger` inline. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides keyed by theme slot name. |
 | `className` (`class`) | `string` | `""` | Declared as `className` in component `properties` and passed to `resolveSlots` as the root class override. |
 
-> **Callback props (`ModalProps`)**: `onOpenChange` (`(details: { open: boolean }) => void`), `onClose`, `onClosePrevent`, `onEnter`, `onAfterEnter`, `onLeave`, and `onAfterLeave` are also defined on the modal machine props.
+> **Callback props (`ModalProps`)**: `onOpenChange` (`(details: { open: boolean }) => void`), `onClose`, `onClosePrevent`, `onOverlayTap`, `onCloseTriggerTap`, `onEnter`, `onAfterEnter`, `onLeave`, and `onAfterLeave` are defined on `@code-id-labs/modal` and automatically bridged to MiniProgram `bind:*` events via `createMachinePropGetter`.
 
 ## Slots
 
@@ -48,10 +49,17 @@ Because WeChat MiniProgram `<slot>` elements are static and do not support fallb
 
 ## Events
 
+All component events are bridged through `@code-id-labs/modal` via `createMachinePropGetter` (no direct `this.triggerEvent(...)` in runtime `index.ts`; UI handlers delegate via `getApi(this, "modal")`):
+
 | Event | Detail Payload | Description |
 | :--- | :--- | :--- |
-| `bind:overlayTap` | `MiniAppBaseEventLike` (raw tap event) | Fired when the backdrop overlay or outer container background is tapped. |
-| `bind:closeTriggerTap` | `MiniAppBaseEventLike` (raw tap event) | Fired when the close button or `close` slot is tapped. |
+| `bind:openChange` (`bind:openchange`) | `{ open: boolean }` | Fired when the modal opens or begins closing. |
+| `bind:overlayTap` (`bind:overlaytap`) | `undefined` | Fired when the backdrop overlay or outer container background is tapped. |
+| `bind:closeTriggerTap` (`bind:closetriggertap`) | `undefined` | Fired when the close button or `close` slot is tapped. |
+| `bind:close` | `undefined` | Fired when the modal begins closing. |
+| `bind:closePrevent` (`bind:closeprevent`) | `undefined` | Fired when overlay dismissal is blocked (`dismissible` or `closeOnBackdropClick` is `false`). |
+| `bind:enter` / `bind:afterEnter` | `undefined` | Fired when the enter transition starts and completes. |
+| `bind:leave` / `bind:afterLeave` | `undefined` | Fired when the leave transition starts and completes. |
 
 > **Exposed API (`exportApi: true`)**: The component exposes `open`, `visible`, `setOpen(open)`, `openModal()`, `closeModal()`, and `toggle()`.
 

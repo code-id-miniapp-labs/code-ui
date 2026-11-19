@@ -445,9 +445,7 @@ export default defineConfig({
       },
       variants: {
         disabled: {
-          true: {
-            root: "opacity-60",
-          },
+          true: {},
           false: {},
         },
         status: {

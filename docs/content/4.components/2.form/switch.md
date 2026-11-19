@@ -402,7 +402,7 @@ export default defineConfig({
           },
           false: {
             base: "bg-accented",
-            thumb: "translate-x-0 rtl:-translate-x-0",
+            thumb: "translate-x-0",
             icon: "opacity-0",
           },
         },
@@ -494,35 +494,35 @@ export default defineConfig({
           size: "xs",
           checked: true,
           class: {
-            thumb: "translate-x-3 rtl:-translate-x-3",
+            thumb: "translate-x-3",
           },
         },
         {
           size: "sm",
           checked: true,
           class: {
-            thumb: "translate-x-3.5 rtl:-translate-x-3.5",
+            thumb: "translate-x-3.5",
           },
         },
         {
           size: "md",
           checked: true,
           class: {
-            thumb: "translate-x-4 rtl:-translate-x-4",
+            thumb: "translate-x-4",
           },
         },
         {
           size: "lg",
           checked: true,
           class: {
-            thumb: "translate-x-4.5 rtl:-translate-x-4.5",
+            thumb: "translate-x-4.5",
           },
         },
         {
           size: "xl",
           checked: true,
           class: {
-            thumb: "translate-x-5 rtl:-translate-x-5",
+            thumb: "translate-x-5",
           },
         },
       ],

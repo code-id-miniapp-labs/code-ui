@@ -55,16 +55,16 @@ Defined in `packages/core/src/theme/definitions/app.ts`:
 
 | Slot | Default Classes |
 | :--- | :--- |
-| `root` | `relative flex flex-col min-h-screen box-border text-default transition-[padding,background-color] duration-300` |
-| `scaleWrapper` | `w-full flex-1 flex flex-col box-border bg-default text-default transform-origin-top transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]` |
+| `root` | `relative flex flex-col min-h-screen box-border text-default transition-colors duration-300` |
+| `scaleWrapper` | `w-full flex-1 flex flex-col box-border bg-default text-default origin-top transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]` |
 | `toaster` | `fixed z-[100] pointer-events-none` |
 
 ### Variants
 
 | Variant | Values | Slot Overrides |
 | :--- | :--- | :--- |
-| `scaled` | `true` | `root`: `bg-black`<br>`scaleWrapper`: `overflow-hidden rounded-md shadow-2xl` |
-| `scaled` | `false` | `root`: `bg-default`<br>`scaleWrapper`: `rounded-none shadow-none` |
+| `scaled` | `true` | `root`: `bg-black`<br>`scaleWrapper`: *(none)* |
+| `scaled` | `false` | `root`: `bg-default`<br>`scaleWrapper`: *(none)* |
 
 ### Default Variants
 

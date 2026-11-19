@@ -13,6 +13,9 @@
   data-state="{{tabsItem.state}}"
   data-disabled="{{tabsItem.disabled}}"
   data-orientation="{{resolvedOrientation}}"
+  hover-class="{{tabsItem.disabled ? '' : 'opacity-75'}}"
+  hover-start-time="{{0}}"
+  hover-stay-time="{{50}}"
   bindtap="handleTap"
 >
   <!-- Active Indicator (Pill background or Link underline) -->

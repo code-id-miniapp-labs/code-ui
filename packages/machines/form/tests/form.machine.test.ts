@@ -1078,4 +1078,178 @@ describe("formMachine & PinInput integration", () => {
 
     form.machine.stop();
   });
+
+  it("scrolls instantly (duration 0) to invalid field wrapper #rootId and focuses on nextTick even when pageScrollTo does not invoke complete", async () => {
+    const callOrder: string[] = [];
+    const selectedSelectors: string[] = [];
+    const nextTickQueue: Array<() => void> = [];
+    const pageScrollTo = vi.fn(
+      ({
+        scrollTop,
+        duration,
+      }: {
+        scrollTop: number;
+        duration?: number;
+      }) => {
+        callOrder.push(`scroll:${scrollTop}:d=${duration}`);
+      },
+    );
+
+    const makeQuery = (scrollTop: number, top: number | null) => ({
+      selectViewport() {
+        return this;
+      },
+      scrollOffset() {
+        return this;
+      },
+      select(selector: string) {
+        selectedSelectors.push(selector);
+        return this;
+      },
+      boundingClientRect() {
+        return this;
+      },
+      exec(cb: (res: any[]) => void) {
+        cb([{ scrollTop }, top === null ? null : { top }]);
+      },
+    });
+
+    (globalThis as any).wx = {
+      nextTick: (cb: () => void) => {
+        nextTickQueue.push(cb);
+      },
+      pageScrollTo,
+    };
+
+    try {
+      const formComp = createMockComponent();
+      const fieldWrapperComp: Record<string, any> = {
+        ...createMockComponent(formComp),
+        createSelectorQuery: () => makeQuery(100, 320),
+        __codeUiApi: { rootProps: { id: "ff-email-r" } },
+      };
+      const inputComp: MiniAppComponent = {
+        ...createMockComponent(formComp),
+        createSelectorQuery: () => makeQuery(100, 340),
+        __codeUiFieldWrapper: fieldWrapperComp,
+      } as any;
+
+      const form = createFormInstance({
+        component: formComp,
+        focusOnError: true,
+        scrollOffset: 20,
+      });
+
+      const field = bindFormField({
+        component: inputComp,
+        id: "email-field",
+        rootId: "in-email-r",
+        getName: () => "email",
+        getValue: () => "",
+        getRules: () => [{ required: true, message: "Email is required" }],
+        focus: () => {
+          callOrder.push("focus");
+        },
+      });
+      await flush();
+
+      const submitRes = await form.api().submit();
+      expect(submitRes.valid).toBe(false);
+      // Neither scroll nor focus runs before nextTick settles validation error layout
+      expect(callOrder).toEqual([]);
+      expect(nextTickQueue.length).toBe(1);
+
+      // Run nextTick #1 -> measures wrapper #ff-email-r, scrolls with duration: 0, and queues nextTick #2 for focus
+      nextTickQueue.shift()?.();
+      await flush();
+      expect(selectedSelectors).toEqual(["#ff-email-r"]);
+      expect(callOrder).toEqual(["scroll:400:d=0"]);
+      expect(nextTickQueue.length).toBe(1);
+
+      // Run nextTick #2 -> focuses input even though pageScrollTo never invoked complete
+      nextTickQueue.shift()?.();
+      expect(callOrder).toEqual(["scroll:400:d=0", "focus"]);
+
+      field.dispose();
+      form.machine.stop();
+    } finally {
+      delete (globalThis as any).wx;
+    }
+  });
+
+  it("falls back to control #rootId when wrapper rect is null and skips pageScrollTo if already in position", async () => {
+    const callOrder: string[] = [];
+    const selectedSelectors: string[] = [];
+    const pageScrollTo = vi.fn();
+
+    const makeQuery = (scrollTop: number, top: number | null) => ({
+      selectViewport() {
+        return this;
+      },
+      scrollOffset() {
+        return this;
+      },
+      select(selector: string) {
+        selectedSelectors.push(selector);
+        return this;
+      },
+      boundingClientRect() {
+        return this;
+      },
+      exec(cb: (res: any[]) => void) {
+        cb([{ scrollTop }, top === null ? null : { top }]);
+      },
+    });
+
+    (globalThis as any).wx = {
+      nextTick: (cb: () => void) => cb(),
+      pageScrollTo,
+    };
+
+    try {
+      const formComp = createMockComponent();
+      const fieldWrapperComp: Record<string, any> = {
+        ...createMockComponent(formComp),
+        createSelectorQuery: () => makeQuery(0, null),
+        __codeUiApi: { rootProps: { id: "ff-user-r" } },
+      };
+      const inputComp: MiniAppComponent = {
+        ...createMockComponent(formComp),
+        createSelectorQuery: () => makeQuery(0, 20),
+        __codeUiFieldWrapper: fieldWrapperComp,
+      } as any;
+
+      const form = createFormInstance({
+        component: formComp,
+        focusOnError: true,
+        scrollOffset: 20,
+      });
+
+      const field = bindFormField({
+        component: inputComp,
+        id: "user-field",
+        rootId: "in-user-r",
+        getName: () => "username",
+        getValue: () => "",
+        getRules: () => [{ required: true, message: "Username required" }],
+        focus: () => {
+          callOrder.push("focus");
+        },
+      });
+      await flush();
+
+      const submitRes = await form.api().submit();
+      await flush();
+      await flush();
+      expect(submitRes.valid).toBe(false);
+      expect(selectedSelectors).toEqual(["#ff-user-r", "#in-user-r"]);
+      expect(pageScrollTo).not.toHaveBeenCalled();
+      expect(callOrder).toEqual(["focus"]);
+
+      field.dispose();
+      form.machine.stop();
+    } finally {
+      delete (globalThis as any).wx;
+    }
+  });
 });

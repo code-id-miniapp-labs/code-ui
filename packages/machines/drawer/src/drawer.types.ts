@@ -46,6 +46,18 @@ export interface DrawerProps {
   onOpenChange?: (details: OpenChangeDetails) => void;
   /** Callback fired when drawer closes */
   onClose?: () => void;
+  /** Callback fired when the backdrop is tapped */
+  onBackdropTap?: (() => void) | undefined;
+  /** Callback fired when the close trigger is tapped */
+  onCloseTriggerTap?: (() => void) | undefined;
+  /** Callback fired when a dismiss drag gesture begins */
+  onDragStart?: ((details: { offset?: number | undefined }) => void) | undefined;
+  /** Callback fired while dragging */
+  onDrag?: ((details: { offset?: number | undefined }) => void) | undefined;
+  /** Callback fired when a dismiss drag gesture ends */
+  onDragEnd?:
+    | ((details: { passed: boolean; offset?: number | undefined }) => void)
+    | undefined;
   /** Whether clicking the backdrop closes the drawer */
   closeOnBackdropClick?: boolean;
   /** Whether the drawer can be dragged to close */
@@ -81,8 +93,13 @@ export type DrawerEvent =
   | { type: "TOGGLE" }
   | { type: "BACKDROP.TAP" }
   | { type: "CLOSE_TRIGGER.TAP" }
-  | { type: "DRAG_START" }
-  | { type: "DRAG_END"; passed: boolean }
+  | { type: "DRAG_START"; data?: { offset?: number | undefined } | undefined }
+  | { type: "DRAG_MOVE"; data?: { offset?: number | undefined } | undefined }
+  | {
+      type: "DRAG_END";
+      passed: boolean;
+      data?: { passed: boolean; offset?: number | undefined } | undefined;
+    }
   | { type: "ANIMATION_END" }
   | { type: "KEYBOARD_CHANGE"; height: number };
 
@@ -99,6 +116,11 @@ export interface DrawerComputed {
 export type DrawerAction =
   | "invokeOnOpen"
   | "invokeOnClose"
+  | "invokeOnBackdropTap"
+  | "invokeOnCloseTriggerTap"
+  | "invokeOnDragStart"
+  | "invokeOnDrag"
+  | "invokeOnDragEnd"
   | "setKeyboardHeight"
   | "resetKeyboardHeight";
 
@@ -132,12 +154,29 @@ export interface DrawerApi {
   visible: boolean;
   /** Current machine state ('open' | 'closed' | 'closing' | 'dragging') */
   state: DrawerState;
+  /** Active virtual keyboard height in px (0 when closed) */
+  keyboardHeight: number;
+  /** Whether the virtual keyboard is currently open */
+  keyboardOpen: boolean;
   /** Open or close the drawer */
   setOpen(open: boolean): void;
   /** Open the drawer */
   openDrawer(): void;
   /** Close the drawer */
   closeDrawer(): void;
+  /** Handle backdrop tap */
+  handleBackdropTap(): void;
+  /** Handle close trigger tap */
+  handleCloseTriggerTap(): void;
+  /** Handle drag gesture start */
+  handleDragStart(data?: { offset?: number | undefined }): void;
+  /** Handle drag gesture move */
+  handleDragMove(data?: { offset?: number | undefined }): void;
+  /** Handle drag gesture end */
+  handleDragEnd(
+    passed: boolean,
+    data?: { passed: boolean; offset?: number | undefined },
+  ): void;
 
   /** WXML data & attributes for Root */
   rootProps: Record<string, any>;

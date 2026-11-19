@@ -609,7 +609,7 @@ describe("inputMenuTheme single vs multiple layout", () => {
     expect(baseTokens).not.toContain("h-9");
     expect(baseTokens).not.toContain("flex-wrap");
     expect(multiple.tagsWrapper).toContain("flex-wrap");
-    expect(multiple.nativeInput).toContain(escapeClass("min-w-[60px]"));
+    expect(multiple.nativeInput).toContain(escapeClass("min-w-[80px]"));
   });
 });
 

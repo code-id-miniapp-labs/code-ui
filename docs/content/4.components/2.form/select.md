@@ -679,7 +679,7 @@ export default defineConfig({
         footer: "px-2.5 py-2 border-t border-muted",
         empty: "py-6 px-3 text-center text-sm text-muted",
         pickerRoot:
-          "fixed inset-0 z-50 flex items-end justify-center overflow-hidden overscroll-contain box-border",
+          "fixed inset-0 z-picker flex items-end justify-center overflow-hidden overscroll-contain box-border",
         pickerBackdrop:
           "fixed inset-0 bg-black/40 transition-opacity duration-250",
         pickerContent:

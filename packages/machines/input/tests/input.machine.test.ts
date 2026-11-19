@@ -513,5 +513,50 @@ describe("Input Machine", () => {
 
       machine.stop();
     });
+
+    it("pulses focus false -> nextTick -> true when form focuses an already-focused input", async () => {
+      const nextTickQueue: Array<() => void> = [];
+      (globalThis as any).wx = {
+        nextTick: (cb: () => void) => {
+          nextTickQueue.push(cb);
+        },
+      };
+
+      try {
+        const formM = new MiniappMachine(formMachine, {
+          rules: {
+            email: [{ required: true, message: "Required" }],
+          },
+        });
+        formM.start();
+        const formApi = connectForm(formM.service);
+
+        const inputM = new MiniappMachine(inputMachine, {
+          name: "email",
+          formContext: formApi.formContext,
+        });
+        inputM.start();
+
+        // First submit focuses input synchronously (no wx.pageScrollTo)
+        await formApi.submit();
+        await flush();
+        expect(connectInput(inputM.service).inputProps.focus).toBe(true);
+
+        // Second submit while still in focused state pulses idle -> nextTick -> focused
+        await formApi.submit();
+        await flush();
+        expect(connectInput(inputM.service).inputProps.focus).toBe(false);
+        expect(nextTickQueue.length).toBe(1);
+
+        nextTickQueue.shift()?.();
+        await flush();
+        expect(connectInput(inputM.service).inputProps.focus).toBe(true);
+
+        inputM.stop();
+        formM.stop();
+      } finally {
+        delete (globalThis as any).wx;
+      }
+    });
   });
 });

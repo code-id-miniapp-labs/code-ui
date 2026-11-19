@@ -333,6 +333,7 @@ Use `ui` to override classes on individual slots (`root`, `trigger`, `backdrop`,
 | `closeOnBackdropClick` | `boolean` | `true` | Whether tapping the backdrop closes the menu. |
 | `triggerMode` | `"manual" \| "tap"` | `"manual"` | `"tap"` toggles the menu automatically on trigger tap; `"manual"` lets the parent control open state. |
 | `portal` | `boolean` | `false` | Renders the floating layer inside WeChat `<root-portal>` and applies app theme CSS variables/mode on the portal wrapper. |
+| `block` | `boolean` | `false` | Expands `root` and `trigger` to `w-full` when `true`, or shrinks them to `w-fit` when `false`. |
 | `arrow` | `boolean` | `false` | Renders a directional arrow element inside the content container. |
 | `side` | `"bottom" \| "top"` | `"bottom"` | Preferred placement side relative to the trigger. |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Preferred alignment along the trigger edge. |
@@ -375,12 +376,13 @@ export default defineConfig({
   ui: {
     popover: {
       slots: {
-        root: "relative w-full",
-        trigger: "relative w-full",
+        root: "relative",
+        trigger: "relative",
         backdrop: "fixed inset-0 z-40 bg-transparent",
-        positioner: "z-50 box-border",
+        positioner: "z-popover box-border",
         content:
           "relative w-full rounded-md bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
+        body: "relative w-full overflow-hidden rounded-[inherit] bg-inherit",
         arrow:
           "absolute w-2.5 h-2.5 bg-default border-default pointer-events-none",
       },
@@ -391,6 +393,16 @@ export default defineConfig({
           },
           false: {
             positioner: "absolute",
+          },
+        },
+        block: {
+          true: {
+            root: "w-full",
+            trigger: "w-full",
+          },
+          false: {
+            root: "self-start w-fit max-w-full",
+            trigger: "w-fit max-w-full",
           },
         },
         open: {
@@ -421,6 +433,7 @@ export default defineConfig({
       },
       defaultVariants: {
         portal: false,
+        block: false,
         open: false,
         visible: false,
         side: "bottom",

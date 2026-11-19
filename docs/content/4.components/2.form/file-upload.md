@@ -189,6 +189,29 @@ Configure native WeChat file picking with `mode` (`"auto"`, `"media"`, or `"mess
 />
 ```
 
+### Preview Mode & Fullscreen Lightbox
+
+By default (`previewMode="overlay"`), tapping an uploaded image opens a built-in fullscreen swipeable `<root-portal>` lightbox overlay with image counter, filename/size footer, and pinch-to-zoom / swipe navigation. Local temporary paths (`wxfile://`, `http://tmp/`) are automatically hydrated into base64 data URIs for cross-container preview rendering while keeping `file.path` intact for `wx.uploadFile`.
+
+Set `previewMode="native"` to delegate image and video previews to WeChat's native `wx.previewMedia` / `wx.previewImage` instead, or `portal="{{false}}"` to render the built-in overlay inline without `<root-portal>`. Non-image documents (`pdf`, `doc`, `xls`, `ppt`, etc.) open via `wx.openDocument`.
+
+```html [index.wxml]
+<!-- Built-in fullscreen <root-portal> lightbox (default) -->
+<c-file-upload
+  title="Built-in overlay preview"
+  previewMode="overlay"
+  portal="{{true}}"
+  accept="image/*"
+/>
+
+<!-- Native WeChat wx.previewMedia / wx.previewImage -->
+<c-file-upload
+  title="Native WeChat preview"
+  previewMode="native"
+  accept="image/*"
+/>
+```
+
 ### Uploading & Progress
 
 Set `uploading="{{true}}"` to show the loading indicator and progress bars. Use `progress` for an overall percentage (`0`–`100`), or set `progress` per file item in `value` (which overrides the overall `progress`).
@@ -409,6 +432,7 @@ chooseFiles(): Promise<void>
 addFiles(files: unknown[]): void
 removeFile(idOrIndex: string | number): void
 previewFile(idOrIndex: string | number): void
+closePreview(): void
 clearFiles(): void
 setFiles(files: FileUploadFile[]): void
 ```
@@ -431,6 +455,8 @@ setFiles(files: FileUploadFile[]): void
 | `minSize` | `number` | `0` | Minimum allowed file size in bytes. |
 | `accept` | `string \| string[]` | `""` | Accepted MIME types or file extensions (e.g. `"image/*"`, `[".jpg", ".png"]`). |
 | `mode` | `"auto" \| "media" \| "messageFile"` | `"auto"` | WeChat file selection mode. |
+| `previewMode` | `"overlay" \| "native"` | `"overlay"` | Image preview behavior: `"overlay"` opens the built-in fullscreen swipeable `<root-portal>` lightbox; `"native"` delegates to `wx.previewMedia` / `wx.previewImage`. |
+| `portal` | `boolean` | `true` | Renders the built-in fullscreen preview overlay inside WeChat `<root-portal>`. |
 | `sourceType` | `Array<"album" \| "camera">` | `["album", "camera"]` | Allowed media sources when picking media. |
 | `mediaType` | `Array<"image" \| "video">` | `["image", "video"]` | Allowed media types when picking media. |
 | `sizeType` | `Array<"original" \| "compressed">` | `["original", "compressed"]` | Image quality options for media selection. |
@@ -512,6 +538,23 @@ export default defineConfig({
           "flex items-center justify-center rounded-lg text-dimmed hover:text-default transition-colors p-1",
         fileRemoveIcon: "w-4 h-4",
         fileProgress: "w-full mt-1.5",
+        previewOverlay:
+          "fixed inset-0 z-modal bg-black/95 flex flex-col select-none",
+        previewHeader:
+          "relative z-10 flex items-center justify-between px-4 pb-3 pt-[calc(var(--spacing)_*_3_+_env(safe-area-inset-top))] text-white shrink-0",
+        previewCounter:
+          "text-sm font-medium text-white/90 tabular-nums px-2.5 py-1 rounded-full bg-white/15",
+        previewClose:
+          "flex items-center justify-center w-9 h-9 rounded-full bg-white/15 text-white active:bg-white/25 transition-colors",
+        previewCloseIcon: "w-5 h-5 text-white",
+        previewSwiper: "flex-1 w-full h-0 min-h-0",
+        previewSlide:
+          "w-full h-full flex items-center justify-center px-3 box-border",
+        previewImage: "w-full h-full block",
+        previewFooter:
+          "relative z-10 flex flex-col gap-0.5 px-4 pt-3 pb-[calc(var(--spacing)_*_4_+_env(safe-area-inset-bottom))] text-center shrink-0 bg-black/60",
+        previewName: "text-sm font-medium text-white truncate",
+        previewMeta: "text-xs text-white/70",
       },
       variants: {
         color: {

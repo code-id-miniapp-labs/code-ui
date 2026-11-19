@@ -1392,9 +1392,12 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
       },
 
       applyScaleProgress(this: AppOwnerInstance, progress: number) {
+        if (progress <= 0 && !this.data?.gestureScaleStyle) {
+          return;
+        }
         const lastP = this._lastScaleProgress ?? -1;
         if (
-          Math.abs(progress - lastP) < 0.008 &&
+          Math.abs(progress - lastP) < 0.015 &&
           progress > 0 &&
           progress < 1
         ) {
@@ -1404,14 +1407,20 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
 
         const factor =
           this.data?.hostScaleFactor || this.data?.scaleFactor || 0.94;
-        const currentScale = factor + (1 - factor) * progress;
-        const currentRadius = Math.round(16 * (1 - progress));
-        const currentTopFactor = Math.max(0, 1 - progress);
+        const currentScale =
+          Math.round((factor + (1 - factor) * progress) * 1000) / 1000;
+        const currentTopFactor =
+          Math.round(Math.max(0, 1 - progress) * 1000) / 1000;
+        const winWidth = appMetricsSignal().windowWidth || 375;
+        const topGap =
+          Math.round(Math.max(0, ((1 - currentScale) / 2) * winWidth) * 100) /
+          100;
+        const transformValue = `translate3d(0, calc(var(--cui-top-offset) * ${currentTopFactor} + ${topGap}px), 0) scale3d(${currentScale}, ${currentScale}, 1)`;
 
         this.setData?.({
           gestureScaleStyle:
-            `transform: scale(${Math.round(currentScale * 1000) / 1000}) translateY(calc(var(--cui-top-offset) * ${Math.round(currentTopFactor * 1000) / 1000})); ` +
-            `border-radius: ${currentRadius}px; ` +
+            `-webkit-transform: ${transformValue}; ` +
+            `transform: ${transformValue}; ` +
             `transition: none !important;`,
         });
       },

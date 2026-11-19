@@ -28,6 +28,7 @@ describe("actionSheetTheme (@code-id-labs/core)", () => {
     expect(theme.defaultVariants).toEqual({
       open: false,
       disabled: false,
+      closable: false,
     });
   });
 
@@ -52,5 +53,16 @@ describe("actionSheetTheme (@code-id-labs/core)", () => {
     expect(theme.variants.disabled.true.itemTitle).toContain("opacity-50");
     expect(theme.variants.disabled.true.itemDescription).toContain("opacity-75");
     expect(theme.variants.disabled.false).toEqual({});
+  });
+
+  it("reserves symmetric header clearance when closable to avoid closeTrigger overlap", () => {
+    const theme = actionSheetTheme();
+    expect(theme.slots.header).toContain("px-6");
+    expect(theme.slots.title).toContain("break-words");
+    expect(theme.slots.description).toContain("break-words");
+    expect(theme.slots.closeTrigger).toContain("z-10");
+    expect(theme.variants.closable.true.header).toContain("px-14");
+    expect(theme.variants.closable.true.header).toContain("min-h-14");
+    expect(theme.variants.closable.false).toEqual({});
   });
 });
