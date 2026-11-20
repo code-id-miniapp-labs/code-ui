@@ -121,6 +121,7 @@ export interface FormSubmitDetails {
   valid: boolean;
   errors: FormFieldError[];
   errorBag: FormErrorBag;
+  setPromise?: ((promise: Promise<any>) => void) | undefined;
 }
 
 export interface FormErrorDetails {
@@ -142,6 +143,8 @@ export interface FormHostContext {
   ): void;
   setFieldRules(name: string, getRules: () => FormRule[]): void;
   setFieldState(name: string, state: { disabled?: boolean | undefined }): void;
+  submit(): Promise<FormValidationResult>;
+  reset(): void;
 }
 
 export type FormAnatomyPart = AnatomyPartName<typeof anatomy>;

@@ -4,6 +4,7 @@ import {
   createProperties,
   getApi,
 } from "../_shared/machine";
+import { withFormField } from "@code-id-labs/miniapp/behaviors/form";
 import { wxButtonBehavior } from "./wx-button";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
@@ -21,6 +22,8 @@ const buttonBehavior = createMachineBehavior({
   machine: buttonMachine,
   connect: connectButton,
   key: "button",
+  syncProps: ["formType"],
+  plugins: [withFormField({ native: false })],
   exportApi: true,
   exportApiKeys: ["loading", "disabled", "setLoading", "setDisabled"],
 });

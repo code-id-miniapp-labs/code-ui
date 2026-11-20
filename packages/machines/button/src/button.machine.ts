@@ -145,7 +145,11 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         "loading" in event && event.loading === false,
       isInteractiveAndHasAsyncHandler: ({ computed, prop }) =>
         computed("isInteractive") &&
-        Boolean(prop("loadingAuto") && prop("onTap")),
+        Boolean(
+          prop("loadingAuto") &&
+            (prop("onTap") ||
+              (prop("formType") === "submit" && prop("formContext")?.submit)),
+        ),
     },
 
     actions: {
@@ -164,6 +168,13 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
       executeTapHandler: ({ prop, event }) => {
         const detail = "detail" in event ? event.detail : undefined;
         prop("onTap")?.(detail);
+        const formType = prop("formType");
+        const formContext = prop("formContext");
+        if (formType === "submit" && formContext?.submit) {
+          void formContext.submit();
+        } else if (formType === "reset" && formContext?.reset) {
+          formContext.reset();
+        }
       },
       executeAsyncHandler: ({ prop, event, send, context }) => {
         const rawDetail = "detail" in event ? event.detail : undefined;
@@ -183,7 +194,22 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
         };
 
         const result = prop("onTap")?.(detail);
-        const promise = isPromise(result) ? result : capturedPromise;
+        let promise: Promise<any> | undefined = isPromise(result)
+          ? result
+          : capturedPromise;
+
+        const formType = prop("formType");
+        const formContext = prop("formContext");
+        if (formType === "submit" && formContext?.submit) {
+          const submitPromise = formContext.submit();
+          if (isPromise(submitPromise)) {
+            promise = isPromise(promise)
+              ? Promise.all([promise, submitPromise])
+              : submitPromise;
+          }
+        } else if (formType === "reset" && formContext?.reset) {
+          formContext.reset();
+        }
 
         if (isPromise(promise)) {
           Promise.resolve(promise)

@@ -15,6 +15,7 @@ import type {
   FormRule,
   FormSchema,
   FormService,
+  FormSubmitDetails,
   FormValidateOn,
   FormValidateTrigger,
   FormValidationResult,
@@ -1057,18 +1058,23 @@ export async function submitForm(
   }
 
   service.state.set("submitting");
-  const submitDetails = {
+  let capturedPromise: Promise<any> | undefined;
+  const submitDetails: FormSubmitDetails = {
     values: result.values,
     valid: true,
     errors: [],
     errorBag: {},
+    setPromise: (p: Promise<any>) => {
+      capturedPromise = p;
+    },
   };
 
   const submitRet = service.prop("onSubmit")?.(submitDetails);
+  const submitPromise = isPromise(submitRet) ? submitRet : capturedPromise;
 
-  if (isPromise(submitRet)) {
+  if (isPromise(submitPromise)) {
     try {
-      await submitRet;
+      await submitPromise;
       service.state.set("submitted");
     } catch (err) {
       const msg =
@@ -1116,6 +1122,13 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
         send({ type: "FIELD.RULES", name, getRules }),
       setFieldState: (name, state) =>
         send({ type: "FIELD.STATE", name, state }),
+      submit: () =>
+        new Promise<FormValidationResult>((resolve) => {
+          send({ type: "SUBMIT", resolve });
+        }),
+      reset: () => {
+        send({ type: "RESET" });
+      },
     };
     return {
       hostContext,

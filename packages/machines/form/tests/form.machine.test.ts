@@ -1252,4 +1252,42 @@ describe("formMachine & PinInput integration", () => {
       delete (globalThis as any).wx;
     }
   });
+
+  it("awaits promise registered via details.setPromise in onSubmit and resolves hostContext.submit() after settlement", async () => {
+    let resolveSubmit!: () => void;
+    let settled = false;
+
+    const form = createFormInstance({
+      defaultValue: { subject: "Hello" },
+      onSubmit: (details) => {
+        // Simulates WeChat MiniProgram bind:submit where triggerEvent returns undefined
+        details.setPromise?.(
+          new Promise<void>((res) => {
+            resolveSubmit = res;
+          }),
+        );
+      },
+    });
+
+    const host = form.api().formContext;
+    const submitPromise = host.submit().then((res) => {
+      settled = true;
+      return res;
+    });
+
+    await flush();
+    expect(form.api().state).toBe("submitting");
+    expect(form.api().isSubmitting).toBe(true);
+    expect(settled).toBe(false);
+
+    resolveSubmit();
+    const res = await submitPromise;
+
+    expect(settled).toBe(true);
+    expect(res.valid).toBe(true);
+    expect(form.api().state).toBe("submitted");
+    expect(form.api().isSubmitting).toBe(false);
+
+    form.machine.stop();
+  });
 });
