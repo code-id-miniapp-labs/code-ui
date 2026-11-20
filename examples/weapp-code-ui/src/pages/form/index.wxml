@@ -257,5 +257,167 @@
         <text class="block text-xs mt-1 break-all">{{ inputMenuFormMessage }}</text>
       </view>
     </view>
+
+    <!-- 6. Dynamic & Conditional Complex Form -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Dynamic &amp; Conditional Form</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Conditional fields (wx:if), cascading options, toggle-revealed validation, repeatable rows (wx:for), and async loadingAuto submit.
+        </text>
+      </view>
+
+      <c-form
+        id="dynamic-form"
+        disabled="{{ formDisabled }}"
+        validateOn="{{ validateOn }}"
+        bind:submit="handleDynamicFormSubmit"
+        bind:error="handleDynamicFormError"
+      >
+        <view class="flex flex-col gap-3.5">
+          <!-- Account Type switches between Personal & Business fields -->
+          <c-form-field name="accountType" label="Account Type" required="{{ true }}" rules="{{ accountTypeRules }}">
+            <c-radio-group
+              items="{{ accountTypeItems }}"
+              orientation="horizontal"
+              defaultValue="personal"
+              bind:change="onDynamicAccountTypeChange"
+            />
+          </c-form-field>
+
+          <!-- Personal Branch -->
+          <c-form-field
+            wx:if="{{ dynamicAccountType === 'personal' }}"
+            name="fullName"
+            label="Full Name"
+            required="{{ true }}"
+            rules="{{ fullNameRules }}"
+          >
+            <c-input placeholder="e.g. Jane Doe" leadingIcon="i-lucide-user" />
+          </c-form-field>
+
+          <!-- Business Branch -->
+          <block wx:if="{{ dynamicAccountType === 'business' }}">
+            <c-form-field name="companyName" label="Company Name" required="{{ true }}" rules="{{ companyNameRules }}">
+              <c-input placeholder="e.g. Acme Corp" leadingIcon="i-lucide-building-2" />
+            </c-form-field>
+
+            <c-form-field name="taxId" label="Tax ID / VAT" hint="Min 10 chars" required="{{ true }}" rules="{{ taxIdRules }}">
+              <c-input placeholder="e.g. 0123456789" leadingIcon="i-lucide-file-text" />
+            </c-form-field>
+
+            <c-form-field name="companySize" label="Company Size" required="{{ true }}" rules="{{ companySizeRules }}">
+              <c-select items="{{ companySizeItems }}" placeholder="Select team size..." clearable="{{ true }}" />
+            </c-form-field>
+          </block>
+
+          <!-- Fulfillment Method switches between Delivery & Pickup -->
+          <c-form-field name="fulfillment" label="Fulfillment Method" required="{{ true }}" rules="{{ fulfillmentRules }}">
+            <c-radio-group
+              items="{{ fulfillmentItems }}"
+              orientation="horizontal"
+              defaultValue="delivery"
+              bind:change="onDynamicFulfillmentChange"
+            />
+          </c-form-field>
+
+          <block wx:if="{{ dynamicFulfillment === 'delivery' }}">
+            <c-form-field name="shippingAddress" label="Shipping Address" hint="Min 10 chars" required="{{ true }}" rules="{{ shippingAddressRules }}">
+              <c-textarea placeholder="Street, building, floor, postal code..." rows="{{ 3 }}" />
+            </c-form-field>
+
+            <c-form-field name="deliverySpeed" label="Delivery Priority" required="{{ true }}" rules="{{ deliverySpeedRules }}">
+              <c-select items="{{ deliverySpeedItems }}" placeholder="Choose speed..." />
+            </c-form-field>
+          </block>
+
+          <c-form-field
+            wx:if="{{ dynamicFulfillment === 'pickup' }}"
+            name="pickupStore"
+            label="Pickup Location"
+            required="{{ true }}"
+            rules="{{ pickupStoreRules }}"
+          >
+            <c-select items="{{ pickupStoreItems }}" placeholder="Choose store branch..." leadingIcon="i-lucide-map-pin" />
+          </c-form-field>
+
+          <!-- Toggle-revealed Invoice Email -->
+          <c-form-field name="needInvoice">
+            <c-switch
+              checked="{{ dynamicNeedInvoice }}"
+              label="Send Electronic Invoice"
+              description="Adds a required billing email field when enabled"
+              bind:change="onDynamicInvoiceChange"
+            />
+          </c-form-field>
+
+          <c-form-field
+            wx:if="{{ dynamicNeedInvoice }}"
+            name="invoiceEmail"
+            label="Billing Email"
+            required="{{ true }}"
+            rules="{{ emailRules }}"
+          >
+            <c-input placeholder="billing@company.com" leadingIcon="i-lucide-mail" />
+          </c-form-field>
+
+          <!-- Dynamic Repeatable Recipients -->
+          <view class="flex flex-col gap-2.5 pt-2 border-t border-muted">
+            <view class="flex items-center justify-between">
+              <view>
+                <text class="block text-xs font-semibold text-highlighted">Notification Recipients ({{ dynamicRecipients.length }}/3)</text>
+                <text class="block text-xs text-muted">Dynamically add or remove validated fields.</text>
+              </view>
+              <c-button
+                size="xs"
+                color="secondary"
+                variant="soft"
+                label="+ Add"
+                disabled="{{ dynamicRecipients.length >= 3 }}"
+                bind:tap="addDynamicRecipient"
+              />
+            </view>
+
+            <view
+              wx:for="{{ dynamicRecipients }}"
+              wx:key="id"
+              class="flex items-start gap-2"
+            >
+              <view class="flex-1 min-w-0">
+                <c-form-field
+                  name="{{ 'recipient_' + item.id }}"
+                  label="Recipient #{{ index + 1 }}"
+                  required="{{ true }}"
+                  rules="{{ emailRules }}"
+                >
+                  <c-input placeholder="recipient@example.com" leadingIcon="i-lucide-at-sign" />
+                </c-form-field>
+              </view>
+              <view class="pt-6">
+                <c-button
+                  size="xs"
+                  color="danger"
+                  variant="ghost"
+                  label="Remove"
+                  data-id="{{ item.id }}"
+                  bind:tap="removeDynamicRecipient"
+                />
+              </view>
+            </view>
+          </view>
+
+          <!-- Async Submit inside c-form (inherits loadingAuto) -->
+          <view class="flex flex-wrap gap-2 pt-3 border-t border-muted">
+            <c-button size="sm" color="primary" label="Submit (Async)" formType="submit" loadingAuto="{{ true }}" />
+            <c-button size="sm" color="neutral" variant="outline" label="Reset" bind:tap="resetDynamicForm" />
+          </view>
+        </view>
+      </c-form>
+
+      <view wx:if="{{ dynamicFormStatus }}" class="rounded-xl p-3 border {{ dynamicFormStatus === 'Success' ? 'bg-success/10 border-success/30 text-success' : 'bg-elevated border-default text-toned' }}">
+        <text class="block text-xs font-bold">{{ dynamicFormStatus }}</text>
+        <text class="block text-xs mt-1 break-all">{{ dynamicFormMessage }}</text>
+      </view>
+    </view>
   </view>
 </view>

@@ -130,6 +130,64 @@ Page({
     selectFormMessage: "",
     inputMenuFormStatus: "",
     inputMenuFormMessage: "",
+
+    // 6. Dynamic & Conditional Complex Form
+    dynamicAccountType: "personal" as "personal" | "business",
+    dynamicFulfillment: "delivery" as "delivery" | "pickup",
+    dynamicNeedInvoice: false,
+    dynamicRecipients: [{ id: 1 }] as { id: number }[],
+    nextRecipientId: 2,
+    dynamicFormStatus: "",
+    dynamicFormMessage: "",
+
+    accountTypeItems: [
+      { value: "personal", label: "Personal" },
+      { value: "business", label: "Business" },
+    ],
+    companySizeItems: [
+      { value: "1-10", label: "1–10 employees" },
+      { value: "11-50", label: "11–50 employees" },
+      { value: "51-200", label: "51–200 employees" },
+      { value: "200+", label: "200+ employees" },
+    ],
+    fulfillmentItems: [
+      { value: "delivery", label: "Delivery" },
+      { value: "pickup", label: "Store Pickup" },
+    ],
+    deliverySpeedItems: [
+      { value: "standard", label: "Standard (3–5 days)" },
+      { value: "express", label: "Express (Next day)" },
+    ],
+    pickupStoreItems: [
+      { value: "jakarta", label: "Jakarta Flagship" },
+      { value: "bandung", label: "Bandung Hub" },
+      { value: "surabaya", label: "Surabaya Center" },
+    ],
+
+    accountTypeRules: [{ required: true, message: "Select an account type" }],
+    fullNameRules: [
+      { required: true, message: "Full name is required" },
+      { minLength: 2, message: "Enter at least 2 characters" },
+    ],
+    companyNameRules: [
+      { required: true, message: "Company name is required" },
+    ],
+    taxIdRules: [
+      { required: true, message: "Tax ID is required for business accounts" },
+      { minLength: 10, message: "Tax ID must be at least 10 characters" },
+    ],
+    companySizeRules: [{ required: true, message: "Select company size" }],
+    fulfillmentRules: [
+      { required: true, message: "Select a fulfillment method" },
+    ],
+    shippingAddressRules: [
+      { required: true, message: "Shipping address is required" },
+      { minLength: 10, message: "Please provide a complete address (min 10 chars)" },
+    ],
+    deliverySpeedRules: [
+      { required: true, message: "Choose a delivery priority" },
+    ],
+    pickupStoreRules: [{ required: true, message: "Choose a pickup location" }],
   },
 
   getRegistrationForm(): FormRef | null {
@@ -404,6 +462,83 @@ Page({
     this.setData({
       inputMenuFormStatus: "Validation Failed",
       inputMenuFormMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
+    });
+  },
+
+  // 6. Dynamic & Conditional Complex Form handlers
+  getDynamicForm(): FormRef | null {
+    return this.selectComponent("#dynamic-form") as FormRef | null;
+  },
+
+  onDynamicAccountTypeChange(
+    e: WechatMiniprogram.CustomEvent<{ value?: "personal" | "business" }>,
+  ) {
+    const next = e.detail?.value;
+    if (!next) return;
+    this.setData({ dynamicAccountType: next });
+  },
+
+  onDynamicFulfillmentChange(
+    e: WechatMiniprogram.CustomEvent<{ value?: "delivery" | "pickup" }>,
+  ) {
+    const next = e.detail?.value;
+    if (!next) return;
+    this.setData({ dynamicFulfillment: next });
+  },
+
+  onDynamicInvoiceChange(
+    e: WechatMiniprogram.CustomEvent<{ checked?: boolean }>,
+  ) {
+    this.setData({ dynamicNeedInvoice: Boolean(e.detail?.checked) });
+  },
+
+  addDynamicRecipient() {
+    if (this.data.dynamicRecipients.length >= 3) return;
+    const id = this.data.nextRecipientId;
+    this.setData({
+      dynamicRecipients: [...this.data.dynamicRecipients, { id }],
+      nextRecipientId: id + 1,
+    });
+  },
+
+  removeDynamicRecipient(e: WechatMiniprogram.TouchEvent) {
+    const id = Number(e.currentTarget.dataset?.id);
+    this.setData({
+      dynamicRecipients: this.data.dynamicRecipients.filter((r) => r.id !== id),
+    });
+  },
+
+  resetDynamicForm() {
+    this.getDynamicForm()?.reset?.();
+    this.setData({
+      dynamicAccountType: "personal",
+      dynamicFulfillment: "delivery",
+      dynamicNeedInvoice: false,
+      dynamicRecipients: [{ id: 1 }],
+      nextRecipientId: 2,
+      dynamicFormStatus: "",
+      dynamicFormMessage: "",
+    });
+  },
+
+  handleDynamicFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    const values = e.detail?.values;
+    const fakeRequest = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        this.setData({
+          dynamicFormStatus: "Success",
+          dynamicFormMessage: `Submitted: ${JSON.stringify(values)}`,
+        });
+        resolve();
+      }, 1000);
+    });
+    e.detail?.setPromise?.(fakeRequest);
+  },
+
+  handleDynamicFormError(e: WechatMiniprogram.CustomEvent) {
+    this.setData({
+      dynamicFormStatus: "Validation Failed",
+      dynamicFormMessage: `Errors in: ${Object.keys(e.detail.errorBag || {}).join(", ")}.`,
     });
   },
 });
