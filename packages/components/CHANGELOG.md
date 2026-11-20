@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.0.6
+
+### Patch Changes
+
+- d7681fd: Remove redundant `rootStyle` prop from `c-qr-code` in favor of `ui` and `className`.
+
 ## 1.0.5
 
 ## 1.0.4
