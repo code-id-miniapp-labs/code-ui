@@ -195,7 +195,7 @@ export const buttonMachine: ButtonMachine = createMachine<ButtonSchema>({
 
         const result = prop("onTap")?.(detail);
         let promise: Promise<any> | undefined = isPromise(result)
-          ? result
+          ? (result as Promise<any>)
           : capturedPromise;
 
         const formType = prop("formType");

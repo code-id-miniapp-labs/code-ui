@@ -400,6 +400,94 @@ function hasMissingOrOutdatedLibraryFiles(
   return false;
 }
 
+function snapshotDirActivity(dir: string): {
+  count: number;
+  maxMtimeMs: number;
+} {
+  let count = 0;
+  let maxMtimeMs = 0;
+  const rootStat = fs.statSync(dir, { throwIfNoEntry: false });
+  if (!rootStat) return { count: 0, maxMtimeMs: 0 };
+  maxMtimeMs = rootStat.mtimeMs;
+
+  const stack = [dir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      count++;
+      const fullPath = path.join(current, entry.name);
+      const st = fs.statSync(fullPath, { throwIfNoEntry: false });
+      if (st && st.mtimeMs > maxMtimeMs) {
+        maxMtimeMs = st.mtimeMs;
+      }
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+      }
+    }
+  }
+  return { count, maxMtimeMs };
+}
+
+/**
+ * Waits until `dist/miniprogram_npm/<library>` stops being actively written to
+ * (e.g. by weapp-vite's concurrent `copyBuild` / `fs.cp`). Prevents ENOENT
+ * chmod races when tree-shake purges unused component directories during build.
+ */
+export async function waitForMiniprogramNpmStable(
+  treeShakeOpts: TreeShakeOptions | ResolvedTreeShakeOptions,
+  projectRoot: string,
+  viteConfigObj: { build?: { outDir?: string } } | null | undefined,
+  options?: { settleMs?: number; maxWaitMs?: number },
+): Promise<void> {
+  const treeLibrary = treeShakeOpts.library || "@code-id-labs/components";
+  const outDir = viteConfigObj?.build?.outDir || "dist";
+  const miniprogramNpmPath = path.resolve(
+    projectRoot,
+    outDir,
+    "miniprogram_npm",
+    treeLibrary,
+  );
+  if (!fs.existsSync(miniprogramNpmPath)) return;
+
+  const settleMs = options?.settleMs ?? 120;
+  const maxWaitMs = options?.maxWaitMs ?? 3000;
+
+  const prev = snapshotDirActivity(miniprogramNpmPath);
+  if (Date.now() - prev.maxMtimeMs > settleMs * 2) {
+    return;
+  }
+
+  const deadline = Date.now() + maxWaitMs;
+  const poll = (
+    previous: { count: number; maxMtimeMs: number },
+  ): Promise<void> => {
+    if (Date.now() >= deadline) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        const next = snapshotDirActivity(miniprogramNpmPath);
+        if (
+          next.count === previous.count &&
+          next.maxMtimeMs === previous.maxMtimeMs &&
+          Date.now() - next.maxMtimeMs >= settleMs
+        ) {
+          resolve();
+          return;
+        }
+        void poll(next).then(resolve);
+      }, settleMs);
+    });
+  };
+
+  return poll(prev);
+}
+
 export function handleTreeShake(
   treeShakeOpts: TreeShakeOptions | ResolvedTreeShakeOptions,
   projectRoot: string,

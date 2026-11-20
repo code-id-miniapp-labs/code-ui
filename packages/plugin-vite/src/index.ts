@@ -47,7 +47,10 @@ import {
   minifyCss,
 } from "./core/transforms";
 import { transformAppStyle } from "./core/style-inject";
-import { handleTreeShake } from "./core/tree-shake";
+import {
+  handleTreeShake,
+  waitForMiniprogramNpmStable,
+} from "./core/tree-shake";
 import {
   isBundleAsset,
   type AppWrapperOptions,
@@ -442,31 +445,39 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       },
     },
 
-    closeBundle() {
-      const outDir = viteConfigObj?.build?.outDir || "dist";
-      const distRoot = path.resolve(projectRoot, outDir);
-      syncDiskAppWrapper(distRoot, appWrapperOpts, projectRoot);
-      syncDiskSlotDetect(projectRoot, distRoot, slotDetectOpts);
-      syncDiskAutoImport(
-        distRoot,
-        autoImportOpts,
-        projectRoot,
-        undefined,
-        appWrapperOpts,
-      );
-      handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
-      cleanKeyframesInDir(distRoot);
+    closeBundle: {
+      order: "post",
+      async handler() {
+        const outDir = viteConfigObj?.build?.outDir || "dist";
+        const distRoot = path.resolve(projectRoot, outDir);
+        syncDiskAppWrapper(distRoot, appWrapperOpts, projectRoot);
+        syncDiskSlotDetect(projectRoot, distRoot, slotDetectOpts);
+        syncDiskAutoImport(
+          distRoot,
+          autoImportOpts,
+          projectRoot,
+          undefined,
+          appWrapperOpts,
+        );
+        await waitForMiniprogramNpmStable(
+          treeShakeOpts,
+          projectRoot,
+          viteConfigObj,
+        );
+        handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+        cleanKeyframesInDir(distRoot);
 
-      if (!this.meta.watchMode && viteConfigObj?.build?.cssMinify !== false) {
-        const appWxssPath = path.join(distRoot, "app.wxss");
-        if (fs.existsSync(appWxssPath)) {
-          const raw = fs.readFileSync(appWxssPath, "utf8");
-          const minified = minifyCss(raw);
-          if (minified.length < raw.length) {
-            fs.writeFileSync(appWxssPath, minified, "utf8");
+        if (!this.meta.watchMode && viteConfigObj?.build?.cssMinify !== false) {
+          const appWxssPath = path.join(distRoot, "app.wxss");
+          if (fs.existsSync(appWxssPath)) {
+            const raw = fs.readFileSync(appWxssPath, "utf8");
+            const minified = minifyCss(raw);
+            if (minified.length < raw.length) {
+              fs.writeFileSync(appWxssPath, minified, "utf8");
+            }
           }
         }
-      }
+      },
     },
   };
 }
