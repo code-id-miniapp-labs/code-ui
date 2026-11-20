@@ -258,12 +258,12 @@ Page({
 
 ### Form Integration
 
-Wrap `<c-pin-input>` in `<c-form-field>` inside `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validate-on` / `bind:submit` on `<c-form>`.
+Wrap `<c-pin-input>` in `<c-form-field>` inside `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validateOn` / `bind:submit` on `<c-form>`.
 
 ::code-group
 
 ```html [index.wxml]
-<c-form validate-on="submit" bind:submit="onSubmit">
+<c-form validateOn="submit" bind:submit="onSubmit">
   <c-form-field
     name="otp"
     label="Verification Code"

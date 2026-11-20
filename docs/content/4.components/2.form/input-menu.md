@@ -57,7 +57,7 @@ Page({
 
 ### Multiple
 
-Set `multiple` to allow selecting multiple items rendered as removable tags. By default, `close-on-select` stays open (`!multiple`) so users can pick several options in one pass.
+Set `multiple` to allow selecting multiple items rendered as removable tags. By default, `closeOnSelect` stays open (`!multiple`) so users can pick several options in one pass.
 
 ::code-group
 
@@ -91,14 +91,14 @@ Page({
 
 ### Controlled
 
-Control `value`, `search-term`, and `open` explicitly, or use `default-value`, `default-search-term`, and `default-open` for uncontrolled initial state.
+Control `value`, `searchTerm`, and `open` explicitly, or use `defaultValue`, `default-search-term`, and `defaultOpen` for uncontrolled initial state.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu
   value="{{selectedCity}}"
-  search-term="{{query}}"
+  searchTerm="{{query}}"
   open="{{menuOpen}}"
   items="{{cities}}"
   placeholder="Search city..."
@@ -136,7 +136,7 @@ Page({
 
 ### Items & Custom Keys
 
-`items` accepts scalar values, item objects, or nested arrays for grouped lists. Use `value-key`, `label-key`, `description-key`, and `disabled-key` to map custom object shapes.
+`items` accepts scalar values, item objects, or nested arrays for grouped lists. Use `valueKey`, `labelKey`, `descriptionKey`, and `disabledKey` to map custom object shapes.
 
 ::code-group
 
@@ -147,10 +147,10 @@ Page({
 <!-- Custom object keys -->
 <c-input-menu
   items="{{members}}"
-  value-key="id"
-  label-key="fullName"
-  description-key="role"
-  disabled-key="archived"
+  valueKey="id"
+  labelKey="fullName"
+  descriptionKey="role"
+  disabledKey="archived"
   placeholder="Assign member..."
 />
 ```
@@ -290,7 +290,7 @@ Page({
 
 ### Icon
 
-Customize trigger and item icons with `icon`, `leading`, `leading-icon`, `trailing`, `trailing-icon`, `selected-icon`, `clear-icon`, `delete-icon`, and `create-icon`.
+Customize trigger and item icons with `icon`, `leading`, `leadingIcon`, `trailing`, `trailingIcon`, `selectedIcon`, `clearIcon`, `deleteIcon`, and `createIcon`.
 
 ::code-group
 
@@ -299,11 +299,11 @@ Customize trigger and item icons with `icon`, `leading`, `leading-icon`, `traili
   multiple
   clearable
   leading
-  leading-icon="search"
-  trailing-icon="chevrons-up-down"
-  selected-icon="check-circle"
-  clear-icon="x-circle"
-  delete-icon="x"
+  leadingIcon="search"
+  trailingIcon="chevrons-up-down"
+  selectedIcon="check-circle"
+  clearIcon="x-circle"
+  deleteIcon="x"
   items="{{items}}"
   placeholder="Search items..."
 />
@@ -331,7 +331,7 @@ Enable `clearable` to show a clear button when a value is selected. Listen to `b
 ```html [index.wxml]
 <c-input-menu
   clearable
-  default-value="vue"
+  defaultValue="vue"
   items="{{items}}"
   placeholder="Pick a framework..."
   bind:clear="onClear"
@@ -356,14 +356,14 @@ Page({
 
 ### Loading
 
-Set `loading` to display a spinning indicator in the trailing area, and optionally customize the icon via `loading-icon`. Pair with `ignore-filter` for async server-side search.
+Set `loading` to display a spinning indicator in the trailing area, and optionally customize the icon via `loadingIcon`. Pair with `ignore-filter` for async server-side search.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu
   loading="{{isLoading}}"
-  loading-icon="loader-2"
+  loadingIcon="loader-2"
   ignore-filter
   items="{{results}}"
   placeholder="Search users..."
@@ -388,13 +388,13 @@ Page({
 
 ### Disabled, Read-Only & Invalid
 
-Use `disabled`, `read-only`, `required`, and `invalid` to control interaction and validation appearance.
+Use `disabled`, `readOnly`, `required`, and `invalid` to control interaction and validation appearance.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu disabled items="{{items}}" placeholder="Disabled" />
-<c-input-menu read-only default-value="vue" items="{{items}}" placeholder="Read-only" />
+<c-input-menu readOnly defaultValue="vue" items="{{items}}" placeholder="Read-only" />
 <c-input-menu required invalid items="{{items}}" placeholder="Required & invalid" />
 ```
 
@@ -413,17 +413,17 @@ Page({
 
 ### Filtering & Search Behavior
 
-Match against multiple item keys using `filter-fields`, customize the fallback text with `empty-text`, and control whether `search-term` resets via `reset-search-term-on-blur` and `reset-search-term-on-select`.
+Match against multiple item keys using `filterFields`, customize the fallback text with `emptyText`, and control whether `searchTerm` resets via `resetSearchTermOnBlur` and `resetSearchTermOnSelect`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu
   items="{{countries}}"
-  filter-fields="{{ ['label', 'code'] }}"
-  reset-search-term-on-blur="{{false}}"
-  reset-search-term-on-select="{{false}}"
-  empty-text="No countries found"
+  filterFields="{{ ['label', 'code'] }}"
+  resetSearchTermOnBlur="{{false}}"
+  resetSearchTermOnSelect="{{false}}"
+  emptyText="No countries found"
   placeholder="Search by name or code..."
 />
 ```
@@ -444,16 +444,16 @@ Page({
 
 ### Create Item
 
-Set `create-item` (`true`, `"always"`, or `{ position: "top" | "bottom", when: "empty" | "always" }`) to let users create new options from `search-term` and handle `bind:create`. Customize the row with `create-icon` and `create-item-text`.
+Set `createItem` (`true`, `"always"`, or `{ position: "top" | "bottom", when: "empty" | "always" }`) to let users create new options from `searchTerm` and handle `bind:create`. Customize the row with `createIcon` and `createItemText`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu
   multiple
-  create-item="{{ { position: 'bottom', when: 'empty' } }}"
-  create-icon="plus"
-  create-item-text="Add"
+  createItem="{{ { position: 'bottom', when: 'empty' } }}"
+  createIcon="plus"
+  createItemText="Add"
   items="{{tags}}"
   value="{{selectedTags}}"
   placeholder="Add or create tags..."
@@ -489,7 +489,7 @@ Page({
 
 ### Open & Close Triggers
 
-Configure when the dropdown opens and closes using `open-on-focus`, `open-on-click`, `open-on-input`, `close-on-select`, and `close-on-backdrop-click`.
+Configure when the dropdown opens and closes using `open-on-focus`, `open-on-click`, `open-on-input`, `closeOnSelect`, and `closeOnBackdropClick`.
 
 ::code-group
 
@@ -498,8 +498,8 @@ Configure when the dropdown opens and closes using `open-on-focus`, `open-on-cli
   open-on-focus
   open-on-click
   open-on-input
-  close-on-select="{{false}}"
-  close-on-backdrop-click="{{true}}"
+  closeOnSelect="{{false}}"
+  closeOnBackdropClick="{{true}}"
   items="{{items}}"
   placeholder="Focus or tap to open..."
 />
@@ -544,12 +544,12 @@ Page({
 
 ### Form Integration
 
-Configure `validate-on` and `bind:submit` on `<c-form>`, and pass `name`, `label`, `required`, and `rules` on `<c-form-field>` wrapping `<c-input-menu>` for automatic validation, `fieldDisabled`, and `size` inheritance.
+Configure `validateOn` and `bind:submit` on `<c-form>`, and pass `name`, `label`, `required`, and `rules` on `<c-form-field>` wrapping `<c-input-menu>` for automatic validation, `fieldDisabled`, and `size` inheritance.
 
 ::code-group
 
 ```html [index.wxml]
-<c-form id="profileForm" validate-on="change" bind:submit="onSubmit">
+<c-form id="profileForm" validateOn="change" bind:submit="onSubmit">
   <c-form-field name="country" label="Country" required="{{true}}" rules="{{countryRules}}">
     <c-input-menu
       items="{{countries}}"
@@ -586,7 +586,7 @@ Customize the trigger and dropdown sections using the `leading`, `trailing`, `lo
 <c-input-menu
   items="{{items}}"
   loading="{{isLoading}}"
-  create-item
+  createItem
   placeholder="Search or create..."
 >
   <text slot="leading" class="text-xs text-muted">To:</text>
@@ -622,7 +622,7 @@ Listen to `bind:change`, `bind:select`, `bind:openchange`, `bind:searchtermchang
 ```html [index.wxml]
 <c-input-menu
   clearable
-  create-item
+  createItem
   items="{{items}}"
   placeholder="Interact to emit events..."
   bind:change="onChange"
@@ -675,14 +675,14 @@ Page({
 
 ### Custom Styling
 
-Override any theme slot with `ui` or append root classes using `class` / `class-name`.
+Override any theme slot with `ui` or append root classes using `class` / `className`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-input-menu
   items="{{items}}"
-  class-name="w-full"
+  className="w-full"
   ui="{{ { base: 'rounded-full', viewport: 'p-2' } }}"
   placeholder="Styled input menu..."
 />
@@ -756,8 +756,8 @@ Page({
 | `selectedIcon` | `string` | `"check"` | Default check icon name passed to selected `<c-input-menu-item>` options. |
 | `clearIcon` | `string` | `"close"` | Icon name for the clear button. |
 | `deleteIcon` | `string` | `"close"` | Icon name for tag delete buttons in `multiple` mode. |
-| `createIcon` | `string` | `""` | Optional icon name displayed in the default create-item row. |
-| `createItemText` | `string` | `"Create"` | Prefix text rendered in the default create-item row (`<createItemText> "<searchTerm>"`). |
+| `createIcon` | `string` | `""` | Optional icon name displayed in the default createItem row. |
+| `createItemText` | `string` | `"Create"` | Prefix text rendered in the default createItem row (`<createItemText> "<searchTerm>"`). |
 | `loading` | `boolean` | `false` | Display the loading indicator in the trailing area. |
 | `loadingIcon` | `string` | `"loading"` | Icon name for the trailing loading indicator. |
 | `portal` | `boolean` | `false` | Render the floating dropdown content via portal mode on `<c-popover>`. |
@@ -778,7 +778,7 @@ Page({
 | `loadingIcon` | Custom loading indicator shown in the trailing area when `loading` is `true`. |
 | `header` | Optional header section rendered above the dropdown `<scroll-view>`. |
 | `footer` | Optional footer section rendered below the dropdown `<scroll-view>`. |
-| `createItem` | Custom content for the dynamic create-item option when `createItem` is enabled and visible. |
+| `createItem` | Custom content for the dynamic createItem option when `createItem` is enabled and visible. |
 | `empty` | Custom empty-state content shown when no dropdown items match and `createItem` is not visible. |
 
 ## Events
@@ -789,7 +789,7 @@ Page({
 | `bind:select` | `{ value: InputMenuScalarValue; item?: NormalizedInputMenuItem; selected: boolean }` | Fired when an item in the dropdown is selected. |
 | `bind:openchange` | `{ open: boolean }` | Fired when the dropdown open state changes. |
 | `bind:searchtermchange` | `{ value: string }` | Fired when `searchTerm` changes. |
-| `bind:create` | `{ value: string }` | Fired when the create-item option is tapped or confirmed. |
+| `bind:create` | `{ value: string }` | Fired when the createItem option is tapped or confirmed. |
 | `bind:clear` | `Record<string, any>` | Fired when the clear button is tapped. |
 | `bind:focus` | `{ value: InputMenuValue; searchTerm: string }` | Fired when the native `<input>` gains focus. |
 | `bind:blur` | `{ value: InputMenuValue; searchTerm: string }` | Fired when the native `<input>` loses focus. |

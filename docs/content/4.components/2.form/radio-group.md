@@ -235,10 +235,10 @@ Use the `invalid` prop to mark the group with an invalid state (`aria-invalid`).
 
 ### Form Integration
 
-Wrap `<c-radio-group>` inside `<c-form-field>` within `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validate-on` / `bind:submit` on `<c-form>`.
+Wrap `<c-radio-group>` inside `<c-form-field>` within `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validateOn` / `bind:submit` on `<c-form>`.
 
 ```html [index.wxml]
-<c-form id="checkout-form" validate-on="submit" bind:submit="onSubmit">
+<c-form id="checkout-form" validateOn="submit" bind:submit="onSubmit">
   <c-form-field name="shipping" label="Shipping" required="{{true}}" rules="{{shippingRules}}">
     <c-radio-group items="{{['standard', 'overnight']}}" />
   </c-form-field>

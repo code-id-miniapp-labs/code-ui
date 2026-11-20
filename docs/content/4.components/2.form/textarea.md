@@ -209,7 +209,7 @@ Nest `<c-textarea>` inside `<c-form-field>` within `<c-form>` and pass `name`, `
 ::code-group
 
 ```html [index.wxml]
-<c-form id="feedback-form" validate-on="blur" bind:submit="handleSubmit">
+<c-form id="feedback-form" validateOn="blur" bind:submit="handleSubmit">
   <c-form-field
     name="message"
     label="Message"
@@ -338,7 +338,7 @@ Use `className` to add classes to the `root` slot, and `ui` to override classes 
 | `defaultValue` | `string \| number \| null` | `""` | Initial value when used uncontrolled. |
 | `name` | `string` | `""` | Form field name for `<textarea>` and Form registration. |
 | `disabled` | `boolean` | `false` | Disables the textarea. |
-| `readOnly` | `boolean` | `false` | Makes the textarea read-only (disables editing on native `<textarea>`). |
+| `readOnly` | `boolean` | `false` | Makes the textarea readOnly (disables editing on native `<textarea>`). |
 | `invalid` | `boolean \| null` | `null` | Marks the textarea as invalid (also driven by Form validation). |
 | `clearable` | `boolean` | `false` | Shows the clear button when the value is non-empty and interactive. |
 | `autoFocus` | `boolean` | `false` | Focuses the textarea on mount. |

@@ -82,8 +82,8 @@ Defined in `packages/core/src/theme/definitions/form.ts`:
   <c-input name="password" label="Password" password="{{true}}" />
 
   <view class="flex gap-2">
-    <button form-type="reset">Reset</button>
-    <button form-type="submit" type="primary">Sign In</button>
+    <button formType="reset">Reset</button>
+    <button formType="submit" type="primary">Sign In</button>
   </view>
 </c-form>
 ```

@@ -135,14 +135,14 @@ Page({
 
 ### Form Integration
 
-Wrap `<c-switch>` in `<c-form-field>` inside `<c-form>` to participate in form state, validation, and submission. Place `name`, `label`, `required`, and `rules` on `<c-form-field>`, and `validate-on` and `bind:submit` on `<c-form>`.
+Wrap `<c-switch>` in `<c-form-field>` inside `<c-form>` to participate in form state, validation, and submission. Place `name`, `label`, `required`, and `rules` on `<c-form-field>`, and `validateOn` and `bind:submit` on `<c-form>`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-form
   id="preferences-form"
-  validate-on="{{validateOn}}"
+  validateOn="{{validateOn}}"
   bind:submit="handlePreferencesSubmit"
 >
   <c-form-field

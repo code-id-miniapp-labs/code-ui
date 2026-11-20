@@ -110,7 +110,7 @@ _Implemented in `packages/components/src/runtime/qr-code/`_
 ### Template Structure (`index.wxml`)
 
 ```xml
-<view class="{{classes.root}}" style="{{rootStyle}}">
+<view class="{{classes.root}}" style="{{qrCode.rootProps.style}}">
   <!-- Rendered via SVG Data URL -->
   <image class="{{classes.frame}}" src="{{qrCode.dataUrl}}" mode="aspectFit" />
 

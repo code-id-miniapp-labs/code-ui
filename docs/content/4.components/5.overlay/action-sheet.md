@@ -245,15 +245,15 @@ Page({
 
 ### Dismissal & Transition
 
-Control whether tapping an item (`close-on-item`) or the backdrop (`close-on-backdrop-click`) closes the sheet, and customize the close transition `duration` in milliseconds.
+Control whether tapping an item (`closeOnItem`) or the backdrop (`closeOnBackdropClick`) closes the sheet, and customize the close transition `duration` in milliseconds.
 
 ```html [index.wxml]
 <c-action-sheet
   open="{{sheetOpen}}"
   title="Persistent Sheet"
   close="{{true}}"
-  close-on-item="{{false}}"
-  close-on-backdrop-click="{{false}}"
+  closeOnItem="{{false}}"
+  closeOnBackdropClick="{{false}}"
   duration="{{200}}"
   items="{{items}}"
   bind:closeTriggerTap="onClose"
@@ -262,7 +262,7 @@ Control whether tapping an item (`close-on-item`) or the backdrop (`close-on-bac
 
 ### Uncontrolled & Component API
 
-Leave `open` as `null` (the default) and optionally pass `default-open` for uncontrolled mode, then control the sheet imperatively via `selectComponent` and the exported `actionSheet` API (`openActionSheet()`, `closeActionSheet()`, `setOpen()`, `select()`, `handleAction()`).
+Leave `open` as `null` (the default) and optionally pass `defaultOpen` for uncontrolled mode, then control the sheet imperatively via `selectComponent` and the exported `actionSheet` API (`openActionSheet()`, `closeActionSheet()`, `setOpen()`, `select()`, `handleAction()`).
 
 ::code-group
 ```html [index.wxml]
@@ -270,7 +270,7 @@ Leave `open` as `null` (the default) and optionally pass `default-open` for unco
 
 <c-action-sheet
   id="sheet"
-  default-open="{{false}}"
+  defaultOpen="{{false}}"
   title="Quick Actions"
   items="{{items}}"
 />
@@ -382,14 +382,14 @@ Page({
 
 ### UI Customization
 
-Override individual slot classes per instance with `ui`, or add classes to the `root` slot via `class-name`.
+Override individual slot classes per instance with `ui`, or add classes to the `root` slot via `className`.
 
 ```html [index.wxml]
 <c-action-sheet
   open="{{sheetOpen}}"
   title="Styled Sheet"
   items="{{items}}"
-  class-name="z-[60]"
+  className="z-[60]"
   ui="{{ { content: 'rounded-t-2xl', header: 'py-5', itemLabel: 'font-medium' } }}"
   bind:backdropTap="onClose"
 />

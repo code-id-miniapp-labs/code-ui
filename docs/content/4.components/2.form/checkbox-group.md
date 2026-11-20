@@ -219,13 +219,13 @@ Use `required` to add the required indicator to `legend` and set `aria-required`
 
 ### Form Integration
 
-Wrap `<c-checkbox-group>` inside `<c-form-field>` within `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validate-on` / `bind:submit` on `<c-form>`.
+Wrap `<c-checkbox-group>` inside `<c-form-field>` within `<c-form>`, placing `name`, `label`, `required`, and `rules` on `<c-form-field>` and `validateOn` / `bind:submit` on `<c-form>`.
 
 ::code-group
 ```html [index.wxml]
 <c-form
   id="preferences-form"
-  validate-on="{{validateOn}}"
+  validateOn="{{validateOn}}"
   bind:submit="onSubmit"
 >
   <c-form-field
@@ -236,7 +236,7 @@ Wrap `<c-checkbox-group>` inside `<c-form-field>` within `<c-form>`, placing `na
   >
     <c-checkbox-group
       items="{{items}}"
-      default-value="{{['email']}}"
+      defaultValue="{{['email']}}"
     />
   </c-form-field>
 </c-form>
@@ -310,7 +310,7 @@ Use `ui` to override the `root`, `fieldset`, or `legend` slot classes (also forw
 | `variant` | `"outline" \| "card"` | `"outline"` | Visual style variant forwarded to rendered `items`. |
 | `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Layout direction of the checkbox fieldset. |
 | `disabled` | `boolean` | `false` | Disables all checkboxes in the group. |
-| `readOnly` | `boolean` | `false` | Makes the group read-only (prevents user toggling). |
+| `readOnly` | `boolean` | `false` | Makes the group readOnly (prevents user toggling). |
 | `required` | `boolean` | `false` | Marks the group as required (`aria-required` and required indicator on `legend`). |
 | `invalid` | `boolean \| null` | `null` | Marks the group as invalid (`aria-invalid`). |
 | `min` | `number \| null` | `null` | Minimum number of items that must remain selected. |

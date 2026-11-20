@@ -146,7 +146,7 @@ When `formType="submit"` is used inside `<c-form>`, `loadingAuto` automatically 
   </c-form-field>
   <c-button
     label="Submit"
-    form-type="submit"
+    formType="submit"
     loadingAuto="{{true}}"
   />
 </c-form>

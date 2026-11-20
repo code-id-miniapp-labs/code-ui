@@ -18,15 +18,15 @@ Root application shell and host component for WeChat MiniProgram pages. It manag
 | Name | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `safeArea` (`safe-area`) | `String` | `"none"` | Safe-area padding strategy passed into layout resolution for root CSS variables. |
-| `scaleBackground` (`scale-background`) | `String` | `"bg-black"` | Backdrop color or utility class applied to the `root` slot when scaled. Values starting with `#` or `rgb` are set as inline `background-color`; other values are appended as classes. |
-| `scaleFactor` (`scale-factor`) | `Number` | `0.94` | Transform scale factor applied to `scaleWrapper` when scaled (unless overridden by host/gesture scale). |
+| `scaleBackground` (`scaleBackground`) | `String` | `"bg-black"` | Backdrop color or utility class applied to the `root` slot when scaled. Values starting with `#` or `rgb` are set as inline `background-color`; other values are appended as classes. |
+| `scaleFactor` (`scaleFactor`) | `Number` | `0.94` | Transform scale factor applied to `scaleWrapper` when scaled (unless overridden by host/gesture scale). |
 | `maxToasts` (`max-toasts`) | `Number` | `2` | Maximum number of simultaneous toasts managed by the toast host behavior. |
 | `topBarHeight` (`top-bar-height`) | `Number` | `0` | Explicit top bar height override (px) used in layout CSS variable calculation. |
 | `bottomBarHeight` (`bottom-bar-height`) | `Number` | `0` | Explicit bottom bar height override (px) used in layout CSS variable calculation. |
 | `autoDetectBars` (`auto-detect-bars`) | `Boolean` | `true` | Automatically detects connected top/bottom bar heights when explicit heights are not provided. |
 | `colorMode` (`color-mode`) | `String` | `""` | Optional theme mode override (`"light"` or `"dark"`). Falls back to the resolved app theme mode when empty. |
 | `ui` | `Object` | `{}` | Per-slot class overrides keyed by theme slot (`root`, `scaleWrapper`, `toaster`). |
-| `className` (`class-name`) | `String` | `""` | Additional class string merged onto the `root` slot via `resolveSlots` (declared as `className` instead of `class`). |
+| `className` (`className`) | `String` | `""` | Additional class string merged onto the `root` slot via `resolveSlots` (declared as `className` instead of `class`). |
 
 ---
 
@@ -86,10 +86,10 @@ Defined in `packages/core/src/theme/definitions/app.ts`:
 <c-app
   safe-area="all"
   color-mode="{{ colorMode }}"
-  scale-factor="{{ 0.94 }}"
-  scale-background="bg-black"
+  scaleFactor="{{ 0.94 }}"
+  scaleBackground="bg-black"
   max-toasts="{{ 2 }}"
-  class-name="min-h-screen"
+  className="min-h-screen"
   ui="{{ appUi }}"
 >
   <view class="p-4">

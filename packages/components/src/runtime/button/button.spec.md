@@ -2,7 +2,7 @@
 
 ## Overview & Tier
 
-- **Purpose**: Interactive button component with Nuxt UI v4-inspired theming (`variant`, `color`, `size`, `block`), leading/trailing icons, loading indicator (including automatic async loading support), disabled handling, and native WeChat `<button>` integration (`open-type`, `form-type`, hover props, and open-ability callbacks).
+- **Purpose**: Interactive button component with Nuxt UI v4-inspired theming (`variant`, `color`, `size`, `block`), leading/trailing icons, loading indicator (including automatic async loading support), disabled handling, and native WeChat `<button>` integration (`open-type`, `formType`, hover props, and open-ability callbacks).
 - **Architecture Tier**: **Tier 2 — Interactive / Stateful**
   - Uses `@code-id-labs/button` (`buttonMachine` + `connectButton`) via `createMachineBehavior` and imports runtime helpers from `../_shared/base` and `../_shared/machine`.
 - **Compound / Related Components**: Standalone component (not part of a compound parent/child relation). Internally renders `c-icon` as the fallback for icons and the loading spinner when custom slots are not provided.
@@ -36,7 +36,7 @@
 
 ### Native WeChat `<button>` Attributes
 
-The template also forwards native MiniProgram `<button>` attributes from `wxButtonBehavior` onto the inner `<button>`: `openType` (`open-type`), `formType` (`form-type`), `hoverClass` (`hover-class`), `hoverStartTime` (`hover-start-time`), `hoverStayTime` (`hover-stay-time`), `hoverStopPropagation` (`hover-stop-propagation`), `lang`, `sessionFrom` (`session-from`), `sendMessageTitle` (`send-message-title`), `sendMessagePath` (`send-message-path`), `sendMessageImg` (`send-message-img`), `showMessageCard` (`show-message-card`), and `appParameter` (`app-parameter`).
+The template also forwards native MiniProgram `<button>` attributes from `wxButtonBehavior` onto the inner `<button>`: `openType` (`open-type`), `formType` (`formType`), `hoverClass` (`hover-class`), `hoverStartTime` (`hover-start-time`), `hoverStayTime` (`hover-stay-time`), `hoverStopPropagation` (`hover-stop-propagation`), `lang`, `sessionFrom` (`session-from`), `sendMessageTitle` (`send-message-title`), `sendMessagePath` (`send-message-path`), `sendMessageImg` (`send-message-img`), `showMessageCard` (`show-message-card`), and `appParameter` (`app-parameter`).
 
 ---
 

@@ -207,14 +207,14 @@ Use `required` to display a required asterisk on the label, and `invalid` to app
 
 ### Form Integration
 
-Wrap `<c-checkbox>` inside `<c-form-field>` within a `<c-form>` to participate in form validation and submission. Define `name`, `required`, and `rules` on `<c-form-field>`, and `validate-on` and `bind:submit` on `<c-form>`.
+Wrap `<c-checkbox>` inside `<c-form-field>` within a `<c-form>` to participate in form validation and submission. Define `name`, `required`, and `rules` on `<c-form-field>`, and `validateOn` and `bind:submit` on `<c-form>`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-form
   id="profile-form"
-  validate-on="{{ validateOn }}"
+  validateOn="{{ validateOn }}"
   bind:submit="onFormSubmit"
 >
   <c-form-field

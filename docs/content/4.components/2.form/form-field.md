@@ -116,7 +116,7 @@ Pass `rules` to validate the field inside a form host. Use `form` to target a sp
 ::code-group
 
 ```html [index.wxml]
-<c-form id="signup" validate-on="submit" bind:submit="onSubmit">
+<c-form id="signup" validateOn="submit" bind:submit="onSubmit">
   <c-form-field
     name="email"
     label="Email"

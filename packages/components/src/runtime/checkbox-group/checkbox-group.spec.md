@@ -26,7 +26,7 @@
 | `variant` | `"outline" \| "card"` | `"outline"` | Visual style variant forwarded to rendered `items`. |
 | `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Layout direction of the checkbox fieldset. |
 | `disabled` | `boolean` | `false` | Disables all checkboxes in the group. |
-| `readOnly` | `boolean` | `false` | Makes the group read-only (prevents user toggling). |
+| `readOnly` | `boolean` | `false` | Makes the group readOnly (prevents user toggling). |
 | `required` | `boolean` | `false` | Marks the group as required (`aria-required` and required indicator on `legend`). |
 | `invalid` | `boolean \| null` | `null` | Marks the group as invalid (`aria-invalid`). |
 | `min` | `number \| null` | `null` | Minimum number of items that must remain selected. |

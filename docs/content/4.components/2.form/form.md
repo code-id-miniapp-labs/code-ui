@@ -14,7 +14,7 @@ description: Form container wrapping MiniProgram's native `<form>` element to co
 
 ### Basic
 
-Wrap descendant form fields and native `<button form-type="submit">` / `<button form-type="reset">` controls inside `<c-form>` with a `rules` map and `bind:submit` handler.
+Wrap descendant form fields and native `<button formType="submit">` / `<button formType="reset">` controls inside `<c-form>` with a `rules` map and `bind:submit` handler.
 
 ::code-group
 ```html [index.wxml]
@@ -31,8 +31,8 @@ Wrap descendant form fields and native `<button form-type="submit">` / `<button 
   </c-form-field>
 
   <view class="flex gap-2">
-    <button form-type="reset">Reset</button>
-    <button form-type="submit" type="primary">Sign In</button>
+    <button formType="reset">Reset</button>
+    <button formType="submit" type="primary">Sign In</button>
   </view>
 </c-form>
 ```
@@ -79,7 +79,7 @@ Use `value` for a controlled or initial field values map, `defaultValue` to defi
     <c-input />
   </c-form-field>
 
-  <button form-type="reset">Reset to Defaults</button>
+  <button formType="reset">Reset to Defaults</button>
 </c-form>
 ```
 
@@ -121,7 +121,7 @@ The `rules` prop accepts form-level validation rules keyed by field name (merged
     <c-input password="{{true}}" />
   </c-form-field>
 
-  <button form-type="submit" type="primary">Register</button>
+  <button formType="submit" type="primary">Register</button>
 </c-form>
 ```
 
@@ -160,14 +160,14 @@ Control when field validation runs with `validateOn` (default `["input", "change
 ```html
 <c-form
   rules="{{rules}}"
-  validate-on="{{['blur', 'submit']}}"
+  validateOn="{{['blur', 'submit']}}"
   validateLazy="{{true}}"
   bind:submit="onFormSubmit"
 >
   <c-form-field name="email" label="Email">
     <c-input />
   </c-form-field>
-  <button form-type="submit" type="primary">Continue</button>
+  <button formType="submit" type="primary">Continue</button>
 </c-form>
 ```
 
@@ -190,7 +190,7 @@ Enable `showErrors` to render a form-level error summary list below the form con
   <c-form-field name="password" label="Password">
     <c-input password="{{true}}" />
   </c-form-field>
-  <button form-type="submit" type="primary">Submit</button>
+  <button formType="submit" type="primary">Submit</button>
 </c-form>
 ```
 
@@ -203,13 +203,13 @@ Set `disabled` to disable all descendant fields and apply the `disabled` root va
   <c-form-field name="email" label="Email">
     <c-input />
   </c-form-field>
-  <button form-type="submit" type="primary">Save</button>
+  <button formType="submit" type="primary">Save</button>
 </c-form>
 ```
 
 ### Read-Only
 
-Set `readOnly` to make all descendant fields read-only without applying disabled styling.
+Set `readOnly` to make all descendant fields readOnly without applying disabled styling.
 
 ```html
 <c-form readOnly="{{true}}" value="{{ { email: 'alice@example.com' } }}">
@@ -231,16 +231,16 @@ Set `readOnly` to make all descendant fields read-only without applying disabled
   <c-form-field name="company" label="Company">
     <c-input />
   </c-form-field>
-  <button form-type="submit" type="primary">Save</button>
+  <button formType="submit" type="primary">Save</button>
 </c-form>
 ```
 
 ### Async Submit & Loading Auto
 
-When using `<c-button form-type="submit" loading-auto="{{true}}" />` inside `<c-form>`, pass your async request `Promise` to `e.detail.setPromise(...)` inside `bind:submit`. Both `<c-form>` (`submitting` state) and `<c-button>` (`loadingAuto`) will stay in their loading state until validation and the promise settle.
+When using `<c-button formType="submit" loadingAuto="{{true}}" />` inside `<c-form>`, pass your async request `Promise` to `e.detail.setPromise(...)` inside `bind:submit`. Both `<c-form>` (`submitting` state) and `<c-button>` (`loadingAuto`) will stay in their loading state until validation and the promise settle.
 
 ::note
-**Why `e.detail.setPromise` is required:** WeChat MiniProgram's `triggerEvent` always returns `undefined` and discards any value returned by `bind:submit` handlers. Using `e.detail.setPromise(promise)` lets `<c-form>` and `<c-button loading-auto>` track async submission without extra page state. If you trigger `formRef.current?.submit()` from an external button's `bind:tap`, forward the returned promise with `if (p) e.detail.setPromise(p)`.
+**Why `e.detail.setPromise` is required:** WeChat MiniProgram's `triggerEvent` always returns `undefined` and discards any value returned by `bind:submit` handlers. Using `e.detail.setPromise(promise)` lets `<c-form>` and `<c-button loadingAuto>` track async submission without extra page state. If you trigger `formRef.current?.submit()` from an external button's `bind:tap`, forward the returned promise with `if (p) e.detail.setPromise(p)`.
 ::
 
 ::code-group
@@ -249,7 +249,7 @@ When using `<c-button form-type="submit" loading-auto="{{true}}" />` inside `<c-
   <c-form-field name="email" label="Email" required="{{true}}">
     <c-input placeholder="name@example.com" />
   </c-form-field>
-  <c-button form-type="submit" loading-auto="{{true}}" label="Submit" />
+  <c-button formType="submit" loadingAuto="{{true}}" label="Submit" />
 </c-form>
 ```
 
@@ -280,8 +280,8 @@ Listen to `bind:submit`, `bind:error`, `bind:change`, `bind:validate`, and `bind
     <c-input />
   </c-form-field>
   <view class="flex gap-2">
-    <button form-type="reset">Reset</button>
-    <button form-type="submit" type="primary">Submit</button>
+    <button formType="reset">Reset</button>
+    <button formType="submit" type="primary">Submit</button>
   </view>
 </c-form>
 ```
@@ -381,7 +381,7 @@ Customize the `root`, `errors`, and `error` slots per instance with `ui`, or app
   <c-form-field name="email" label="Email">
     <c-input />
   </c-form-field>
-  <button form-type="submit" type="primary">Submit</button>
+  <button formType="submit" type="primary">Submit</button>
 </c-form>
 ```
 

@@ -212,7 +212,7 @@ Wrap `c-slider` inside `<c-form-field>` within `<c-form>` to integrate with form
 ```html [index.wxml]
 <c-form
   id="audio-settings"
-  validate-on="{{validateOn}}"
+  validateOn="{{validateOn}}"
   bind:submit="handleSubmit"
 >
   <c-form-field

@@ -290,14 +290,14 @@ Page({
 
 ### Form Integration
 
-Nest `<c-input>` inside `<c-form-field>` within `<c-form>`. Place `name`, `label`, `required`, and `rules` on `<c-form-field>`, and configure `validate-on` and `bind:submit` on `<c-form>`.
+Nest `<c-input>` inside `<c-form-field>` within `<c-form>`. Place `name`, `label`, `required`, and `rules` on `<c-form-field>`, and configure `validateOn` and `bind:submit` on `<c-form>`.
 
 ::code-group
 
 ```html [index.wxml]
 <c-form
   id="profile-form"
-  validate-on="{{['blur']}}"
+  validateOn="{{['blur']}}"
   bind:submit="handleSubmit"
 >
   <c-form-field

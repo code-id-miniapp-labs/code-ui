@@ -157,7 +157,7 @@ Page({
 
 ### Custom Styling
 
-Use `ui` to override theme slots (`root`, `frame`, `pattern`, `overlay`, `overlayImage`), `className` to add classes to the root element, and `rootStyle` to append inline styles.
+Use `ui` to override theme slots (`root`, `frame`, `pattern`, `overlay`, `overlayImage`) and `className` to add classes to the root element.
 
 ::code-group
 
@@ -168,7 +168,6 @@ Use `ui` to override theme slots (`root`, `frame`, `pattern`, `overlay`, `overla
   ecc="H"
   ui="{{qrUi}}"
   className="mx-auto"
-  rootStyle="padding: 16px;"
 />
 ```
 
@@ -201,7 +200,6 @@ Page({
 | `showOverlay` | `boolean` | `false` | Forces the center overlay container to render even when `overlaySrc` and the `overlay` slot are not provided. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged with the resolved theme classes (`root`, `frame`, `pattern`, `overlay`, `overlayImage`). |
 | `className` | `string` | `""` | Additional CSS class(es) applied to the `root` slot. |
-| `rootStyle` | `string` | `""` | Inline style string appended to the root `<view>` element's `style` attribute. |
 
 ### Imperative Methods
 

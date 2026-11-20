@@ -12,7 +12,7 @@ description: "Slide-over modal sheet with backdrop overlay, drag-to-dismiss grab
   - `<c-button>` — rendered internally as the default close trigger when no custom `close` slot is provided.
 
 ::callout{icon="i-lucide-info"}
-This component declares `className` (`class-name` in WXML) rather than `class` for applying additional classes to the `root` slot.
+This component declares `className` (`className` in WXML) rather than `class` for applying additional classes to the `root` slot.
 ::
 
 ## Usage
@@ -62,13 +62,13 @@ Page({
 
 ### Controlled & Uncontrolled
 
-Set `open` to a boolean for controlled mode, or omit it (`null`) and use `default-open` to render an initially open drawer in uncontrolled mode.
+Set `open` to a boolean for controlled mode, or omit it (`null`) and use `defaultOpen` to render an initially open drawer in uncontrolled mode.
 
 ::code-group
 
 ```html [index.wxml]
 <!-- Uncontrolled: starts open -->
-<c-drawer default-open="{{true}}">
+<c-drawer defaultOpen="{{true}}">
   <view slot="header" class="text-base font-semibold">Welcome</view>
   <view>This drawer manages its own open state.</view>
 </c-drawer>
@@ -160,12 +160,12 @@ Use the `close` prop to hide the default header `<c-button>` (`false` or `null`)
 
 ### Dismissal & Transition
 
-Control backdrop taps with `close-on-backdrop-click`, grabber drag dismissal with `dismissible` and `threshold` (in `px`), and enter/exit timing with `duration` (in `ms`).
+Control backdrop taps with `closeOnBackdropClick`, grabber drag dismissal with `dismissible` and `threshold` (in `px`), and enter/exit timing with `duration` (in `ms`).
 
 ```html [index.wxml]
 <c-drawer
   open="{{isOpen}}"
-  close-on-backdrop-click="{{false}}"
+  closeOnBackdropClick="{{false}}"
   dismissible="{{true}}"
   threshold="{{120}}"
   duration="{{400}}"
@@ -178,7 +178,7 @@ Control backdrop taps with `close-on-backdrop-click`, grabber drag dismissal wit
 
 ### Scale Background
 
-Enable `should-scale-background` alongside `<c-app>` to scale down the page container while the drawer is open, and tune the effect with `scale-factor` and `scale-background`. By default `portal="{{true}}"` renders the drawer inside `<root-portal>`; if you disable `portal`, pass `slot="overlay"` on `<c-drawer>` inside `<c-app>` so `<c-app>`'s scale transform does not trap `position: fixed`.
+Enable `shouldScaleBackground` alongside `<c-app>` to scale down the page container while the drawer is open, and tune the effect with `scaleFactor` and `scaleBackground`. By default `portal="{{true}}"` renders the drawer inside `<root-portal>`; if you disable `portal`, pass `slot="overlay"` on `<c-drawer>` inside `<c-app>` so `<c-app>`'s scale transform does not trap `position: fixed`.
 
 ::code-group
 
@@ -190,9 +190,9 @@ Enable `should-scale-background` alongside `<c-app>` to scale down the page cont
 
   <c-drawer
     open="{{isOpen}}"
-    should-scale-background="{{true}}"
-    scale-factor="{{0.92}}"
-    scale-background="bg-neutral-950"
+    shouldScaleBackground="{{true}}"
+    scaleFactor="{{0.92}}"
+    scaleBackground="bg-neutral-950"
     bind:close="onClose"
   >
     <view slot="header" class="text-base font-semibold">Scaled Background</view>
@@ -319,12 +319,12 @@ Page({
 
 ### Custom Styling
 
-Use `ui` to override individual slot classes and `class-name` (`className`) to add classes to the `root` slot.
+Use `ui` to override individual slot classes and `className` (`className`) to add classes to the `root` slot.
 
 ```html [index.wxml]
 <c-drawer
   open="{{isOpen}}"
-  class-name="z-60"
+  className="z-60"
   ui="{{ { backdrop: 'bg-black/60', content: 'max-h-[70vh] rounded-t-2xl', body: 'px-6 py-4' } }}"
   bind:close="onClose"
 >
@@ -350,7 +350,7 @@ Use `ui` to override individual slot classes and `class-name` (`className`) to a
 | `close` | `boolean \| DrawerCloseProps \| null` | `true` | Controls the header close button. `false`/`null` hides it (unless the `close` slot is used); an object forwards props (`icon`, `leadingIcon`, `trailingIcon`, `label`, `loading`, `loadingIcon`, `color`, `variant`, `size`, `disabled`, `ui`, `className`) to `<c-button>`. |
 | `portal` | `boolean` | `true` | Renders the drawer overlay and sheet inside WeChat `<root-portal>` so fixed positioning stays anchored to the viewport above page content and scaling transforms. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged with the resolved theme classes. |
-| `className` | `string` | `""` | Additional class string applied to the `root` slot (`class-name` in WXML). |
+| `className` | `string` | `""` | Additional class string applied to the `root` slot (`className` in WXML). |
 
 ## Slots
 

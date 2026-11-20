@@ -315,12 +315,12 @@ Page({
 
 ### Form Integration
 
-Wrap `<c-file-upload>` inside `<c-form-field>` within `<c-form>` to integrate with form state and validation. Configure `name`, `label`, `required`, and `rules` on `<c-form-field>`, and `validate-on` and `bind:submit` on `<c-form>`.
+Wrap `<c-file-upload>` inside `<c-form-field>` within `<c-form>` to integrate with form state and validation. Configure `name`, `label`, `required`, and `rules` on `<c-form-field>`, and `validateOn` and `bind:submit` on `<c-form>`.
 
 ```html [index.wxml]
 <c-form
   id="profile-form"
-  validate-on="{{ validateOn }}"
+  validateOn="{{ validateOn }}"
   bind:submit="onSubmit"
 >
   <c-form-field

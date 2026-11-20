@@ -210,7 +210,7 @@ Page({
 ### 3. Compound Declarative Items & Named Slots
 
 ```xml
-<c-select placeholder="Select role" ui="{{selectUi}}" class-name="w-64">
+<c-select placeholder="Select role" ui="{{selectUi}}" className="w-64">
   <view slot="header" class="text-xs text-muted">Available Roles</view>
   <c-select-item value="admin" label="Admin" description="Full access" />
   <c-select-item value="editor" label="Editor" />

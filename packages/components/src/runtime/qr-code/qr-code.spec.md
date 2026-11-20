@@ -24,7 +24,6 @@
 | `showOverlay` | `boolean` | `false` | Forces the center overlay container to render even when `overlaySrc` and the `overlay` slot are not provided. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged with the resolved theme classes (`root`, `frame`, `pattern`, `overlay`, `overlayImage`). |
 | `className` | `string` | `""` | Additional CSS class(es) applied to the `root` slot (exposed as `className` rather than `class` on the runtime component). |
-| `rootStyle` | `string` | `""` | Inline style string appended to the root `<view>` element's `style` attribute. |
 
 ### Imperative Methods
 

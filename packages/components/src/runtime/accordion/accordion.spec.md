@@ -67,7 +67,7 @@ Defined in `packages/core/src/theme/definitions/accordion.ts`:
   items="{{faqItems}}"
   variant="outline"
   size="md"
-  default-value="item-1"
+  defaultValue="item-1"
   multiple="{{false}}"
   collapsible="{{true}}"
 />

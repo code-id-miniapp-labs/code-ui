@@ -405,12 +405,12 @@ Page({
 
 ### Form Integration
 
-Wrap `<c-select>` inside `<c-form-field>` within `<c-form>` to integrate with form validation, error display, and disabled state inheritance (`fieldDisabled`). Configure `validate-on` and `bind:submit` on `<c-form>`, and pass `name`, `label`, `required`, and `rules` on `<c-form-field>`.
+Wrap `<c-select>` inside `<c-form-field>` within `<c-form>` to integrate with form validation, error display, and disabled state inheritance (`fieldDisabled`). Configure `validateOn` and `bind:submit` on `<c-form>`, and pass `name`, `label`, `required`, and `rules` on `<c-form-field>`.
 
 ::code-group
 
 ```html [index.wxml]
-<c-form id="profileForm" validate-on="change" bind:submit="onSubmit">
+<c-form id="profileForm" validateOn="change" bind:submit="onSubmit">
   <c-form-field
     name="country"
     label="Country"
@@ -444,7 +444,7 @@ Page({
 
 ### Custom Styling
 
-Use `class-name` (`className`) to style the `root` slot and `ui` to override individual theme slots.
+Use `className` (`className`) to style the `root` slot and `ui` to override individual theme slots.
 
 ::code-group
 
@@ -452,7 +452,7 @@ Use `class-name` (`className`) to style the `root` slot and `ui` to override ind
 <c-select
   placeholder="Custom styled"
   items="{{items}}"
-  class-name="w-64"
+  className="w-64"
   ui="{{selectUi}}"
 />
 ```
@@ -527,7 +527,7 @@ Page({
 | `itemHeight` | `number` | `44` | Height in `px` for each row inside `<picker-view>` in `"picker"` mode. |
 | `emptyText` | `string` | `"No options"` | Fallback text rendered when no options exist and the `empty` slot is not provided. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged over theme slot classes. |
-| `className` | `string` | `""` | Additional class string applied to the `root` slot (pass `class-name` in WXML). |
+| `className` | `string` | `""` | Additional class string applied to the `root` slot (pass `className` in WXML). |
 
 ## Slots
 
@@ -587,7 +587,7 @@ Page({
     value="strawberry"
     label="Strawberry"
     ui="{{ { label: 'font-semibold' } }}"
-    class-name="my-custom-item"
+    className="my-custom-item"
   />
 </c-select>
 
@@ -638,7 +638,7 @@ Page({
 | `index` | `number \| null` | `null` | Explicit item index override. |
 | `managed` | `boolean` | `false` | Internal flag indicating the item is rendered by parent `c-select` via `wx:for`. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot utility class overrides keyed by theme slot name. |
-| `className` | `string` | `""` | Additional class string applied to the `root` slot (pass `class-name` in WXML). |
+| `className` | `string` | `""` | Additional class string applied to the `root` slot (pass `className` in WXML). |
 
 ### Item Slots
 

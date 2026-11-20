@@ -23,9 +23,9 @@
 | `scaleFactor` | `number` | `0.94` | Scale factor applied to `<c-app>` when `shouldScaleBackground` is enabled. |
 | `scaleBackground` | `string` | `"bg-black"` | Background color or utility class shown behind `<c-app>` while scaled. |
 | `close` | `boolean \| DrawerCloseProps \| null` | `true` | Controls the header close button. `false`/`null` hides it (unless the `close` slot is used); an object forwards props (`icon`, `leadingIcon`, `trailingIcon`, `label`, `loading`, `loadingIcon`, `color`, `variant`, `size`, `disabled`, `ui`, `className`) to `<c-button>`. |
-| `portal` | `boolean` | `true` | Renders the drawer overlay and content inside `<root-portal>` so fixed positioning stays anchored to the viewport above page content and scaling transforms. When used inside `<c-app>` with `should-scale-background="true"`, place `<c-drawer slot="overlay">` directly under `<c-app>` so container scaling never traps `position: fixed`. |
+| `portal` | `boolean` | `true` | Renders the drawer overlay and content inside `<root-portal>` so fixed positioning stays anchored to the viewport above page content and scaling transforms. When used inside `<c-app>` with `shouldScaleBackground="true"`, place `<c-drawer slot="overlay">` directly under `<c-app>` so container scaling never traps `position: fixed`. |
 | `ui` | `Record<string, string>` | `{}` | Per-slot class overrides merged with the resolved theme classes. |
-| `className` | `string` | `""` | Additional class string applied to the `root` slot (`class-name` in WXML; this component declares `className` rather than `class`). |
+| `className` | `string` | `""` | Additional class string applied to the `root` slot (`className` in WXML; this component declares `className` rather than `class`). |
 
 > **Callback props (`DrawerProps`)**: `onOpenChange`, `onClose`, `onBackdropTap`, `onCloseTriggerTap`, `onDragStart`, `onDrag`, and `onDragEnd` are handled by `@code-id-labs/drawer` and automatically bridged to MiniProgram `bind:*` events via `createMachinePropGetter`.
 
@@ -81,7 +81,7 @@ Defined in `packages/core/src/theme/definitions/drawer.ts`:
 <c-drawer
   open="{{isOpen}}"
   placement="bottom"
-  should-scale-background="{{true}}"
+  shouldScaleBackground="{{true}}"
   ui="{{ { content: 'max-h-[70vh]' } }}"
   bind:close="onCloseDrawer"
 >

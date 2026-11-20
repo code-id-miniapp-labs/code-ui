@@ -49,10 +49,6 @@ Component(
         type: String,
         value: "",
       },
-      rootStyle: {
-        type: String,
-        value: "",
-      },
     }),
 
     computed: {

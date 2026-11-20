@@ -71,8 +71,8 @@
 | `selectedIcon` | `string` | `"check"` | Default check icon name passed to selected `<c-input-menu-item>` options. |
 | `clearIcon` | `string` | `"close"` | Icon name for the clear button. |
 | `deleteIcon` | `string` | `"close"` | Icon name for tag delete buttons in `multiple` mode. |
-| `createIcon` | `string` | `""` | Optional icon name displayed in the default create-item row. |
-| `createItemText` | `string` | `"Create"` | Prefix text rendered in the default create-item row (`<createItemText> "<searchTerm>"`). |
+| `createIcon` | `string` | `""` | Optional icon name displayed in the default createItem row. |
+| `createItemText` | `string` | `"Create"` | Prefix text rendered in the default createItem row (`<createItemText> "<searchTerm>"`). |
 | `loading` | `boolean` | `false` | Display the loading indicator in the trailing area. |
 | `loadingIcon` | `string` | `"loading"` | Icon name for the trailing loading indicator. |
 | `portal` | `boolean` | `false` | Render the floating dropdown content via portal mode on `<c-popover>`. |
@@ -95,7 +95,7 @@
 | `loadingIcon` | Custom loading indicator shown in the trailing area when `loading` is `true`. |
 | `header` | Optional header section rendered above the dropdown `<scroll-view>`. |
 | `footer` | Optional footer section rendered below the dropdown `<scroll-view>`. |
-| `createItem` | Custom content for the dynamic create-item option when `createItem` is enabled and visible. |
+| `createItem` | Custom content for the dynamic createItem option when `createItem` is enabled and visible. |
 | `empty` | Custom empty-state content shown when no dropdown items match and `createItem` is not visible. |
 
 > **MiniProgram `<slot>` Notes:**
@@ -112,7 +112,7 @@
 | `bind:select` | `{ value: InputMenuScalarValue; item?: NormalizedInputMenuItem; selected: boolean }` | Fired when an item in the dropdown is selected. |
 | `bind:openchange` | `{ open: boolean }` | Fired when the dropdown open state changes. |
 | `bind:searchtermchange` | `{ value: string }` | Fired when `searchTerm` changes. |
-| `bind:create` | `{ value: string }` | Fired when the create-item option is tapped or confirmed. |
+| `bind:create` | `{ value: string }` | Fired when the createItem option is tapped or confirmed. |
 | `bind:clear` | `Record<string, any>` | Fired when the clear button is tapped. |
 | `bind:focus` | `{ value: InputMenuValue; searchTerm: string }` | Fired when the native `<input>` gains focus. |
 | `bind:blur` | `{ value: InputMenuValue; searchTerm: string }` | Fired when the native `<input>` loses focus. |
@@ -177,7 +177,7 @@ Page({
 ```xml
 <c-input-menu
   multiple
-  create-item="{{ { position: 'bottom', when: 'empty' } }}"
+  createItem="{{ { position: 'bottom', when: 'empty' } }}"
   items="{{tags}}"
   value="{{selectedTags}}"
   placeholder="Add tags..."
