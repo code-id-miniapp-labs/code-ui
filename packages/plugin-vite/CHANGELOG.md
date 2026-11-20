@@ -1,5 +1,11 @@
 # @code-ui/plugin-vite
 
+## 1.0.5
+
+### Patch Changes
+
+- d3cf0fd: Defer production tree-shaking to clean process exit under `weapp-vite` and remove unguarded `generateBundle` purging in watch mode so concurrent `weapp-vite` npm builds (`collectCopiedPackageRequests`) never hit `ENOENT`.
+
 ## 1.0.4
 
 ### Patch Changes
