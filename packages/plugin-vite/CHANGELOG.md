@@ -1,5 +1,7 @@
 # @code-ui/plugin-vite
 
+## 1.0.6
+
 ## 1.0.5
 
 ### Patch Changes
