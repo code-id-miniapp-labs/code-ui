@@ -30,6 +30,7 @@
   "ignorePatterns": [
     "**/dist/**",
     "**/*.d.ts",
-    "packages/components/src/index.ts"
+    "packages/components/src/index.ts",
+    "docs/**"
   ]
 }

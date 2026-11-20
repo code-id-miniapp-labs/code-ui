@@ -1,0 +1,4 @@
+{
+  "eslint.workingDirectories": ["docs"],
+  "eslint.validate": ["javascript", "typescript", "vue"]
+}
