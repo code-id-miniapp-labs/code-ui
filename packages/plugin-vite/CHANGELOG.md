@@ -1,5 +1,11 @@
 # @code-ui/plugin-vite
 
+## 1.0.4
+
+### Patch Changes
+
+- eb36b64: - **plugin-vite**: Wait for `dist/miniprogram_npm/<library>` writes to settle in `closeBundle` (`order: "post"`) before running `handleTreeShake`, preventing `ENOENT: chmod` race conditions with `weapp-vite`'s concurrent `copyBuild` during `pnpm build`.
+
 ## 1.0.3
 
 ## 1.0.2
