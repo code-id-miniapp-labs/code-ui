@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "@nuxtjs/seo",
     "nuxt-qrcode",
+    "@vercel/analytics/nuxt",
   ],
 
   qrcode: {
