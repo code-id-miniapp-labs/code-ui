@@ -1,10 +1,15 @@
 import fs from "node:fs";
+import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { codeUI } from "../src/index";
 import {
   clearLibraryGraphCache,
+  flushPendingExitTreeShakes,
   handleTreeShake,
+  isWeappViteConfig,
+  waitForMiniprogramNpmStable,
 } from "../src/core/tree-shake";
 
 describe("tree-shake", () => {
@@ -91,6 +96,7 @@ describe("tree-shake", () => {
   });
 
   afterEach(() => {
+    flushPendingExitTreeShakes(1);
     fs.rmSync(tmpRoot, { recursive: true, force: true });
     clearLibraryGraphCache();
   });
@@ -333,6 +339,245 @@ describe("tree-shake", () => {
     expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(true);
     // stepper.js should be restored!
     expect(fs.existsSync(path.join(distLibDir, "stepper.js"))).toBe(true);
+  });
+
+  it("defers tree-shake to clean process exit under weapp-vite so concurrent collectCopiedPackageRequests never hits ENOENT", async () => {
+    // Add an unused switch component with index.js (reproducing the exact ENOENT crash)
+    const switchSrcDir = path.join(libDir, "runtime", "switch");
+    fs.mkdirSync(switchSrcDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(switchSrcDir, "index.json"),
+      JSON.stringify({ component: true, usingComponents: {} }),
+      "utf-8",
+    );
+    fs.writeFileSync(
+      path.join(switchSrcDir, "index.js"),
+      `Component({});`,
+      "utf-8",
+    );
+    fs.cpSync(switchSrcDir, path.join(distLibDir, "runtime", "switch"), {
+      recursive: true,
+    });
+
+    // Write emitted page JSON referencing ONLY c-drawer (not c-switch or c-button)
+    const pageDir = path.join(tmpRoot, "dist", "pages", "index");
+    fs.mkdirSync(pageDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pageDir, "index.json"),
+      JSON.stringify({
+        usingComponents: {
+          "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+        },
+      }),
+      "utf-8",
+    );
+
+    const plugin = codeUI({ treeShake: true });
+    const mockWeappConfig = {
+      root: tmpRoot,
+      build: { outDir: "dist", cssMinify: false },
+      plugins: [{ name: "weapp-vite:compiler:output" }],
+    };
+    expect(isWeappViteConfig(mockWeappConfig)).toBe(true);
+
+    const configResolvedHook =
+      typeof plugin.configResolved === "function"
+        ? plugin.configResolved
+        : plugin.configResolved?.handler;
+    await configResolvedHook?.call({} as any, mockWeappConfig as any);
+
+    const closeBundleHook =
+      typeof plugin.closeBundle === "function"
+        ? plugin.closeBundle
+        : plugin.closeBundle?.handler;
+
+    // Simulate weapp-vite's buildEntry:
+    // npmBuildTask runs concurrently with Vite's closeBundle and reads copied
+    // .js files (collectCopiedPackageRequests) AFTER closeBundle has returned.
+    const switchDistJs = path.join(
+      distLibDir,
+      "runtime",
+      "switch",
+      "index.js",
+    );
+    const npmBuildTask = (async () => {
+      // Simulate delay longer than waitForMiniprogramNpmStable while other
+      // packages settle before collectCopiedPackageRequests scans switch/index.js
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const content = await fsp.readFile(switchDistJs, "utf-8");
+      return content;
+    })();
+
+    // Vite finishes closeBundle first
+    await closeBundleHook?.call({ meta: { watchMode: false } } as any);
+
+    // switch/index.js MUST still exist until weapp-vite finishes awaiting npmBuildTask
+    expect(fs.existsSync(switchDistJs)).toBe(true);
+    await expect(npmBuildTask).resolves.toBe(`Component({});`);
+
+    // Once weapp-vite exits cleanly (code 0), deferred tree-shake runs synchronously
+    flushPendingExitTreeShakes(0);
+
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "drawer"))).toBe(
+      true,
+    );
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "switch"))).toBe(
+      false,
+    );
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(
+      false,
+    );
+  });
+
+  it("skips deferred tree-shake when process exits with a non-zero exit code", async () => {
+    const pageDir = path.join(tmpRoot, "dist", "pages", "index");
+    fs.mkdirSync(pageDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pageDir, "index.json"),
+      JSON.stringify({
+        usingComponents: {
+          "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+        },
+      }),
+      "utf-8",
+    );
+
+    const plugin = codeUI({ treeShake: true });
+    const configResolvedHook =
+      typeof plugin.configResolved === "function"
+        ? plugin.configResolved
+        : plugin.configResolved?.handler;
+    await configResolvedHook?.call(
+      {} as any,
+      {
+        root: tmpRoot,
+        build: { outDir: "dist", cssMinify: false },
+        plugins: [{ name: "weapp-vite:compiler:output" }],
+      } as any,
+    );
+
+    const closeBundleHook =
+      typeof plugin.closeBundle === "function"
+        ? plugin.closeBundle
+        : plugin.closeBundle?.handler;
+    await closeBundleHook?.call({ meta: { watchMode: false } } as any);
+
+    flushPendingExitTreeShakes(1);
+
+    // Unused button was NOT purged because build failed (exit code 1)
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(
+      true,
+    );
+  });
+
+  it("runs tree-shake immediately in closeBundle when not running under weapp-vite", async () => {
+    const pageDir = path.join(tmpRoot, "dist", "pages", "index");
+    fs.mkdirSync(pageDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pageDir, "index.json"),
+      JSON.stringify({
+        usingComponents: {
+          "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+        },
+      }),
+      "utf-8",
+    );
+
+    const plugin = codeUI({ treeShake: true });
+    const configResolvedHook =
+      typeof plugin.configResolved === "function"
+        ? plugin.configResolved
+        : plugin.configResolved?.handler;
+    await configResolvedHook?.call(
+      {} as any,
+      {
+        root: tmpRoot,
+        build: { outDir: "dist", cssMinify: false },
+        plugins: [{ name: "vite:css" }],
+      } as any,
+    );
+
+    const closeBundleHook =
+      typeof plugin.closeBundle === "function"
+        ? plugin.closeBundle
+        : plugin.closeBundle?.handler;
+    await closeBundleHook?.call({ meta: { watchMode: false } } as any);
+
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "drawer"))).toBe(
+      true,
+    );
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(
+      false,
+    );
+  });
+
+  it("does not purge components during generateBundle in watchMode", async () => {
+    const plugin = codeUI({ treeShake: true });
+    const configResolvedHook =
+      typeof plugin.configResolved === "function"
+        ? plugin.configResolved
+        : plugin.configResolved?.handler;
+    await configResolvedHook?.call(
+      {} as any,
+      {
+        root: tmpRoot,
+        build: { outDir: "dist", cssMinify: false },
+        plugins: [{ name: "weapp-vite:compiler:output" }],
+      } as any,
+    );
+
+    const generateBundleHook =
+      typeof plugin.generateBundle === "function"
+        ? plugin.generateBundle
+        : plugin.generateBundle?.handler;
+
+    const bundle = {
+      "pages/index/index.json": {
+        type: "asset",
+        source: JSON.stringify({
+          usingComponents: {
+            "c-drawer": "@code-id-labs/components/runtime/drawer/index",
+          },
+        }),
+      },
+    };
+
+    generateBundleHook?.call(
+      { meta: { watchMode: true } } as any,
+      {} as any,
+      bundle as any,
+      false,
+    );
+
+    // generateBundle must NOT delete unused components while npm copy may be in flight
+    expect(fs.existsSync(path.join(distLibDir, "runtime", "button"))).toBe(
+      true,
+    );
+  });
+
+  it("waitForMiniprogramNpmStable waits for concurrent writes in sibling miniprogram_npm packages", async () => {
+    const siblingDir = path.join(tmpRoot, "dist", "miniprogram_npm", "other-pkg");
+    fs.mkdirSync(siblingDir, { recursive: true });
+    fs.writeFileSync(path.join(siblingDir, "index.js"), "v1", "utf-8");
+
+    let wroteSecondFile = false;
+    const writer = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        fs.writeFileSync(path.join(siblingDir, "chunk.js"), "v2", "utf-8");
+        wroteSecondFile = true;
+        resolve();
+      }, 30);
+    });
+
+    await waitForMiniprogramNpmStable(
+      { enable: true },
+      tmpRoot,
+      { build: { outDir: "dist" } },
+      { settleMs: 60, maxWaitMs: 1000 },
+    );
+    await writer;
+
+    expect(wroteSecondFile).toBe(true);
   });
 });
 

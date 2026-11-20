@@ -49,6 +49,8 @@ import {
 import { transformAppStyle } from "./core/style-inject";
 import {
   handleTreeShake,
+  isWeappViteConfig,
+  scheduleTreeShakeOnExit,
   waitForMiniprogramNpmStable,
 } from "./core/tree-shake";
 import {
@@ -422,14 +424,6 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
           updatedInBundle,
           appWrapperOpts,
         );
-        if (this.meta.watchMode) {
-          handleTreeShake(
-            treeShakeOpts,
-            projectRoot,
-            viteConfigObj,
-            typedBundle,
-          );
-        }
 
         for (const [fileName, item] of Object.entries(typedBundle)) {
           if (
@@ -459,12 +453,19 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
           undefined,
           appWrapperOpts,
         );
-        await waitForMiniprogramNpmStable(
-          treeShakeOpts,
-          projectRoot,
-          viteConfigObj,
-        );
-        handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+        if (!this.meta.watchMode && isWeappViteConfig(viteConfigObj)) {
+          const exitKey = `${projectRoot}\0${outDir}\0${treeShakeOpts.library}`;
+          scheduleTreeShakeOnExit(exitKey, () => {
+            handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+          });
+        } else {
+          await waitForMiniprogramNpmStable(
+            treeShakeOpts,
+            projectRoot,
+            viteConfigObj,
+          );
+          handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+        }
         cleanKeyframesInDir(distRoot);
 
         if (!this.meta.watchMode && viteConfigObj?.build?.cssMinify !== false) {

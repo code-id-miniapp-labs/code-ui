@@ -436,9 +436,79 @@ function snapshotDirActivity(dir: string): {
 }
 
 /**
- * Waits until `dist/miniprogram_npm/<library>` stops being actively written to
+ * Detects whether the active Vite config is running inside `weapp-vite`.
+ */
+export function isWeappViteConfig(
+  viteConfig:
+    | { plugins?: ReadonlyArray<{ name?: string }> }
+    | null
+    | undefined,
+): boolean {
+  return Boolean(
+    viteConfig?.plugins?.some(
+      (p) => typeof p?.name === "string" && p.name.startsWith("weapp-vite:"),
+    ),
+  );
+}
+
+const pendingExitTreeShakes = new Map<string, () => void>();
+let exitHookRegistered = false;
+
+function flushExitTreeShakes(code: number): void {
+  exitHookRegistered = false;
+  process.removeListener("beforeExit", onProcessBeforeExit);
+  process.removeListener("exit", onProcessExit);
+  const tasks = Array.from(pendingExitTreeShakes.values());
+  pendingExitTreeShakes.clear();
+  if (code !== 0) return;
+  for (const run of tasks) {
+    try {
+      run();
+    } catch (err) {
+      console.warn("[code-ui:tree-shake] Deferred tree-shake failed:", err);
+    }
+  }
+}
+
+function onProcessBeforeExit(code: number): void {
+  flushExitTreeShakes(code);
+}
+
+function onProcessExit(code: number): void {
+  flushExitTreeShakes(code);
+}
+
+/**
+ * Defers tree-shaking until the Node process is exiting cleanly (`code === 0`).
+ *
+ * `weapp-vite` runs `npmService.build()` (which copies `miniprogram_npm` and
+ * then reads copied `.js` files in `collectCopiedPackageRequests`) concurrently
+ * with the Vite build and only awaits it *after* Vite's `closeBundle` returns.
+ * Running `handleTreeShake` (which is 100% synchronous) on clean process exit
+ * guarantees `weapp-vite` has completely finished `npmService.build()` before
+ * any unused files are deleted.
+ */
+export function scheduleTreeShakeOnExit(key: string, task: () => void): void {
+  pendingExitTreeShakes.set(key, task);
+  if (!exitHookRegistered) {
+    exitHookRegistered = true;
+    process.once("beforeExit", onProcessBeforeExit);
+    process.once("exit", onProcessExit);
+  }
+}
+
+/**
+ * Flushes (or clears on non-zero exit code) any pending exit-deferred
+ * tree-shake tasks. Primarily used in tests.
+ */
+export function flushPendingExitTreeShakes(code = 0): void {
+  flushExitTreeShakes(code);
+}
+
+/**
+ * Waits until `dist/miniprogram_npm` stops being actively written to
  * (e.g. by weapp-vite's concurrent `copyBuild` / `fs.cp`). Prevents ENOENT
- * chmod races when tree-shake purges unused component directories during build.
+ * races when tree-shake purges unused component directories during watch mode.
  */
 export async function waitForMiniprogramNpmStable(
   treeShakeOpts: TreeShakeOptions | ResolvedTreeShakeOptions,
@@ -448,18 +518,22 @@ export async function waitForMiniprogramNpmStable(
 ): Promise<void> {
   const treeLibrary = treeShakeOpts.library || "@code-id-labs/components";
   const outDir = viteConfigObj?.build?.outDir || "dist";
-  const miniprogramNpmPath = path.resolve(
+  const miniprogramNpmRoot = path.resolve(
     projectRoot,
     outDir,
     "miniprogram_npm",
-    treeLibrary,
   );
+  const miniprogramNpmPath = path.resolve(miniprogramNpmRoot, treeLibrary);
   if (!fs.existsSync(miniprogramNpmPath)) return;
+
+  const watchDir = fs.existsSync(miniprogramNpmRoot)
+    ? miniprogramNpmRoot
+    : miniprogramNpmPath;
 
   const settleMs = options?.settleMs ?? 120;
   const maxWaitMs = options?.maxWaitMs ?? 3000;
 
-  const prev = snapshotDirActivity(miniprogramNpmPath);
+  const prev = snapshotDirActivity(watchDir);
   if (Date.now() - prev.maxMtimeMs > settleMs * 2) {
     return;
   }
@@ -471,7 +545,7 @@ export async function waitForMiniprogramNpmStable(
     if (Date.now() >= deadline) return Promise.resolve();
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        const next = snapshotDirActivity(miniprogramNpmPath);
+        const next = snapshotDirActivity(watchDir);
         if (
           next.count === previous.count &&
           next.maxMtimeMs === previous.maxMtimeMs &&
