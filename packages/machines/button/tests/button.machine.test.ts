@@ -581,5 +581,76 @@ describe("Button Machine", () => {
 
       machine.stop();
     });
+
+    it("submits linked formContext when formType='submit' and inherits async submit promise with loadingAuto", async () => {
+      let resolveSubmit!: () => void;
+      const submitSpy = vi.fn(
+        () =>
+          new Promise<void>((res) => {
+            resolveSubmit = res;
+          }),
+      );
+      const resetSpy = vi.fn();
+
+      const machine = new MiniappMachine(buttonMachine, {
+        formType: "submit",
+        loadingAuto: true,
+        formContext: {
+          submit: submitSpy,
+          reset: resetSpy,
+        },
+      });
+      machine.start();
+
+      const api = connectButton(machine.service);
+      // Native form-type is cleared when linked to <c-form> to prevent duplicate native submit
+      expect(api.rootProps.formType).toBe("");
+
+      api.handleTap();
+      await flush();
+
+      expect(submitSpy).toHaveBeenCalledTimes(1);
+      expect(machine.state.get()).toBe("loading");
+      expect(machine.computed("isLoading")).toBe(true);
+
+      resolveSubmit();
+      await flush();
+      await flush();
+
+      expect(machine.state.get()).toBe("success");
+      expect(machine.computed("isLoading")).toBe(false);
+
+      machine.stop();
+    });
+
+    it("preserves native formType when not linked to a formContext", () => {
+      const machine = new MiniappMachine(buttonMachine, {
+        formType: "submit",
+      });
+      machine.start();
+
+      const api = connectButton(machine.service);
+      expect(api.rootProps.formType).toBe("submit");
+
+      machine.stop();
+    });
+
+    it("resets linked formContext when formType='reset'", async () => {
+      const resetSpy = vi.fn();
+      const machine = new MiniappMachine(buttonMachine, {
+        formType: "reset",
+        formContext: {
+          submit: vi.fn(),
+          reset: resetSpy,
+        },
+      });
+      machine.start();
+
+      machine.send({ type: "TAP" });
+      await flush();
+
+      expect(resetSpy).toHaveBeenCalledTimes(1);
+      machine.stop();
+    });
   });
 });

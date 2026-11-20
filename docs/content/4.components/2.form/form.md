@@ -235,6 +235,33 @@ Set `readOnly` to make all descendant fields read-only without applying disabled
 </c-form>
 ```
 
+### Async Submit & Loading Auto
+
+When using `<c-button form-type="submit" loading-auto="{{true}}" />` inside `<c-form>`, pass your async request `Promise` to `e.detail.setPromise(...)` inside `bind:submit`. Both `<c-form>` (`submitting` state) and `<c-button>` (`loadingAuto`) will stay in their loading state until validation and the promise settle.
+
+::note
+**Why `e.detail.setPromise` is required:** WeChat MiniProgram's `triggerEvent` always returns `undefined` and discards any value returned by `bind:submit` handlers. Using `e.detail.setPromise(promise)` lets `<c-form>` and `<c-button loading-auto>` track async submission without extra page state. If you trigger `formRef.current?.submit()` from an external button's `bind:tap`, forward the returned promise with `if (p) e.detail.setPromise(p)`.
+::
+
+::code-group
+```html [index.wxml]
+<c-form bind:submit="onFormSubmit">
+  <c-form-field name="email" label="Email" required="{{true}}">
+    <c-input placeholder="name@example.com" />
+  </c-form-field>
+  <c-button form-type="submit" loading-auto="{{true}}" label="Submit" />
+</c-form>
+```
+
+```ts [index.ts]
+Page({
+  onFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    e.detail.setPromise(submitToServer(e.detail.values));
+  },
+});
+```
+::
+
 ### Events
 
 Listen to `bind:submit`, `bind:error`, `bind:change`, `bind:validate`, and `bind:reset` to react to form lifecycle updates.

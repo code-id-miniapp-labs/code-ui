@@ -6,12 +6,13 @@ export function connectButton<T extends PropTypes = PropTypes>(
   service: ButtonService,
   normalize?: NormalizeProps<T>,
 ): ButtonApi {
-  const { state, send, computed, scope } = service;
+  const { state, send, computed, scope, prop } = service;
 
   const loading = computed("isLoading");
   const disabled = computed("isDisabled");
   const currentState = state.get();
   const btn = normalize ? normalize.button : (v: Record<string, any>) => v;
+  const nativeFormType = prop("formContext") ? "" : (prop("formType") ?? "");
 
   return {
     state: currentState,
@@ -36,6 +37,7 @@ export function connectButton<T extends PropTypes = PropTypes>(
       "data-disabled": String(disabled),
       "data-loading": String(loading),
       disabled: disabled || loading,
+      formType: nativeFormType,
       "aria-role": "button",
       "aria-disabled": disabled,
       "aria-busy": Boolean(loading),

@@ -46,6 +46,13 @@ export interface ButtonProps {
   loadingAuto?: boolean | undefined;
   /** Duration in ms to auto-reset from success or error back to idle */
   autoResetDuration?: number | undefined;
+  /** Native form action type ("submit" | "reset") */
+  formType?: "submit" | "reset" | "" | undefined;
+  /** Optional parent form host context (injected via MiniApp form relation) */
+  formContext?: {
+    submit?: () => Promise<any>;
+    reset?: () => void;
+  } | null | undefined;
   /** Callback fired on button tap */
   onTap?: ((detail?: ButtonTapDetail) => void | Promise<any>) | undefined;
 }

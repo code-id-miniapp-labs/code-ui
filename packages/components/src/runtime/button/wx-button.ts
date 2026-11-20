@@ -5,6 +5,7 @@
 export const wxButtonBehavior =
   typeof Behavior !== "undefined"
     ? Behavior({
+        behaviors: ["wx://form-field-button"],
         properties: {
           openType: {
             type: String,

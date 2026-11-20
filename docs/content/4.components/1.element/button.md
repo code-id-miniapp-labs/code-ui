@@ -110,6 +110,10 @@ Page({
 
 Use the `loadingAuto` prop to enter the loading state automatically when a `tap` handler provides a `Promise` via `e.detail.setPromise`. Use `autoResetDuration` (default `1500` ms) to control when it resets after completion.
 
+::note
+**Why `e.detail.setPromise` is required in WeChat MiniProgram:** Unlike web JS frameworks such as React or Vue (where event handlers are passed as JS function props whose returned `Promise` can be awaited directly), WeChat MiniProgram's `triggerEvent` always returns `undefined` and WXML cannot pass functions as component props. Calling `e.detail.setPromise(promise)` inside `bind:tap` (or `bind:submit` on `<c-form>`) is how the handler hands the `Promise` back to `c-button`. If you prefer not to use `setPromise`, bind `loading="{{ isSubmitting }}"` to your page state instead.
+::
+
 ::code-group
 
 ```html [index.wxml]
@@ -130,6 +134,44 @@ Page({
 ```
 
 ::
+
+When `formType="submit"` is used inside `<c-form>`, `loadingAuto` automatically inherits the form's submit lifecycle (validation + any `Promise` passed to `e.detail.setPromise` inside `<c-form>`'s `bind:submit`) without needing `bind:tap` on the button:
+
+::code-group
+
+```html [index.wxml]
+<c-form bind:submit="onFormSubmit">
+  <c-form-field name="email" label="Email">
+    <c-input placeholder="name@example.com" />
+  </c-form-field>
+  <c-button
+    label="Submit"
+    form-type="submit"
+    loading-auto="{{true}}"
+  />
+</c-form>
+```
+
+```ts [index.ts]
+Page({
+  onFormSubmit(e: WechatMiniprogram.CustomEvent) {
+    e.detail.setPromise(submitToServer(e.detail.values));
+  },
+});
+```
+
+::
+
+If you trigger submission programmatically via `useComponentRef` (`formRef.current?.submit()`) from a separate button's `bind:tap`, forward the returned promise to `e.detail.setPromise`:
+
+```ts [index.ts]
+Page({
+  onExternalSubmitTap(e: WechatMiniprogram.CustomEvent) {
+    const p = this.formRef.current?.submit();
+    if (p) e.detail.setPromise(p);
+  },
+});
+```
 
 ### Icon
 
