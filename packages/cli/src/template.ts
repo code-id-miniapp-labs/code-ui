@@ -18,12 +18,20 @@ export interface StarterTemplateOptions {
   primaryColor: string;
   iconCollection: string;
   prefix: string;
+  pm?: "pnpm" | "npm" | "yarn";
 }
 
 export function generateStarterFiles(
   options: StarterTemplateOptions,
 ): Record<string, string> {
-  const { projectName, appId, primaryColor, iconCollection, prefix } = options;
+  const {
+    projectName,
+    appId,
+    primaryColor,
+    iconCollection,
+    prefix,
+    pm = "pnpm",
+  } = options;
   const codeUiRange = getCodeUiDepRange();
 
   return {
@@ -36,28 +44,32 @@ export function generateStarterFiles(
       "",
     ].join("\n"),
 
-    "pnpm-workspace.yaml": [
-      "allowBuilds:",
-      '  "@parcel/watcher": false',
-      '  "@swc/core": false',
-      '  "@tailwindcss/oxide": false',
-      "  core-js: false",
-      "  core-js-pure: false",
-      "  esbuild: true",
-      "  unrs-resolver: false",
-      "",
-      "onlyBuiltDependencies:",
-      "  - esbuild",
-      "",
-      "ignoredBuiltDependencies:",
-      '  - "@parcel/watcher"',
-      '  - "@swc/core"',
-      '  - "@tailwindcss/oxide"',
-      "  - core-js",
-      "  - core-js-pure",
-      "  - unrs-resolver",
-      "",
-    ].join("\n"),
+    ...(pm === "pnpm"
+      ? {
+          "pnpm-workspace.yaml": [
+            "allowBuilds:",
+            '  "@parcel/watcher": false',
+            '  "@swc/core": false',
+            '  "@tailwindcss/oxide": false',
+            "  core-js: false",
+            "  core-js-pure: false",
+            "  esbuild: true",
+            "  unrs-resolver: false",
+            "",
+            "onlyBuiltDependencies:",
+            "  - esbuild",
+            "",
+            "ignoredBuiltDependencies:",
+            '  - "@parcel/watcher"',
+            '  - "@swc/core"',
+            '  - "@tailwindcss/oxide"',
+            "  - core-js",
+            "  - core-js-pure",
+            "  - unrs-resolver",
+            "",
+          ].join("\n"),
+        }
+      : {}),
 
     "package.json": JSON.stringify(
       {

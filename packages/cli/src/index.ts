@@ -175,6 +175,7 @@ program
         primaryColor,
         iconCollection,
         prefix,
+        pm,
       });
 
       logger.success(`Scaffolded Code UI project in ${pc.green(targetDir)}`);
@@ -229,12 +230,14 @@ program
   .action(async (cmdOpts: InitCommandOptions) => {
     const cwd = process.cwd();
     const projectName = path.basename(cwd);
+    const pm = detectPackageManager(cwd);
     const files = generateStarterFiles({
       projectName,
       appId: "touristappid",
       primaryColor: cmdOpts.primary || "red",
       iconCollection: cmdOpts.icons || "lucide",
       prefix: cmdOpts.prefix || "c",
+      pm,
     });
 
     const cuiConfigPath = path.resolve(cwd, "cui.config.ts");
@@ -276,7 +279,6 @@ program
       }
     }
 
-    const pm = detectPackageManager(cwd);
     const pnpmWorkspacePath = path.resolve(cwd, "pnpm-workspace.yaml");
     if (pm === "pnpm" && !fs.existsSync(pnpmWorkspacePath)) {
       fs.writeFileSync(
