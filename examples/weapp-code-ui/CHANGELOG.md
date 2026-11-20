@@ -1,5 +1,13 @@
 # weapp-vite-template
 
+## 1.0.12
+
+### Patch Changes
+
+- @code-id-labs/components@1.0.3
+- @code-id-labs/plugin-vite@1.0.3
+- @code-id-labs/composables@1.0.3
+
 ## 1.0.11
 
 ### Patch Changes
