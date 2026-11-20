@@ -58,7 +58,7 @@ const { header } = useAppConfig()
 
     <template #right>
       <UBadge
-        label="Base Library 2.3.5"
+        label="TCSAS Base Library 2.3.5+"
         color="neutral"
         variant="subtle"
         size="sm"
