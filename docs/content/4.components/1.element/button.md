@@ -5,7 +5,7 @@ description: Code UI button component with Tailwind-styled theming, leading/trai
 
 ## Overview
 
-`c-button` is a Code UI (`@code-ui`, a headless + Tailwind-styled WeChat MiniProgram component library) button component with configurable theming (`variant`, `color`, `size`, `block`), leading and trailing icons, a loading indicator (including automatic async loading support), disabled state handling, and native WeChat `<button>` integration (`open-type`, `form-type`, hover attributes, and open-ability callbacks).
+`c-button` is a Code UI (`@code-ui`, a Tailwind-styled WeChat MiniProgram component library) button component with configurable theming (`variant`, `color`, `size`, `block`), leading and trailing icons, a loading indicator (including automatic async loading support), disabled state handling, and native WeChat `<button>` integration (`open-type`, `form-type`, hover attributes, and open-ability callbacks).
 
 It is a standalone component and renders `c-icon` internally as the fallback for icons and the loading spinner when custom slots are not provided.
 
@@ -186,22 +186,18 @@ Use `icon`, `leadingIcon`, and `trailingIcon` to render icons with `c-icon`. By 
 
 ### Slots
 
-Use the `slots` prop flags alongside custom slot markup for `(default)`, `icon`, `leading`, `trailing`, and `loadingIcon`.
+Provide custom slot markup for `(default)`, `icon`, `leading`, `trailing`, and `loadingIcon`.
 
 ```html [index.wxml]
 <!-- Custom default, icon, and trailing slots -->
-<c-button slots="{{ { default: true, icon: true, trailing: true } }}">
+<c-button>
   <text slot="icon">★</text>
   <text>Favorite</text>
   <text slot="trailing">→</text>
 </c-button>
 
 <!-- Custom leading and loadingIcon slots -->
-<c-button
-  label="Upload"
-  loading="{{isUploading}}"
-  slots="{{ { leading: true, loadingIcon: true } }}"
->
+<c-button label="Upload" loading="{{isUploading}}">
   <text slot="leading">↑</text>
   <text slot="loadingIcon">⏳</text>
 </c-button>
@@ -361,7 +357,6 @@ Use `ui` to override classes on individual theme slots (`root`, `label`, `icon`,
 | `trailing` | `Boolean` | `false` | Positions the icon/spinner at the trailing end of the button. |
 | `trailingIcon` | `String` | `""` | Trailing icon name rendered via `c-icon`. |
 | `loadingIcon` | `String` | `"loading"` | Icon name rendered via `c-icon` in the spinner container when loading without a `loadingIcon` slot. |
-| `slots` | `Object` | `{ default: false, icon: false, leading: false, trailing: false, loadingIcon: false }` | Slot presence flags for custom slot content. |
 | `ui` | `Object` | `{}` | Per-slot class overrides keyed by theme slot (`root`, `label`, `icon`, `iconInner`, `spinner`, `spinnerIcon`). |
 | `class` (`className`) | `String` | `""` | Additional CSS class string merged onto the `root` slot (exposed in runtime properties as `className`). |
 

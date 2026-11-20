@@ -176,11 +176,11 @@ Page({
 
 ### Slots
 
-Use the `label`, `description`, `thumb`, `loadingIcon`, and default slots for custom markup. Pass `slots` flags for conditional named slots (`label`, `description`, `loadingIcon`), and ensure `label` / `description` props are empty when using their slots.
+Use the `label`, `description`, `thumb`, `loadingIcon`, and default slots for custom markup. Ensure `label` / `description` props are empty when using their slots.
 
 ```html
 <!-- Custom label and description slots -->
-<c-switch slots="{{ { label: true, description: true } }}">
+<c-switch>
   <view slot="label">Custom <text class="font-bold">Rich Label</text></view>
   <view slot="description">Includes <text class="text-primary">formatted</text> helper text.</view>
 </c-switch>
@@ -191,7 +191,7 @@ Use the `label`, `description`, `thumb`, `loadingIcon`, and default slots for cu
 </c-switch>
 
 <!-- Custom loadingIcon slot (overrides loadingIcon prop) -->
-<c-switch loading="{{true}}" slots="{{ { loadingIcon: true } }}" label="Loading">
+<c-switch loading="{{true}}" label="Loading">
   <text slot="loadingIcon" class="text-2xs">...</text>
 </c-switch>
 

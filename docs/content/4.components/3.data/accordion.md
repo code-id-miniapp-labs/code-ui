@@ -32,7 +32,7 @@ Page({
         value: "item-1",
         label: "What is Code UI?",
         description: "Overview",
-        content: "A headless component library for WeChat MiniProgram.",
+        content: "A Tailwind-styled component library for WeChat MiniProgram.",
       },
       {
         value: "item-2",

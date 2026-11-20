@@ -64,11 +64,11 @@ export default defineNuxtConfig({
     domain: "https://github.com/code-id-miniapp-labs/code-ui",
     title: "Code UI",
     description:
-      "@code-ui — a headless + Tailwind-styled WeChat MiniProgram component library.",
+      "@code-ui — a Tailwind-styled WeChat MiniProgram component library.",
     full: {
       title: "Code UI - Full Documentation",
       description:
-        "This is the full documentation for Code UI (@code-ui), a headless + Tailwind-styled WeChat MiniProgram component library.",
+        "This is the full documentation for Code UI (@code-ui), a Tailwind-styled WeChat MiniProgram component library.",
     },
     sections: [
       {

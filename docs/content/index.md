@@ -1,6 +1,6 @@
 ---
 title: Code UI
-description: A headless + Tailwind-styled WeChat MiniProgram component library.
+description: A Tailwind-styled WeChat MiniProgram component library.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -15,7 +15,7 @@ orientation: horizontal
 Build Beautiful [MiniProgram UIs]{.text-primary .font-lexend}.
 
 #description
-A headless + Tailwind-styled WeChat MiniProgram component library. Powered by finite state machines, variant-based theming, and compile-time WXML optimization with [@code-ui](https://github.com/code-id-miniapp-labs/code-ui).
+A Tailwind-styled WeChat MiniProgram component library. Powered by finite state machines, variant-based theming, and compile-time WXML optimization with [@code-ui](https://github.com/code-id-miniapp-labs/code-ui).
 
 #links
   :::u-button
@@ -43,7 +43,7 @@ A headless + Tailwind-styled WeChat MiniProgram component library. Powered by fi
 ```html [index.wxml]
 <c-card
   title="Welcome to Code UI"
-  description="Headless + Tailwind-styled WeChat MiniProgram components."
+  description="Tailwind-styled WeChat MiniProgram components."
 >
   <c-button label="Get started" color="primary" />
 </c-card>
@@ -83,7 +83,7 @@ Powered by @code-ui architecture
   icon: i-lucide-cpu
   ---
   #title
-  Headless State Machines
+  Finite State Machines
 
   #description
   Interactive components are driven by finite state machines, keeping runtime components thin and predictable.

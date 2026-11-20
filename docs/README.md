@@ -2,7 +2,7 @@
 
 [![Code UI](https://img.shields.io/badge/Code%20UI-%40code--ui-00DC82?labelColor=020420)](https://github.com/code-id-miniapp-labs/code-ui)
 
-Documentation for [Code UI](https://github.com/code-id-miniapp-labs/code-ui) (`@code-ui`), a headless + Tailwind-styled WeChat MiniProgram component library.
+Documentation for [Code UI](https://github.com/code-id-miniapp-labs/code-ui) (`@code-ui`), a Tailwind-styled WeChat MiniProgram component library.
 
 - [GitHub Repository](https://github.com/code-id-miniapp-labs/code-ui)
 
