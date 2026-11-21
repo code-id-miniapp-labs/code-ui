@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.0.8
+
+### Patch Changes
+
+- 2c914f8: Refactor `banner`, `file-upload`, and `form` state machines to use declarative `target` transitions (`OPEN`, guarded `SET_UPLOADING`, and form lifecycle events) and guard `file-upload` `setValue`/`hydrateLocalImages` against non-array file lists.
+
 ## 1.0.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/components",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Prebuilt native WeChat MiniProgram UI components for code-ui",
   "repository": {
     "type": "git",
