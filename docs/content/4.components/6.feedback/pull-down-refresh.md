@@ -374,6 +374,13 @@ Use `className` to add classes to the `root` slot and `ui` to override individua
 </c-pull-down-refresh>
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `pull-down-refresh` state machine live:
+
+::machine-visualizer{name="pull-down-refresh"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

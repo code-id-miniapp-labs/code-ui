@@ -323,6 +323,13 @@ Use `ui` to override classes on individual slots (`root`, `trigger`, `backdrop`,
 </c-popover>
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `popover` state machine live:
+
+::machine-visualizer{name="popover"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

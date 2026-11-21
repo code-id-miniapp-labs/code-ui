@@ -272,6 +272,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `toast` state machine live:
+
+::machine-visualizer{name="toast"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

@@ -234,6 +234,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `radio` state machine live:
+
+::machine-visualizer{name="radio"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

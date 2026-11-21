@@ -437,6 +437,13 @@ clearFiles(): void
 setFiles(files: FileUploadFile[]): void
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `file-upload` state machine live:
+
+::machine-visualizer{name="file-upload"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

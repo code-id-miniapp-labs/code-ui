@@ -351,6 +351,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `slider` state machine live:
+
+::machine-visualizer{name="slider"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

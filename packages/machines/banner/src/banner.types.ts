@@ -131,6 +131,7 @@ export interface BannerProps {
 }
 
 export type BannerEvent =
+  | { type: "OPEN" }
   | { type: "DISMISS" }
   | { type: "ANIMATION_END" }
   | { type: "MORE" }

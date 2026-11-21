@@ -261,6 +261,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `switch` state machine live:
+
+::machine-visualizer{name="switch"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

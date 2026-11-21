@@ -339,6 +339,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `tabs` state machine live:
+
+::machine-visualizer{name="tabs"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

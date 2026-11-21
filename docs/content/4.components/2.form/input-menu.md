@@ -698,6 +698,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `input-menu` state machine live:
+
+::machine-visualizer{name="input-menu"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

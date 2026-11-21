@@ -245,6 +245,12 @@ export type FormEvent =
     }
   | { type: "RESET"; name?: string | string[] | undefined }
   | { type: "RESET_VALIDATION"; name?: string | string[] | undefined }
+  | { type: "VALIDATE_START" }
+  | { type: "VALIDATE_VALID" }
+  | { type: "VALIDATE_ERROR" }
+  | { type: "SUBMIT_START" }
+  | { type: "SUBMIT_SUCCESS" }
+  | { type: "SUBMIT_ERROR" }
   | {
       type: "SET_ERRORS";
       errors:

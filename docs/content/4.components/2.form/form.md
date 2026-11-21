@@ -385,6 +385,13 @@ Customize the `root`, `errors`, and `error` slots per instance with `ui`, or app
 </c-form>
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `form` state machine live:
+
+::machine-visualizer{name="form"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

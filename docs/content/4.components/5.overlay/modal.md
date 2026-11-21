@@ -271,6 +271,13 @@ Override any theme slot with `ui` or pass additional classes to the root element
 </c-modal>
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `modal` state machine live:
+
+::machine-visualizer{name="modal"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

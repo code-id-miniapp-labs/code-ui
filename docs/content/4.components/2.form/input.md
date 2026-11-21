@@ -340,6 +340,13 @@ Use `className` to add classes to the `root` slot, and `ui` to override classes 
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `input` state machine live:
+
+::machine-visualizer{name="input"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

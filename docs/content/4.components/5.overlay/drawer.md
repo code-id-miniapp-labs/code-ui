@@ -333,6 +333,13 @@ Use `ui` to override individual slot classes and `className` (`className`) to ad
 </c-drawer>
 ```
 
+## State Machine
+
+Click any transition inside the active state node to simulate the `drawer` state machine live:
+
+::machine-visualizer{name="drawer"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

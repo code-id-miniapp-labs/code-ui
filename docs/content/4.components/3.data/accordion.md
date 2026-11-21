@@ -294,6 +294,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `accordion-item` state machine live:
+
+::machine-visualizer{name="accordion-item"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

@@ -210,6 +210,13 @@ Use `ui` to override individual theme slot classes and `className` to append cla
 </c-form-field>
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `form-field` state machine live:
+
+::machine-visualizer{name="form-field"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

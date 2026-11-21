@@ -381,6 +381,13 @@ Use `ui` to override classes on specific theme slots and `className` to add clas
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `banner` state machine live:
+
+::machine-visualizer{name="banner"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

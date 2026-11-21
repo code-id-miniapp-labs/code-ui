@@ -196,7 +196,12 @@ export type FileUploadAction =
   | "cleanupAudio"
   | "markDisposed";
 
-export type FileUploadGuard = "isInteractive" | "canChoose" | "canAddFiles";
+export type FileUploadGuard =
+  | "isInteractive"
+  | "canChoose"
+  | "canAddFiles"
+  | "isUploadingTrue"
+  | "isUploadingFalse";
 export type FileUploadEffect = "pickWeChatFiles" | "hydrateLocalImages";
 
 export type FileUploadEvent =

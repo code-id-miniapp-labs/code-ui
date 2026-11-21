@@ -1238,18 +1238,46 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
   states: {
     idle: {
       tags: ["idle"],
+      on: {
+        VALIDATE_START: { target: "validating" },
+        VALIDATE_ERROR: { target: "error" },
+        SUBMIT_START: { target: "submitting" },
+      },
     },
     validating: {
       tags: ["validating"],
+      on: {
+        VALIDATE_VALID: { target: "idle" },
+        VALIDATE_ERROR: { target: "error" },
+        SUBMIT_START: { target: "submitting" },
+        RESET: { target: "idle", actions: ["handleReset"] },
+      },
     },
     submitting: {
       tags: ["submitting"],
+      on: {
+        SUBMIT_SUCCESS: { target: "submitted" },
+        SUBMIT_ERROR: { target: "error" },
+        RESET: { target: "idle", actions: ["handleReset"] },
+      },
     },
     submitted: {
       tags: ["submitted"],
+      on: {
+        VALIDATE_START: { target: "validating" },
+        VALIDATE_ERROR: { target: "error" },
+        SUBMIT_START: { target: "submitting" },
+        RESET: { target: "idle", actions: ["handleReset"] },
+      },
     },
     error: {
       tags: ["error"],
+      on: {
+        VALIDATE_START: { target: "validating" },
+        VALIDATE_VALID: { target: "idle" },
+        SUBMIT_START: { target: "submitting" },
+        RESET: { target: "idle", actions: ["handleReset"] },
+      },
     },
   },
 

@@ -393,6 +393,13 @@ Page({
 ```
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `swipe-cell` state machine live:
+
+::machine-visualizer{name="swipe-cell"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

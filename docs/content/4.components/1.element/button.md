@@ -336,6 +336,13 @@ Use `ui` to override classes on individual theme slots (`root`, `label`, `icon`,
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `button` state machine live:
+
+::machine-visualizer{name="button"}
+::
+
 ## Props
 
 ### Component Props

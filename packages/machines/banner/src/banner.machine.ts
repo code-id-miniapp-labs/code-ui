@@ -38,13 +38,13 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
     isDismissing: ({ state }) => state.hasTag("dismissing"),
   },
 
-  watch: ({ prop, state, track }) => {
+  watch: ({ prop, state, send, track }) => {
     track([() => prop("open")], () => {
       const controlledOpen = prop("open");
       if (!isNotNull(controlledOpen)) return;
 
       if (controlledOpen) {
-        if (!state.matches("open")) state.set("open");
+        if (!state.matches("open")) send({ type: "OPEN" });
       } else if (state.matches("open")) {
         state.set("dismissing");
       }
@@ -59,6 +59,11 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
   states: {
     closed: {
       tags: ["closed"],
+      on: {
+        OPEN: {
+          target: "open",
+        },
+      },
     },
 
     open: {
@@ -85,6 +90,9 @@ export const bannerMachine: BannerMachine = createMachine<BannerSchema>({
       tags: ["dismissing"],
       effects: ["waitForDismissAnimation"],
       on: {
+        OPEN: {
+          target: "open",
+        },
         ANIMATION_END: {
           target: "closed",
         },

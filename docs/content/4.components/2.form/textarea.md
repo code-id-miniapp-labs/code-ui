@@ -330,6 +330,13 @@ Use `className` to add classes to the `root` slot, and `ui` to override classes 
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `textarea` state machine live:
+
+::machine-visualizer{name="textarea"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

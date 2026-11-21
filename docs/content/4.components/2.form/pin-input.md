@@ -314,6 +314,13 @@ Use `ui` to override classes on individual slots (`root`, `label`, `control`, `i
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `pin-input` state machine live:
+
+::machine-visualizer{name="pin-input"}
+::
+
 ## Props
 
 | Name             | Type                                                                                                 | Default     | Description                                                                                                                                                                                     |

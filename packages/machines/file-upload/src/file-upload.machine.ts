@@ -269,14 +269,9 @@ export const fileUploadMachine: FileUploadMachine =
         prop("uploading") || state.matches("uploading"),
     },
 
-    watch: ({ prop, state, track }) => {
+    watch: ({ prop, send, track }) => {
       track([() => prop("uploading")], () => {
-        const uploading = prop("uploading");
-        if (uploading && !state.matches("uploading")) {
-          state.set("uploading");
-        } else if (!uploading && state.matches("uploading")) {
-          state.set("idle");
-        }
+        send({ type: "SET_UPLOADING", uploading: prop("uploading") });
       });
     },
 
@@ -324,9 +319,6 @@ export const fileUploadMachine: FileUploadMachine =
         guard: "isInteractive",
         actions: ["cleanupAudio", "clearFiles"],
       },
-      SET_UPLOADING: {
-        actions: ["setUploading"],
-      },
     },
 
     states: {
@@ -343,6 +335,10 @@ export const fileUploadMachine: FileUploadMachine =
               actions: ["resolveChooseFromEvent"],
             },
           ],
+          SET_UPLOADING: {
+            guard: "isUploadingTrue",
+            target: "uploading",
+          },
         },
       },
       choosing: {
@@ -356,6 +352,10 @@ export const fileUploadMachine: FileUploadMachine =
           CHOOSE_COMPLETE: {
             target: "idle",
           },
+          SET_UPLOADING: {
+            guard: "isUploadingTrue",
+            target: "uploading",
+          },
         },
       },
       uploading: {
@@ -363,6 +363,10 @@ export const fileUploadMachine: FileUploadMachine =
         on: {
           CHOOSE: {
             actions: ["resolveChooseFromEvent"],
+          },
+          SET_UPLOADING: {
+            guard: "isUploadingFalse",
+            target: "idle",
           },
         },
       },
@@ -375,21 +379,28 @@ export const fileUploadMachine: FileUploadMachine =
           computed("isInteractive") && !computed("isMaxFiles"),
         canAddFiles: ({ computed }) =>
           computed("isInteractive") && !computed("isMaxFiles"),
+        isUploadingTrue: ({ event }) =>
+          event.type === "SET_UPLOADING" && Boolean(event.uploading),
+        isUploadingFalse: ({ event }) =>
+          event.type === "SET_UPLOADING" && !event.uploading,
       },
 
       effects: {
         hydrateLocalImages: ({ context, refs, track }) => {
           track(
             [
-              () =>
-                context
-                  .get("files")
+              () => {
+                const rawFiles = context.get("files");
+                const files = Array.isArray(rawFiles) ? rawFiles : [];
+                return files
                   .map((f) => `${f.id ?? ""}:${f.path ?? ""}:${f.thumb ?? ""}`)
-                  .join("|"),
+                  .join("|");
+              },
             ],
             () => {
               if (refs.get("disposed")) return;
-              const files = context.get("files");
+              const rawFiles = context.get("files");
+              const files = Array.isArray(rawFiles) ? rawFiles : [];
               const resolving = refs.get("resolvingPaths");
               const currentResolved = context.get("resolvedSources");
 
@@ -698,10 +709,11 @@ export const fileUploadMachine: FileUploadMachine =
 
         setValue: ({ context, event }) => {
           if (event.type !== "SET_VALUE") return;
-          context.set("files", event.value);
+          const nextFiles = Array.isArray(event.value) ? event.value : [];
+          context.set("files", nextFiles);
           context.set("failedThumbs", []);
           if (context.get("previewOpen")) {
-            const imageCount = event.value.filter(
+            const imageCount = nextFiles.filter(
               (f) => getFileType(f) === "image" && Boolean(f.path),
             ).length;
             if (imageCount === 0) {

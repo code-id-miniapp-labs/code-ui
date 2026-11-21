@@ -279,6 +279,13 @@ Use `ui` to override individual slot classes (`root`, `base`, `indicator`, `icon
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `checkbox` state machine live:
+
+::machine-visualizer{name="checkbox"}
+::
+
 ## Props
 
 | Name                   | Type                                                                                                          | Default     | Description                                                                            |

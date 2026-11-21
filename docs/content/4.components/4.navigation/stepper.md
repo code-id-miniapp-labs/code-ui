@@ -377,6 +377,13 @@ Page({
 
 ::
 
+## State Machine
+
+Click any active transition or event button below to simulate the `stepper` state machine live:
+
+::machine-visualizer{name="stepper"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

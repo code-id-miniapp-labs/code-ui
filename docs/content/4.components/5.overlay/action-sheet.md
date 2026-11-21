@@ -395,6 +395,13 @@ Override individual slot classes per instance with `ui`, or add classes to the `
 />
 ```
 
+## State Machine
+
+Click any active transition or event button below to simulate the `action-sheet` state machine live:
+
+::machine-visualizer{name="action-sheet"}
+::
+
 ## Props
 
 | Name | Type | Default | Description |

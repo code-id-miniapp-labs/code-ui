@@ -1,5 +1,38 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const pkg = (rel: string) => fileURLToPath(new URL(`../packages/${rel}`, import.meta.url));
+
+const machineAliases = Object.fromEntries(
+  readdirSync(pkg("machines"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => [`@code-id-labs/${d.name}`, pkg(`machines/${d.name}/src/index.ts`)]),
+);
+
 export default defineNuxtConfig({
+  alias: {
+    "@code-id-labs/core": pkg("core/src/index.ts"),
+    "@code-id-labs/utils": pkg("utils/src/index.ts"),
+    "@code-id-labs/anatomy": pkg("anatomy/src/index.ts"),
+    "@code-id-labs/context": pkg("context/src/index.ts"),
+    "@code-id-labs/miniapp": pkg("frameworks/miniapp/src/index.ts"),
+    "@code-id-labs/form/context": pkg("machines/form/src/form.context.ts"),
+    "@code-id-labs/form/rules": pkg("machines/form/src/form.rules.ts"),
+    ...machineAliases,
+  },
+
+  vite: {
+    ssr: {
+      noExternal: [/^@code-id-labs\//],
+    },
+    server: {
+      fs: {
+        allow: [".."],
+      },
+    },
+  },
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/image",
