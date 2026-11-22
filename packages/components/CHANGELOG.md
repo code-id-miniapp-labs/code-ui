@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.2.1
+
+### Patch Changes
+
+- b52efa4: Emit standalone `dist/computed.d.ts` type declarations for the `@code-id-labs/components/computed` subpath export.
+
 ## 1.2.0
 
 ### Minor Changes
