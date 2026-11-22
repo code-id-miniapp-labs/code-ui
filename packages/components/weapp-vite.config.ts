@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "weapp-vite";
 import { cleanDistPlugin } from "./build/plugins/clean-dist";
@@ -19,6 +20,17 @@ export default defineConfig({
           type: "chunk",
           id: resolve(import.meta.dirname, "src/computed.ts"),
           fileName: "computed.js",
+        });
+      },
+      generateBundle() {
+        const dtsPath = resolve(
+          import.meta.dirname,
+          "../frameworks/miniapp/dist/behaviors/computed-behavior.d.ts",
+        );
+        this.emitFile({
+          type: "asset",
+          fileName: "computed.d.ts",
+          source: readFileSync(dtsPath, "utf8"),
         });
       },
     },

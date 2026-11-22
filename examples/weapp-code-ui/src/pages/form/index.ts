@@ -37,7 +37,9 @@ Page({
         },
       },
     ],
-    roleRules: [{ required: true, message: "Please choose your workspace role" }],
+    roleRules: [
+      { required: true, message: "Please choose your workspace role" },
+    ],
     departmentRules: [
       { required: true, message: "Please select a department" },
     ],
@@ -169,9 +171,7 @@ Page({
       { required: true, message: "Full name is required" },
       { minLength: 2, message: "Enter at least 2 characters" },
     ],
-    companyNameRules: [
-      { required: true, message: "Company name is required" },
-    ],
+    companyNameRules: [{ required: true, message: "Company name is required" }],
     taxIdRules: [
       { required: true, message: "Tax ID is required for business accounts" },
       { minLength: 10, message: "Tax ID must be at least 10 characters" },
@@ -182,7 +182,10 @@ Page({
     ],
     shippingAddressRules: [
       { required: true, message: "Shipping address is required" },
-      { minLength: 10, message: "Please provide a complete address (min 10 chars)" },
+      {
+        minLength: 10,
+        message: "Please provide a complete address (min 10 chars)",
+      },
     ],
     deliverySpeedRules: [
       { required: true, message: "Choose a delivery priority" },
