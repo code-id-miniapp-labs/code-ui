@@ -268,6 +268,11 @@
       "require": "./dist/runtime/toast/index.js"
     },
     "./toast/*": "./dist/runtime/toast/*",
+    "./computed": {
+      "types": "./dist/computed.d.ts",
+      "import": "./dist/computed.js",
+      "require": "./dist/computed.js"
+    },
     "./behaviors/app": {
       "types": "./dist/behaviors/app.d.ts",
       "import": "./dist/behaviors/app.js",

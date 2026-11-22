@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "weapp-vite";
 import { cleanDistPlugin } from "./build/plugins/clean-dist";
 import { syncWxsPlugin } from "./build/plugins/sync-wxs";
@@ -11,6 +12,16 @@ export default defineConfig({
     wxmlTransformPlugin(),
     cleanDistPlugin(),
     syncWxsPlugin(),
+    {
+      name: "code-ui:emit-computed-entry",
+      buildStart() {
+        this.emitFile({
+          type: "chunk",
+          id: resolve(import.meta.dirname, "src/computed.ts"),
+          fileName: "computed.js",
+        });
+      },
+    },
   ],
   build: {
     outDir: "dist",
