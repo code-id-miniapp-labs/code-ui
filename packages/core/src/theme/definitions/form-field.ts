@@ -10,6 +10,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
       labelWrapper: "flex items-center justify-between gap-1.5",
       labelInner: "flex items-center gap-1",
       label: "block text-sm font-medium text-highlighted",
+      leadingIcon: "shrink-0 text-dimmed",
+      trailingIcon: "shrink-0 text-dimmed",
       container: "relative w-full",
       description: "text-xs text-muted",
       error: `text-xs text-${errorColor} font-medium mt-0.5`,
@@ -22,6 +24,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
         xs: {
           root: "gap-1",
           label: "text-xs",
+          leadingIcon: "size-3.5",
+          trailingIcon: "size-3.5",
           description: "text-2xs",
           error: "text-2xs",
           help: "text-2xs",
@@ -30,6 +34,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
         sm: {
           root: "gap-1",
           label: "text-xs",
+          leadingIcon: "size-3.5",
+          trailingIcon: "size-3.5",
           description: "text-xs",
           error: "text-xs",
           help: "text-xs",
@@ -38,6 +44,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
         md: {
           root: "gap-1.5",
           label: "text-sm",
+          leadingIcon: "size-4",
+          trailingIcon: "size-4",
           description: "text-xs",
           error: "text-xs",
           help: "text-xs",
@@ -46,6 +54,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
         lg: {
           root: "gap-2",
           label: "text-base",
+          leadingIcon: "size-4",
+          trailingIcon: "size-4",
           description: "text-sm",
           error: "text-sm",
           help: "text-sm",
@@ -54,6 +64,8 @@ export default function formFieldTheme(options: ThemeOptions = {}) {
         xl: {
           root: "gap-2.5",
           label: "text-lg",
+          leadingIcon: "size-5",
+          trailingIcon: "size-5",
           description: "text-base",
           error: "text-sm",
           help: "text-sm",
