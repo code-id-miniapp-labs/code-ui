@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.2.0
+
+### Minor Changes
+
+- 8101c79: Expose `createPageOptions`, `createComponentOptions`, and `computedBehavior` via the new `@code-id-labs/components/computed` subpath export.
+
 ## 1.1.0
 
 ### Minor Changes
