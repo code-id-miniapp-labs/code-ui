@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.1.0
+
+### Minor Changes
+
+- d3e8730: Add `leadingIcon`, `trailingIcon`, `icon`, `leading`, and `trailing` props along with `leading` and `trailing` named slots to `c-form-field` using `useComponentIcons`, including `leadingIcon`/`trailingIcon` theme slots and compile-time slot manifest support.
+
 ## 1.0.8
 
 ### Patch Changes
