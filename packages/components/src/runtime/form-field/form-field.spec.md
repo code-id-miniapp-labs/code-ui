@@ -27,6 +27,11 @@
 | `error` | `String` | `""` | Explicit error message; overrides form validation errors when set. |
 | `description` | `String` | `""` | Descriptive text rendered below the label row. |
 | `hint` | `String` | `""` | Trailing hint text rendered opposite the label. |
+| `icon` | `String` | `""` | Icon name rendered via `c-icon` next to the label (leading by default, or trailing when `trailing` is `true`). |
+| `leading` | `Boolean` | `false` | Forces `icon` into the leading position before the label. |
+| `leadingIcon` | `String` | `""` | Leading icon name rendered via `c-icon` before the label. |
+| `trailing` | `Boolean` | `false` | Positions `icon` at the trailing end after the label / required asterisk. |
+| `trailingIcon` | `String` | `""` | Trailing icon name rendered via `c-icon` after the label / required asterisk. |
 | `help` | `String` | `""` | Helper text rendered below the container when no error is displayed. |
 | `helperText` | `String` | `""` | Alias/fallback for `help` (used when `help` is empty). |
 | `size` | `String` | `"md"` | Size variant for spacing and typography: `"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`. |
@@ -43,6 +48,8 @@ All slots are declared in the component's `slots` map (`default`, `label`, `hint
 | --- | --- |
 | `(default)` | Main form control area inside the `container` wrapper (`<view class="{{classes.container}}">`). |
 | `label` | Custom label content inside `labelInner` (before the `*` required indicator). |
+| `leading` | Custom leading content rendered before the label (overrides `leadingIcon` / leading `icon`). |
+| `trailing` | Custom trailing content rendered after the label / required asterisk (overrides `trailingIcon` / trailing `icon`). |
 | `hint` | Custom trailing content inside `labelWrapper`. |
 | `description` | Custom description content inside `wrapper`, below `labelWrapper`. |
 | `error` | Custom error content rendered below `container`. |
