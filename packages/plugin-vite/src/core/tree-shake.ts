@@ -931,6 +931,57 @@ export function handleTreeShake(
       scanRemainingRuntimeJs(runtimeDir);
     }
 
+    // Also preserve any library chunks (e.g. `computed.js`, `behaviors/app.js`)
+    // directly required by the consumer app's own JS files outside `miniprogram_npm`.
+    if (fs.existsSync(distRoot)) {
+      const requireRx = /require\(\s*["']([^"']+)["']\s*\)/g;
+      function scanConsumerJs(dir: string) {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.name === "miniprogram_npm") continue;
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            scanConsumerJs(fullPath);
+          } else if (entry.isFile() && entry.name.endsWith(".js")) {
+            let content = "";
+            try {
+              content = fs.readFileSync(fullPath, "utf8");
+            } catch {
+              continue;
+            }
+            for (const match of content.matchAll(requireRx)) {
+              const spec = match[1];
+              if (!spec || !spec.includes("miniprogram_npm")) continue;
+              const resolvedBase = path.resolve(path.dirname(fullPath), spec);
+              const candidate = resolvedBase.endsWith(".js")
+                ? resolvedBase
+                : `${resolvedBase}.js`;
+              if (
+                candidate.startsWith(miniprogramNpmPath + path.sep) &&
+                fs.existsSync(candidate)
+              ) {
+                const relTarget = path
+                  .relative(miniprogramNpmPath, candidate)
+                  .replace(/\\/g, "/");
+                usedChunks.add(relTarget);
+                const deps = collectTransitiveJsDeps(
+                  candidate,
+                  miniprogramNpmPath,
+                );
+                for (const dep of deps) {
+                  const relDep = path
+                    .relative(miniprogramNpmPath, dep)
+                    .replace(/\\/g, "/");
+                  usedChunks.add(relDep);
+                }
+              }
+            }
+          }
+        }
+      }
+      scanConsumerJs(distRoot);
+    }
+
     function purgeUnusedChunksInDir(dir: string): boolean {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       let remainingEntries = 0;
