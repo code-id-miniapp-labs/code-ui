@@ -30,6 +30,7 @@
         <c-button size="sm" color="primary" variant="outline" label="Scrollable Content" bind:tap="openScrollable" />
         <c-button size="sm" color="danger" variant="soft" label="Modal (Lock Backdrop)" bind:tap="openModal" />
         <c-button size="sm" color="secondary" variant="soft" label="Form + Close Slot" bind:tap="openFormDrawer" />
+        <c-button size="sm" color="primary" label="OTP / Pin Input (Keyboard)" bind:tap="openOtpDrawer" />
       </view>
     </view>
 
@@ -106,6 +107,32 @@
         <c-button form-type="submit" block="{{ true }}" color="primary" label="Submit Feedback" />
       </view>
     </c-form>
+  </view>
+
+  <view wx:elif="{{ scenario === 'otp' }}" class="flex flex-col items-center gap-4 py-2">
+    <view class="text-center px-2">
+      <text class="block text-base font-bold text-highlighted">Enter verification code</text>
+      <text class="block text-xs text-muted mt-1 leading-relaxed">
+        A 6-digit verification code has been sent to your registered mobile number.
+      </text>
+    </view>
+    <c-pin-input
+      length="{{ 6 }}"
+      type="number"
+      otp="{{ true }}"
+      label="Verification Code"
+      adjust-position="{{ false }}"
+      value="{{ otpCode }}"
+      bind:change="onOtpChange"
+      bind:complete="onOtpComplete"
+    />
+    <c-button
+      block="{{ true }}"
+      color="primary"
+      label="Verify"
+      disabled="{{ otpCode.length < 6 }}"
+      bind:tap="onVerifyOtp"
+    />
   </view>
 
   <view wx:else class="py-2 flex flex-col gap-3">

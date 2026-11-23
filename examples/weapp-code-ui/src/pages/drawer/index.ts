@@ -10,7 +10,8 @@ Page({
     scaleBackground: "bg-black",
     scaleFactor: 0.94,
     closeOnBackdropClick: true,
-    scenario: "standard" as "standard" | "scrollable" | "modal" | "form",
+    scenario: "standard" as "standard" | "scrollable" | "modal" | "form" | "otp",
+    otpCode: "",
     drawerTitle: "Bottom Sheet",
     drawerDescription: "Gesture-driven modal drawer with backdrop dimming.",
     customCloseProps: {
@@ -102,6 +103,37 @@ Page({
       drawerOpen: true,
     });
     this.pushLog("open(form)");
+  },
+
+  openOtpDrawer() {
+    this.setData({
+      placement: "bottom",
+      scenario: "otp",
+      otpCode: "",
+      drawerTitle: "Verification",
+      drawerDescription: "WXS keyboard lift with adjust-position=false.",
+      closeOnBackdropClick: true,
+      useCustomCloseSlot: false,
+      drawerOpen: true,
+    });
+    this.pushLog("open(otp)");
+  },
+
+  onOtpChange(e: WechatMiniprogram.CustomEvent<{ valueAsString?: string }>) {
+    this.setData({ otpCode: e.detail?.valueAsString || "" });
+  },
+
+  onOtpComplete(e: WechatMiniprogram.CustomEvent<{ valueAsString?: string }>) {
+    const code = e.detail?.valueAsString || "";
+    this.setData({ otpCode: code });
+    this.pushLog(`otpComplete(${code})`);
+  },
+
+  onVerifyOtp() {
+    toast.success("Code verified", {
+      description: `OTP: ${this.data.otpCode}`,
+    });
+    this.closeDrawer();
   },
 
   onScaleBackgroundChange(e: WechatMiniprogram.CustomEvent) {
