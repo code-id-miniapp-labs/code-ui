@@ -1,5 +1,7 @@
 # @code-ui/composables
 
+## 1.2.6
+
 ## 1.2.5
 
 ### Patch Changes
