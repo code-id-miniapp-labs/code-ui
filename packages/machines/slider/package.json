@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/slider",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Slider state machine for code-ui",
   "files": [
