@@ -653,9 +653,7 @@ describe("Drawer Machine", () => {
       expect(kbApi.keyboardOpen).toBe(true);
       expect(kbApi.rootProps["data-keyboard-open"]).toBe("true");
       expect(kbApi.rootProps["data-keyboard-height"]).toBe(260);
-      expect(kbApi.rootProps.style).toBe(
-        "padding-bottom: 260px; --keyboard-height: 260px;",
-      );
+      expect(kbApi.rootProps.style).toBe("--keyboard-height: 260px;");
       expect(kbApi.contentProps["data-keyboard-height"]).toBe(260);
       expect(kbApi.contentProps.style).toBe("--keyboard-height: 260px;");
 
@@ -669,9 +667,7 @@ describe("Drawer Machine", () => {
       expect(closingApi.visible).toBe(true);
       expect(closingApi.backdropProps["data-state"]).toBe("closed");
       expect(closingApi.backdropProps["data-transition-state"]).toBe("closing");
-      expect(closingApi.rootProps.style).toBe(
-        "padding-bottom: 260px; --keyboard-height: 260px;",
-      );
+      expect(closingApi.rootProps.style).toBe("--keyboard-height: 260px;");
       expect(closingApi.contentProps.style).toBe("--keyboard-height: 260px;");
 
       // setOpen via API

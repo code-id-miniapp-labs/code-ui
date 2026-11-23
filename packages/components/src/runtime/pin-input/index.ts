@@ -64,6 +64,10 @@ Component(
         optionalTypes: [Number, Array],
         value: false,
       },
+      adjustPosition: {
+        type: Boolean,
+        value: true,
+      },
       ui: {
         type: Object,
         value: {},

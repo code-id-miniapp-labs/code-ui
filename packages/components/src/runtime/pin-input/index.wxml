@@ -29,6 +29,7 @@
           password="{{item.inputProps.password}}"
           placeholder="{{item.inputProps.placeholder}}"
           maxlength="{{item.inputProps.maxlength}}"
+          adjust-position="{{adjustPosition}}"
           aria-label="{{item.inputProps['aria-label']}}"
           aria-invalid="{{pinInput.invalid}}"
           bindinput="handleInput"

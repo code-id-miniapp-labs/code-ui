@@ -3,7 +3,7 @@ import { defineTheme, type ThemeOptions } from "../../theme";
 export default function drawerTheme(_options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
-      root: "fixed inset-0 z-drawer flex overflow-hidden overscroll-contain box-border transition-[padding-bottom] duration-150 ease-out",
+      root: "fixed inset-0 z-drawer flex overflow-hidden overscroll-contain box-border",
       backdrop: "fixed inset-0 bg-black/40 transition-opacity duration-300",
       content:
         "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden",

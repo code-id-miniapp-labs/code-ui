@@ -58,7 +58,7 @@ export function connectDrawer(service: DrawerService): DrawerApi {
       "data-keyboard-height": keyboardHeight,
       hidden: !visible,
       style: keyboardOpen
-        ? `padding-bottom: ${keyboardHeight}px; --keyboard-height: ${keyboardHeight}px;`
+        ? `--keyboard-height: ${keyboardHeight}px;`
         : "",
     },
 

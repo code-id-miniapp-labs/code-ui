@@ -5,6 +5,7 @@ var startY = 0;
 var lastOffset = 0;
 var lastCallOffset = 0;
 var isDragging = false;
+var _keyboardHeight = 0;
 
 var _contentEl = null;
 var _backdropEl = null;
@@ -29,6 +30,10 @@ function _computeOffset(currentX, currentY, placement) {
 // Used during touchmove — transition disabled for frame-perfect tracking
 function _buildTransform(offset, placement) {
   var base = 'transition: none; ';
+  if (placement === 'bottom' && _keyboardHeight > 0) {
+    var y = offset - _keyboardHeight;
+    return base + 'transform: translate3d(0, ' + y + 'px, 0);';
+  }
   if (offset === 0) return base;
 
   if (placement === 'bottom') return base + 'transform: translate3d(0, ' + offset + 'px, 0);';
@@ -42,6 +47,10 @@ function _buildTransform(offset, placement) {
 // Used at touchend — just the current offset string, transition: none removed
 // so the subsequent RAF can trigger a CSS transition from this position
 function _buildCurrentTranslate(offset, placement) {
+  if (placement === 'bottom' && _keyboardHeight > 0) {
+    var y = offset - _keyboardHeight;
+    return 'transform: translate3d(0, ' + y + 'px, 0);';
+  }
   if (offset === 0) return '';
 
   if (placement === 'bottom') return 'transform: translate3d(0, ' + offset + 'px, 0);';
@@ -50,6 +59,11 @@ function _buildCurrentTranslate(offset, placement) {
   if (placement === 'left')   return 'transform: translate3d(-' + offset + 'px, 0, 0);';
 
   return '';
+}
+
+function _buildKeyboardStyle(height) {
+  var y = height > 0 ? -height : 0;
+  return 'transform: translate3d(0, ' + y + 'px, 0); transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1);';
 }
 
 // Exit position — 100% uses the element's own dimension so it's always off-screen
@@ -156,7 +170,13 @@ function onTouchEnd(event, ownerInstance) {
       if (be) be.setStyle('transition: opacity ' + dur + 'ms ease; opacity: 0;');
     });
   } else {
-    if (_contentEl)  _contentEl.setStyle('');
+    if (_contentEl) {
+      if (placement === 'bottom' && _keyboardHeight > 0) {
+        _contentEl.setStyle(_buildKeyboardStyle(_keyboardHeight));
+      } else {
+        _contentEl.setStyle('');
+      }
+    }
     if (_backdropEl) _backdropEl.setStyle('');
   }
 
@@ -176,14 +196,31 @@ function onTouchEnd(event, ownerInstance) {
   });
 }
 
+function onKeyboardHeightChange(newVal, oldVal, ownerInstance, instance) {
+  var h = newVal > 0 ? newVal : 0;
+  _keyboardHeight = h;
+  if (!instance || isDragging) return;
+
+  var dataset = instance.getDataset ? instance.getDataset() : {};
+  var placement = dataset.placement || 'bottom';
+  if (placement !== 'bottom') return;
+
+  if (h > 0) {
+    instance.setStyle(_buildKeyboardStyle(h));
+  } else if (oldVal > 0) {
+    instance.setStyle(_buildKeyboardStyle(0));
+  }
+}
+
 function preventTouchMove(event, ownerInstance) {
   return false;
 }
 
 module.exports = {
-  onTouchStart:     onTouchStart,
-  onTouchMove:      onTouchMove,
-  onTouchEnd:       onTouchEnd,
-  preventTouchMove: preventTouchMove,
+  onTouchStart:           onTouchStart,
+  onTouchMove:            onTouchMove,
+  onTouchEnd:             onTouchEnd,
+  onKeyboardHeightChange: onKeyboardHeightChange,
+  preventTouchMove:       preventTouchMove,
 };
 
