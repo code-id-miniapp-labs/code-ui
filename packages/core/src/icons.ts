@@ -160,6 +160,15 @@ export function getIcon(name: DefaultIconName | (string & {})): string {
     }
   }
 
+  // Never treat URLs, data URIs, or file paths (e.g. `https://...`, `data:image/...`, `/assets/...`)
+  // as Iconify `collection:name` shorthand.
+  if (
+    name.includes("/") ||
+    /^(?:https?|data|cloud|wxfile|file|blob):/i.test(name)
+  ) {
+    return "";
+  }
+
   const colonIdx = name.indexOf(":");
   if (colonIdx > 0) {
     const col = name.slice(0, colonIdx);
