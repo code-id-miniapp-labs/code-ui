@@ -3,6 +3,10 @@ import { isMiniApp, queryRect } from "@code-id-labs/utils";
 import { nextTick } from "../machine";
 import type { MachinePlugin } from "../plugin";
 import type { TypedRelationOption } from "./inherit";
+import {
+  emitPageLifecycle,
+  registerPageLifecycleHost,
+} from "./page-lifecycle";
 import type {
   AppOwnerData,
   AppOwnerInstance,
@@ -1303,6 +1307,8 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
     lifetimes: {
       attached(this: AppOwnerInstance) {
         this.__cuiAppAttached = true;
+        this.__cuiUnsubPageLifecycleHost?.();
+        this.__cuiUnsubPageLifecycleHost = registerPageLifecycleHost(this);
         registerAppHost(this, {
           onChange: (state: AppHostState) => this.applyHostState?.(state),
         });
@@ -1311,6 +1317,8 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
 
       detached(this: AppOwnerInstance) {
         this.__cuiAppAttached = false;
+        this.__cuiUnsubPageLifecycleHost?.();
+        this.__cuiUnsubPageLifecycleHost = undefined;
         unregisterAppHost(this);
       },
 
@@ -1330,10 +1338,12 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
       show(this: AppOwnerInstance) {
         attachPageAppRef(this);
         setAppHostVisible(this, true);
+        emitPageLifecycle(this, "show");
         this.detectCustomBars?.();
       },
       hide(this: AppOwnerInstance) {
         setAppHostVisible(this, false);
+        emitPageLifecycle(this, "hide");
       },
       resize(this: AppOwnerInstance) {
         refreshAppMetrics();

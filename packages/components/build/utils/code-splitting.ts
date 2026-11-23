@@ -8,6 +8,8 @@ const BEHAVIOR_MODULES = [
   "checkbox",
   "app",
   "theme",
+  "page-lifecycle",
+  "presence",
   "avatar-group",
   "toast",
 ] as const;

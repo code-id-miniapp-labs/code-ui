@@ -934,7 +934,7 @@ export function handleTreeShake(
     // Also preserve any library chunks (e.g. `computed.js`, `behaviors/app.js`)
     // directly required by the consumer app's own JS files outside `miniprogram_npm`.
     if (fs.existsSync(distRoot)) {
-      const requireRx = /require\(\s*["']([^"']+)["']\s*\)/g;
+      const requireRx = /require\(\s*["'`]([^"'`]+)["'`]\s*\)/g;
       function scanConsumerJs(dir: string) {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
         for (const entry of entries) {

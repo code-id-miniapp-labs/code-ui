@@ -1,0 +1,8 @@
+{
+  "$schema": "https://vite.weapp.dev/page.json",
+  "navigationBarTitleText": "Presence",
+  "usingComponents": {
+    "filter-drawer": "/components/filter-drawer/index",
+    "confirm-modal": "/components/confirm-modal/index"
+  }
+}

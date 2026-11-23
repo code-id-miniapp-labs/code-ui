@@ -5,7 +5,11 @@ import type {
 } from "./action-sheet.types";
 import { defaultActionSheetProps } from "./action-sheet.props";
 import * as dom from "./action-sheet.dom";
-import { isMiniApp, isNotNull, isPromise, queryAnimationDuration } from "@code-id-labs/utils";
+import {
+  isNotNull,
+  isPromise,
+  scheduleAnimationEnd,
+} from "@code-id-labs/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
@@ -124,6 +128,7 @@ export const actionSheetMachine: ActionSheetMachine =
         on: {
           ANIMATION_END: {
             target: "closed",
+            actions: ["invokeOnExitComplete"],
           },
           ...closedTransitions,
         },
@@ -177,6 +182,9 @@ export const actionSheetMachine: ActionSheetMachine =
           prop("onOpenChange")?.({ open: false });
           prop("onClose")?.();
         },
+        invokeOnExitComplete: ({ prop }) => {
+          prop("onExitComplete")?.();
+        },
         clearActionLoadingContext: ({ context, event }) => {
           if (
             event.type === "ACTION_SETTLED" &&
@@ -210,50 +218,13 @@ export const actionSheetMachine: ActionSheetMachine =
 
       effects: {
         waitForCloseAnimation: ({ send, scope, prop }) => {
-          let timer: ReturnType<typeof setTimeout> | undefined;
-          let cancelled = false;
-
-          const cleanup = () => {
-            cancelled = true;
-            if (timer !== undefined) {
-              clearTimeout(timer);
-              timer = undefined;
-            }
-          };
-
-          const scheduleEnd = (ms: number) => {
-            if (cancelled) return;
-            timer = setTimeout(() => {
-              if (!cancelled) send({ type: "ANIMATION_END" });
-            }, ms);
-          };
-
-          const explicitDuration = prop("duration");
-          if (explicitDuration >= 0) {
-            scheduleEnd(explicitDuration);
-            return cleanup;
-          }
-
-          const comp = scope.component;
-          if (!comp && !isMiniApp()) {
-            scheduleEnd(DEFAULT_ANIMATION_DURATION);
-            return cleanup;
-          }
-
-          const selector = `#${dom.getContentId(scope)}`;
-          queryAnimationDuration(selector, comp)
-            .then((duration) => {
-              if (cancelled) return;
-              const delay =
-                duration > 0 ? duration : DEFAULT_ANIMATION_DURATION;
-              scheduleEnd(delay);
-            })
-            .catch(() => {
-              if (cancelled) return;
-              scheduleEnd(DEFAULT_ANIMATION_DURATION);
-            });
-
-          return cleanup;
+          return scheduleAnimationEnd({
+            duration: prop("duration"),
+            selector: `#${dom.getContentId(scope)}`,
+            component: scope.component,
+            fallbackDuration: DEFAULT_ANIMATION_DURATION,
+            onEnd: () => send({ type: "ANIMATION_END" }),
+          });
         },
       },
     },

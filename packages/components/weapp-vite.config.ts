@@ -21,6 +21,11 @@ export default defineConfig({
           id: resolve(import.meta.dirname, "src/computed.ts"),
           fileName: "computed.js",
         });
+        this.emitFile({
+          type: "chunk",
+          id: resolve(import.meta.dirname, "src/utils/presence.ts"),
+          fileName: "behaviors/presence.js",
+        });
       },
       generateBundle() {
         const dtsPath = resolve(
@@ -31,6 +36,15 @@ export default defineConfig({
           type: "asset",
           fileName: "computed.d.ts",
           source: readFileSync(dtsPath, "utf8"),
+        });
+        const presenceDtsPath = resolve(
+          import.meta.dirname,
+          "../frameworks/miniapp/dist/behaviors/presence.d.ts",
+        );
+        this.emitFile({
+          type: "asset",
+          fileName: "behaviors/presence.d.ts",
+          source: readFileSync(presenceDtsPath, "utf8"),
         });
       },
     },

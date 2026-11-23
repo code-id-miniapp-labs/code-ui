@@ -147,6 +147,7 @@ export { default as inputMenuTheme } from "./theme/definitions/input-menu";
 export { default as inputMenuItemTheme } from "./theme/definitions/input-menu-item";
 export { default as modalTheme } from "./theme/definitions/modal";
 export { default as pinInputTheme } from "./theme/definitions/pin-input";
+export { default as presenceTheme } from "./theme/definitions/presence";
 export { default as progressTheme } from "./theme/definitions/progress";
 export { default as pullDownRefreshTheme } from "./theme/definitions/pull-down-refresh";
 export { default as qrCodeTheme } from "./theme/definitions/qr-code";

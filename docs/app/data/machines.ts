@@ -12,6 +12,7 @@ import { inputMenuMachine } from '@code-id-labs/input-menu'
 import { modalMachine } from '@code-id-labs/modal'
 import { pinInputMachine } from '@code-id-labs/pin-input'
 import { popoverMachine } from '@code-id-labs/popover'
+import { presenceMachine } from '@code-id-labs/presence'
 import { pullDownRefreshMachine } from '@code-id-labs/pull-down-refresh'
 import { radioMachine } from '@code-id-labs/radio'
 import { selectMachine } from '@code-id-labs/select'
@@ -196,6 +197,7 @@ export const machineGraphs: Record<string, MachineGraph> = {
   modal: extractMachineGraph('modal', 'Modal State Machine', modalMachine as RawMachine, 'closed'),
   'pin-input': extractMachineGraph('pin-input', 'PinInput State Machine', pinInputMachine as RawMachine, 'idle'),
   popover: extractMachineGraph('popover', 'Popover State Machine', popoverMachine as RawMachine, 'closed'),
+  presence: extractMachineGraph('presence', 'Presence State Machine', presenceMachine as RawMachine, 'unmounted'),
   'pull-down-refresh': extractMachineGraph('pull-down-refresh', 'PullDownRefresh State Machine', pullDownRefreshMachine as RawMachine, 'idle'),
   radio: extractMachineGraph('radio', 'Radio State Machine', radioMachine as RawMachine),
   select: extractMachineGraph('select', 'Select State Machine', selectMachine as RawMachine, 'closed'),

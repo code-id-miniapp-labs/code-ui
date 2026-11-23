@@ -89,6 +89,10 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/pin-input/src",
       ),
+      "@code-id-labs/presence": resolve(
+        import.meta.dirname,
+        "packages/machines/presence/src",
+      ),
       "@code-id-labs/progress": resolve(
         import.meta.dirname,
         "packages/machines/progress/src",

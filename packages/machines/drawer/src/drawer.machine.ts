@@ -2,7 +2,7 @@ import { createMachine } from "@code-id-labs/core";
 import type { DrawerMachine, DrawerSchema } from "./drawer.types";
 import { defaultDrawerProps } from "./drawer.props";
 import * as dom from "./drawer.dom";
-import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-id-labs/utils";
+import { isNotNull, scheduleAnimationEnd } from "@code-id-labs/utils";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
@@ -56,8 +56,6 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
     placement: ({ prop }) => prop("placement"),
   },
 
-  effects: ["listenKeyboardHeight"],
-
   watch: ({ prop, state, track }) => {
     track([() => prop("open")], () => {
       const rawOpen = prop("open");
@@ -82,6 +80,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
     open: {
       tags: ["open"],
+      effects: ["listenKeyboardHeight"],
       on: {
         CLOSE: {
           target: "closing",
@@ -126,6 +125,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
 
     dragging: {
       tags: ["open", "dragging"],
+      effects: ["listenKeyboardHeight"],
       on: {
         DRAG_MOVE: {
           actions: ["invokeOnDrag"],
@@ -157,6 +157,7 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       on: {
         ANIMATION_END: {
           target: "closed",
+          actions: ["invokeOnExitComplete"],
         },
         ...closedTransitions,
       },
@@ -181,6 +182,9 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
         }
         prop("onOpenChange")?.({ open: false });
         prop("onClose")?.();
+      },
+      invokeOnExitComplete: ({ prop }) => {
+        prop("onExitComplete")?.();
       },
       invokeOnBackdropTap: ({ prop }) => {
         prop("onBackdropTap")?.();
@@ -231,48 +235,13 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       },
 
       waitForCloseAnimation: ({ send, scope, prop }) => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        let cancelled = false;
-
-        const cleanup = () => {
-          cancelled = true;
-          if (timer !== undefined) {
-            clearTimeout(timer);
-            timer = undefined;
-          }
-        };
-
-        const scheduleEnd = (ms: number) => {
-          if (cancelled) return;
-          timer = setTimeout(() => {
-            if (!cancelled) send({ type: "ANIMATION_END" });
-          }, ms);
-        };
-
-        const explicitDuration = prop("duration");
-        if (typeof explicitDuration === "number" && explicitDuration >= 0) {
-          scheduleEnd(explicitDuration);
-          return cleanup;
-        }
-
-        const comp = scope.component;
-        if (!comp && !isMiniApp()) {
-          scheduleEnd(DEFAULT_ANIMATION_DURATION);
-          return cleanup;
-        }
-
-        queryAnimationDuration(dom.getContentSelector(scope), comp)
-          .then((duration) => {
-            if (cancelled) return;
-            const delay = duration > 0 ? duration : DEFAULT_ANIMATION_DURATION;
-            scheduleEnd(delay);
-          })
-          .catch(() => {
-            if (cancelled) return;
-            scheduleEnd(DEFAULT_ANIMATION_DURATION);
-          });
-
-        return cleanup;
+        return scheduleAnimationEnd({
+          duration: prop("duration"),
+          selector: dom.getContentSelector(scope),
+          component: scope.component,
+          fallbackDuration: DEFAULT_ANIMATION_DURATION,
+          onEnd: () => send({ type: "ANIMATION_END" }),
+        });
       },
     },
   },

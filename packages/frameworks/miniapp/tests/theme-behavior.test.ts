@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  __resetPageLifecycleHub,
+  emitPageLifecycle,
+} from "../src/behaviors/page-lifecycle";
+import {
   __resetThemeRegistry,
   createAppThemeBehavior,
   getAppTheme,
@@ -9,6 +13,7 @@ import {
 describe("theme behavior", () => {
   beforeEach(() => {
     __resetThemeRegistry();
+    __resetPageLifecycleHub();
     delete (globalThis as Record<string, unknown>).wx;
   });
 
@@ -37,7 +42,7 @@ describe("theme behavior", () => {
     expect(events).toEqual(["system:light", "system:dark"]);
   });
 
-  it("syncs mounted component via createAppThemeBehavior lifetimes", () => {
+  it("syncs mounted component via createAppThemeBehavior without declaring pageLifetimes", () => {
     const originalBehavior = (globalThis as Record<string, unknown>).Behavior;
     (globalThis as Record<string, unknown>).Behavior = (
       def: Record<string, unknown>,
@@ -49,13 +54,14 @@ describe("theme behavior", () => {
           attached: (this: Record<string, unknown>) => void;
           detached: (this: Record<string, unknown>) => void;
         };
-        pageLifetimes: {
-          show: (this: Record<string, unknown>) => void;
-        };
+        pageLifetimes?: Record<string, unknown>;
       };
+
+      expect(behavior.pageLifetimes).toBeUndefined();
 
       const setData = vi.fn();
       const instance: Record<string, unknown> = {
+        getPageId: () => "page-theme-1",
         data: { themeMode: "light", themeCssVars: "" },
         setData,
       };
@@ -71,7 +77,7 @@ describe("theme behavior", () => {
       ).__CODE_UI_THEME_REGISTRY__;
       reg.colorMode = "dark";
       reg.cssVars = "--ui-primary:#10b981;";
-      behavior.pageLifetimes.show.call(instance);
+      emitPageLifecycle("page-theme-1", "show");
 
       expect(setData).toHaveBeenLastCalledWith({
         themeMode: "dark",

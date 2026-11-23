@@ -46,6 +46,8 @@ export interface DrawerProps {
   onOpenChange?: (details: OpenChangeDetails) => void;
   /** Callback fired when drawer closes */
   onClose?: () => void;
+  /** Callback fired after the drawer exit animation finishes and enters closed state */
+  onExitComplete?: (() => void) | undefined;
   /** Callback fired when the backdrop is tapped */
   onBackdropTap?: (() => void) | undefined;
   /** Callback fired when the close trigger is tapped */
@@ -116,6 +118,7 @@ export interface DrawerComputed {
 export type DrawerAction =
   | "invokeOnOpen"
   | "invokeOnClose"
+  | "invokeOnExitComplete"
   | "invokeOnBackdropTap"
   | "invokeOnCloseTriggerTap"
   | "invokeOnDragStart"

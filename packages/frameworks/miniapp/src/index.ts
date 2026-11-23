@@ -162,6 +162,29 @@ export type {
   AppThemeState,
   AppThemeListener,
 } from "./behaviors/theme";
+export {
+  resolveLifecyclePageId,
+  registerPageLifecycleHost,
+  subscribePageLifecycle,
+  emitPageLifecycle,
+  getPageLifecycleSubscriberCount,
+} from "./behaviors/page-lifecycle";
+export type {
+  PageLifecycleEvent,
+  PageLifecycleSubscriber,
+  PageLifecycleInstanceLike,
+} from "./behaviors/page-lifecycle";
+export {
+  createPresenceController,
+  createPresenceBehavior,
+} from "./behaviors/presence";
+export type {
+  PresenceLifecycleState,
+  PresenceSnapshot,
+  PresenceControllerOptions,
+  PresenceController,
+  CreatePresenceBehaviorOptions,
+} from "./behaviors/presence";
 export { bindable } from "./bindable";
 export { batch } from "./batch";
 export {

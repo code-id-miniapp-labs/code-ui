@@ -1,3 +1,8 @@
+import {
+  subscribePageLifecycle,
+  type PageLifecycleInstanceLike,
+} from "./page-lifecycle";
+
 export type AppColorMode = "light" | "dark" | "system";
 export type ResolvedThemeMode = "light" | "dark";
 export type AppThemeColors = Record<string, string>;
@@ -122,8 +127,10 @@ export function subscribeAppTheme(
 }
 
 interface ThemeOwnerInstance
-  extends WechatMiniprogram.Component.InstanceProperties {
+  extends WechatMiniprogram.Component.InstanceProperties,
+    PageLifecycleInstanceLike {
   __cuiUnsubTheme?: (() => void) | undefined;
+  __cuiUnsubPageLifecycle?: (() => void) | undefined;
   setData?: ((data: Record<string, unknown>) => void) | undefined;
   data?: {
     themeMode?: ResolvedThemeMode | undefined;
@@ -147,26 +154,29 @@ export function createAppThemeBehavior() {
             themeCssVars: state.cssVars,
           });
         }, true);
+
+        this.__cuiUnsubPageLifecycle?.();
+        this.__cuiUnsubPageLifecycle = subscribePageLifecycle(this, {
+          onShow: () => {
+            const state = getAppTheme();
+            if (
+              this.data?.themeMode !== state.resolvedMode ||
+              this.data?.themeCssVars !== state.cssVars
+            ) {
+              this.setData?.({
+                themeMode: state.resolvedMode,
+                themeCssVars: state.cssVars,
+              });
+            }
+          },
+        });
       },
 
       detached(this: ThemeOwnerInstance) {
         this.__cuiUnsubTheme?.();
         this.__cuiUnsubTheme = undefined;
-      },
-    },
-
-    pageLifetimes: {
-      show(this: ThemeOwnerInstance) {
-        const state = getAppTheme();
-        if (
-          this.data?.themeMode !== state.resolvedMode ||
-          this.data?.themeCssVars !== state.cssVars
-        ) {
-          this.setData?.({
-            themeMode: state.resolvedMode,
-            themeCssVars: state.cssVars,
-          });
-        }
+        this.__cuiUnsubPageLifecycle?.();
+        this.__cuiUnsubPageLifecycle = undefined;
       },
     },
   });

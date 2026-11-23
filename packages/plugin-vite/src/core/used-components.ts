@@ -50,6 +50,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
   input: ["icon"],
   modal: ["button", "icon"],
   "pin-input": ["icon"],
+  presence: [],
   "radio-group": ["radio", "icon"],
   radio: ["icon"],
   select: ["popover", "select-item", "icon"],

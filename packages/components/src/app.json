@@ -28,6 +28,7 @@
     "cui-input-menu-item": "runtime/input-menu-item/index",
     "cui-modal": "runtime/modal/index",
     "cui-pin-input": "runtime/pin-input/index",
+    "cui-presence": "runtime/presence/index",
     "cui-progress": "runtime/progress/index",
     "cui-pull-down-refresh": "runtime/pull-down-refresh/index",
     "cui-qr-code": "runtime/qr-code/index",

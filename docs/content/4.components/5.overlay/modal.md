@@ -256,6 +256,62 @@ Page({
 
 ::
 
+### Lazy Mounting & True Unmounting with Presence
+
+To avoid mounting heavy modal forms or custom `<c-modal>` wrappers while closed, pair `wx:if="{{confirmModal.mounted}}"` with [`usePresence`](/composables/use-presence) and `bind:exitcomplete`:
+
+::code-group
+
+```html [index.wxml]
+<c-button label="Delete Account" color="danger" bind:tap="openConfirm" />
+
+<c-modal
+  wx:if="{{ confirmModal.mounted }}"
+  open="{{ confirmModal.open }}"
+  title="Delete Account?"
+  bind:close="closeConfirm"
+  bind:exitcomplete="onConfirmExitComplete"
+>
+  <view>Mounted lazily on open and fully detached after leave animation completes.</view>
+</c-modal>
+```
+
+```ts [index.ts]
+import { usePresence, type UsePresenceReturn } from "@code-id-labs/composables";
+
+Page({
+  data: {
+    confirmModal: { open: false, present: false, mounted: false, state: "unmounted" },
+  },
+
+  confirmCtrl: null as UsePresenceReturn | null,
+
+  onLoad() {
+    this.confirmCtrl = usePresence({ target: this, key: "confirmModal" });
+  },
+
+  onUnload() {
+    this.confirmCtrl?.stop();
+  },
+
+  openConfirm() {
+    this.confirmCtrl?.show();
+  },
+
+  closeConfirm() {
+    this.confirmCtrl?.hide();
+  },
+
+  onConfirmExitComplete() {
+    this.confirmCtrl?.onExitComplete();
+  },
+});
+```
+
+::
+
+If you wrap `<c-modal>` in a custom component, forward `bind:close` and `bind:exitcomplete` via `this.triggerEvent(...)`. See [Presence](/components/overlay/presence) for a full custom-component wrapper walkthrough.
+
 ### Custom Styling
 
 Override any theme slot with `ui` or pass additional classes to the root element via `className`.
@@ -301,7 +357,7 @@ Click any active transition or event button below to simulate the `modal` state 
 | `className` (`class`) | `string` | `""` | Declared as `className` in component `properties` and passed to `resolveSlots` as the root class override. |
 
 ::callout{icon="i-lucide-code"}
-**Callback props (`ModalProps`)**: `onOpenChange` (`(details: { open: boolean }) => void`), `onClose`, `onClosePrevent`, `onEnter`, `onAfterEnter`, `onLeave`, and `onAfterLeave` are also defined on the modal props.
+**Callback props (`ModalProps`)**: `onOpenChange` (`(details: { open: boolean }) => void`), `onClose`, `onClosePrevent`, `onEnter`, `onAfterEnter`, `onLeave`, `onAfterLeave`, and `onExitComplete` are also defined on the modal props.
 ::
 
 ## Slots
@@ -324,6 +380,8 @@ Click any active transition or event button below to simulate the `modal` state 
 | :--- | :--- | :--- |
 | `bind:overlayTap` | `MiniAppBaseEventLike` (raw tap event) | Fired when the backdrop overlay or outer container background is tapped. |
 | `bind:closeTriggerTap` | `MiniAppBaseEventLike` (raw tap event) | Fired when the close button or `close` slot is tapped. |
+| `bind:close` | `undefined` | Fired when the modal starts closing. |
+| `bind:exitcomplete` | `undefined` | Fired after the leave transition finishes and the modal settles into `closed`. Pair with [`usePresence`](/composables/use-presence) and `wx:if` for true unmounting. |
 
 ::callout{icon="i-lucide-terminal"}
 **Exposed API (`exportApi: true`)**: The component exposes `open`, `visible`, `setOpen(open)`, `openModal()`, `closeModal()`, and `toggle()`.

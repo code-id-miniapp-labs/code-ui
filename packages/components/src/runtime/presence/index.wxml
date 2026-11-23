@@ -1,0 +1,14 @@
+<view
+  wx:if="{{presence.mounted}}"
+  id="{{presence.rootProps.id}}"
+  class="{{classes.root}}"
+  data-scope="presence"
+  data-part="root"
+  data-state="{{presence.dataState}}"
+  data-presence-state="{{presence.state}}"
+  hidden="{{!presence.visible}}"
+  bindanimationend="handleAnimationEnd"
+  bindtransitionend="handleAnimationEnd"
+>
+  <slot />
+</view>

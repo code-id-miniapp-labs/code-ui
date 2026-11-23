@@ -371,5 +371,50 @@ describe("Modal Machine", () => {
       expect(onAfterEnter).not.toHaveBeenCalled();
       expect(onAfterLeave).not.toHaveBeenCalled();
     });
+
+    it("scopes wx.onKeyboardHeightChange to open state only and emits onExitComplete", async () => {
+      const onKeyboardHeightChange = vi.fn();
+      const offKeyboardHeightChange = vi.fn();
+      (globalThis as Record<string, unknown>).wx = {
+        onKeyboardHeightChange,
+        offKeyboardHeightChange,
+      };
+
+      const onExitComplete = vi.fn();
+      const triggerEvent = vi.fn();
+
+      try {
+        const machine = new MiniappMachine(modalMachine, {
+          open: false,
+          duration: 150,
+          onExitComplete,
+          component: { triggerEvent } as any,
+        });
+        machine.start();
+
+        expect(onKeyboardHeightChange).not.toHaveBeenCalled();
+
+        machine.updateProps({ open: true });
+        await flush();
+        expect(onKeyboardHeightChange).toHaveBeenCalledTimes(1);
+        const handler = onKeyboardHeightChange.mock.calls[0]?.[0];
+
+        machine.updateProps({ open: false });
+        await flush();
+        expect(offKeyboardHeightChange).toHaveBeenCalledTimes(1);
+        expect(offKeyboardHeightChange).toHaveBeenCalledWith(handler);
+        expect(onExitComplete).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(150);
+        await flush();
+        expect(machine.state.get()).toBe("closed");
+        expect(onExitComplete).toHaveBeenCalledTimes(1);
+        expect(triggerEvent).toHaveBeenCalledWith("exitcomplete", undefined);
+
+        machine.stop();
+      } finally {
+        delete (globalThis as Record<string, unknown>).wx;
+      }
+    });
   });
 });

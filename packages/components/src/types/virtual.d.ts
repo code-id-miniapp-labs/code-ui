@@ -124,6 +124,12 @@ declare module "virtual:cui/theme/pin-input" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/presence" {
+  import type { default as presenceTheme } from "@code-id-labs/core/src/theme/definitions/presence";
+  const theme: ReturnType<typeof presenceTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/progress" {
   import type { default as progressTheme } from "@code-id-labs/core/src/theme/definitions/progress";
   const theme: ReturnType<typeof progressTheme>;

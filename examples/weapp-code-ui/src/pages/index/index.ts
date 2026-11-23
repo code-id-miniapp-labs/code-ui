@@ -339,6 +339,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["scale background", "swipe drag", "4 edges"],
   },
   {
+    id: "presence",
+    name: "Presence",
+    path: "/pages/presence/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Mount/unmount animation primitive and parent-level true unmounting for custom drawers, modals & action sheets.",
+    icon: "i-lucide-sparkles",
+    highlights: ["lazyMount", "unmountOnExit", "exitcomplete"],
+  },
+  {
     id: "action-sheet",
     name: "Action Sheet",
     path: "/pages/action-sheet/index",
@@ -391,6 +401,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     desc: "Type-safe composable hook connecting page scripts to child component FSM APIs by selector.",
     icon: "i-lucide-cpu",
     highlights: ["useComponentRef()", "FSM API", "type-safe"],
+  },
+  {
+    id: "use-presence",
+    name: "Use Presence",
+    path: "/pages/presence/index",
+    category: "composable",
+    categoryLabel: "Composable",
+    desc: "Parent-level presence controller pairing wx:if with bind:exitcomplete to truly unmount heavy overlay subtrees.",
+    icon: "i-lucide-layers",
+    highlights: ["usePresence()", "wx:if unmount", "custom overlays"],
   },
   {
     id: "popover",

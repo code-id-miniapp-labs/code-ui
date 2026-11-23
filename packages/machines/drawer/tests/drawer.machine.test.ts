@@ -423,6 +423,87 @@ describe("Drawer Machine", () => {
     });
   });
 
+  describe("Keyboard Listener Scoping & onExitComplete", () => {
+    afterEach(() => {
+      delete (globalThis as Record<string, unknown>).wx;
+    });
+
+    it("does not subscribe to wx.onKeyboardHeightChange while closed and unsubscribes on close/stop", async () => {
+      const onKeyboardHeightChange = vi.fn();
+      const offKeyboardHeightChange = vi.fn();
+      (globalThis as Record<string, unknown>).wx = {
+        onKeyboardHeightChange,
+        offKeyboardHeightChange,
+      };
+
+      const machine = new MiniappMachine(drawerMachine, {
+        open: false,
+        duration: 200,
+      });
+      machine.start();
+
+      // Closed drawer must not register a keyboard listener
+      expect(onKeyboardHeightChange).not.toHaveBeenCalled();
+
+      // Opening subscribes once
+      machine.send({ type: "OPEN" });
+      await flush();
+      expect(onKeyboardHeightChange).toHaveBeenCalledTimes(1);
+      const registeredHandler = onKeyboardHeightChange.mock.calls[0]?.[0];
+
+      // Closing unsubscribes immediately (does not wait for animation end)
+      machine.send({ type: "CLOSE" });
+      await flush();
+      expect(offKeyboardHeightChange).toHaveBeenCalledTimes(1);
+      expect(offKeyboardHeightChange).toHaveBeenCalledWith(registeredHandler);
+
+      // Reopen then detach while open -> unsubscribes cleanly
+      machine.send({ type: "OPEN" });
+      await flush();
+      expect(onKeyboardHeightChange).toHaveBeenCalledTimes(2);
+      const secondHandler = onKeyboardHeightChange.mock.calls[1]?.[0];
+
+      machine.stop();
+      expect(offKeyboardHeightChange).toHaveBeenCalledTimes(2);
+      expect(offKeyboardHeightChange).toHaveBeenLastCalledWith(secondHandler);
+    });
+
+    it("fires onExitComplete (and bind:exitcomplete) only after closing animation completes", async () => {
+      const onExitComplete = vi.fn();
+      const triggerEvent = vi.fn();
+      const machine = new MiniappMachine(drawerMachine, {
+        defaultOpen: true,
+        duration: 200,
+        onExitComplete,
+        component: { triggerEvent } as any,
+      });
+      machine.start();
+
+      // Close then reopen before animation ends -> onExitComplete must not fire
+      machine.send({ type: "CLOSE" });
+      await flush();
+      vi.advanceTimersByTime(100);
+      machine.send({ type: "OPEN" });
+      await flush();
+      vi.advanceTimersByTime(300);
+      await flush();
+      expect(onExitComplete).not.toHaveBeenCalled();
+
+      // Close completely
+      machine.send({ type: "CLOSE" });
+      await flush();
+      expect(onExitComplete).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(200);
+      await flush();
+      expect(machine.state.get()).toBe("closed");
+      expect(onExitComplete).toHaveBeenCalledTimes(1);
+      expect(triggerEvent).toHaveBeenCalledWith("exitcomplete", undefined);
+
+      machine.stop();
+    });
+  });
+
   describe("Controlled Open Prop (watch)", () => {
     it("syncs state across multiple open -> close -> open cycles via updateProps", async () => {
       const machine = new MiniappMachine(drawerMachine, {

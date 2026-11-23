@@ -8,6 +8,9 @@ import {
   signal,
   startBatch,
 } from "alien-signals";
+import { subscribePageLifecycle } from "./page-lifecycle";
+
+const _COMPUTED_PAGE_UNSUB = "__cui_computedPageUnsub__";
 
 const pauseStack: Array<any> = [];
 function pauseTracking(): void {
@@ -1349,16 +1352,20 @@ export const computedBehavior =
           attached(this: any) {
             setupComputed(this, undefined, { immediate: false });
             this[_COMPUTED_FLUSH]?.();
+            this[_COMPUTED_PAGE_UNSUB]?.();
+            if (typeof this[_COMPUTED_FLUSH] === "function") {
+              this[_COMPUTED_PAGE_UNSUB] = subscribePageLifecycle(this, {
+                onShow: () => {
+                  this[_COMPUTED_FLUSH]?.();
+                },
+              });
+            }
           },
 
           detached(this: any) {
+            this[_COMPUTED_PAGE_UNSUB]?.();
+            this[_COMPUTED_PAGE_UNSUB] = undefined;
             this[_COMPUTED_DISPOSE]?.();
-          },
-        },
-
-        pageLifetimes: {
-          show(this: any) {
-            this[_COMPUTED_FLUSH]?.();
           },
         },
       })

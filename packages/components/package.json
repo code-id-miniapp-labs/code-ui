@@ -172,6 +172,12 @@
       "require": "./dist/runtime/pin-input/index.js"
     },
     "./pin-input/*": "./dist/runtime/pin-input/*",
+    "./presence": {
+      "types": "./dist/runtime/presence/index.d.ts",
+      "import": "./dist/runtime/presence/index.js",
+      "require": "./dist/runtime/presence/index.js"
+    },
+    "./presence/*": "./dist/runtime/presence/*",
     "./progress": {
       "types": "./dist/runtime/progress/index.d.ts",
       "import": "./dist/runtime/progress/index.js",
@@ -278,6 +284,11 @@
       "import": "./dist/behaviors/app.js",
       "require": "./dist/behaviors/app.js"
     },
+    "./behaviors/presence": {
+      "types": "./dist/behaviors/presence.d.ts",
+      "import": "./dist/behaviors/presence.js",
+      "require": "./dist/behaviors/presence.js"
+    },
     "./behaviors/*": "./dist/behaviors/*",
     "./utils/app": {
       "types": "./dist/behaviors/app.d.ts",
@@ -327,6 +338,7 @@
     "@code-id-labs/miniapp": "workspace:*",
     "@code-id-labs/modal": "workspace:*",
     "@code-id-labs/pin-input": "workspace:*",
+    "@code-id-labs/presence": "workspace:*",
     "@code-id-labs/progress": "workspace:*",
     "@code-id-labs/pull-down-refresh": "workspace:*",
     "@code-id-labs/qr-code": "workspace:*",
