@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/cli",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "CLI tool for code-ui prebuilt WeChat MiniProgram component library",
   "repository": {
     "type": "git",
