@@ -50,7 +50,10 @@ export function virtualThemePlugin(): Plugin {
             })
           : structuredClone(factory);
 
-      const code = serializeCompactThemeModule(compiled);
+      const code = serializeCompactThemeModule({
+        name: componentName,
+        ...compiled,
+      });
       cache.set(componentName, code);
       return code;
     },

@@ -504,6 +504,7 @@ export function tv<T = Record<string, (opts?: any) => string>>(
 ): (props?: any) => T;
 export function tv(config: any): any {
   const {
+    name: componentName,
     base,
     slots,
     variants = {},
@@ -513,7 +514,7 @@ export function tv(config: any): any {
   } = config || {};
   const parent: TVConfigInternal | undefined = extend?.__config;
 
-  const mergedBase: ClassValue =
+  let mergedBase: ClassValue =
     parent?.base && base ? [parent.base, base] : (base ?? parent?.base);
 
   let mergedSlots: Record<string, ClassValue> | undefined;
@@ -524,7 +525,7 @@ export function tv(config: any): any {
     }
   }
 
-  const hasSlots = Boolean(mergedSlots && Object.keys(mergedSlots).length > 0);
+  let hasSlots = Boolean(mergedSlots && Object.keys(mergedSlots).length > 0);
   const primarySlot =
     mergedSlots && "base" in mergedSlots && !("root" in mergedSlots)
       ? "base"
@@ -538,7 +539,7 @@ export function tv(config: any): any {
       : [primarySlot],
   );
 
-  const mergedVariants = parent?.variants
+  let mergedVariants = parent?.variants
     ? mergeVariantConfigs(
         parent.variants,
         variants,
@@ -546,15 +547,101 @@ export function tv(config: any): any {
         primarySlot,
       )
     : variants;
-  const mergedCompounds = parent?.compoundVariants
+  let mergedCompounds = parent?.compoundVariants
     ? [...parent.compoundVariants, ...compoundVariants]
     : [...compoundVariants];
-  const combinedDefaults = parent?.defaultVariants
+  let combinedDefaults = parent?.defaultVariants
     ? { ...parent.defaultVariants, ...defaultVariants }
     : { ...defaultVariants };
 
-  const declaredKeys = Object.keys(mergedVariants);
+  let declaredKeys = Object.keys(mergedVariants);
   const cache = createLruCache<string, TVOutput>();
+
+  const camelComponentName =
+    typeof componentName === "string"
+      ? componentName.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
+      : undefined;
+  let appliedGlobalConfigRef: unknown = undefined;
+  let configGen = 0;
+
+  const applyOverrideEntry = (ov: Record<string, any> | undefined): void => {
+    if (!ov || typeof ov !== "object") return;
+
+    if (ov.base !== undefined) {
+      mergedBase =
+        typeof ov.base === "function"
+          ? ov.base(cx(mergedBase))
+          : mergedBase
+            ? [mergedBase, ov.base]
+            : ov.base;
+    }
+
+    const slotOverrides =
+      ov.slots && typeof ov.slots === "object" && ov.ui && typeof ov.ui === "object"
+        ? { ...ov.ui, ...ov.slots }
+        : (ov.slots && typeof ov.slots === "object" ? ov.slots : undefined) ??
+          (ov.ui && typeof ov.ui === "object" ? ov.ui : undefined);
+
+    if (slotOverrides) {
+      if (!mergedSlots) mergedSlots = {};
+      for (const s in slotOverrides) {
+        const val = slotOverrides[s];
+        if (val === undefined) continue;
+        const prev = mergedSlots[s];
+        mergedSlots[s] =
+          typeof val === "function"
+            ? val(cx(prev))
+            : prev
+              ? [prev, val]
+              : val;
+        slotNames.add(s);
+      }
+      hasSlots = Object.keys(mergedSlots).length > 0;
+    }
+
+    if (ov.variants && typeof ov.variants === "object") {
+      mergedVariants = mergeVariantConfigs(
+        mergedVariants,
+        ov.variants,
+        slotNames,
+        primarySlot,
+      );
+      declaredKeys = Object.keys(mergedVariants);
+    }
+
+    if (Array.isArray(ov.compoundVariants) && ov.compoundVariants.length > 0) {
+      mergedCompounds = [...mergedCompounds, ...ov.compoundVariants];
+    }
+
+    if (ov.defaultVariants && typeof ov.defaultVariants === "object") {
+      combinedDefaults = { ...combinedDefaults, ...ov.defaultVariants };
+    }
+  };
+
+  const syncGlobalConfig = (): void => {
+    if (!componentName) return;
+    const g =
+      typeof globalThis !== "undefined"
+        ? (globalThis as Record<string, any>).__CODE_UI_GLOBAL_CONFIG__
+        : undefined;
+    if (!g || g === appliedGlobalConfigRef) return;
+    appliedGlobalConfigRef = g;
+
+    const uiMap = g.ui as Record<string, any> | undefined;
+    const compMap = g.components as Record<string, any> | undefined;
+    const uiOv =
+      uiMap?.[componentName] ??
+      (camelComponentName ? uiMap?.[camelComponentName] : undefined);
+    const compOv =
+      compMap?.[componentName] ??
+      (camelComponentName ? compMap?.[camelComponentName] : undefined);
+
+    if (uiOv || compOv) {
+      applyOverrideEntry(uiOv);
+      applyOverrideEntry(compOv);
+      configGen++;
+    }
+  };
 
   const build = (
     mergedProps: Record<string, any>,
@@ -622,6 +709,7 @@ export function tv(config: any): any {
   };
 
   const tvFn = (props: Record<string, any> = {}): TVOutput => {
+    syncGlobalConfig();
     const mergedProps: Record<string, any> = { ...combinedDefaults };
     for (const k in props) {
       if (k !== "class" && k !== "className" && props[k] !== undefined)
@@ -630,7 +718,7 @@ export function tv(config: any): any {
     const propExtra = cx(props.class, props.className);
 
     const keys = Object.keys(mergedProps);
-    let cacheKey = "";
+    let cacheKey = `${configGen}|`;
     for (let i = 0; i < keys.length; i++) {
       const k = keys[i];
       if (k === undefined) continue;
