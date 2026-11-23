@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/banner",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Banner state machine for code-ui",
   "files": [

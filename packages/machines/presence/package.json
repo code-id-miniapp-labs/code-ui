@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/presence",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Presence state machine for mount/unmount animations in code-ui",
   "files": [

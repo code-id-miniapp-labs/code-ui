@@ -1,5 +1,12 @@
 # @code-id-labs/miniapp
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [97e4768]
+  - @code-id-labs/core@0.0.2
+
 ## 0.0.2
 
 ### Patch Changes
