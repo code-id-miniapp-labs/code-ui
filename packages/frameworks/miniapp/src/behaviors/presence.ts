@@ -141,11 +141,43 @@ export function createPresenceController(
   };
 }
 
+export interface PresenceEventLike {
+  currentTarget?: {
+    dataset?: Record<string, unknown> | undefined;
+  } | undefined;
+  target?: {
+    dataset?: Record<string, unknown> | undefined;
+  } | undefined;
+}
+
+export function resolvePresenceName(
+  nameOrEvent: string | PresenceEventLike | null | undefined,
+): string | undefined {
+  if (typeof nameOrEvent === "string" && nameOrEvent.length > 0) {
+    return nameOrEvent;
+  }
+  if (nameOrEvent && typeof nameOrEvent === "object") {
+    const dataset =
+      nameOrEvent.currentTarget?.dataset ?? nameOrEvent.target?.dataset;
+    const raw = dataset?.name ?? dataset?.presence;
+    if (typeof raw === "string" && raw.length > 0) {
+      return raw;
+    }
+  }
+  return undefined;
+}
+
 export interface CreatePresenceBehaviorOptions {
-  /** Data key under `this.data` (e.g. `"drawer"` -> `this.data.drawer = { open, mounted, present, state }`). @default "presence" */
-  key?: string | undefined;
-  /** Initial open/present state. @default false */
-  defaultOpen?: boolean | undefined;
+  /**
+   * Data key(s) under `this.data`.
+   * - `string` (default `"presence"`): manages a single overlay at `this.data[key]`.
+   * - `readonly string[]`: manages multiple overlays at `this.data[name]` for each name in `key`,
+   *   exposing shared `openPresence(nameOrEvent)`, `closePresence(nameOrEvent)`,
+   *   `togglePresence(nameOrEvent)`, `handlePresenceExitComplete(nameOrEvent)`, and `closeAllPresence()`.
+   */
+  key?: string | readonly string[] | undefined;
+  /** Initial open/present state (boolean in single mode, or per-key record in multi-key mode). @default false */
+  defaultOpen?: boolean | Record<string, boolean> | undefined;
   /** Defer mounting until opened for the first time. @default true */
   lazyMount?: boolean | undefined;
   /** Unmount (`mounted: false`) after exit completes. @default true */
@@ -173,12 +205,155 @@ export function createPresenceBehavior(
     return {} as any;
   }
 
-  const key = options.key || "presence";
+  if (Array.isArray(options.key) && options.key.length > 0) {
+    const keyList = options.key as readonly string[];
+    const ctrlMapKey = `__cuiPresenceCtrls_${keyList.join("_")}`;
+    const defaultOpenMap =
+      options.defaultOpen && typeof options.defaultOpen === "object"
+        ? options.defaultOpen
+        : undefined;
+
+    const initialData: Record<string, PresenceSnapshot> = {};
+    for (const name of keyList) {
+      initialData[name] = createPresenceController({
+        initialPresent: Boolean(defaultOpenMap?.[name]),
+        lazyMount: options.lazyMount,
+        unmountOnExit: options.unmountOnExit,
+        duration: options.duration,
+      }).getState();
+    }
+
+    function ensureControllers(
+      instance: Record<string, any>,
+    ): Record<string, PresenceController> {
+      let ctrls = instance[ctrlMapKey] as
+        | Record<string, PresenceController>
+        | undefined;
+      if (!ctrls) {
+        ctrls = {};
+        for (const name of keyList) {
+          ctrls[name] = createPresenceController({
+            initialPresent: Boolean(
+              instance.data?.[name]?.open ?? defaultOpenMap?.[name],
+            ),
+            lazyMount: options.lazyMount,
+            unmountOnExit: options.unmountOnExit,
+            duration: options.duration,
+            onChange: (snapshot) => {
+              instance.setData?.({ [name]: snapshot });
+            },
+          });
+        }
+        instance[ctrlMapKey] = ctrls;
+      }
+      return ctrls;
+    }
+
+    const resolveTarget = (
+      instance: Record<string, any>,
+      nameOrEvent: string | PresenceEventLike,
+    ): PresenceController | undefined => {
+      const name = resolvePresenceName(nameOrEvent);
+      if (!name) return undefined;
+      return ensureControllers(instance)[name];
+    };
+
+    return Behavior({
+      data: initialData,
+
+      lifetimes: {
+        attached(this: Record<string, any>) {
+          const ctrls = ensureControllers(this);
+          const patch: Record<string, PresenceSnapshot> = {};
+          for (const name of keyList) {
+            const ctrl = ctrls[name];
+            if (ctrl) patch[name] = ctrl.getState();
+          }
+          this.setData?.(patch);
+        },
+
+        detached(this: Record<string, any>) {
+          const ctrls = this[ctrlMapKey] as
+            | Record<string, PresenceController>
+            | undefined;
+          if (ctrls) {
+            for (const name of keyList) {
+              ctrls[name]?.stop();
+            }
+          }
+          this[ctrlMapKey] = undefined;
+        },
+      },
+
+      methods: {
+        showPresence(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.show();
+        },
+        openPresence(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.show();
+        },
+        hidePresence(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.hide();
+        },
+        closePresence(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.hide();
+        },
+        togglePresence(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.toggle();
+        },
+        setPresenceOpen(
+          this: Record<string, any>,
+          name: string,
+          next: boolean,
+        ) {
+          ensureControllers(this)[name]?.setPresent(Boolean(next));
+        },
+        handlePresenceExitComplete(
+          this: Record<string, any>,
+          nameOrEvent: string | PresenceEventLike,
+        ) {
+          resolveTarget(this, nameOrEvent)?.onExitComplete();
+        },
+        hideAllPresence(this: Record<string, any>) {
+          const ctrls = ensureControllers(this);
+          for (const name of keyList) {
+            ctrls[name]?.hide();
+          }
+        },
+        closeAllPresence(this: Record<string, any>) {
+          const ctrls = ensureControllers(this);
+          for (const name of keyList) {
+            ctrls[name]?.hide();
+          }
+        },
+      },
+    });
+  }
+
+  const key = typeof options.key === "string" && options.key ? options.key : "presence";
   const cap = capitalize(key);
+
   const ctrlKey = `__cuiPresenceCtrl_${key}`;
+  const initialOpen =
+    typeof options.defaultOpen === "boolean" ? options.defaultOpen : false;
 
   const initialController = createPresenceController({
-    initialPresent: options.defaultOpen,
+    initialPresent: initialOpen,
     lazyMount: options.lazyMount,
     unmountOnExit: options.unmountOnExit,
     duration: options.duration,
@@ -189,7 +364,7 @@ export function createPresenceBehavior(
     let ctrl = instance[ctrlKey] as PresenceController | undefined;
     if (!ctrl) {
       ctrl = createPresenceController({
-        initialPresent: Boolean(instance.data?.[key]?.open ?? options.defaultOpen),
+        initialPresent: Boolean(instance.data?.[key]?.open ?? initialOpen),
         lazyMount: options.lazyMount,
         unmountOnExit: options.unmountOnExit,
         duration: options.duration,
@@ -202,7 +377,10 @@ export function createPresenceBehavior(
     return ctrl;
   }
 
-  const methods: Record<string, (this: Record<string, any>, ...args: any[]) => any> = {
+  const methods: Record<
+    string,
+    (this: Record<string, any>, ...args: any[]) => any
+  > = {
     [`show${cap}`](this: Record<string, any>) {
       ensureController(this).show();
     },

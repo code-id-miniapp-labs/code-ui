@@ -354,4 +354,76 @@ describe("per-page lifecycle hub & pageLifetimes consolidation", () => {
     behavior.lifetimes?.detached?.call(instance);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("createPresenceBehavior supports managing multiple overlays via key array and WXML dataset events", () => {
+    vi.useFakeTimers();
+
+    const behavior = createPresenceBehavior({
+      key: ["filter", "sort", "payment"],
+      duration: 200,
+    }) as unknown as MockBehaviorDef;
+
+    expect(behavior.pageLifetimes).toBeUndefined();
+    expect(behavior.data).toEqual({
+      filter: { present: false, open: false, mounted: false, state: "unmounted" },
+      sort: { present: false, open: false, mounted: false, state: "unmounted" },
+      payment: { present: false, open: false, mounted: false, state: "unmounted" },
+    });
+
+    const patches: Record<string, unknown>[] = [];
+    const instance: Record<string, any> = {
+      data: { ...behavior.data },
+      setData: vi.fn((patch: Record<string, unknown>) => {
+        patches.push(patch);
+      }),
+    };
+
+    behavior.lifetimes?.attached?.call(instance);
+    patches.length = 0;
+
+    // Open by WXML event dataset (data-name="filter")
+    behavior.methods?.openPresence?.call(instance, {
+      currentTarget: { dataset: { name: "filter" } },
+    });
+    expect(patches[patches.length - 1]).toEqual({
+      filter: {
+        present: true,
+        open: true,
+        mounted: true,
+        state: "open",
+      },
+    });
+
+    // Open second overlay by string name
+    behavior.methods?.openPresence?.call(instance, "payment");
+    expect(patches[patches.length - 1]).toEqual({
+      payment: {
+        present: true,
+        open: true,
+        mounted: true,
+        state: "open",
+      },
+    });
+
+    // Close all overlays at once
+    behavior.methods?.closeAllPresence?.call(instance);
+    expect(vi.getTimerCount()).toBe(2);
+
+    // Complete filter via WXML event
+    behavior.methods?.handlePresenceExitComplete?.call(instance, {
+      currentTarget: { dataset: { name: "filter" } },
+    });
+    expect(patches[patches.length - 1]).toEqual({
+      filter: {
+        present: false,
+        open: false,
+        mounted: false,
+        state: "unmounted",
+      },
+    });
+
+    // Detach cleans up remaining timers
+    behavior.lifetimes?.detached?.call(instance);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });

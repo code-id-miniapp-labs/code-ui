@@ -132,4 +132,60 @@ describe("usePresence composable", () => {
 
     sheet.stop();
   });
+
+  it("manages multiple overlays via key array with granular setData, event dataset dispatch, and hideAll()", () => {
+    const patches: Record<string, unknown>[] = [];
+    const target = {
+      setData: vi.fn((patch: Record<string, unknown>) => {
+        patches.push(patch);
+      }),
+    };
+    const onExitComplete = vi.fn();
+
+    const overlays = usePresence({
+      target,
+      key: ["filter", "sort", "payment"] as const,
+      onExitComplete,
+    });
+
+    expect(patches[0]).toEqual({
+      filter: { present: false, open: false, mounted: false, state: "unmounted" },
+      sort: { present: false, open: false, mounted: false, state: "unmounted" },
+      payment: { present: false, open: false, mounted: false, state: "unmounted" },
+    });
+
+    // Open by string name
+    overlays.show("filter");
+    expect(overlays.getState("filter")).toEqual({
+      present: true,
+      open: true,
+      mounted: true,
+      state: "open",
+    });
+    expect(patches[patches.length - 1]).toEqual({
+      filter: {
+        present: true,
+        open: true,
+        mounted: true,
+        state: "open",
+      },
+    });
+
+    // Open by WXML event dataset
+    overlays.show({ currentTarget: { dataset: { name: "sort" } } });
+    expect(overlays.getState("sort").open).toBe(true);
+
+    // Hide all open overlays
+    overlays.hideAll();
+    expect(overlays.getState("filter").state).toBe("exiting");
+    expect(overlays.getState("sort").state).toBe("exiting");
+    expect(overlays.getState("payment").state).toBe("unmounted");
+
+    // Complete exit via WXML event dataset
+    overlays.onExitComplete({ currentTarget: { dataset: { name: "filter" } } });
+    expect(overlays.getState("filter").mounted).toBe(false);
+    expect(onExitComplete).toHaveBeenCalledWith("filter");
+
+    overlays.stop();
+  });
 });

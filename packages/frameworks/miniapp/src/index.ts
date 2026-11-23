@@ -177,12 +177,14 @@ export type {
 export {
   createPresenceController,
   createPresenceBehavior,
+  resolvePresenceName,
 } from "./behaviors/presence";
 export type {
   PresenceLifecycleState,
   PresenceSnapshot,
   PresenceControllerOptions,
   PresenceController,
+  PresenceEventLike,
   CreatePresenceBehaviorOptions,
 } from "./behaviors/presence";
 export { bindable } from "./bindable";

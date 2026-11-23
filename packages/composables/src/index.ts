@@ -6,7 +6,10 @@ export { usePresence } from "./use-presence";
 export type {
   UsePresenceOptions,
   UsePresenceReturn,
+  UsePresenceMultiOptions,
+  UsePresenceMultiReturn,
   UsePresenceTarget,
+  PresenceEventLike,
   PresenceLifecycleState,
   PresenceSnapshot,
 } from "./use-presence";
