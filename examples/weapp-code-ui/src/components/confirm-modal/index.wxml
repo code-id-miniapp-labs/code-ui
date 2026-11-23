@@ -1,0 +1,20 @@
+<c-modal
+  open="{{ open }}"
+  title="{{ title }}"
+  description="Custom component wrapping c-modal — mounted at {{ mountedAt }}"
+  size="sm"
+  duration="{{ duration }}"
+  bind:close="handleClose"
+  bind:exitcomplete="handleExitComplete"
+>
+  <view class="flex flex-col gap-2">
+    <text class="text-sm text-toned leading-relaxed">
+      Because the parent page renders this custom component behind wx:if paired with usePresence, its inner tree and listeners only exist while open or animating out.
+    </text>
+  </view>
+
+  <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+    <c-button size="sm" variant="ghost" color="neutral" label="Cancel" bind:tap="handleClose" />
+    <c-button size="sm" color="danger" label="Confirm" bind:tap="handleConfirm" />
+  </view>
+</c-modal>

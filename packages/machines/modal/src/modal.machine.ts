@@ -1,8 +1,8 @@
 import { createMachine } from "@code-id-labs/core";
-import { isMiniApp, isNotNull, queryAnimationDuration } from "@code-id-labs/utils";
+import { isNotNull, scheduleAnimationEnd } from "@code-id-labs/utils";
 import * as dom from "./modal.dom";
 import { defaultModalProps } from "./modal.props";
-import type { ModalMachine, ModalParams, ModalSchema } from "./modal.types";
+import type { ModalMachine, ModalSchema } from "./modal.types";
 
 const DEFAULT_ANIMATION_DURATION = 300;
 
@@ -38,55 +38,6 @@ const openCloseTransitions = [
   },
 ];
 
-function scheduleTransitionEffect(
-  prop: ModalParams["prop"],
-  scope: ModalParams["scope"],
-  onComplete: () => void,
-): VoidFunction {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let cancelled = false;
-
-  const cleanup = () => {
-    cancelled = true;
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      timer = undefined;
-    }
-  };
-
-  const scheduleEnd = (ms: number) => {
-    if (cancelled) return;
-    timer = setTimeout(() => {
-      if (!cancelled) onComplete();
-    }, ms);
-  };
-
-  const explicitDuration = prop("duration");
-  if (typeof explicitDuration === "number" && explicitDuration >= 0) {
-    scheduleEnd(explicitDuration);
-    return cleanup;
-  }
-
-  const comp = scope.component;
-  if (!comp && !isMiniApp()) {
-    scheduleEnd(DEFAULT_ANIMATION_DURATION);
-    return cleanup;
-  }
-
-  queryAnimationDuration(dom.getContentSelector(scope), comp)
-    .then((duration) => {
-      if (cancelled) return;
-      const delay = duration > 0 ? duration : DEFAULT_ANIMATION_DURATION;
-      scheduleEnd(delay);
-    })
-    .catch(() => {
-      if (cancelled) return;
-      scheduleEnd(DEFAULT_ANIMATION_DURATION);
-    });
-
-  return cleanup;
-}
-
 export const modalMachine: ModalMachine = createMachine<ModalSchema>({
   props: ({ props }) => ({
     ...defaultModalProps,
@@ -110,8 +61,6 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
     isVisible: ({ state }) => state.hasTag("open") || state.hasTag("closing"),
   },
 
-  effects: ["listenKeyboardHeight"],
-
   watch: ({ prop, state, track }) => {
     track([() => prop("open")], () => {
       const rawOpen = prop("open");
@@ -122,7 +71,13 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
       if (shouldBeOpen && !isCurrentlyOpen) {
         state.set("open");
       } else if (!shouldBeOpen && isCurrentlyOpen) {
-        state.set(prop("transition") === false ? "closed" : "closing");
+        if (prop("transition") === false) {
+          state.set("closed");
+          prop("onAfterLeave")?.();
+          prop("onExitComplete")?.();
+        } else {
+          state.set("closing");
+        }
       }
     });
   },
@@ -136,7 +91,7 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
 
     open: {
       tags: ["open"],
-      effects: ["waitForEnterAnimation"],
+      effects: ["listenKeyboardHeight", "waitForEnterAnimation"],
       on: {
         CLOSE: openCloseTransitions,
         TOGGLE: openCloseTransitions,
@@ -215,6 +170,7 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
       },
       invokeOnAfterLeave: ({ prop }) => {
         prop("onAfterLeave")?.();
+        prop("onExitComplete")?.();
       },
       invokeOnClosePrevent: ({ prop }) => {
         prop("onClosePrevent")?.();
@@ -258,14 +214,26 @@ export const modalMachine: ModalMachine = createMachine<ModalSchema>({
           return;
         }
 
-        return scheduleTransitionEffect(prop, scope, () => {
-          prop("onAfterEnter")?.();
+        return scheduleAnimationEnd({
+          duration: prop("duration"),
+          selector: dom.getContentSelector(scope),
+          component: scope.component,
+          fallbackDuration: DEFAULT_ANIMATION_DURATION,
+          onEnd: () => {
+            prop("onAfterEnter")?.();
+          },
         });
       },
 
       waitForCloseAnimation: ({ send, scope, prop }) => {
-        return scheduleTransitionEffect(prop, scope, () => {
-          send({ type: "ANIMATION_END" });
+        return scheduleAnimationEnd({
+          duration: prop("duration"),
+          selector: dom.getContentSelector(scope),
+          component: scope.component,
+          fallbackDuration: DEFAULT_ANIMATION_DURATION,
+          onEnd: () => {
+            send({ type: "ANIMATION_END" });
+          },
         });
       },
     },

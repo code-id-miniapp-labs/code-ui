@@ -115,6 +115,8 @@ export interface PopoverProps {
   onOpen?: (() => void) | undefined;
   /** Callback fired when menu closes */
   onClose?: (() => void) | undefined;
+  /** Callback fired after the popover exit animation finishes */
+  onExitComplete?: (() => void) | undefined;
   /** Callback fired when backdrop is tapped */
   onBackdropTap?: (() => void) | undefined;
 }

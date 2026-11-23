@@ -380,6 +380,63 @@ Page({
 ```
 ::
 
+### Lazy Mounting & True Unmounting with Presence
+
+Pair `wx:if="{{actionSheet.mounted}}"` with [`usePresence`](/composables/use-presence) and `bind:exitcomplete` so closed action sheets (or custom components extending `<c-action-sheet>`) stay unmounted until opened and detach cleanly after sliding out:
+
+::code-group
+```html [index.wxml]
+<c-button label="Share" bind:tap="openSheet" />
+
+<c-action-sheet
+  wx:if="{{ actionSheet.mounted }}"
+  open="{{ actionSheet.open }}"
+  title="Share"
+  items="{{ items }}"
+  bind:close="closeSheet"
+  bind:exitcomplete="onSheetExitComplete"
+/>
+```
+
+```ts [index.ts]
+import { usePresence, type UsePresenceReturn } from "@code-id-labs/composables";
+
+Page({
+  data: {
+    actionSheet: { open: false, present: false, mounted: false, state: "unmounted" },
+    items: [
+      { key: "copy", label: "Copy Link" },
+      { key: "share", label: "Share with Friends" },
+    ],
+  },
+
+  sheetCtrl: null as UsePresenceReturn | null,
+
+  onLoad() {
+    this.sheetCtrl = usePresence({ target: this, key: "actionSheet" });
+  },
+
+  onUnload() {
+    this.sheetCtrl?.stop();
+  },
+
+  openSheet() {
+    this.sheetCtrl?.show();
+  },
+
+  closeSheet() {
+    this.sheetCtrl?.hide();
+  },
+
+  onSheetExitComplete() {
+    this.sheetCtrl?.onExitComplete();
+  },
+});
+```
+::
+
+See [Presence](/components/overlay/presence) for custom-component wrapper guidance.
+
 ### UI Customization
 
 Override individual slot classes per instance with `ui`, or add classes to the `root` slot via `className`.
@@ -421,7 +478,7 @@ Click any active transition or event button below to simulate the `action-sheet`
 | `className` | `string` | `""` | Additional class string applied to the `root` slot. |
 
 ::callout{icon="i-lucide-lightbulb" color="info"}
-**Callback & ID options (`ActionSheetProps`)**: `id`, `ids`, `onOpenChange`, `onSelect`, `onAction`, and `onClose` are supported by the underlying component props contract (for example via `onClick` on `actions` or component API integration), while the MiniProgram `properties` map exposes the table props above.
+**Callback & ID options (`ActionSheetProps`)**: `id`, `ids`, `onOpenChange`, `onSelect`, `onAction`, `onClose`, and `onExitComplete` are supported by the underlying component props contract (for example via `onClick` on `actions` or component API integration), while the MiniProgram `properties` map exposes the table props above.
 ::
 
 ### Exported Component API
@@ -454,6 +511,8 @@ When accessed via `selectComponent`, the component exports the `actionSheet` API
 | --- | --- | --- |
 | `bind:backdropTap` | `TouchEvent` | Fired when the backdrop is tapped. |
 | `bind:closeTriggerTap` | `TouchEvent` | Fired when the header close trigger is tapped. |
+| `bind:close` | `undefined` | Fired when the action sheet begins closing. |
+| `bind:exitcomplete` | `undefined` | Fired after the close animation completes and the action sheet settles into `closed`. Pair with [`usePresence`](/composables/use-presence) and `wx:if` for true unmounting. |
 | `bind:getphonenumber` | `ev.detail` | Forwarded from items or footer actions configured with `open-type="getPhoneNumber"`. |
 | `bind:chooseavatar` | `ev.detail` | Forwarded from items or footer actions configured with `open-type="chooseAvatar"`. |
 | `bind:contact` | `ev.detail` | Forwarded from items or footer actions configured with `open-type="contact"`. |

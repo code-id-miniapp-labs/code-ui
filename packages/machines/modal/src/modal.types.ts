@@ -66,6 +66,8 @@ export interface ModalProps {
   onLeave?: (() => void) | undefined;
   /** Callback fired after leave transition finishes */
   onAfterLeave?: (() => void) | undefined;
+  /** Callback fired after the modal exit animation finishes and enters closed state */
+  onExitComplete?: (() => void) | undefined;
 }
 
 export interface ModalResolvedProps extends ModalProps {

@@ -125,6 +125,7 @@ import type {
   PinInputValueInvalidDetails,
   PinInputVariant,
 } from "@code-id-labs/pin-input";
+import type { PresenceUI } from "@code-id-labs/presence";
 import type {
   ProgressAnimation,
   ProgressColor,
@@ -383,6 +384,7 @@ export interface CuiDrawerElementProps extends CuiCommonElementProps {
   threshold?: number;
   duration?: number;
   onClose?: (event?: any) => void;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
   onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
   onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
   onDragStart?: (event: WechatMiniprogram.CustomEvent) => void;
@@ -415,6 +417,7 @@ export interface CuiModalElementProps extends CuiCommonElementProps {
   onAfterEnter?: (event: WechatMiniprogram.CustomEvent) => void;
   onLeave?: (event: WechatMiniprogram.CustomEvent) => void;
   onAfterLeave?: (event: WechatMiniprogram.CustomEvent) => void;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
   onOverlayTap?: (event: WechatMiniprogram.CustomEvent) => void;
   onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
@@ -955,6 +958,7 @@ export interface CuiActionSheetElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<ActionSheetActionDetails>,
   ) => void;
   onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
   onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
   onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
@@ -1064,6 +1068,7 @@ export interface CuiToastElementProps extends CuiCommonElementProps {
     event: WechatMiniprogram.CustomEvent<{ open: boolean }>,
   ) => void;
   onDismiss?: (event: WechatMiniprogram.CustomEvent) => void;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
   onAction?: (
     event: WechatMiniprogram.CustomEvent<{ action: any; index: number }>,
   ) => void;
@@ -1092,6 +1097,7 @@ export interface CuiPopoverElementProps extends CuiCommonElementProps {
   ) => void;
   onOpen?: (event: WechatMiniprogram.CustomEvent) => void;
   onClose?: (event: WechatMiniprogram.CustomEvent) => void;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
   onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
@@ -1289,5 +1295,14 @@ export interface CuiInputMenuItemElementProps extends CuiCommonElementProps {
   onSelect?: (
     event: WechatMiniprogram.CustomEvent<{ value: InputMenuScalarValue }>,
   ) => void;
+}
+
+export interface CuiPresenceElementProps extends CuiCommonElementProps {
+  ui?: PresenceUI;
+  present?: boolean;
+  lazyMount?: boolean;
+  unmountOnExit?: boolean;
+  duration?: number | null;
+  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 

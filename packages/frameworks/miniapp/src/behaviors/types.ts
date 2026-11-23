@@ -323,6 +323,7 @@ export interface RectLike {
 export type AppOwnerInstance = CodeUiComponentInstance<AppOwnerData> & {
   __cuiAppChildren?: Set<AppOwnerInstance> | undefined;
   __cuiAppAttached?: boolean | undefined;
+  __cuiUnsubPageLifecycleHost?: (() => void) | undefined;
   __cuiScaled?: boolean | undefined;
   __cuiScaleId?: string | undefined;
   __cuiScaleFactor?: number | undefined;

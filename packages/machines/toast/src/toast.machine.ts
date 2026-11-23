@@ -1,5 +1,5 @@
 import { createMachine } from "@code-id-labs/core";
-import { isNotNull } from "@code-id-labs/utils";
+import { isNotNull, scheduleAnimationEnd } from "@code-id-labs/utils";
 import type {
   ToastMachine,
   ToastParams,
@@ -165,6 +165,7 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
       invokeOnDismiss: ({ prop, scope }) => {
         const id = prop("id") || scope.id;
         prop("onDismiss")?.({ id });
+        prop("onExitComplete")?.();
       },
       invokeOnAction: ({ prop, event }) => {
         if (event.type !== "TRIGGER_ACTION") return;
@@ -209,17 +210,11 @@ export const toastMachine: ToastMachine = createMachine<ToastSchema>({
         };
       },
 
-      waitForDismissAnimation: ({ send, refs }) => {
-        const timer = setTimeout(() => {
-          send({ type: "ANIMATION_END" });
-        }, DISMISS_ANIMATION_DURATION);
-
-        refs.set("dismissTimer", timer);
-
-        return () => {
-          clearTimeout(timer);
-          refs.set("dismissTimer", undefined);
-        };
+      waitForDismissAnimation: ({ send }) => {
+        return scheduleAnimationEnd({
+          duration: DISMISS_ANIMATION_DURATION,
+          onEnd: () => send({ type: "ANIMATION_END" }),
+        });
       },
     },
   },

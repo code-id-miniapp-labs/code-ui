@@ -68,6 +68,7 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
     "footer",
   ],
   "pin-input": ["label"],
+  presence: ["default"],
   progress: ["default", "label", "valueText"],
   "pull-down-refresh": ["default", "header", "indicator"],
   "qr-code": ["overlay"],

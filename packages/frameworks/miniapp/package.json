@@ -77,6 +77,16 @@
       "import": "./dist/behaviors/theme.js",
       "require": "./dist/behaviors/theme.cjs"
     },
+    "./behaviors/page-lifecycle": {
+      "types": "./dist/behaviors/page-lifecycle.d.ts",
+      "import": "./dist/behaviors/page-lifecycle.js",
+      "require": "./dist/behaviors/page-lifecycle.cjs"
+    },
+    "./behaviors/presence": {
+      "types": "./dist/behaviors/presence.d.ts",
+      "import": "./dist/behaviors/presence.js",
+      "require": "./dist/behaviors/presence.cjs"
+    },
     "./behaviors/avatar-group": {
       "types": "./dist/behaviors/avatar-group.d.ts",
       "import": "./dist/behaviors/avatar-group.js",

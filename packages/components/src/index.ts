@@ -15,6 +15,7 @@ export * from "@code-id-labs/input-menu";
 export * from "@code-id-labs/input-menu-item";
 export * from "@code-id-labs/modal";
 export * from "@code-id-labs/pin-input";
+export * from "@code-id-labs/presence";
 export * from "@code-id-labs/progress";
 export * from "@code-id-labs/pull-down-refresh";
 export * from "@code-id-labs/qr-code";

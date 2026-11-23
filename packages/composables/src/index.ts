@@ -1,6 +1,15 @@
 export { useComponentRef } from "./use-component-ref";
 export { useToast } from "./use-toast";
 export { useColorMode } from "./use-color-mode";
+export { usePresence } from "./use-presence";
+
+export type {
+  UsePresenceOptions,
+  UsePresenceReturn,
+  UsePresenceTarget,
+  PresenceLifecycleState,
+  PresenceSnapshot,
+} from "./use-presence";
 
 export type {
   UseColorModeOptions,

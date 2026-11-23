@@ -80,6 +80,8 @@ export interface ToastProps {
   onOpenChange?: ((details: { open: boolean; id?: string | undefined }) => void) | undefined;
   /** Callback fired when toast is dismissed */
   onDismiss?: ((details?: { id?: string | undefined }) => void) | undefined;
+  /** Callback fired after the toast exit animation finishes */
+  onExitComplete?: (() => void) | undefined;
   /** Callback fired when an action button is tapped */
   onAction?:
     | ((details: { action: ToastAction; index: number; id?: string | undefined }) => void)

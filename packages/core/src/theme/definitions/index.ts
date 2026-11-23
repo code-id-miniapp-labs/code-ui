@@ -23,6 +23,7 @@ export { default as inputMenu } from "./input-menu";
 export { default as inputMenuItem } from "./input-menu-item";
 export { default as modal } from "./modal";
 export { default as pinInput } from "./pin-input";
+export { default as presence } from "./presence";
 export { default as progress } from "./progress";
 export { default as pullDownRefresh } from "./pull-down-refresh";
 export { default as qrCode } from "./qr-code";

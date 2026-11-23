@@ -1,5 +1,11 @@
 import { createMachine } from "@code-id-labs/core";
-import { isEqual, isMiniApp, isNotNull, queryRect } from "@code-id-labs/utils";
+import {
+  isEqual,
+  isMiniApp,
+  isNotNull,
+  queryRect,
+  scheduleAnimationEnd,
+} from "@code-id-labs/utils";
 import * as dom from "./popover.dom";
 import {
   computeFloatingPosition,
@@ -234,6 +240,7 @@ export const popoverMachine: PopoverMachine =
         on: {
           ANIMATION_END: {
             target: "closed",
+            actions: ["invokeOnExitComplete"],
           },
           ...closedTransitions,
         },
@@ -258,6 +265,10 @@ export const popoverMachine: PopoverMachine =
         invokeOnClose: ({ prop }) => {
           prop("onOpenChange")?.({ open: false });
           prop("onClose")?.();
+        },
+
+        invokeOnExitComplete: ({ prop }) => {
+          prop("onExitComplete")?.();
         },
 
         invokeOnBackdropTap: ({ prop }) => {
@@ -298,23 +309,11 @@ export const popoverMachine: PopoverMachine =
         },
 
         waitForCloseAnimation: ({ send, prop }) => {
-          let cancelled = false;
-          const explicitDuration = prop("duration");
-          const delay =
-            typeof explicitDuration === "number" && explicitDuration >= 0
-              ? explicitDuration
-              : DEFAULT_CLOSE_DURATION;
-
-          const timer = setTimeout(() => {
-            if (!cancelled) {
-              send({ type: "ANIMATION_END" });
-            }
-          }, delay);
-
-          return () => {
-            cancelled = true;
-            clearTimeout(timer);
-          };
+          return scheduleAnimationEnd({
+            duration: prop("duration"),
+            fallbackDuration: DEFAULT_CLOSE_DURATION,
+            onEnd: () => send({ type: "ANIMATION_END" }),
+          });
         },
       },
     },

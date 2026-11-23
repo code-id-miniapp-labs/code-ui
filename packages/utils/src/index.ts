@@ -13,7 +13,9 @@ export {
   queryComputedStyle,
   queryAnimationDuration,
   parseTimeValue,
+  scheduleAnimationEnd,
 } from "./dom-style";
+export type { ScheduleAnimationEndOptions } from "./dom-style";
 
 export type {
   DOMQueryHelpers,

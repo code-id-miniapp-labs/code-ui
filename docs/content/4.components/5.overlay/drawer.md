@@ -317,6 +317,63 @@ Page({
 
 ::
 
+### Lazy Mounting & True Unmounting with Presence
+
+In WeChat MiniProgram, `<slot>` children inside `<c-drawer>` (or a custom component extending `<c-drawer>`) remain attached to the parent page even when the drawer is closed. Pair `wx:if` with [`usePresence`](/composables/use-presence) and `bind:exitcomplete` so heavy drawers mount lazily on open, play their full slide-out animation on close, and truly detach once closed:
+
+::code-group
+
+```html [index.wxml]
+<c-button label="Open Filter Drawer" bind:tap="openFilterDrawer" />
+
+<!-- Works on <c-drawer> directly OR on your own <filter-drawer> custom component -->
+<c-drawer
+  wx:if="{{ filterDrawer.mounted }}"
+  open="{{ filterDrawer.open }}"
+  bind:close="closeFilterDrawer"
+  bind:exitcomplete="onFilterDrawerExitComplete"
+>
+  <view slot="header" class="text-base font-semibold">Filters</view>
+  <view class="py-2">Heavy form subtree is detached completely once exitcomplete fires.</view>
+</c-drawer>
+```
+
+```ts [index.ts]
+import { usePresence, type UsePresenceReturn } from "@code-id-labs/composables";
+
+Page({
+  data: {
+    filterDrawer: { open: false, present: false, mounted: false, state: "unmounted" },
+  },
+
+  drawerCtrl: null as UsePresenceReturn | null,
+
+  onLoad() {
+    this.drawerCtrl = usePresence({ target: this, key: "filterDrawer" });
+  },
+
+  onUnload() {
+    this.drawerCtrl?.stop();
+  },
+
+  openFilterDrawer() {
+    this.drawerCtrl?.show();
+  },
+
+  closeFilterDrawer() {
+    this.drawerCtrl?.hide();
+  },
+
+  onFilterDrawerExitComplete() {
+    this.drawerCtrl?.onExitComplete();
+  },
+});
+```
+
+::
+
+See [Presence](/components/overlay/presence) for the complete custom-component wrapper guide (forwarding `bind:close` and `bind:exitcomplete` from custom `<c-drawer>` components) and `createPresenceBehavior`.
+
 ### Custom Styling
 
 Use `ui` to override individual slot classes and `className` (`className`) to add classes to the `root` slot.
@@ -375,6 +432,7 @@ Click any transition inside the active state node to simulate the `drawer` state
 | `bind:backdropTap` | MiniApp tap event object | Fired when the backdrop is tapped. |
 | `bind:closeTriggerTap` | MiniApp tap event object | Fired when the close trigger or `close` slot wrapper is tapped. |
 | `bind:close` | `{ reason: "backdrop" \| "close-trigger" }` | Fired when a tap on the backdrop or close trigger requests closing. |
+| `bind:exitcomplete` | `undefined` | Fired after the close transition finishes and the drawer settles into `closed`. Pair with [`usePresence`](/composables/use-presence) and `wx:if` for true light-DOM unmounting. |
 | `bind:dragstart` | `{ offset?: number }` | Fired when a drag gesture starts on the grabber. |
 | `bind:drag` | `{ offset?: number }` | Fired while dragging the grabber. |
 | `bind:dragend` | `{ passed: boolean; offset?: number }` | Fired when a drag gesture ends or is cancelled; `passed` indicates whether the threshold was reached. |

@@ -131,6 +131,8 @@ export interface ActionSheetProps {
     | undefined;
   /** Callback fired when action sheet closes */
   onClose?: (() => void) | undefined;
+  /** Callback fired after the action sheet exit animation finishes and enters closed state */
+  onExitComplete?: (() => void) | undefined;
 }
 
 export interface ActionSheetResolvedProps extends ActionSheetProps {
@@ -166,6 +168,7 @@ export interface ActionSheetComputed {
 export type ActionSheetMachineAction =
   | "invokeOnOpen"
   | "invokeOnClose"
+  | "invokeOnExitComplete"
   | "invokeOnSelect"
   | "invokeOnAction"
   | "clearActionLoadingContext";

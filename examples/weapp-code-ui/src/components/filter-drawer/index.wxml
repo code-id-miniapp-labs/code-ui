@@ -1,0 +1,46 @@
+<c-drawer
+  open="{{ open }}"
+  placement="bottom"
+  duration="{{ duration }}"
+  bind:close="handleClose"
+  bind:exitcomplete="handleExitComplete"
+>
+  <view slot="header" class="flex items-center justify-between pr-2">
+    <view>
+      <text class="block text-base font-semibold text-highlighted">Custom Filter Drawer</text>
+      <text class="block text-xs text-muted mt-0.5">
+        Custom component wrapping c-drawer (mounted at {{ mountedAt }})
+      </text>
+    </view>
+  </view>
+
+  <view class="py-2 flex flex-col gap-3">
+    <view class="p-3 rounded-xl bg-muted border border-default flex items-center justify-between">
+      <view>
+        <text class="block text-xs font-semibold text-highlighted">True Light-DOM Unmounting</text>
+        <text class="block text-[11px] text-muted mt-0.5">
+          This component and all nested inputs are destroyed when exitcomplete fires.
+        </text>
+      </view>
+      <c-badge label="Mounted" color="success" variant="soft" size="xs" />
+    </view>
+
+    <c-input
+      value="{{ keyword }}"
+      placeholder="Search keyword (state resets on unmount)..."
+      adjust-position="{{ false }}"
+      bind:change="onKeywordChange"
+    />
+
+    <c-switch
+      checked="{{ onlyInStock }}"
+      label="Only show available items"
+      bind:change="onStockChange"
+    />
+  </view>
+
+  <view slot="footer" class="flex items-center justify-end gap-2 w-full">
+    <c-button size="sm" variant="outline" color="neutral" label="Cancel" bind:tap="handleClose" />
+    <c-button size="sm" color="primary" label="Apply Filters" bind:tap="handleApply" />
+  </view>
+</c-drawer>

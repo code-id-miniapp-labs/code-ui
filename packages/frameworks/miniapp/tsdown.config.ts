@@ -15,6 +15,8 @@ export default defineConfig({
     "src/behaviors/input-menu.ts",
     "src/behaviors/app.ts",
     "src/behaviors/theme.ts",
+    "src/behaviors/page-lifecycle.ts",
+    "src/behaviors/presence.ts",
     "src/behaviors/avatar-group.ts",
     "src/behaviors/toast.ts",
   ],
