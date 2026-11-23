@@ -79,13 +79,13 @@ export default function toastTheme(options: ThemeOptions = {}) {
       },
       placement: {
         top: {
-          root: "fixed top-0 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)] z-[100]",
+          root: "fixed top-0 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)] z-toast",
         },
         center: {
-          root: "fixed top-1/2 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md z-[100]",
+          root: "fixed top-1/2 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md z-toast",
         },
         bottom: {
-          root: "fixed bottom-0 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)] z-[100]",
+          root: "fixed bottom-0 left-1/2 w-[calc(100vw_-_32px)] max-w-sm md:max-w-md mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)] z-toast",
         },
       },
       progressPosition: {
@@ -113,21 +113,21 @@ export default function toastTheme(options: ThemeOptions = {}) {
         mode: "native",
         placement: "top",
         class: {
-          root: "fixed top-0 left-1/2 w-auto mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)] z-[100]",
+          root: "fixed top-0 left-1/2 w-auto mt-[calc(var(--cui-toast-top-offset,env(safe-area-inset-top,0px))_+_var(--spacing)_*_4)] z-toast",
         },
       },
       {
         mode: "native",
         placement: "center",
         class: {
-          root: "fixed top-1/2 left-1/2 w-auto z-[100]",
+          root: "fixed top-1/2 left-1/2 w-auto z-toast",
         },
       },
       {
         mode: "native",
         placement: "bottom",
         class: {
-          root: "fixed bottom-0 left-1/2 w-auto mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)] z-[100]",
+          root: "fixed bottom-0 left-1/2 w-auto mb-[calc(var(--cui-toast-bottom-offset,env(safe-area-inset-bottom,0px))_+_var(--spacing)_*_4)] z-toast",
         },
       },
 

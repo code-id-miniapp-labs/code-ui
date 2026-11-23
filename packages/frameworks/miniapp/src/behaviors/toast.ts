@@ -129,6 +129,58 @@ export function normalizeToastEntries(toasts: ToastEntry[]): ToastEntry[] {
   }));
 }
 
+function getGlobalToastDefaults(): Partial<ToastEntry> {
+  const g =
+    typeof globalThis !== "undefined"
+      ? (globalThis as Record<string, any>).__CODE_UI_GLOBAL_CONFIG__
+      : undefined;
+  if (!g || typeof g !== "object") return {};
+
+  const uiOv = g.ui?.toast;
+  const compOv = g.components?.toast;
+  const merged: Record<string, any> = {};
+
+  for (const ov of [uiOv, compOv]) {
+    if (!ov || typeof ov !== "object") continue;
+    if (ov.defaultProps && typeof ov.defaultProps === "object") {
+      Object.assign(merged, ov.defaultProps);
+    }
+    if (ov.defaultVariants && typeof ov.defaultVariants === "object") {
+      Object.assign(merged, ov.defaultVariants);
+    }
+  }
+
+  return merged as Partial<ToastEntry>;
+}
+
+function mergeToastWithGlobalDefaults(entry: ToastEntry): ToastEntry {
+  const defaults = getGlobalToastDefaults();
+  if (Object.keys(defaults).length === 0) return entry;
+
+  const result: ToastEntry = { ...entry };
+  const keys = [
+    "mode",
+    "color",
+    "variant",
+    "orientation",
+    "placement",
+    "duration",
+    "progress",
+    "progressPosition",
+    "close",
+    "icon",
+    "className",
+  ] as const;
+
+  for (const key of keys) {
+    if (result[key] === undefined && defaults[key] !== undefined) {
+      (result as Record<string, any>)[key] = defaults[key];
+    }
+  }
+
+  return result;
+}
+
 export class ToastManager {
   readonly rawToasts = signal<ToastEntry[]>([]);
   readonly max = signal<number>(2);
@@ -181,7 +233,8 @@ export class ToastManager {
     }
   }
 
-  add(entry: ToastEntry): string {
+  add(rawEntry: ToastEntry): string {
+    const entry = mergeToastWithGlobalDefaults(rawEntry);
     const placement = resolveToastPlacement(entry);
     const now = Date.now();
     const item: ToastEntry = {

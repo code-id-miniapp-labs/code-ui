@@ -514,66 +514,102 @@ export function tv(config: any): any {
   } = config || {};
   const parent: TVConfigInternal | undefined = extend?.__config;
 
-  let mergedBase: ClassValue =
+  const baseBase: ClassValue =
     parent?.base && base ? [parent.base, base] : (base ?? parent?.base);
 
-  let mergedSlots: Record<string, ClassValue> | undefined;
+  let baseSlots: Record<string, ClassValue> | undefined;
   if (parent?.slots || slots) {
-    mergedSlots = parent?.slots ? { ...parent.slots } : {};
+    baseSlots = parent?.slots ? { ...parent.slots } : {};
     for (const s in slots) {
-      mergedSlots[s] = mergedSlots[s] ? [mergedSlots[s], slots[s]] : slots[s];
+      baseSlots[s] = baseSlots[s] ? [baseSlots[s], slots[s]] : slots[s];
     }
   }
 
-  let hasSlots = Boolean(mergedSlots && Object.keys(mergedSlots).length > 0);
+  const baseHasSlots = Boolean(baseSlots && Object.keys(baseSlots).length > 0);
   const primarySlot =
-    mergedSlots && "base" in mergedSlots && !("root" in mergedSlots)
+    baseSlots && "base" in baseSlots && !("root" in baseSlots)
       ? "base"
       : "root";
-  const slotNames = new Set<string>(
-    hasSlots
+  const baseSlotNames = new Set<string>(
+    baseHasSlots
       ? [
-          ...(mergedBase ? [primarySlot] : []),
-          ...Object.keys(mergedSlots ?? {}),
+          ...(baseBase ? [primarySlot] : []),
+          ...Object.keys(baseSlots ?? {}),
         ]
       : [primarySlot],
   );
 
-  let mergedVariants = parent?.variants
+  const baseVariants: TVVariants = parent?.variants
     ? mergeVariantConfigs(
         parent.variants,
         variants,
-        slotNames,
+        baseSlotNames,
         primarySlot,
       )
     : variants;
-  let mergedCompounds = parent?.compoundVariants
+  const baseCompounds: TVCompoundVariant<any, any>[] = parent?.compoundVariants
     ? [...parent.compoundVariants, ...compoundVariants]
     : [...compoundVariants];
-  let combinedDefaults = parent?.defaultVariants
+  const baseDefaults: Record<string, any> = parent?.defaultVariants
     ? { ...parent.defaultVariants, ...defaultVariants }
     : { ...defaultVariants };
 
-  let declaredKeys = Object.keys(mergedVariants);
+  const baseDeclaredKeys = Object.keys(baseVariants);
   const cache = createLruCache<string, TVOutput>();
+
+  type OverrideClassEntry = ClassValue | ((prev: string) => string);
+
+  let hasSlots = baseHasSlots;
+  let slotNames = new Set<string>(baseSlotNames);
+  let declaredKeys = baseDeclaredKeys;
+  let combinedDefaults: Record<string, any> = baseDefaults;
+
+  let globalBaseOverrides: OverrideClassEntry[] = [];
+  let globalSlotOverrides: Record<string, OverrideClassEntry[]> = {};
+  let globalVariants: TVVariants = {};
+  let globalCompounds: TVCompoundVariant<any, any>[] = [];
 
   const camelComponentName =
     typeof componentName === "string"
       ? componentName.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
       : undefined;
+  const kebabComponentName =
+    typeof componentName === "string"
+      ? componentName
+          .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+          .toLowerCase()
+      : undefined;
+
   let appliedGlobalConfigRef: unknown = undefined;
+  let appliedCompRef: unknown = undefined;
+  let appliedUiRef: unknown = undefined;
   let configGen = 0;
+
+  const lookupOverride = (
+    map: Record<string, any> | undefined,
+    prefix: string,
+  ): Record<string, any> | undefined => {
+    if (!map || typeof map !== "object" || !componentName) return undefined;
+    const direct =
+      map[componentName] ??
+      (camelComponentName ? map[camelComponentName] : undefined) ??
+      (kebabComponentName ? map[kebabComponentName] : undefined);
+    if (direct && typeof direct === "object") return direct;
+    if (kebabComponentName) {
+      const prefixed =
+        map[`${prefix}-${kebabComponentName}`] ??
+        map[`c-${kebabComponentName}`] ??
+        map[`cui-${kebabComponentName}`];
+      if (prefixed && typeof prefixed === "object") return prefixed;
+    }
+    return undefined;
+  };
 
   const applyOverrideEntry = (ov: Record<string, any> | undefined): void => {
     if (!ov || typeof ov !== "object") return;
 
     if (ov.base !== undefined) {
-      mergedBase =
-        typeof ov.base === "function"
-          ? ov.base(cx(mergedBase))
-          : mergedBase
-            ? [mergedBase, ov.base]
-            : ov.base;
+      globalBaseOverrides.push(ov.base);
     }
 
     const slotOverrides =
@@ -583,38 +619,47 @@ export function tv(config: any): any {
           (ov.ui && typeof ov.ui === "object" ? ov.ui : undefined);
 
     if (slotOverrides) {
-      if (!mergedSlots) mergedSlots = {};
       for (const s in slotOverrides) {
         const val = slotOverrides[s];
         if (val === undefined) continue;
-        const prev = mergedSlots[s];
-        mergedSlots[s] =
-          typeof val === "function"
-            ? val(cx(prev))
-            : prev
-              ? [prev, val]
-              : val;
+        if (!globalSlotOverrides[s]) globalSlotOverrides[s] = [];
+        globalSlotOverrides[s].push(val);
         slotNames.add(s);
       }
-      hasSlots = Object.keys(mergedSlots).length > 0;
+      hasSlots = baseHasSlots || Object.keys(globalSlotOverrides).length > 0;
     }
 
     if (ov.variants && typeof ov.variants === "object") {
-      mergedVariants = mergeVariantConfigs(
-        mergedVariants,
+      globalVariants = mergeVariantConfigs(
+        globalVariants,
         ov.variants,
         slotNames,
         primarySlot,
       );
-      declaredKeys = Object.keys(mergedVariants);
+      declaredKeys = Array.from(
+        new Set([...baseDeclaredKeys, ...Object.keys(globalVariants)]),
+      );
     }
 
     if (Array.isArray(ov.compoundVariants) && ov.compoundVariants.length > 0) {
-      mergedCompounds = [...mergedCompounds, ...ov.compoundVariants];
+      globalCompounds = [...globalCompounds, ...ov.compoundVariants];
     }
 
-    if (ov.defaultVariants && typeof ov.defaultVariants === "object") {
-      combinedDefaults = { ...combinedDefaults, ...ov.defaultVariants };
+    const ovDefaults =
+      ov.defaultVariants &&
+      typeof ov.defaultVariants === "object" &&
+      ov.defaultProps &&
+      typeof ov.defaultProps === "object"
+        ? { ...ov.defaultProps, ...ov.defaultVariants }
+        : (ov.defaultVariants && typeof ov.defaultVariants === "object"
+            ? ov.defaultVariants
+            : undefined) ??
+          (ov.defaultProps && typeof ov.defaultProps === "object"
+            ? ov.defaultProps
+            : undefined);
+
+    if (ovDefaults) {
+      combinedDefaults = { ...combinedDefaults, ...ovDefaults };
     }
   };
 
@@ -624,33 +669,47 @@ export function tv(config: any): any {
       typeof globalThis !== "undefined"
         ? (globalThis as Record<string, any>).__CODE_UI_GLOBAL_CONFIG__
         : undefined;
-    if (!g || g === appliedGlobalConfigRef) return;
+    if (
+      !g ||
+      (g === appliedGlobalConfigRef &&
+        g.components === appliedCompRef &&
+        g.ui === appliedUiRef)
+    ) {
+      return;
+    }
     appliedGlobalConfigRef = g;
+    appliedCompRef = g.components;
+    appliedUiRef = g.ui;
 
-    const uiMap = g.ui as Record<string, any> | undefined;
-    const compMap = g.components as Record<string, any> | undefined;
-    const uiOv =
-      uiMap?.[componentName] ??
-      (camelComponentName ? uiMap?.[camelComponentName] : undefined);
-    const compOv =
-      compMap?.[componentName] ??
-      (camelComponentName ? compMap?.[camelComponentName] : undefined);
+    const prefix = typeof g.prefix === "string" && g.prefix ? g.prefix : "cui";
+    const uiOv = lookupOverride(g.ui as Record<string, any> | undefined, prefix);
+    const compOv = lookupOverride(
+      g.components as Record<string, any> | undefined,
+      prefix,
+    );
+
+    // Reset override layers cleanly from immutable base so HMR / repeated setConfig() never stack
+    hasSlots = baseHasSlots;
+    slotNames = new Set<string>(baseSlotNames);
+    declaredKeys = baseDeclaredKeys;
+    combinedDefaults = baseDefaults;
+    globalBaseOverrides = [];
+    globalSlotOverrides = {};
+    globalVariants = {};
+    globalCompounds = [];
 
     if (uiOv || compOv) {
       applyOverrideEntry(uiOv);
       applyOverrideEntry(compOv);
-      configGen++;
     }
+    configGen++;
   };
 
-  const build = (
+  const matchCompounds = (
+    compounds: TVCompoundVariant<any, any>[],
     mergedProps: Record<string, any>,
-    propExtra: string,
-  ): TVOutput => {
-    const variantKeys = Array.from(
-      new Set([...declaredKeys, ...Object.keys(mergedProps)]),
-    );
-    const activeCompounds = mergedCompounds.filter((cv) => {
+  ) =>
+    compounds.filter((cv) => {
       for (const k in cv) {
         if (k === "class" || k === "className") continue;
         const propVal = mergedProps[k];
@@ -667,17 +726,42 @@ export function tv(config: any): any {
       return true;
     });
 
+  const applyOverrideValue = (
+    current: string,
+    val: OverrideClassEntry,
+  ): string => {
+    if (typeof val === "function") {
+      return dedupeClasses(val(current));
+    }
+    const extra = cx(val);
+    return extra ? dedupeClasses(current, extra) : current;
+  };
+
+  const build = (
+    mergedProps: Record<string, any>,
+    propExtra: string,
+  ): TVOutput => {
+    const variantKeys = Array.from(
+      new Set([...declaredKeys, ...Object.keys(mergedProps)]),
+    );
+    const activeBaseCompounds = matchCompounds(baseCompounds, mergedProps);
+    const activeGlobalCompounds =
+      globalCompounds.length > 0
+        ? matchCompounds(globalCompounds, mergedProps)
+        : [];
+    const hasGlobalVariants = Object.keys(globalVariants).length > 0;
+
     const buildSlotRaw = (slot: string): string => {
       const classes: ClassValue[] = [];
-      if (slot === primarySlot && mergedBase) classes.push(mergedBase);
-      if (mergedSlots?.[slot]) classes.push(mergedSlots[slot]);
+      if (slot === primarySlot && baseBase) classes.push(baseBase);
+      if (baseSlots?.[slot]) classes.push(baseSlots[slot]);
 
       for (let i = 0; i < variantKeys.length; i++) {
         const key = variantKeys[i];
         if (key === undefined) continue;
         const val = mergedProps[key];
         if (val === undefined || val === null) continue;
-        const vCfg = mergedVariants[key]?.[normVal(val)];
+        const vCfg = baseVariants[key]?.[normVal(val)];
         if (!vCfg) continue;
         if (hasSlots && isSlotRecord(vCfg, slotNames)) {
           if (vCfg[slot]) classes.push(vCfg[slot]);
@@ -686,8 +770,8 @@ export function tv(config: any): any {
         }
       }
 
-      for (let i = 0; i < activeCompounds.length; i++) {
-        const compound = activeCompounds[i];
+      for (let i = 0; i < activeBaseCompounds.length; i++) {
+        const compound = activeBaseCompounds[i];
         if (!compound) continue;
         const cvClass = compound.class || compound.className;
         if (hasSlots && isSlotRecord(cvClass, slotNames)) {
@@ -697,8 +781,63 @@ export function tv(config: any): any {
         }
       }
 
-      if (slot === primarySlot && propExtra) classes.push(propExtra);
-      return dedupeClasses(cx(...classes));
+      let resolved = dedupeClasses(cx(...classes));
+
+      // Apply global config overrides AFTER built-in variants & compoundVariants
+      // so `components.<name>.slots` cleanly overrides variant defaults (e.g. toast.variants.mode.default)
+      if (slot === primarySlot && globalBaseOverrides.length > 0) {
+        for (let i = 0; i < globalBaseOverrides.length; i++) {
+          const ov = globalBaseOverrides[i];
+          if (ov !== undefined) resolved = applyOverrideValue(resolved, ov);
+        }
+      }
+
+      const slotOvs = globalSlotOverrides[slot];
+      if (slotOvs && slotOvs.length > 0) {
+        for (let i = 0; i < slotOvs.length; i++) {
+          const ov = slotOvs[i];
+          if (ov !== undefined) resolved = applyOverrideValue(resolved, ov);
+        }
+      }
+
+      if (hasGlobalVariants) {
+        for (let i = 0; i < variantKeys.length; i++) {
+          const key = variantKeys[i];
+          if (key === undefined) continue;
+          const val = mergedProps[key];
+          if (val === undefined || val === null) continue;
+          const vCfg = globalVariants[key]?.[normVal(val)];
+          if (!vCfg) continue;
+          if (hasSlots && isSlotRecord(vCfg, slotNames)) {
+            const ov = vCfg[slot] as OverrideClassEntry | undefined;
+            if (ov !== undefined) resolved = applyOverrideValue(resolved, ov);
+          } else if (slot === primarySlot) {
+            resolved = applyOverrideValue(
+              resolved,
+              vCfg as OverrideClassEntry,
+            );
+          }
+        }
+      }
+
+      for (let i = 0; i < activeGlobalCompounds.length; i++) {
+        const compound = activeGlobalCompounds[i];
+        if (!compound) continue;
+        const cvClass = compound.class || compound.className;
+        if (hasSlots && isSlotRecord(cvClass, slotNames)) {
+          if (cvClass[slot]) {
+            resolved = applyOverrideValue(resolved, cvClass[slot]);
+          }
+        } else if (slot === primarySlot && cvClass) {
+          resolved = applyOverrideValue(resolved, cvClass);
+        }
+      }
+
+      if (slot === primarySlot && propExtra) {
+        resolved = dedupeClasses(resolved, propExtra);
+      }
+
+      return resolved;
     };
 
     if (!hasSlots) return makeSlotFn(buildSlotRaw(primarySlot));
@@ -712,8 +851,14 @@ export function tv(config: any): any {
     syncGlobalConfig();
     const mergedProps: Record<string, any> = { ...combinedDefaults };
     for (const k in props) {
-      if (k !== "class" && k !== "className" && props[k] !== undefined)
+      if (
+        k !== "class" &&
+        k !== "className" &&
+        props[k] !== undefined &&
+        props[k] !== ""
+      ) {
         mergedProps[k] = props[k];
+      }
     }
     const propExtra = cx(props.class, props.className);
 
@@ -736,16 +881,16 @@ export function tv(config: any): any {
   };
 
   tvFn.__config = {
-    base: mergedBase,
-    ...(mergedSlots ? { slots: mergedSlots } : {}),
-    variants: mergedVariants,
-    compoundVariants: mergedCompounds,
-    defaultVariants: combinedDefaults,
+    base: baseBase,
+    ...(baseSlots ? { slots: baseSlots } : {}),
+    variants: baseVariants,
+    compoundVariants: baseCompounds,
+    defaultVariants: baseDefaults,
   } satisfies TVConfigInternal;
 
-  tvFn.slots = mergedSlots;
-  tvFn.variants = mergedVariants;
-  tvFn.defaultVariants = combinedDefaults;
+  tvFn.slots = baseSlots;
+  tvFn.variants = baseVariants;
+  tvFn.defaultVariants = baseDefaults;
 
   return tvFn;
 }

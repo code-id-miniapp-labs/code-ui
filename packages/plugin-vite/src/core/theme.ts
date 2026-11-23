@@ -1054,15 +1054,29 @@ export function compileComponentTheme(
   const kebabName = componentName
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
     .toLowerCase();
-  const overrides =
+  const uiMap = resolvedConfig.ui as Record<string, any> | undefined;
+  const uiOverrides =
+    uiMap?.[componentName] ?? uiMap?.[camelName] ?? uiMap?.[kebabName];
+  const compOverrides =
     resolvedConfig.components?.[componentName] ??
     resolvedConfig.components?.[camelName] ??
     resolvedConfig.components?.[kebabName];
 
   const baseTheme = isFactoryFn ? rawTheme : structuredClone(rawTheme);
-  const compiled = overrides
-    ? mergeComponentConfig(baseTheme, overrides)
-    : baseTheme;
+  let compiled =
+    isPlainObject(uiOverrides) &&
+    ("slots" in uiOverrides ||
+      "ui" in uiOverrides ||
+      "base" in uiOverrides ||
+      "variants" in uiOverrides ||
+      "compoundVariants" in uiOverrides ||
+      "defaultVariants" in uiOverrides ||
+      "defaultProps" in uiOverrides)
+      ? mergeComponentConfig(baseTheme, uiOverrides)
+      : baseTheme;
+  if (compOverrides) {
+    compiled = mergeComponentConfig(compiled, compOverrides);
+  }
 
   return applyColorSystemToTheme(compiled, colorMode);
 }

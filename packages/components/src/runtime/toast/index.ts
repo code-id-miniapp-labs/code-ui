@@ -236,20 +236,22 @@ Component(
         const index = Number(this.data.index);
         const offset = Number(this.data.offset);
         const placement = this.data.placement;
+        const zPart =
+          index > 0 ? ` z-index: calc(var(--z-toast, 10150) + ${index});` : "";
 
         if (placement === "center") {
-          return `--cui-toast-index:${index}; -webkit-transform: translate3d(-50%, -50%, 0); transform: translate3d(-50%, -50%, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; -webkit-transform: translate3d(-50%, -50%, 0); transform: translate3d(-50%, -50%, 0);${zPart}`;
         }
 
         if (placement === "top") {
-          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, ${offset}px, 0); transform: translate3d(-50%, ${offset}px, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, ${offset}px, 0); transform: translate3d(-50%, ${offset}px, 0);${zPart}`;
         }
 
         if (placement === "bottom") {
-          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, -${offset}px, 0); transform: translate3d(-50%, -${offset}px, 0); z-index: ${100 + index};`;
+          return `--cui-toast-index:${index}; --cui-toast-offset:${offset}px; -webkit-transform: translate3d(-50%, -${offset}px, 0); transform: translate3d(-50%, -${offset}px, 0);${zPart}`;
         }
 
-        return `--cui-toast-index:${index}; z-index: ${100 + index};`;
+        return `--cui-toast-index:${index};${zPart}`;
       },
     },
 

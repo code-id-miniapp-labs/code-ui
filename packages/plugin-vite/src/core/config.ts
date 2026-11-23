@@ -295,7 +295,7 @@ const g = typeof globalThis !== "undefined"
       ? global
       : {};
 
-g.__CODE_UI_GLOBAL_CONFIG__ = Object.assign(g.__CODE_UI_GLOBAL_CONFIG__ || {}, config);
+g.__CODE_UI_GLOBAL_CONFIG__ = Object.assign({}, g.__CODE_UI_GLOBAL_CONFIG__ || {}, config);
 if (config && config.ui) {
   g.__CODE_UI_GLOBAL_CONFIG__.ui = config.ui;
 }
