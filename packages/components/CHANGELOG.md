@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.2.6
+
+### Patch Changes
+
+- b66b0d7: Fix `c-icon` prepending the icon class prefix (`i-`) to hosted image URLs and data URIs (`https://...`, `http://...`, `data:image/...`, `cloud://...`, `wxfile://...`) by skipping Iconify `collection:name` parsing for URLs and paths in `getIcon()`.
+
 ## 1.2.5
 
 ### Patch Changes
