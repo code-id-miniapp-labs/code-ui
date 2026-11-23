@@ -1309,7 +1309,14 @@ export const computedBehavior =
             return computedDefs;
           };
 
-          if (!defFields[_COMPUTED_PRE_EVALUATED]) {
+          const hasDeclaredProperties =
+            Boolean(
+              defFields.properties &&
+                typeof defFields.properties === "object" &&
+                Object.keys(defFields.properties).length > 0,
+            );
+
+          if (!defFields[_COMPUTED_PRE_EVALUATED] && !hasDeclaredProperties) {
             defFields.data = defFields.data || {};
             Object.assign(
               defFields.data,

@@ -1908,4 +1908,5 @@ export {
   serializeConfig,
   serializeFunction,
   serializeCompactThemeModule,
+  type SerializeCompactThemeModuleOptions,
 } from "./serialize";

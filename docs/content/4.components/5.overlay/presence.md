@@ -337,6 +337,8 @@ Component({
 
 `createPresenceBehavior({ key: "filterDrawer" })` automatically registers `this.data.filterDrawer` (`{ open, present, mounted, state }`), exposes `openFilterDrawer`, `closeFilterDrawer`, `showFilterDrawer`, `hideFilterDrawer`, `toggleFilterDrawer`, `setFilterDrawerOpen`, and `handleFilterDrawerExitComplete`, cleans up timers in `detached()`, and **never** declares `pageLifetimes`.
 
+To manage **multiple** overlays on a single page or component without repeating handlers, pass an array to `key` (for example `usePresence({ target: this, key: ["filter", "sort", "payment"] as const })` or `createPresenceBehavior({ key: ["filter", "sort", "payment"] })`) and pass `data-name="filter"` in WXML. See [`usePresence`](/composables/use-presence#managing-multiple-drawers-modals-on-one-page-key) for full examples.
+
 ## State Machine
 
 Click any active transition inside the state graph below to simulate the `presence` state machine live:

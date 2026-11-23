@@ -168,9 +168,20 @@ function cleanThemeVariants(variants: unknown): Record<string, any> | undefined 
   return out;
 }
 
-export function serializeCompactThemeModule(themeConfig: any): string {
+export interface SerializeCompactThemeModuleOptions {
+  /** Output module syntax. Defaults to `"esm"` (`export default ...`). */
+  format?: "esm" | "cjs";
+}
+
+export function serializeCompactThemeModule(
+  themeConfig: any,
+  options?: SerializeCompactThemeModuleOptions,
+): string {
+  const exportPrefix =
+    options?.format === "cjs" ? "module.exports = " : "export default ";
+
   if (!isPlainObj(themeConfig) || containsFunction(themeConfig)) {
-    return `export default ${serializeConfig(themeConfig)};`;
+    return `${exportPrefix}${serializeConfig(themeConfig)};`;
   }
 
   const cleanedVariants = cleanThemeVariants(themeConfig.variants);
@@ -382,5 +393,5 @@ export function serializeCompactThemeModule(themeConfig: any): string {
     .map(({ id, colors }) => `const ${id}=${JSON.stringify(colors)};`)
     .join("");
 
-  return `${preamble ? `${preamble}\n` : ""}export default {\n${propParts.join(",\n")}\n};`;
+  return `${preamble ? `${preamble}\n` : ""}${exportPrefix}{\n${propParts.join(",\n")}\n};`;
 }

@@ -48,6 +48,10 @@ import {
 } from "./core/transforms";
 import { transformAppStyle } from "./core/style-inject";
 import {
+  buildPremergedComponentThemeSource,
+  syncCompiledComponentThemes,
+} from "./core/theme-sync";
+import {
   handleTreeShake,
   isWeappViteConfig,
   scheduleTreeShakeOnExit,
@@ -101,6 +105,10 @@ export {
   SHADES,
   TAILWIND_PALETTES,
 } from "./core/theme";
+export {
+  buildPremergedComponentThemeSource,
+  syncCompiledComponentThemes,
+};
 export {
   cleanKeyframes,
   compileComponentTheme,
@@ -232,6 +240,12 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
         }
         if (isCuiConfigFile(changedPath, configManager.configPath)) {
           await configManager.reload(devServer.config.root);
+          syncCompiledComponentThemes(
+            configManager,
+            treeShakeOpts,
+            projectRoot,
+            viteConfigObj,
+          );
           if (server) {
             invalidateVirtualModules(server, projectRoot);
             server.ws.send({ type: "full-reload" });
@@ -246,6 +260,12 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       }
       if (isCuiConfigFile(ctx.file, configManager.configPath)) {
         await configManager.reload(projectRoot);
+        syncCompiledComponentThemes(
+          configManager,
+          treeShakeOpts,
+          projectRoot,
+          viteConfigObj,
+        );
         const affected = invalidateVirtualModules(ctx.server, projectRoot);
         ctx.server.ws.send({ type: "full-reload" });
         return affected;
@@ -271,6 +291,12 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
       }
       if (isCuiConfigFile(id, configManager.configPath)) {
         await configManager.reload(projectRoot);
+        syncCompiledComponentThemes(
+          configManager,
+          treeShakeOpts,
+          projectRoot,
+          viteConfigObj,
+        );
         if (server) {
           invalidateVirtualModules(server, projectRoot);
         }
@@ -457,6 +483,12 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
           const exitKey = `${projectRoot}\0${outDir}\0${treeShakeOpts.library}`;
           scheduleTreeShakeOnExit(exitKey, () => {
             handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+            syncCompiledComponentThemes(
+              configManager,
+              treeShakeOpts,
+              projectRoot,
+              viteConfigObj,
+            );
           });
         } else {
           await waitForMiniprogramNpmStable(
@@ -465,6 +497,12 @@ export function codeUI(options: CodeUIVitePluginOptions = {}): Plugin {
             viteConfigObj,
           );
           handleTreeShake(treeShakeOpts, projectRoot, viteConfigObj);
+          syncCompiledComponentThemes(
+            configManager,
+            treeShakeOpts,
+            projectRoot,
+            viteConfigObj,
+          );
         }
         cleanKeyframesInDir(distRoot);
 

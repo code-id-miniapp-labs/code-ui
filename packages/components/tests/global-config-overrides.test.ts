@@ -165,4 +165,45 @@ describe("global cui.config.ts overrides in tv() and ToastManager", () => {
     expect(t2?.duration).toBe(5000);
     expect(t2?.mode).toBe("native");
   });
+
+  it("applies build-time pre-merged overrides (`pm: 1`) without reading global config at runtime", () => {
+    const compiled = tv({
+      name: "drawer",
+      pm: 1,
+      ...drawerTheme(),
+      overrides: [
+        {
+          slots: {
+            headerContent: "font-semibold text-base text-dark",
+            closeTrigger:
+              "size-8 rounded-full bg-light-gray flex justify-center items-center",
+            content: "rounded-t-[40rpx]",
+            header: "border-b-0 px-5 pt-5 pb-2",
+            grabber: "hidden",
+            footer:
+              "border-t-0 px-5 pt-2 pb-[calc(32rpx+env(safe-area-inset-bottom))]",
+          },
+        },
+      ],
+    });
+
+    // Even if runtime global config has conflicting values, `pm: 1` skips runtime lookup
+    globalHost.__CODE_UI_GLOBAL_CONFIG__ = {
+      components: {
+        drawer: {
+          slots: {
+            closeTrigger: "bg-danger",
+          },
+        },
+      },
+    };
+
+    const slots = resolveSlots(compiled({ placement: "bottom", open: true }));
+    expect(slots.closeTrigger).toContain("bg-light-gray");
+    expect(slots.closeTrigger).toContain("size-8");
+    expect(slots.closeTrigger).not.toContain("bg-danger");
+    expect(slots.content).toContain("rounded-t-_b40rpx_B");
+    expect(slots.content).not.toContain("rounded-t-xl");
+    expect(slots.grabber).toContain("hidden");
+  });
 });

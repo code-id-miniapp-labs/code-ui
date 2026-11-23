@@ -511,7 +511,10 @@ export function tv(config: any): any {
     compoundVariants = [],
     defaultVariants = {},
     extend,
+    pm: premerged,
+    overrides: staticOverrides,
   } = config || {};
+  const isPremerged = Boolean(premerged);
   const parent: TVConfigInternal | undefined = extend?.__config;
 
   const baseBase: ClassValue =
@@ -663,8 +666,18 @@ export function tv(config: any): any {
     }
   };
 
+  if (staticOverrides) {
+    if (Array.isArray(staticOverrides)) {
+      for (let i = 0; i < staticOverrides.length; i++) {
+        applyOverrideEntry(staticOverrides[i]);
+      }
+    } else if (typeof staticOverrides === "object") {
+      applyOverrideEntry(staticOverrides);
+    }
+  }
+
   const syncGlobalConfig = (): void => {
-    if (!componentName) return;
+    if (!componentName || isPremerged) return;
     const g =
       typeof globalThis !== "undefined"
         ? (globalThis as Record<string, any>).__CODE_UI_GLOBAL_CONFIG__
