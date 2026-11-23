@@ -1,5 +1,12 @@
 # @code-ui/plugin-vite
 
+## 1.2.3
+
+### Patch Changes
+
+- 44f1b82: Increase default theme `zIndex` tokens (`popover`, `drawer`, `modal`, `actionSheet`, `picker`, `banner`, `toast`) to the `10050`–`10150` range so overlays render reliably above page and navigation elements.
+- 44f1b82: Fix missing Tailwind and Code UI CSS variables (`--spacing`, `--text-*`, `--radius-*`, `--ui-*`) inside `custom-tab-bar` and `<root-portal>` by expanding root variable selectors to include `root-portal`, `custom-tab-bar`, `.light`, and `.dark`, and adding `tw-root` to overlay portal wrappers.
+
 ## 1.2.2
 
 ### Patch Changes

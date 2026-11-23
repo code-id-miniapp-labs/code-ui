@@ -1,5 +1,11 @@
 # @code-ui/components
 
+## 1.2.3
+
+### Patch Changes
+
+- 44f1b82: Fix missing Tailwind and Code UI CSS variables (`--spacing`, `--text-*`, `--radius-*`, `--ui-*`) inside `custom-tab-bar` and `<root-portal>` by expanding root variable selectors to include `root-portal`, `custom-tab-bar`, `.light`, and `.dark`, and adding `tw-root` to overlay portal wrappers.
+
 ## 1.2.2
 
 ## 1.2.1
