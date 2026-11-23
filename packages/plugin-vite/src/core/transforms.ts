@@ -67,18 +67,27 @@ const STATIC_RGBA_RE = /rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*[\d.]+)?\s*\)
  * across solid, shade, and alpha-modifier classes.
  */
 export function compatSemanticColorVariables(css: string): string {
+  // Ensure Tailwind v4 / weapp-tailwindcss root variable blocks (:host, page, .tw-root, wx-root-portal-content)
+  // also match `root-portal`, `custom-tab-bar`, `.light`, and `.dark` so components with
+  // `styleIsolation: "shared"` rendered inside `custom-tab-bar` or `<root-portal>` receive
+  // `--spacing`, `--text-*`, `--radius-*`, and `--ui-*` tokens even outside `<page>`.
+  const normalizedCss = css.replace(
+    /(:host\s*,\s*page\s*,\s*\.tw-root\s*,\s*wx-root-portal-content)(?!\s*,\s*root-portal)/g,
+    "$1,root-portal,custom-tab-bar,.light,.dark",
+  );
+
   if (
-    !css.includes("-primary") &&
-    !css.includes("-secondary") &&
-    !css.includes("-success") &&
-    !css.includes("-warning") &&
-    !css.includes("-danger") &&
-    !css.includes("-info")
+    !normalizedCss.includes("-primary") &&
+    !normalizedCss.includes("-secondary") &&
+    !normalizedCss.includes("-success") &&
+    !normalizedCss.includes("-warning") &&
+    !normalizedCss.includes("-danger") &&
+    !normalizedCss.includes("-info")
   ) {
-    return css;
+    return normalizedCss;
   }
 
-  return css.replace(
+  return normalizedCss.replace(
     /([^{}@]+)\{([^{}]*)\}/g,
     (fullMatch, selector: string, body: string) => {
       const trimmedSelector = selector.trim();

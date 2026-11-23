@@ -47,7 +47,11 @@
   page,
   :host,
   .tw-root,
-  wx-root-portal-content {
+  wx-root-portal-content,
+  root-portal,
+  custom-tab-bar,
+  .light,
+  .dark {
     --spacing: 4px;
     --container-3xs: 256px;
     --container-2xs: 288px;

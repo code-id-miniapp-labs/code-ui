@@ -240,13 +240,17 @@ function parseHexToRgbTuple(hex: string): [number, number, number] | null {
     const r = Number.parseInt((clean[0] ?? "0") + (clean[0] ?? "0"), 16);
     const g = Number.parseInt((clean[1] ?? "0") + (clean[1] ?? "0"), 16);
     const b = Number.parseInt((clean[2] ?? "0") + (clean[2] ?? "0"), 16);
-    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : [r, g, b];
+    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)
+      ? null
+      : [r, g, b];
   }
   if (clean.length === 6) {
     const r = Number.parseInt(clean.slice(0, 2), 16);
     const g = Number.parseInt(clean.slice(2, 4), 16);
     const b = Number.parseInt(clean.slice(4, 6), 16);
-    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b) ? null : [r, g, b];
+    return Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)
+      ? null
+      : [r, g, b];
   }
   return null;
 }
@@ -261,7 +265,9 @@ function appendAlphaVars(
   if (!rgb) return;
   const [r, g, b] = rgb;
   for (const alpha of ALPHA_STEPS) {
-    lines.push(`  --ui-${key}-a${alpha}: rgba(${r}, ${g}, ${b}, ${alpha / 100});`);
+    lines.push(
+      `  --ui-${key}-a${alpha}: rgba(${r}, ${g}, ${b}, ${alpha / 100});`,
+    );
   }
 }
 
@@ -872,13 +878,13 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
   rootLines.push("  --tw-translate-z: 0;");
 
   const defaultZIndex: Record<string, number> = {
-    popover: 50,
-    drawer: 100,
-    modal: 110,
-    actionSheet: 120,
-    picker: 130,
-    banner: 140,
-    toast: 150,
+    popover: 10050,
+    drawer: 10100,
+    modal: 10110,
+    actionSheet: 10120,
+    picker: 10130,
+    banner: 10140,
+    toast: 10150,
   };
   const configuredZIndex: Record<string, number | string | undefined> = {
     ...defaultZIndex,
@@ -898,14 +904,17 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
     rootLines.push(...darkLines);
   }
 
-  let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n:root, page, :host {\n${rootLines.join("\n")}\n}\n`;
+  const rootSelector =
+    ":root, page, :host, .tw-root, wx-root-portal-content, root-portal, custom-tab-bar, .light, .dark";
+
+  let css = `${THEME_TAG}\n@theme default inline {\n${themeLines.join("\n")}\n}\n\n${rootSelector} {\n${rootLines.join("\n")}\n}\n`;
 
   if (zUtilityBlocks.length > 0) {
     css += `\n${zUtilityBlocks.join("\n\n")}\n`;
   }
 
   if (colorMode === "system" && darkLines.length > 0) {
-    css += `\n@media (prefers-color-scheme: dark) {\n  :root, page, :host {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="light"], .light, [data-theme="light"] {\n${lightResetLines.join("\n")}\n}\n\npage[data-theme="dark"], .dark, [data-theme="dark"] {\n${darkLines.join("\n")}\n}\n`;
+    css += `\n@media (prefers-color-scheme: dark) {\n  ${rootSelector} {\n  ${darkLines.join("\n  ")}\n  }\n}\n\npage[data-theme="light"], .light, [data-theme="light"] {\n${lightResetLines.join("\n")}\n}\n\npage[data-theme="dark"], .dark, [data-theme="dark"] {\n${darkLines.join("\n")}\n}\n`;
   }
 
   return css;

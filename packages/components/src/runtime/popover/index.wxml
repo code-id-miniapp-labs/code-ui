@@ -3,7 +3,7 @@
     <slot name="trigger" />
   </view>
   <root-portal enable="{{portal}}">
-    <view class="{{portal ? themeMode : ''}}" style="{{wrapperStyle}}" hidden="{{!popover.visible}}">
+    <view class="{{portal ? 'tw-root ' + themeMode : ''}}" style="{{wrapperStyle}}" hidden="{{!popover.visible}}">
       <view id="{{popover.backdropProps.id}}" class="{{classes.backdrop}}" data-scope="popover" data-part="backdrop" data-state="{{popover.open ? 'open' : 'closed'}}" aria-hidden="{{true}}" catchtap="handleBackdropTap" />
       <view id="{{popover.positionerProps.id}}" class="{{classes.positioner}}" style="{{popover.positionerStyle}}" data-scope="popover" data-part="positioner" data-side="{{popover.resolvedSide}}" data-align="{{popover.resolvedAlign}}" data-state="{{popover.state}}">
         <view id="{{popover.contentProps.id}}" class="{{classes.content}}" style="{{popover.contentStyle}}" data-scope="popover" data-part="content" data-side="{{popover.resolvedSide}}" data-align="{{popover.resolvedAlign}}" data-state="{{popover.state}}" aria-hidden="{{!popover.open}}">
