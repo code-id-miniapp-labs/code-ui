@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/input",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "description": "Input state machine for code-ui",
   "files": [
