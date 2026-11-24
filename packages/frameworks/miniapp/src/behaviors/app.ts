@@ -3,10 +3,7 @@ import { isMiniApp, queryRect } from "@code-id-labs/utils";
 import { nextTick } from "../machine";
 import type { MachinePlugin } from "../plugin";
 import type { TypedRelationOption } from "./inherit";
-import {
-  emitPageLifecycle,
-  registerPageLifecycleHost,
-} from "./page-lifecycle";
+import { emitPageLifecycle, registerPageLifecycleHost } from "./page-lifecycle";
 import type {
   AppOwnerData,
   AppOwnerInstance,
@@ -1193,23 +1190,25 @@ export function withAppBannerInset(
 const DEFAULT_MENU_HEIGHT = 32;
 const DEFAULT_MENU_GAP = 4;
 
+const EMPTY_METRICS: AppMetrics = {
+  windowWidth: 0,
+  windowHeight: 0,
+  statusBarHeight: 0,
+  safeTop: 0,
+  safeBottom: 0,
+  menuTop: 0,
+  menuHeight: 0,
+  menuInset: 0,
+  navBarHeight: 0,
+  navHeight: 0,
+};
+
 let cachedMetrics: AppMetrics | null = null;
 export const appMetricsSignal = /* @__PURE__ */ (() =>
-  signal<AppMetrics>(calculateMetrics()))();
+  signal<AppMetrics>(EMPTY_METRICS))();
 
 function calculateMetrics(): AppMetrics {
-  const empty: AppMetrics = {
-    windowWidth: 0,
-    windowHeight: 0,
-    statusBarHeight: 0,
-    safeTop: 0,
-    safeBottom: 0,
-    menuTop: 0,
-    menuHeight: 0,
-    menuInset: 0,
-    navBarHeight: 0,
-    navHeight: 0,
-  };
+  const empty: AppMetrics = { ...EMPTY_METRICS };
   if (typeof wx === "undefined") return empty;
 
   let info: any;
@@ -1237,7 +1236,7 @@ function calculateMetrics(): AppMetrics {
   try {
     const rect =
       typeof wx.getMenuButtonBoundingClientRect === "function"
-        ? wx.getMenuButtonBoundingClientRect()
+        ? wx?.getMenuButtonBoundingClientRect() || {}
         : undefined;
     if (rect && rect.height > 0) menu = rect;
   } catch {}
@@ -1307,6 +1306,7 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
     lifetimes: {
       attached(this: AppOwnerInstance) {
         this.__cuiAppAttached = true;
+        getAppMetrics();
         this.__cuiUnsubPageLifecycleHost?.();
         this.__cuiUnsubPageLifecycleHost = registerPageLifecycleHost(this);
         registerAppHost(this, {
