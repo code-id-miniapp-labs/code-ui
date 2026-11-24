@@ -34,7 +34,6 @@
 | `autoFocus` | `boolean` | `false` | Focuses the input on mount. |
 | `password` | `boolean` | `false` | Masks input characters as a password. |
 | `placeholder` | `string` | `""` | Placeholder text shown when empty. |
-| `placeholderClass` | `string` | `""` | Custom class applied to placeholder text (`placeholder-class`). |
 | `placeholderStyle` | `string` | `""` | Inline style applied to placeholder text (`placeholder-style`). |
 | `maxlength` | `number` | `140` | Maximum character length (`-1` for unlimited). |
 | `cursorSpacing` | `number` | `0` | Distance (px) between cursor and keyboard (`cursor-spacing`). |
@@ -98,6 +97,7 @@ Defined in `packages/core/src/theme/definitions/input.ts`.
 - `root` — Outer container (`relative flex items-center w-full`).
 - `base` — Bordered field wrapper (`relative w-full min-h-0 flex items-center overflow-hidden box-border rounded-md border ...`).
 - `nativeInput` — Inner MiniProgram `<input>` element (`flex-1 min-w-0 w-full min-h-0 bg-transparent border-0 ...`).
+- `placeholder` — Placeholder text class bound to native `placeholder-class` (`text-dimmed`). Can be configured globally via `cui.config.ts` or per instance via `ui.placeholder`.
 - `leading` — Leading adornment container (`shrink-0 flex items-center justify-center text-dimmed`).
 - `leadingIcon` — Leading icon wrapper (`inline-flex items-center justify-center shrink-0 leading-none`).
 - `trailing` — Trailing adornment container (`shrink-0 flex items-center justify-center gap-1 text-dimmed`).

@@ -14,6 +14,7 @@ export default function inputTheme(options: ThemeOptions = {}) {
       base: "relative w-full min-h-0 flex items-center overflow-hidden box-border rounded-md border text-highlighted transition-colors focus:outline-none disabled:cursor-not-allowed disabled:bg-elevated disabled:text-dimmed",
       nativeInput:
         "flex-1 min-w-0 w-full min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
+      placeholder: "text-dimmed",
       leading: "shrink-0 flex items-center justify-center text-dimmed",
       leadingIcon:
         "inline-flex items-center justify-center shrink-0 leading-none",

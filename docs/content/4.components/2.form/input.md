@@ -220,12 +220,12 @@ Page({
 
 ### Keyboard & Placeholder Options
 
-`c-input` forwards native MiniProgram `<input>` options including `autoFocus`, `placeholderClass`, `placeholderStyle`, `maxlength`, `cursorSpacing`, `confirmType`, `confirmHold`, `cursor`, `selectionStart`, `selectionEnd`, `adjustPosition`, and `holdKeyboard`.
+`c-input` forwards native MiniProgram `<input>` options including `autoFocus`, `placeholderStyle`, `maxlength`, `cursorSpacing`, `confirmType`, `confirmHold`, `cursor`, `selectionStart`, `selectionEnd`, `adjustPosition`, and `holdKeyboard`. Use `ui.placeholder` (or global `components.input.slots.placeholder` in `cui.config.ts`) to style placeholder text.
 
 ```html [index.wxml]
 <c-input
   placeholder="Search products"
-  placeholderClass="italic"
+  ui="{{ { placeholder: 'italic text-muted' } }}"
   placeholderStyle="color: #9ca3af;"
   maxlength="{{50}}"
   autoFocus="{{true}}"
@@ -371,7 +371,6 @@ Click any active transition or event button below to simulate the `input` state 
 | `autoFocus` | `boolean` | `false` | Focuses the input on mount. |
 | `password` | `boolean` | `false` | Masks input characters as a password. |
 | `placeholder` | `string` | `""` | Placeholder text shown when empty. |
-| `placeholderClass` | `string` | `""` | Custom class applied to placeholder text (`placeholder-class`). |
 | `placeholderStyle` | `string` | `""` | Inline style applied to placeholder text (`placeholder-style`). |
 | `maxlength` | `number` | `140` | Maximum character length (`-1` for unlimited). |
 | `cursorSpacing` | `number` | `0` | Distance (px) between cursor and keyboard (`cursor-spacing`). |
@@ -423,6 +422,7 @@ export default defineConfig({
         base: "relative w-full min-h-0 flex items-center overflow-hidden box-border rounded-md border text-highlighted transition-colors focus:outline-none disabled:cursor-not-allowed disabled:bg-elevated disabled:text-dimmed",
         nativeInput:
           "flex-1 min-w-0 w-full min-h-0 bg-transparent border-0 p-0 m-0 font-sans text-inherit leading-normal placeholder:text-dimmed focus:outline-none disabled:cursor-not-allowed disabled:text-dimmed",
+        placeholder: "text-dimmed",
         leading: "shrink-0 flex items-center justify-center text-dimmed",
         leadingIcon:
           "inline-flex items-center justify-center shrink-0 leading-none",

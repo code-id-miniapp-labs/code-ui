@@ -67,10 +67,6 @@ Component(
         type: String,
         value: "",
       },
-      placeholderClass: {
-        type: String,
-        value: "",
-      },
       placeholderStyle: {
         type: String,
         value: "",
