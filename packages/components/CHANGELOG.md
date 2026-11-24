@@ -1,5 +1,27 @@
 # @code-ui/components
 
+## 1.5.1
+
+### Patch Changes
+
+- e32fc53: Component-wide `setData` payload projection, native focus reconciliation fix, and closed-overlay optimization:
+
+  - `@code-id-labs/miniapp`: Strip non-WXML `hiddenInputProps` from serialized `setData` snapshots in `connectToComponent` / `connectToPage` (keeping them on `__codeUiApi`) and add `omitDataKeys` / `ConnectOptions.omitKeys` for runtime payload projection.
+  - `@code-id-labs/input`, `@code-id-labs/textarea`, `@code-id-labs/input-menu`: Separate native `bindfocus` from programmatic focus (`programmaticFocus`) so user taps do not re-trigger WeChat's native `<input focus>` reconciliation (~100 ms stall).
+  - `@code-id-labs/pin-input`: Remove `force: true` from native `handleFocus()` to prevent blur/refocus double `setData` on every cell focus.
+  - `@code-id-labs/components`: Short-circuit `classes`, `disabledClasses`, `resolvedClose`, `resolvedItems`, and `resolvedActions` in closed `<c-drawer>`, `<c-modal>`, and `<c-action-sheet>` overlays, and bind `inputMenu.inputProps.focus` in `<c-input-menu>`.
+
+- e32fc53: Reduce `setData` IPC latency and payload overhead across `computedBehavior`, `connectToComponent`, `theme`, and `toast` behaviors:
+
+  - `@code-id-labs/miniapp`:
+    - Coalesce mount-phase `setData` writes from peer behaviors (`appThemeBehavior`, `connectToComponent`, `toastHostBehavior`) with initial `computed` values into a single `attached` `setData` IPC call (`deferUntilFlush` + `__cuiBufferMountData`).
+    - Add O(1) per-computed evaluation version tracking (`computedVersions` / `flushedVersions`) so untouched computeds skip deep `isEqual()` and `cloneValue()` checks.
+    - Diff multi-slot plain-object computeds (such as `classes`) into granular `"classes.<slot>"` sub-paths instead of re-serializing all unchanged slots.
+    - Skip no-op top-level primitive writes in `patchedSetData` (resolving callbacks via `queueMicrotask` without empty `{}` IPC roundtrips) and redundant initial `setData` calls in `createAppThemeBehavior`, `applyHostState` (`hostScaleFactor` / `hostScaleBackground` when unscaled), and `patchInheritedData` (default `""` / `false` inherited props like `fieldSize`).
+    - Replace `wx.nextTick` macrotask flushing in `connectToComponent` / `connectToPage` with `queueMicrotask` so machine and computed updates flush together in the same JS turn without stalling behind congested WebView IPC cycles.
+    - Strip non-serializable callback functions and `undefined` fields from `toasts` payloads in `createToastHostBehavior`.
+  - `@code-id-labs/components`: Rebuild runtime bundles with the optimized `@code-id-labs/miniapp` runtime.
+
 ## 1.5.0
 
 ### Minor Changes

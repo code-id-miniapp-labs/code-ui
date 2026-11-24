@@ -1,5 +1,12 @@
 # @code-id-labs/input-menu-item
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [e32fc53]
+  - @code-id-labs/input-menu@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
