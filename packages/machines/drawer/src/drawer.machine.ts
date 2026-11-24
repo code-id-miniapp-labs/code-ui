@@ -19,6 +19,55 @@ function getWx(): WxKeyboardApi | undefined {
   return (globalThis as { wx?: WxKeyboardApi }).wx;
 }
 
+type KeyboardDispatch = (height: number) => void;
+const activeKeyboardStack: KeyboardDispatch[] = [];
+let sharedKeyboardHandler: ((res: { height?: number }) => void) | null = null;
+let lastKnownKeyboardHeight = 0;
+
+function registerTopmostKeyboardListener(
+  dispatch: KeyboardDispatch,
+): () => void {
+  const wxApi = getWx();
+  if (!wxApi?.onKeyboardHeightChange) {
+    return () => {};
+  }
+
+  // If an underlying drawer was lifted by the keyboard, reset it so only the
+  // newly opened topmost drawer tracks keyboard height changes.
+  const prevTop = activeKeyboardStack[activeKeyboardStack.length - 1];
+  if (prevTop && prevTop !== dispatch && lastKnownKeyboardHeight > 0) {
+    prevTop(0);
+  }
+
+  const existingIdx = activeKeyboardStack.indexOf(dispatch);
+  if (existingIdx !== -1) {
+    activeKeyboardStack.splice(existingIdx, 1);
+  }
+  activeKeyboardStack.push(dispatch);
+
+  if (!sharedKeyboardHandler) {
+    sharedKeyboardHandler = (res: { height?: number }) => {
+      const height = Math.max(0, Number(res?.height) || 0);
+      lastKnownKeyboardHeight = height;
+      const top = activeKeyboardStack[activeKeyboardStack.length - 1];
+      top?.(height);
+    };
+    wxApi.onKeyboardHeightChange(sharedKeyboardHandler);
+  }
+
+  return () => {
+    const idx = activeKeyboardStack.indexOf(dispatch);
+    if (idx !== -1) {
+      activeKeyboardStack.splice(idx, 1);
+    }
+    if (activeKeyboardStack.length === 0 && sharedKeyboardHandler) {
+      getWx()?.offKeyboardHeightChange?.(sharedKeyboardHandler);
+      sharedKeyboardHandler = null;
+      lastKnownKeyboardHeight = 0;
+    }
+  };
+}
+
 const closedTransitions = {
   OPEN: {
     target: "open" as const,
@@ -209,29 +258,27 @@ export const drawerMachine: DrawerMachine = createMachine<DrawerSchema>({
       },
       setKeyboardHeight: ({ context, event }) => {
         if (event.type === "KEYBOARD_CHANGE") {
-          context.set("keyboardHeight", Math.max(0, Number(event.height) || 0));
+          const next = Math.max(0, Number(event.height) || 0);
+          if (context.get("keyboardHeight") !== next) {
+            context.set("keyboardHeight", next);
+          }
         }
       },
       resetKeyboardHeight: ({ context }) => {
-        context.set("keyboardHeight", 0);
+        if (context.get("keyboardHeight") !== 0) {
+          context.set("keyboardHeight", 0);
+        }
       },
     },
 
     effects: {
       listenKeyboardHeight: ({ send }) => {
-        const wxApi = getWx();
-        if (!wxApi?.onKeyboardHeightChange) return;
-
-        const handler = (res: { height?: number }) => {
+        return registerTopmostKeyboardListener((height) => {
           send({
             type: "KEYBOARD_CHANGE",
-            height: Math.max(0, Number(res?.height) || 0),
+            height,
           });
-        };
-        wxApi.onKeyboardHeightChange(handler);
-        return () => {
-          wxApi.offKeyboardHeightChange?.(handler);
-        };
+        });
       },
 
       waitForCloseAnimation: ({ send, scope, prop }) => {

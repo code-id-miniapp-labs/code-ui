@@ -5,10 +5,24 @@ var startY = 0;
 var lastOffset = 0;
 var lastCallOffset = 0;
 var isDragging = false;
-var _keyboardHeight = 0;
 
 var _contentEl = null;
 var _backdropEl = null;
+
+function _getKeyboardHeight(el) {
+  if (!el) return 0;
+  var st = el.getState ? el.getState() : null;
+  if (st && typeof st.keyboardHeight === 'number') {
+    return st.keyboardHeight;
+  }
+  return 0;
+}
+
+function _setKeyboardHeight(el, height) {
+  if (!el || !el.getState) return;
+  var st = el.getState();
+  if (st) st.keyboardHeight = height;
+}
 
 var _throttledCallMove = dom.throttle(function(ownerInstance, data) {
   if (ownerInstance) {
@@ -28,10 +42,10 @@ function _computeOffset(currentX, currentY, placement) {
 }
 
 // Used during touchmove — transition disabled for frame-perfect tracking
-function _buildTransform(offset, placement) {
+function _buildTransform(offset, placement, kbHeight) {
   var base = 'transition: none; ';
-  if (placement === 'bottom' && _keyboardHeight > 0) {
-    var y = offset - _keyboardHeight;
+  if (placement === 'bottom' && kbHeight > 0) {
+    var y = offset - kbHeight;
     return base + 'transform: translate3d(0, ' + y + 'px, 0);';
   }
   if (offset === 0) return base;
@@ -46,9 +60,9 @@ function _buildTransform(offset, placement) {
 
 // Used at touchend — just the current offset string, transition: none removed
 // so the subsequent RAF can trigger a CSS transition from this position
-function _buildCurrentTranslate(offset, placement) {
-  if (placement === 'bottom' && _keyboardHeight > 0) {
-    var y = offset - _keyboardHeight;
+function _buildCurrentTranslate(offset, placement, kbHeight) {
+  if (placement === 'bottom' && kbHeight > 0) {
+    var y = offset - kbHeight;
     return 'transform: translate3d(0, ' + y + 'px, 0);';
   }
   if (offset === 0) return '';
@@ -130,7 +144,8 @@ function onTouchMove(event, ownerInstance) {
   if (offset > 0) isDragging = true;
   lastOffset = offset;
 
-  if (_contentEl)  _contentEl.setStyle(_buildTransform(offset, placement));
+  var kbHeight  = _getKeyboardHeight(_contentEl);
+  if (_contentEl)  _contentEl.setStyle(_buildTransform(offset, placement, kbHeight));
   if (_backdropEl) _backdropEl.setStyle(_buildBackdropOpacity(offset, dataset.threshold));
 
   // Bridge notification to logic thread throttled via dom.throttle (16ms ~ 60fps)
@@ -157,13 +172,15 @@ function onTouchEnd(event, ownerInstance) {
 
   var passed = isDragging && offset >= threshold;
 
+  var kbHeight = _getKeyboardHeight(_contentEl);
+
   if (passed && _contentEl) {
     var ce = _contentEl;
     var be = _backdropEl;
     var pl = placement;
     var dur = duration;
 
-    ce.setStyle(_buildCurrentTranslate(offset, pl));
+    ce.setStyle(_buildCurrentTranslate(offset, pl, kbHeight));
 
     ce.requestAnimationFrame(function() {
       ce.setStyle('transition: transform ' + dur + 'ms ease; ' + _buildExitTranslate(pl));
@@ -171,8 +188,8 @@ function onTouchEnd(event, ownerInstance) {
     });
   } else {
     if (_contentEl) {
-      if (placement === 'bottom' && _keyboardHeight > 0) {
-        _contentEl.setStyle(_buildKeyboardStyle(_keyboardHeight));
+      if (placement === 'bottom' && kbHeight > 0) {
+        _contentEl.setStyle(_buildKeyboardStyle(kbHeight));
       } else {
         _contentEl.setStyle('');
       }
@@ -198,7 +215,7 @@ function onTouchEnd(event, ownerInstance) {
 
 function onKeyboardHeightChange(newVal, oldVal, ownerInstance, instance) {
   var h = newVal > 0 ? newVal : 0;
-  _keyboardHeight = h;
+  _setKeyboardHeight(instance, h);
   if (!instance || isDragging) return;
 
   var dataset = instance.getDataset ? instance.getDataset() : {};

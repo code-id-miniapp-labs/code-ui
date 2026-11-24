@@ -31,6 +31,7 @@
         <c-button size="sm" color="danger" variant="soft" label="Modal (Lock Backdrop)" bind:tap="openModal" />
         <c-button size="sm" color="secondary" variant="soft" label="Form + Close Slot" bind:tap="openFormDrawer" />
         <c-button size="sm" color="primary" label="OTP / Pin Input (Keyboard)" bind:tap="openOtpDrawer" />
+        <c-button size="sm" color="primary" variant="soft" label="Stacked + Keyboard" bind:tap="openStackedDrawer" />
       </view>
     </view>
 
@@ -135,6 +136,27 @@
     />
   </view>
 
+  <view wx:elif="{{ scenario === 'stacked' }}" class="flex flex-col gap-3 py-1">
+    <view class="p-3 rounded-xl bg-muted border border-default">
+      <text class="block text-xs font-semibold text-highlighted">Base Drawer (Layer 1)</text>
+      <text class="block text-xs text-muted mt-1 leading-relaxed">
+        Focus the input below or open Layer 2 on top. When Layer 2 opens its keyboard, only Layer 2 lifts — Layer 1 stays still.
+      </text>
+    </view>
+    <c-input
+      adjust-position="{{ false }}"
+      placeholder="Layer 1 input (lifts Layer 1 when topmost)..."
+      value="{{ stackedNote }}"
+      bind:input="onStackedNoteInput"
+    />
+    <c-button
+      block="{{ true }}"
+      color="primary"
+      label="Open Stacked OTP Drawer (Layer 2)"
+      bind:tap="openSecondStackedDrawer"
+    />
+  </view>
+
   <view wx:else class="py-2 flex flex-col gap-3">
     <view class="p-3.5 rounded-xl bg-muted border border-default">
       <text class="block text-xs font-semibold text-highlighted">Gesture & Safe-Area Support</text>
@@ -147,5 +169,40 @@
   <view slot="footer" class="flex items-center justify-end gap-2 w-full">
     <c-button size="sm" variant="outline" color="neutral" label="Cancel" bind:tap="closeDrawer" />
     <c-button size="sm" color="primary" label="Confirm" bind:tap="onConfirmAction" />
+  </view>
+</c-drawer>
+
+<!-- Stacked Layer 2 Drawer (tests topmost-only WXS keyboard lift) -->
+<c-drawer
+  slot="overlay"
+  open="{{ stackedDrawerOpen }}"
+  placement="bottom"
+  should-scale-background="{{ false }}"
+  close-on-backdrop-click="{{ true }}"
+  bind:close="closeSecondStackedDrawer"
+>
+  <view slot="header">
+    <text class="block text-base font-bold text-highlighted">Stacked Verification (Layer 2)</text>
+    <text class="block text-xs text-muted mt-0.5">Only this topmost drawer should lift with the keyboard.</text>
+  </view>
+
+  <view class="flex flex-col items-center gap-4 py-2">
+    <c-pin-input
+      length="{{ 6 }}"
+      type="number"
+      otp="{{ true }}"
+      label="Verification Code"
+      adjust-position="{{ false }}"
+      value="{{ stackedOtpCode }}"
+      bind:change="onStackedOtpChange"
+      bind:complete="onStackedOtpComplete"
+    />
+    <c-button
+      block="{{ true }}"
+      color="primary"
+      label="Verify & Close Layer 2"
+      disabled="{{ stackedOtpCode.length < 6 }}"
+      bind:tap="onVerifyStackedOtp"
+    />
   </view>
 </c-drawer>

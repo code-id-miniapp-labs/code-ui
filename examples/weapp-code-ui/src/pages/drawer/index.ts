@@ -10,8 +10,17 @@ Page({
     scaleBackground: "bg-black",
     scaleFactor: 0.94,
     closeOnBackdropClick: true,
-    scenario: "standard" as "standard" | "scrollable" | "modal" | "form" | "otp",
+    scenario: "standard" as
+      | "standard"
+      | "scrollable"
+      | "modal"
+      | "form"
+      | "otp"
+      | "stacked",
     otpCode: "",
+    stackedDrawerOpen: false,
+    stackedNote: "",
+    stackedOtpCode: "",
     drawerTitle: "Bottom Sheet",
     drawerDescription: "Gesture-driven modal drawer with backdrop dimming.",
     customCloseProps: {
@@ -134,6 +143,60 @@ Page({
       description: `OTP: ${this.data.otpCode}`,
     });
     this.closeDrawer();
+  },
+
+  openStackedDrawer() {
+    this.setData({
+      placement: "bottom",
+      scenario: "stacked",
+      stackedNote: "",
+      stackedOtpCode: "",
+      stackedDrawerOpen: false,
+      drawerTitle: "Stacked Base Drawer (Layer 1)",
+      drawerDescription: "Open Layer 2 to test topmost-only keyboard lifting.",
+      closeOnBackdropClick: true,
+      useCustomCloseSlot: false,
+      drawerOpen: true,
+    });
+    this.pushLog("open(stacked:layer1)");
+  },
+
+  onStackedNoteInput(e: WechatMiniprogram.CustomEvent<{ value?: string }>) {
+    this.setData({ stackedNote: e.detail?.value || "" });
+  },
+
+  openSecondStackedDrawer() {
+    this.setData({
+      stackedOtpCode: "",
+      stackedDrawerOpen: true,
+    });
+    this.pushLog("open(stacked:layer2)");
+  },
+
+  closeSecondStackedDrawer() {
+    this.setData({ stackedDrawerOpen: false });
+    this.pushLog("close(stacked:layer2)");
+  },
+
+  onStackedOtpChange(
+    e: WechatMiniprogram.CustomEvent<{ valueAsString?: string }>,
+  ) {
+    this.setData({ stackedOtpCode: e.detail?.valueAsString || "" });
+  },
+
+  onStackedOtpComplete(
+    e: WechatMiniprogram.CustomEvent<{ valueAsString?: string }>,
+  ) {
+    const code = e.detail?.valueAsString || "";
+    this.setData({ stackedOtpCode: code });
+    this.pushLog(`stackedOtpComplete(${code})`);
+  },
+
+  onVerifyStackedOtp() {
+    toast.success("Layer 2 verified", {
+      description: `OTP: ${this.data.stackedOtpCode}`,
+    });
+    this.closeSecondStackedDrawer();
   },
 
   onScaleBackgroundChange(e: WechatMiniprogram.CustomEvent) {

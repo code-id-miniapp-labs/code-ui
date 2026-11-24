@@ -468,6 +468,64 @@ describe("Drawer Machine", () => {
       expect(offKeyboardHeightChange).toHaveBeenLastCalledWith(secondHandler);
     });
 
+    it("only dispatches keyboardHeight to the topmost open drawer when drawers are stacked", async () => {
+      let registeredHandler: ((res: { height?: number }) => void) | undefined;
+      const onKeyboardHeightChange = vi.fn((cb) => {
+        registeredHandler = cb;
+      });
+      const offKeyboardHeightChange = vi.fn();
+      (globalThis as Record<string, unknown>).wx = {
+        onKeyboardHeightChange,
+        offKeyboardHeightChange,
+      };
+
+      const drawerA = new MiniappMachine(drawerMachine, {
+        id: "drawer-a",
+        open: false,
+        duration: 200,
+      });
+      const drawerB = new MiniappMachine(drawerMachine, {
+        id: "drawer-b",
+        open: false,
+        duration: 200,
+      });
+      drawerA.start();
+      drawerB.start();
+
+      // Open Drawer A, then stack Drawer B on top
+      drawerA.send({ type: "OPEN" });
+      await flush();
+      drawerB.send({ type: "OPEN" });
+      await flush();
+
+      // Only ONE shared wx.onKeyboardHeightChange listener should be registered
+      expect(onKeyboardHeightChange).toHaveBeenCalledTimes(1);
+
+      // Keyboard opens while Drawer B is topmost -> ONLY Drawer B lifts
+      registeredHandler?.({ height: 300 });
+      await flush();
+      expect(drawerA.context.get("keyboardHeight")).toBe(0);
+      expect(drawerB.context.get("keyboardHeight")).toBe(300);
+
+      // Close Drawer B -> Drawer A becomes topmost again and listener stays active
+      drawerB.send({ type: "CLOSE" });
+      await flush();
+      expect(offKeyboardHeightChange).not.toHaveBeenCalled();
+
+      // Keyboard opens now for Drawer A -> Drawer A lifts
+      registeredHandler?.({ height: 260 });
+      await flush();
+      expect(drawerA.context.get("keyboardHeight")).toBe(260);
+
+      // Close Drawer A -> shared listener unsubscribed
+      drawerA.send({ type: "CLOSE" });
+      await flush();
+      expect(offKeyboardHeightChange).toHaveBeenCalledTimes(1);
+
+      drawerA.stop();
+      drawerB.stop();
+    });
+
     it("fires onExitComplete (and bind:exitcomplete) only after closing animation completes", async () => {
       const onExitComplete = vi.fn();
       const triggerEvent = vi.fn();
