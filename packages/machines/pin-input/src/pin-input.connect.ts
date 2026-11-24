@@ -127,7 +127,7 @@ export function connectPinInput(service: PinInputService): PinInputApi {
       send({
         type: "INPUT.FOCUS",
         index,
-        force: true,
+        force: false,
       });
     },
 

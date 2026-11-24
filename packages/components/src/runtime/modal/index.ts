@@ -99,6 +99,7 @@ Component(
       },
 
       resolvedClose() {
+        if (!this.data.modal?.visible) return null;
         const classes = this.data.classes as Record<string, string> | undefined;
         const closeIcon =
           (this.data.closeIcon as string | undefined) || "close";
@@ -117,6 +118,9 @@ Component(
 
       classes() {
         const api = this.data.modal;
+        if (!api?.visible && !this.data.slots?.trigger) {
+          return {};
+        }
         const isOpen = Boolean(api?.open);
         const hasBody = Boolean(
           this.data.slots?.body || this.data.slots?.default,

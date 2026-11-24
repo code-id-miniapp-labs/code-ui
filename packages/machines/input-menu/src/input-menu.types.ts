@@ -294,6 +294,7 @@ export interface InputMenuContext {
   searchTerm: string;
   isFiltering: boolean;
   focused: boolean;
+  programmaticFocus: boolean;
   invalid: boolean;
 }
 

@@ -194,12 +194,24 @@ export function patchInheritedData<TInherited extends Record<string, unknown>>(
   const patch: Record<string, unknown> = {};
   let changed = false;
   for (const key of Object.keys(values)) {
-    if (!current || current[key] !== values[key]) {
-      patch[key] = values[key];
-      changed = true;
+    const nextVal = values[key];
+    const curVal = current ? current[key] : undefined;
+    if (Object.is(curVal, nextVal)) continue;
+    // Skip no-op default inheritance when child hasn't initialized the key yet
+    // (`undefined` in `child.data` is equivalent to `""` / `false` for inherited fallbacks)
+    if (curVal === undefined && (nextVal === "" || nextVal === false)) {
+      continue;
     }
+    patch[key] = nextVal;
+    changed = true;
   }
   if (!changed) return;
+  if (
+    typeof (child as any).__cuiBufferMountData === "function" &&
+    (child as any).__cuiBufferMountData(patch)
+  ) {
+    return;
+  }
   if (typeof child.setData === "function") {
     child.setData(patch);
   } else if (child.data) {

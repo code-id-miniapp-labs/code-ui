@@ -10,6 +10,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
 
   const currentState = state.get();
   const isFocused = currentState === "focused";
+  const nativeFocus = isFocused && context.get("programmaticFocus");
   const value = context.get("value");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
@@ -32,7 +33,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     "data-invalid": String(invalid),
     "data-focused": String(isFocused),
     value,
-    focus: isFocused,
+    focus: nativeFocus,
     disabled: disabled || readOnly,
     "aria-role": "textbox",
     "aria-multiline": true,
@@ -62,7 +63,7 @@ export function connectTextarea(service: TextareaService): TextareaApi {
     },
 
     focus() {
-      send({ type: "TEXTAREA.FOCUS" });
+      send({ type: "TEXTAREA.FOCUS", programmatic: true });
     },
 
     blur() {

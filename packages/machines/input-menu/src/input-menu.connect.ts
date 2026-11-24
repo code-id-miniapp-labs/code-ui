@@ -15,6 +15,7 @@ export function connectInputMenu(service: InputMenuService): InputMenuApi {
   const open = computed("isOpen");
   const visible = computed("isVisible");
   const focused = context.get("focused");
+  const nativeFocus = focused && context.get("programmaticFocus");
   const value = context.get("value");
   const searchTerm = context.get("searchTerm");
   const inputValue = computed("inputValue");
@@ -178,7 +179,7 @@ export function connectInputMenu(service: InputMenuService): InputMenuApi {
     inputProps: {
       id: dom.getInputId(scope),
       value: inputValue,
-      focus: focused,
+      focus: nativeFocus,
       disabled: disabled || readOnly,
       "aria-invalid": invalid,
     },

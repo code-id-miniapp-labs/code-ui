@@ -58,6 +58,11 @@ export interface CreateMachineBehaviorOptions<
    */
   deferred?: boolean;
   /**
+   * Top-level snapshot keys returned by `connect()` to omit from `setData`
+   * payloads (they remain accessible on `__codeUiApi`).
+   */
+  omitDataKeys?: ReadonlyArray<string> | undefined;
+  /**
    * Composable plugins that extend component relations and lifecycle coordination.
    */
   plugins?: Array<MachinePlugin<any, any>>;
@@ -111,8 +116,13 @@ export function createMachineBehavior<
     exportApi = false,
     exportApiKeys,
     deferred = false,
+    omitDataKeys,
     plugins = [],
   } = options;
+  const connectOptions =
+    omitDataKeys && omitDataKeys.length > 0
+      ? { omitKeys: omitDataKeys }
+      : undefined;
 
   let discoveredProps: string[] = [];
   try {
@@ -200,6 +210,7 @@ export function createMachineBehavior<
               this,
               connect,
               key,
+              connectOptions,
             );
           }
         }
@@ -235,6 +246,7 @@ export function createMachineBehavior<
               this,
               connect,
               key,
+              connectOptions,
             );
           }
         }

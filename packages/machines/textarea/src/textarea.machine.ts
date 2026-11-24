@@ -82,6 +82,10 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
         defaultValue: false,
       };
     }),
+
+    programmaticFocus: bindable<boolean>(() => ({
+      defaultValue: Boolean(prop("autoFocus")),
+    })),
   }),
 
   computed: {
@@ -198,18 +202,21 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
               refs.get("cancelRefocus")?.();
               refs.set("cancelRefocus", undefined);
               if (state.matches("focused")) {
+                context.set("programmaticFocus", false);
                 state.set("idle");
                 refs.set(
                   "cancelRefocus",
                   scheduleNextTick(() => {
                     refs.set("cancelRefocus", undefined);
                     if (computed("isInteractive")) {
+                      context.set("programmaticFocus", true);
                       state.set("focused");
                     }
                   }),
                 );
                 return;
               }
+              context.set("programmaticFocus", true);
               state.set("focused");
             },
             getRules: () => prop("rules") ?? [],
@@ -226,7 +233,10 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
         cleanupFormFieldSync(refs);
       },
 
-      handleFocus: ({ context, prop, refs }) => {
+      handleFocus: ({ context, prop, refs, event }) => {
+        if (event.type === "TEXTAREA.FOCUS") {
+          context.set("programmaticFocus", Boolean(event.programmatic));
+        }
         const val = context.get("value");
         prop("onFocus")?.({ value: val });
         refs.get("formField")?.emitFocus(val);
@@ -235,6 +245,7 @@ export const textareaMachine: TextareaMachine = createMachine<TextareaSchema>({
       handleBlur: ({ context, prop, refs }) => {
         refs.get("cancelRefocus")?.();
         refs.set("cancelRefocus", undefined);
+        context.set("programmaticFocus", false);
         const val = context.get("value");
         prop("onBlur")?.({ value: val });
         refs.get("formField")?.emitBlur(val);

@@ -1451,22 +1451,32 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
           if (wantScaled !== Boolean(this.data?.scaled)) {
             patch.scaled = wantScaled;
           }
-          if (state.scale.factor !== this.data?.hostScaleFactor) {
-            patch.hostScaleFactor = state.scale.factor;
-          }
-          if (state.scale.background !== this.data?.hostScaleBackground) {
-            patch.hostScaleBackground = state.scale.background ?? "";
+          if (wantScaled) {
+            if (state.scale.factor !== this.data?.hostScaleFactor) {
+              patch.hostScaleFactor = state.scale.factor;
+            }
+            const nextBg = state.scale.background ?? "";
+            if (nextBg !== (this.data?.hostScaleBackground ?? "")) {
+              patch.hostScaleBackground = nextBg;
+            }
           }
         }
         if (
-          state.insets.top !== this.data?.topInset ||
-          state.insets.bottom !== this.data?.bottomInset
+          state.insets.top !== (this.data?.topInset ?? 0) ||
+          state.insets.bottom !== (this.data?.bottomInset ?? 0)
         ) {
           patch.topInset = state.insets.top;
           patch.bottomInset = state.insets.bottom;
         }
         if (Object.keys(patch).length > 0) {
-          this.setData?.(patch);
+          if (
+            typeof (this as any).__cuiBufferMountData === "function" &&
+            (this as any).__cuiBufferMountData(patch)
+          ) {
+            // Buffered into initial computedBehavior mount flush
+          } else {
+            this.setData?.(patch);
+          }
         }
         if (
           this.data?.autoDetectBars &&

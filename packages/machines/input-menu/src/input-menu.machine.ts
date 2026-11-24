@@ -265,6 +265,10 @@ export const inputMenuMachine: InputMenuMachine =
         defaultValue: false,
       })),
 
+      programmaticFocus: bindable<boolean>(() => ({
+        defaultValue: false,
+      })),
+
       invalid: bindable<boolean>(() => {
         const rawInvalid = prop("invalid");
         return {
@@ -637,6 +641,7 @@ export const inputMenuMachine: InputMenuMachine =
             refs.set("cancelRefocus", undefined);
           }
           if (context.get("focused")) return;
+          context.set("programmaticFocus", false);
           context.set("focused", true);
           const val = context.get("value");
           refs.get("formField")?.emitFocus(val);
@@ -656,6 +661,7 @@ export const inputMenuMachine: InputMenuMachine =
             cancelRefocus();
             refs.set("cancelRefocus", undefined);
           }
+          context.set("programmaticFocus", false);
           context.set("focused", false);
           if (state.matches("closed") && prop("resetSearchTermOnBlur")) {
             context.set("isFiltering", false);
@@ -676,6 +682,7 @@ export const inputMenuMachine: InputMenuMachine =
             refs.set("cancelRefocus", undefined);
           }
           refs.set("lastRefocusAt", 0);
+          context.set("programmaticFocus", false);
           context.set("focused", false);
         },
 
@@ -688,10 +695,12 @@ export const inputMenuMachine: InputMenuMachine =
           }
           refs.set("lastRefocusAt", Date.now());
           if (!context.get("focused")) {
+            context.set("programmaticFocus", true);
             context.set("focused", true);
             return;
           }
           // Native <input focus> only triggers focus when it observes false -> true across ticks.
+          context.set("programmaticFocus", false);
           context.set("focused", false);
           let active = true;
           let timer: ReturnType<typeof setTimeout> | undefined;
@@ -700,6 +709,7 @@ export const inputMenuMachine: InputMenuMachine =
             refs.set("cancelRefocus", undefined);
             refs.set("lastRefocusAt", Date.now());
             if (state.hasTag("open")) {
+              context.set("programmaticFocus", true);
               context.set("focused", true);
             }
           };

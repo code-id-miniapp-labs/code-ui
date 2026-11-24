@@ -645,6 +645,24 @@ export function getToastManager(
   return host?.manager;
 }
 
+function toSerializableToastEntries(toasts: ToastEntry[]): ToastEntry[] {
+  if (toasts.length === 0) return toasts;
+  const out: ToastEntry[] = [];
+  for (let i = 0; i < toasts.length; i++) {
+    const t = toasts[i];
+    if (!t) continue;
+    const clean: Record<string, any> = {};
+    for (const k of Object.keys(t)) {
+      const v = (t as Record<string, any>)[k];
+      if (v !== undefined && typeof v !== "function") {
+        clean[k] = v;
+      }
+    }
+    out.push(clean as ToastEntry);
+  }
+  return out;
+}
+
 export function createToastHostBehavior() {
   return Behavior({
     observers: {
@@ -657,10 +675,29 @@ export function createToastHostBehavior() {
     lifetimes: {
       attached(this: ToastOwnerInstance) {
         this.__cuiToastHostAttached = true;
+        let isInitialSync = true;
         registerToastHost(
           this,
           (toasts: ToastEntry[]) => {
-            this.setData?.({ toasts });
+            const cleanToasts = toSerializableToastEntries(toasts);
+            if (
+              cleanToasts.length === 0 &&
+              Array.isArray(this.data?.toasts) &&
+              this.data.toasts.length === 0
+            ) {
+              isInitialSync = false;
+              return;
+            }
+            if (
+              isInitialSync &&
+              typeof (this as any).__cuiBufferMountData === "function" &&
+              (this as any).__cuiBufferMountData({ toasts: cleanToasts })
+            ) {
+              isInitialSync = false;
+              return;
+            }
+            isInitialSync = false;
+            this.setData?.({ toasts: cleanToasts });
           },
           { max: this.data?.maxToasts },
         );

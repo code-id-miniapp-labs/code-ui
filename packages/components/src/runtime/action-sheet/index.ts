@@ -77,6 +77,7 @@ Component(
       },
 
       resolvedItems() {
+        if (!this.data.actionSheet?.visible) return [];
         const rawItems = (this.data.items || []) as ActionSheetItem[];
         return rawItems.map((item, index) => ({
           key: item.key ?? String(index),
@@ -95,6 +96,7 @@ Component(
       },
 
       resolvedClose() {
+        if (!this.data.actionSheet?.visible) return null;
         const classes = this.data.classes as Record<string, string> | undefined;
         return resolveTriggerButtonProps<ActionSheetCloseProps>(
           this.data.close as boolean | ActionSheetCloseProps | null | undefined,
@@ -110,6 +112,7 @@ Component(
       },
 
       resolvedActions() {
+        if (!this.data.actionSheet?.visible) return [];
         const rawActions = (this.data.actions || []) as ActionSheetAction[];
         const loadingActionIndex =
           (this.data.actionSheet?.loadingActionIndex as
@@ -148,6 +151,7 @@ Component(
       },
 
       disabledClasses() {
+        if (!this.data.actionSheet?.visible) return {};
         const { item, itemTitle, itemDescription } = resolveActionSheetSlots(
           false,
           true,
@@ -159,6 +163,7 @@ Component(
       },
 
       classes() {
+        if (!this.data.actionSheet?.visible) return {};
         const isOpen = Boolean(this.data.actionSheet?.open);
         const close = this.data.close;
         const closable = Boolean(

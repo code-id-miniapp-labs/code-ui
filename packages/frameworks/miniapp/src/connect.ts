@@ -1,7 +1,7 @@
 import { effect } from "alien-signals";
 import { diffSnapshot, isPlainObject } from "@code-id-labs/utils";
 import type { MachineSchema, Service } from "@code-id-labs/core";
-import { type MiniappMachine, nextTick } from "./machine";
+import type { MiniappMachine } from "./machine";
 import { normalizeProps } from "./normalize-props";
 
 export type MiniAppInstance = WechatMiniprogram.Component.TrivialInstance;
@@ -11,12 +11,25 @@ export type ConnectFn<
   Data extends WechatMiniprogram.IAnyObject = WechatMiniprogram.IAnyObject,
 > = (service: Service<T>, ...args: any[]) => Data;
 
+export interface ConnectOptions {
+  /**
+   * Top-level keys from the `connect()` snapshot to omit from `setData`
+   * (they remain available on `__codeUiApi`).
+   */
+  omitKeys?: ReadonlyArray<string> | undefined;
+}
+
 /**
- * Remove function values before diffing/setData. Connect snapshots expose
- * methods for `__codeUiApi`, but WeChat cannot serialize functions into data.
+ * Remove function values and non-WXML helper subtrees (`hiddenInputProps`)
+ * before diffing/setData. Connect snapshots expose methods and web/a11y helpers
+ * for `__codeUiApi`, but WeChat WXML never renders them.
  * Avoids `delete` to preserve object hidden classes on the hot path.
  */
-function toSerializableSnapshot<T>(value: T, seen?: WeakSet<object>): T {
+function toSerializableSnapshot<T>(
+  value: T,
+  seen?: WeakSet<object>,
+  omitKeySet?: ReadonlySet<string>,
+): T {
   if (Array.isArray(value)) {
     const visited = seen ?? new WeakSet<object>();
     if (visited.has(value)) return value;
@@ -52,7 +65,9 @@ function toSerializableSnapshot<T>(value: T, seen?: WeakSet<object>): T {
       item === undefined ||
       k === "role" ||
       k === "tabindex" ||
-      k === "tabIndex"
+      k === "tabIndex" ||
+      k === "hiddenInputProps" ||
+      (omitKeySet && omitKeySet.has(k))
     ) {
       if (!copy) {
         copy = {};
@@ -86,7 +101,12 @@ export function connectToPage<
   instance: MiniAppInstance,
   connect: ConnectFn<T, Data>,
   key?: string,
+  options?: ConnectOptions,
 ): () => void {
+  const omitKeySet =
+    options?.omitKeys && options.omitKeys.length > 0
+      ? new Set(options.omitKeys)
+      : undefined;
   let isMounted = false;
   let prevSnapshot: Record<string, any> | undefined;
   let pendingDelta: Record<string, any> = {};
@@ -99,6 +119,8 @@ export function connectToPage<
       const payload = pendingDelta;
       pendingDelta = {};
       instance.setData(payload);
+    } else {
+      (instance as any).__cui_computedEmitPending?.();
     }
   }
 
@@ -107,7 +129,7 @@ export function connectToPage<
     (instance as any).__codeUiApi = snapshot;
     (instance as any).__codeUiOnSnapshot?.(snapshot);
 
-    const dataSnapshot = toSerializableSnapshot(snapshot);
+    const dataSnapshot = toSerializableSnapshot(snapshot, undefined, omitKeySet);
     const delta = diffSnapshot(prevSnapshot, dataSnapshot, key);
     prevSnapshot = dataSnapshot;
 
@@ -117,13 +139,19 @@ export function connectToPage<
 
     if (!isMounted) {
       isMounted = true;
+      if (
+        typeof (instance as any).__cuiBufferMountData === "function" &&
+        (instance as any).__cuiBufferMountData(delta)
+      ) {
+        return;
+      }
       instance.setData(delta);
     } else {
       Object.assign(pendingDelta, delta);
       if (!isBatchScheduled) {
         isBatchScheduled = true;
         (instance as any).__cuiPendingFlush = true;
-        nextTick(flushSetData);
+        queueMicrotask(flushSetData);
       }
     }
   };

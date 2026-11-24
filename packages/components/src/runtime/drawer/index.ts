@@ -20,11 +20,13 @@ import themeConfig from "virtual:cui/theme/drawer";
 import { tv } from "../../utils/variants";
 
 const drawerTheme = tv(themeConfig);
+const EMPTY_CLASSES: Record<string, string> = {};
 
 const drawerBehavior = createMachineBehavior({
   machine: drawerMachine,
   connect: connectDrawer,
   key: "drawer",
+  omitDataKeys: ["closeTriggerProps"],
   exportApi: true,
   exportApiKeys: ["open", "visible", "setOpen", "openDrawer", "closeDrawer"],
   syncProps: [
@@ -58,6 +60,8 @@ Component(
       },
 
       resolvedClose() {
+        const api = this.data.drawer;
+        if (!api || api.state === "closed") return null;
         const classes = this.data.classes as Record<string, string> | undefined;
         return resolveTriggerButtonProps<DrawerCloseProps>(
           this.data.close as boolean | DrawerCloseProps | null | undefined,
@@ -74,14 +78,17 @@ Component(
 
       classes() {
         const api = this.data.drawer;
+        if (!api || api.state === "closed") {
+          return EMPTY_CLASSES;
+        }
         const placement = this.data.placement;
-        const isOpen = Boolean(api?.open);
+        const isOpen = Boolean(api.open);
         const ui = this.data.ui;
 
         const themeFns = drawerTheme({
           placement,
           open: isOpen,
-          keyboardOpen: Boolean(api?.keyboardOpen),
+          keyboardOpen: Boolean(api.keyboardOpen),
         });
 
         return resolveSlots(themeFns, ui, this.data.className);

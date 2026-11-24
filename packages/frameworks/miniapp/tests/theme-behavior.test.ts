@@ -67,10 +67,8 @@ describe("theme behavior", () => {
       };
 
       behavior.lifetimes.attached.call(instance);
-      expect(setData).toHaveBeenCalledWith({
-        themeMode: "light",
-        themeCssVars: "",
-      });
+      // Skips redundant IPC setData on mount when data already matches active theme
+      expect(setData).not.toHaveBeenCalled();
 
       const reg = (
         globalThis as Record<string, any>

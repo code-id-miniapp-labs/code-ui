@@ -10,6 +10,10 @@ import { stepperMachine, connectStepper } from "@code-id-labs/stepper";
 import { tabsMachine, connectTabs } from "@code-id-labs/tabs";
 import { drawerMachine, connectDrawer } from "@code-id-labs/drawer";
 import { modalMachine, connectModal } from "@code-id-labs/modal";
+import { inputMachine, connectInput } from "@code-id-labs/input";
+import { textareaMachine, connectTextarea } from "@code-id-labs/textarea";
+import { pinInputMachine, connectPinInput } from "@code-id-labs/pin-input";
+import { inputMenuMachine, connectInputMenu } from "@code-id-labs/input-menu";
 
 const flush = () =>
   new Promise<void>((resolve) => queueMicrotask(() => queueMicrotask(resolve)));
@@ -320,6 +324,111 @@ describe("setData call count & payload budget", () => {
 
     expect(calls.length).toBe(1);
     expect(instance.data.classes).toEqual({ root: "card-true" });
+
+    dispose();
+    machine.stop();
+  });
+
+  it("strips hiddenInputProps from setData and avoids native focus reconciliation on bindfocus", async () => {
+    const { instance, calls } = createMockInstance({});
+    const machine = new MiniappMachine(inputMachine, {
+      id: "in1",
+      name: "email",
+    });
+    machine.start();
+    const dispose = connectToComponent(machine, instance, connectInput, "input");
+
+    // Mount snapshot omits hiddenInputProps from setData while preserving it on __codeUiApi
+    expect(calls[0]!.payload.input.hiddenInputProps).toBeUndefined();
+    expect(instance.__codeUiApi.hiddenInputProps).toBeDefined();
+    calls.length = 0;
+
+    // Native user tap (bindfocus) must NOT toggle `input.inputProps.focus` to true
+    instance.__codeUiApi.handleFocus();
+    await flush();
+
+    expect(calls.length).toBe(1);
+    expect(calls[0]!.payload["input.inputProps.focus"]).toBeUndefined();
+    expect(calls[0]!.payload["input.inputProps.data-focused"]).toBe("true");
+    expect(calls[0]!.bytes).toBeLessThan(256);
+
+    calls.length = 0;
+    // Keystroke must NOT duplicate value into hiddenInputProps
+    instance.__codeUiApi.handleInput("hello@test.com");
+    await flush();
+
+    expect(calls.length).toBe(1);
+    expect(calls[0]!.payload["input.hiddenInputProps.value"]).toBeUndefined();
+    expect(calls[0]!.bytes).toBeLessThan(256);
+
+    dispose();
+    machine.stop();
+  });
+
+  it("textarea and input-menu omit hiddenInputProps and keep native bindfocus free of focus toggling", async () => {
+    // Textarea
+    const ta = createMockInstance({});
+    const taMachine = new MiniappMachine(textareaMachine, { id: "ta1" });
+    taMachine.start();
+    const disposeTa = connectToComponent(
+      taMachine,
+      ta.instance,
+      connectTextarea,
+      "textarea",
+    );
+    expect(ta.calls[0]!.payload.textarea.hiddenInputProps).toBeUndefined();
+    ta.calls.length = 0;
+
+    ta.instance.__codeUiApi.handleFocus();
+    await flush();
+    expect(ta.calls.length).toBe(1);
+    expect(ta.calls[0]!.payload["textarea.textareaProps.focus"]).toBeUndefined();
+    disposeTa();
+    taMachine.stop();
+
+    // InputMenu
+    const im = createMockInstance({});
+    const imMachine = new MiniappMachine(inputMenuMachine, {
+      id: "im1",
+      items: ["Apple", "Banana"],
+    });
+    imMachine.start();
+    const disposeIm = connectToComponent(
+      imMachine,
+      im.instance,
+      connectInputMenu,
+      "inputMenu",
+    );
+    expect(im.calls[0]!.payload.inputMenu.hiddenInputProps).toBeUndefined();
+    im.calls.length = 0;
+
+    im.instance.__codeUiApi.handleFocus();
+    await flush();
+    expect(im.calls.length).toBe(1);
+    expect(im.calls[0]!.payload["inputMenu.inputProps.focus"]).toBeUndefined();
+    disposeIm();
+    imMachine.stop();
+  });
+
+  it("pin-input native handleFocus emits <= 1 setData without blur/refocus ping-pong", async () => {
+    const { instance, calls } = createMockInstance({});
+    const machine = new MiniappMachine(pinInputMachine, {
+      id: "pin1",
+      length: 6,
+    });
+    machine.start();
+    const dispose = connectToComponent(
+      machine,
+      instance,
+      connectPinInput,
+      "pinInput",
+    );
+    expect(calls[0]!.payload.pinInput.hiddenInputProps).toBeUndefined();
+    calls.length = 0;
+
+    instance.__codeUiApi.handleFocus(0);
+    await flush();
+    expect(calls.length).toBe(1);
 
     dispose();
     machine.stop();

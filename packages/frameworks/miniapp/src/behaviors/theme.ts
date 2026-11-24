@@ -148,11 +148,27 @@ export function createAppThemeBehavior() {
     lifetimes: {
       attached(this: ThemeOwnerInstance) {
         this.__cuiUnsubTheme?.();
+        let isInitialSync = true;
         this.__cuiUnsubTheme = subscribeAppTheme((state) => {
-          this.setData?.({
-            themeMode: state.resolvedMode,
-            themeCssVars: state.cssVars,
-          });
+          if (
+            this.data?.themeMode !== state.resolvedMode ||
+            this.data?.themeCssVars !== state.cssVars
+          ) {
+            const patch = {
+              themeMode: state.resolvedMode,
+              themeCssVars: state.cssVars,
+            };
+            if (
+              isInitialSync &&
+              typeof (this as any).__cuiBufferMountData === "function" &&
+              (this as any).__cuiBufferMountData(patch)
+            ) {
+              isInitialSync = false;
+              return;
+            }
+            this.setData?.(patch);
+          }
+          isInitialSync = false;
         }, true);
 
         this.__cuiUnsubPageLifecycle?.();

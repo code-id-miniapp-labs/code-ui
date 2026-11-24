@@ -1,4 +1,4 @@
-import { isEqual } from "@code-id-labs/utils";
+import { isEqual, isPlainObject } from "@code-id-labs/utils";
 import {
   computed as alienComputed,
   effect,
@@ -282,6 +282,10 @@ const _COMPUTED_SYNC_PROP = "__cui_computedSyncProp__" as const;
 const _COMPUTED_SYNC = "__cui_computedSync__" as const;
 /** Tears down signals, effects and restores the original `setData`. */
 const _COMPUTED_DISPOSE = "__cui_computedDispose__" as const;
+/** Buffers pre-flush mount writes from peer behaviors into a single `attached` `setData`. */
+const _COMPUTED_BUFFER_MOUNT = "__cuiBufferMountData" as const;
+/** Flushes pending microtask computed updates when a coordinated machine flush completes. */
+const _COMPUTED_EMIT_PENDING = "__cui_computedEmitPending" as const;
 
 const hasOwn = (obj: object, key: PropertyKey): boolean =>
   Object.prototype.hasOwnProperty.call(obj, key);
@@ -802,6 +806,12 @@ export interface SetupComputedOptions {
    * @default true
    */
   immediate?: boolean;
+  /**
+   * Buffer `setData` writes received before the first explicit flush (`attached`)
+   * so all behaviors (`theme`, `machine`, `computed`) emit a single merged IPC `setData`.
+   * @default false
+   */
+  deferUntilFlush?: boolean;
 }
 
 type DataSignal = ReturnType<typeof signal<unknown>>;
@@ -848,6 +858,8 @@ export function setupComputed(
   const computedSignals: Record<string, () => unknown> = Object.create(null);
   const computedSetters: Record<string, (val: unknown) => void> =
     Object.create(null);
+  const computedVersions: Record<string, number> = Object.create(null);
+  const flushedVersions: Record<string, number> = Object.create(null);
 
   // Re-entrancy guards against circular getters, circular setters, and getter side-effects
   const activeGetters = new Set<string>();
@@ -943,6 +955,8 @@ export function setupComputed(
   });
 
   for (const key of computedKeys) {
+    computedVersions[key] = 0;
+    flushedVersions[key] = -1;
     const { get, set } = parseComputedDef(computedDefs[key]);
     computedSignals[key] = alienComputed<unknown>((prev) => {
       if (activeGetters.has(key)) {
@@ -955,7 +969,9 @@ export function setupComputed(
       }
       activeGetters.add(key);
       try {
-        return get.call(computedCtx);
+        const nextVal = get.call(computedCtx);
+        computedVersions[key] = (computedVersions[key] ?? 0) + 1;
+        return nextVal;
       } catch (err) {
         if (process.env.NODE_ENV !== "production") {
           console.error(
@@ -992,7 +1008,9 @@ export function setupComputed(
   }
 
   /** Returns changed computed values (and commits them to `cache`), or `null`. */
-  const collectComputedUpdates = (): Record<string, unknown> | null => {
+  const collectComputedUpdates = (
+    allowSubPaths = true,
+  ): Record<string, unknown> | null => {
     let updates: Record<string, unknown> | null = null;
     pauseTracking();
     try {
@@ -1000,8 +1018,56 @@ export function setupComputed(
         const signalFn = computedSignals[key];
         if (!signalFn) continue;
         const val = signalFn();
-        if (!isEqual(cache[key], val)) {
+        const ver = computedVersions[key] ?? 0;
+        if (flushedVersions[key] === ver) continue;
+        flushedVersions[key] = ver;
+
+        const prev = cache[key];
+        if (
+          allowSubPaths &&
+          isPlainObject(prev) &&
+          isPlainObject(val)
+        ) {
+          const nextKeys = Object.keys(val);
+          const prevKeys = Object.keys(prev);
+          if (
+            nextKeys.length >= 2 &&
+            nextKeys.length === prevKeys.length &&
+            prevKeys.every((pk) => hasOwn(val, pk))
+          ) {
+            let changedCount = 0;
+            let subUpdates: Record<string, unknown> | null = null;
+            for (let i = 0; i < nextKeys.length; i++) {
+              const sk = nextKeys[i];
+              if (sk === undefined) continue;
+              if (!isEqual(prev[sk], val[sk])) {
+                changedCount++;
+                if (!subUpdates) subUpdates = {};
+                subUpdates[`${key}.${sk}`] = val[sk];
+              }
+            }
+            if (changedCount === 0) continue;
+            const cloned = cloneValue(val);
+            cache[key] = cloned;
+            if (self.data && typeof self.data === "object") {
+              self.data[key] = cloneValue(val);
+            }
+            if (changedCount < nextKeys.length && subUpdates) {
+              if (!updates) updates = {};
+              Object.assign(updates, subUpdates);
+              continue;
+            }
+            if (!updates) updates = {};
+            updates[key] = val;
+            continue;
+          }
+        }
+
+        if (!isEqual(prev, val)) {
           cache[key] = cloneValue(val);
+          if (self.data && typeof self.data === "object") {
+            self.data[key] = cloneValue(val);
+          }
           if (!updates) updates = {};
           updates[key] = val;
         }
@@ -1018,11 +1084,16 @@ export function setupComputed(
   let disposed = false;
   /** Effect runs only emit after the first explicit flush. */
   let mounted = false;
+  /** Buffers writes before initial `attached` flush when enabled. */
+  let deferringMount = Boolean(options.deferUntilFlush);
+  let mountBuffer: Record<string, any> | null = null;
+  let mountCallbacks: Array<() => void> | null = null;
   /** > 0 while we're inside the original `setData` (observers fire there). */
   let writeDepth = 0;
   /** `true` while applying writes we're about to diff synchronously anyway. */
   let applyingWrites = false;
   let emitScheduled = false;
+  let deferredByMachine = false;
 
   const callOriginal = (data: Record<string, any>, callback?: () => void) => {
     writeDepth++;
@@ -1035,8 +1106,13 @@ export function setupComputed(
 
   const emitPending = () => {
     emitScheduled = false;
-    if (disposed || self.__cuiPendingFlush) return;
-    const updates = collectComputedUpdates();
+    if (disposed) return;
+    if (self.__cuiPendingFlush) {
+      deferredByMachine = true;
+      return;
+    }
+    deferredByMachine = false;
+    const updates = collectComputedUpdates(true);
     if (updates) callOriginal(updates);
   };
 
@@ -1153,6 +1229,7 @@ export function setupComputed(
       }
 
       if (hasNormal) {
+        let normalKeyCount = 0;
         applyingWrites = true;
         startBatch();
         try {
@@ -1171,6 +1248,17 @@ export function setupComputed(
             let nextRoot: unknown;
             if (tokens.length === 1) {
               const val = normal[path];
+              if (
+                mounted &&
+                !deferringMount &&
+                (val === null || typeof val !== "object") &&
+                self.data &&
+                hasOwn(self.data, rootKey) &&
+                Object.is(self.data[rootKey], val)
+              ) {
+                delete normal[path];
+                continue;
+              }
               nextRoot =
                 val !== null &&
                 typeof val === "object" &&
@@ -1186,6 +1274,7 @@ export function setupComputed(
               );
             }
 
+            normalKeyCount++;
             if (self.data) self.data[rootKey] = nextRoot;
             dirtyRoots.add(rootKey);
           }
@@ -1198,11 +1287,27 @@ export function setupComputed(
           applyingWrites = false;
         }
 
-        const updates = collectComputedUpdates();
-        callOriginal(
-          updates ? Object.assign(normal, updates) : normal,
-          callback,
-        );
+        if (deferringMount && !mounted) {
+          if (normalKeyCount > 0) {
+            if (!mountBuffer) mountBuffer = {};
+            Object.assign(mountBuffer, normal);
+          }
+          if (callback) {
+            if (!mountCallbacks) mountCallbacks = [];
+            mountCallbacks.push(callback);
+          }
+        } else {
+          deferredByMachine = false;
+          const updates = collectComputedUpdates(true);
+          if (normalKeyCount > 0 || updates) {
+            callOriginal(
+              updates ? Object.assign(normal, updates) : normal,
+              callback,
+            );
+          } else if (callback) {
+            queueMicrotask(callback);
+          }
+        }
       }
 
       for (const [key, val] of setterEntries) {
@@ -1237,17 +1342,54 @@ export function setupComputed(
     syncFromData();
   };
 
+  self[_COMPUTED_BUFFER_MOUNT] = (data: Record<string, any>): boolean => {
+    if (disposed || !deferringMount || mounted) return false;
+    patchedSetData(data);
+    return true;
+  };
+
+  self[_COMPUTED_EMIT_PENDING] = () => {
+    if (disposed || !deferredByMachine) return;
+    deferredByMachine = false;
+    const updates = collectComputedUpdates(true);
+    if (updates) callOriginal(updates);
+  };
+
   self[_COMPUTED_FLUSH] = () => {
     if (disposed) return;
+    const wasMounted = mounted;
+    deferringMount = false;
     syncFromData();
     mounted = true;
-    const updates = collectComputedUpdates();
-    if (updates) callOriginal(updates);
+    const updates = collectComputedUpdates(wasMounted);
+    const pendingMount = mountBuffer;
+    const pendingCbs = mountCallbacks;
+    mountBuffer = null;
+    mountCallbacks = null;
+
+    const runCallbacks = pendingCbs
+      ? () => {
+          for (let i = 0; i < pendingCbs.length; i++) pendingCbs[i]?.();
+        }
+      : undefined;
+
+    if (pendingMount && updates) {
+      callOriginal(Object.assign(pendingMount, updates), runCallbacks);
+    } else if (pendingMount) {
+      callOriginal(pendingMount, runCallbacks);
+    } else if (updates) {
+      callOriginal(updates, runCallbacks);
+    } else if (runCallbacks) {
+      callOriginal({}, runCallbacks);
+    }
   };
 
   self[_COMPUTED_DISPOSE] = () => {
     if (disposed) return;
     disposed = true;
+    deferringMount = false;
+    mountBuffer = null;
+    mountCallbacks = null;
     stopScope();
     if (hadOwnSetData) self.setData = originalSetData;
     else delete self.setData;
@@ -1259,6 +1401,8 @@ export function setupComputed(
     self[_COMPUTED_SYNC_PROP] = undefined;
     self[_COMPUTED_SYNC] = undefined;
     self[_COMPUTED_FLUSH] = undefined;
+    self[_COMPUTED_BUFFER_MOUNT] = undefined;
+    self[_COMPUTED_EMIT_PENDING] = undefined;
     self[_COMPUTED_DISPOSE] = undefined;
     self[_COMPUTED_INITIALIZED] = false;
   };
@@ -1353,7 +1497,10 @@ export const computedBehavior =
 
         lifetimes: {
           created(this: any) {
-            setupComputed(this, undefined, { immediate: false });
+            setupComputed(this, undefined, {
+              immediate: false,
+              deferUntilFlush: true,
+            });
           },
 
           attached(this: any) {

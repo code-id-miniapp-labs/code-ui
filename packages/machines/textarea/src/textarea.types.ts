@@ -88,7 +88,7 @@ export interface TextareaProps {
 
 export type TextareaEvent =
   | { type: "TEXTAREA.CHANGE"; value: string; cursor?: number | undefined }
-  | { type: "TEXTAREA.FOCUS" }
+  | { type: "TEXTAREA.FOCUS"; programmatic?: boolean | undefined }
   | { type: "TEXTAREA.BLUR" }
   | { type: "TEXTAREA.CONFIRM"; value?: string | undefined }
   | {
@@ -103,6 +103,7 @@ export type TextareaEvent =
 export interface TextareaContext {
   value: string;
   invalid: boolean;
+  programmaticFocus: boolean;
 }
 
 export interface TextareaComputed {

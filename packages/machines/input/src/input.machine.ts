@@ -78,6 +78,10 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         defaultValue: false,
       };
     }),
+
+    programmaticFocus: bindable<boolean>(() => ({
+      defaultValue: Boolean(prop("autoFocus")),
+    })),
   }),
 
   computed: {
@@ -190,18 +194,21 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
               refs.get("cancelRefocus")?.();
               refs.set("cancelRefocus", undefined);
               if (state.matches("focused")) {
+                context.set("programmaticFocus", false);
                 state.set("idle");
                 refs.set(
                   "cancelRefocus",
                   scheduleNextTick(() => {
                     refs.set("cancelRefocus", undefined);
                     if (computed("isInteractive")) {
+                      context.set("programmaticFocus", true);
                       state.set("focused");
                     }
                   }),
                 );
                 return;
               }
+              context.set("programmaticFocus", true);
               state.set("focused");
             },
             getRules: () => prop("rules") ?? [],
@@ -218,7 +225,10 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
         cleanupFormFieldSync(refs);
       },
 
-      handleFocus: ({ context, prop, refs }) => {
+      handleFocus: ({ context, prop, refs, event }) => {
+        if (event.type === "INPUT.FOCUS") {
+          context.set("programmaticFocus", Boolean(event.programmatic));
+        }
         const val = context.get("value");
         prop("onFocus")?.({ value: val });
         refs.get("formField")?.emitFocus(val);
@@ -227,6 +237,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
       handleBlur: ({ context, prop, refs }) => {
         refs.get("cancelRefocus")?.();
         refs.set("cancelRefocus", undefined);
+        context.set("programmaticFocus", false);
         const val = context.get("value");
         prop("onBlur")?.({ value: val });
         refs.get("formField")?.emitBlur(val);
@@ -253,6 +264,7 @@ export const inputMachine: InputMachine = createMachine<InputSchema>({
           refs.get("initialValue") ?? toStringValue(prop("defaultValue")) ?? "";
         context.set("value", initial);
         context.set("invalid", false);
+        context.set("programmaticFocus", false);
         state.set("idle");
       },
     },

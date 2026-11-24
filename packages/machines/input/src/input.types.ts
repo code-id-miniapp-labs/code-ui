@@ -86,7 +86,7 @@ export interface InputProps {
 
 export type InputEvent =
   | { type: "INPUT.CHANGE"; value: string; cursor?: number | undefined }
-  | { type: "INPUT.FOCUS" }
+  | { type: "INPUT.FOCUS"; programmatic?: boolean | undefined }
   | { type: "INPUT.BLUR" }
   | { type: "INPUT.CONFIRM"; value?: string | undefined }
   | { type: "INPUT.CLEAR" }
@@ -97,6 +97,7 @@ export type InputEvent =
 export interface InputContext {
   value: string;
   invalid: boolean;
+  programmaticFocus: boolean;
 }
 
 export interface InputComputed {

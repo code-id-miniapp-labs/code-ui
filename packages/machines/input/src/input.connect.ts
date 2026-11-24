@@ -6,6 +6,7 @@ export function connectInput(service: InputService): InputApi {
 
   const currentState = state.get();
   const isFocused = currentState === "focused";
+  const nativeFocus = isFocused && context.get("programmaticFocus");
   const value = context.get("value");
   const disabled = computed("isDisabled");
   const readOnly = computed("isReadOnly");
@@ -41,7 +42,7 @@ export function connectInput(service: InputService): InputApi {
     },
 
     focus() {
-      send({ type: "INPUT.FOCUS" });
+      send({ type: "INPUT.FOCUS", programmatic: true });
     },
 
     blur() {
@@ -93,7 +94,7 @@ export function connectInput(service: InputService): InputApi {
       "data-invalid": String(invalid),
       "data-focused": String(isFocused),
       value,
-      focus: isFocused,
+      focus: nativeFocus,
       disabled: disabled || readOnly,
       "aria-role": "textbox",
       ...(invalid ? { "aria-invalid": true } : {}),
