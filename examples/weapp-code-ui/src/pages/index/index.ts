@@ -359,6 +359,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["lazyMount", "unmountOnExit", "exitcomplete"],
   },
   {
+    id: "tour",
+    name: "Tour",
+    path: "/pages/tour/index",
+    category: "feedback",
+    categoryLabel: "Feedback",
+    desc: "Guided spotlight product tour with tooltip, dialog, floating & interactive wait steps, auto-scroll & collision flipping.",
+    icon: "i-lucide-compass",
+    highlights: ["spotlight", "auto-scroll", "4 step modes"],
+  },
+  {
     id: "action-sheet",
     name: "Action Sheet",
     path: "/pages/action-sheet/index",
@@ -421,6 +431,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     desc: "Parent-level presence controller pairing wx:if with bind:exitcomplete to truly unmount heavy overlay subtrees.",
     icon: "i-lucide-layers",
     highlights: ["usePresence()", "wx:if unmount", "custom overlays"],
+  },
+  {
+    id: "use-tour",
+    name: "Use Tour",
+    path: "/pages/tour/index",
+    category: "composable",
+    categoryLabel: "Composable",
+    desc: "Ergonomic composable for driving <c-tour> with startOnce() persistence, reactive state syncing, and lifecycle hooks.",
+    icon: "i-lucide-compass",
+    highlights: ["useTour()", "startOnce()", "storageKey"],
   },
   {
     id: "popover",

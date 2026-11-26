@@ -58,6 +58,7 @@ export const COMPONENT_DEPENDENCIES: Record<string, readonly string[]> = {
   switch: ["icon"],
   textarea: ["icon"],
   toast: ["icon", "button", "progress"],
+  tour: ["button", "icon"],
 };
 
 function matchComponentName(

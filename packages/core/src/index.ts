@@ -166,3 +166,4 @@ export { default as tabsTheme } from "./theme/definitions/tabs";
 export { default as tabsItemTheme } from "./theme/definitions/tabs-item";
 export { default as textareaTheme } from "./theme/definitions/textarea";
 export { default as toastTheme } from "./theme/definitions/toast";
+export { default as tourTheme } from "./theme/definitions/tour";

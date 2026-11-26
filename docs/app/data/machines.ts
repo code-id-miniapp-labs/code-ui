@@ -23,6 +23,7 @@ import { switchMachine } from '@code-id-labs/switch'
 import { tabsMachine } from '@code-id-labs/tabs'
 import { textareaMachine } from '@code-id-labs/textarea'
 import { toastMachine } from '@code-id-labs/toast'
+import { tourMachine } from '@code-id-labs/tour'
 
 export interface MachineTransition {
   event: string
@@ -46,6 +47,7 @@ export interface MachineGraph {
   globalEvents: string[]
   machine: RawMachine
   booleanProps: Record<string, boolean>
+  previewProps?: Record<string, unknown>
 }
 
 interface RawTransition {
@@ -102,7 +104,8 @@ function extractMachineGraph(
   id: string,
   title: string,
   machine: RawMachine,
-  defaultInitial?: string
+  defaultInitial?: string,
+  previewProps?: Record<string, unknown>
 ): MachineGraph {
   const statesRecord = machine.states ?? {}
   const stateIds = Object.keys(statesRecord)
@@ -178,7 +181,8 @@ function extractMachineGraph(
     states,
     globalEvents,
     machine,
-    booleanProps: extractBooleanProps(machine)
+    booleanProps: extractBooleanProps(machine),
+    ...(previewProps ? { previewProps } : {})
   }
 }
 
@@ -207,5 +211,12 @@ export const machineGraphs: Record<string, MachineGraph> = {
   switch: extractMachineGraph('switch', 'Switch State Machine', switchMachine as RawMachine),
   tabs: extractMachineGraph('tabs', 'Tabs State Machine', tabsMachine as RawMachine),
   textarea: extractMachineGraph('textarea', 'Textarea State Machine', textareaMachine as RawMachine, 'idle'),
-  toast: extractMachineGraph('toast', 'Toast State Machine', toastMachine as RawMachine, 'closed')
+  toast: extractMachineGraph('toast', 'Toast State Machine', toastMachine as RawMachine, 'closed'),
+  tour: extractMachineGraph('tour', 'Tour State Machine', tourMachine as RawMachine, 'closed', {
+    steps: [
+      { id: 'welcome', type: 'dialog', title: 'Welcome' },
+      { id: 'search', type: 'tooltip', target: '#search', title: 'Search' },
+      { id: 'finish', type: 'floating', title: 'All Set' }
+    ]
+  })
 }

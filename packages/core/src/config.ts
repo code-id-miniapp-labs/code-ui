@@ -130,6 +130,7 @@ export interface UIZIndexConfig {
   actionSheet?: number | string;
   picker?: number | string;
   banner?: number | string;
+  tour?: number | string;
   toast?: number | string;
   [key: string]: number | string | undefined;
 }

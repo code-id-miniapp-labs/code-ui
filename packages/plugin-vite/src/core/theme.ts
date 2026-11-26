@@ -883,6 +883,7 @@ export function generateThemeCSS(ui?: CodeUIConfig["ui"]): string {
     modal: 10110,
     actionSheet: 10120,
     picker: 10130,
+    tour: 10135,
     banner: 10140,
     toast: 10150,
   };
