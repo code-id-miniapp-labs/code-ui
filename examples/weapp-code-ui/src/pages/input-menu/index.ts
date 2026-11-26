@@ -38,6 +38,31 @@ Page({
 
     assigneeValue: "alice",
 
+    highlightValue: "",
+    highlightSearchTerm: "",
+    highlightItems: [
+      {
+        value: "bni-dd",
+        label: "BNI Direct Debit",
+        description: "Instant debit verification via OTP",
+      },
+      {
+        value: "bca-va",
+        label: "BCA Virtual Account",
+        description: "Automatic virtual account transfer",
+      },
+      {
+        value: "mandiri-dd",
+        label: "Mandiri Direct Debit",
+        description: "Fast one-tap debit checkout",
+      },
+      {
+        value: "bri-va",
+        label: "BRI Virtual Account",
+        description: "24/7 interbank virtual transfer",
+      },
+    ],
+
     variants: ["outline", "soft", "subtle", "ghost", "none"],
     sizes: ["xs", "sm", "md", "lg", "xl"],
   },
@@ -80,5 +105,16 @@ Page({
 
   onAssigneeChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
     this.setData({ assigneeValue: e.detail.value });
+  },
+
+  onHighlightChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
+    console.log({
+      highlight: e.detail.value,
+    });
+    this.setData({ highlightValue: e.detail.value });
+  },
+
+  onHighlightSearchChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
+    this.setData({ highlightSearchTerm: e.detail?.value ?? "" });
   },
 });

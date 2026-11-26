@@ -215,6 +215,16 @@ const COMPONENT_CATALOG: ComponentCatalogItem[] = [
     highlights: ["positions", "inset", "show toggle"],
   },
   {
+    id: "highlight",
+    name: "Highlight",
+    path: "/pages/highlight/index",
+    category: "display",
+    categoryLabel: "Data Display",
+    desc: "Spotlights single or multiple matching substrings inline with 5 variants, semantic colors & search options.",
+    icon: "i-lucide-highlighter",
+    highlights: ["multi-query", "exactMatch", "5 variants"],
+  },
+  {
     id: "icon",
     name: "Icon",
     path: "/pages/icon/index",

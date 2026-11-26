@@ -88,6 +88,12 @@ declare module "virtual:cui/theme/form-field" {
   export default theme;
 }
 
+declare module "virtual:cui/theme/highlight" {
+  import type { default as highlightTheme } from "@code-id-labs/core/src/theme/definitions/highlight";
+  const theme: ReturnType<typeof highlightTheme>;
+  export default theme;
+}
+
 declare module "virtual:cui/theme/icon" {
   import type { default as iconTheme } from "@code-id-labs/core/src/theme/definitions/icon";
   const theme: ReturnType<typeof iconTheme>;

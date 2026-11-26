@@ -141,6 +141,7 @@ export { default as fileUploadTheme } from "./theme/definitions/file-upload";
 export { default as popoverTheme } from "./theme/definitions/popover";
 export { default as formTheme } from "./theme/definitions/form";
 export { default as formFieldTheme } from "./theme/definitions/form-field";
+export { default as highlightTheme } from "./theme/definitions/highlight";
 export { default as iconTheme } from "./theme/definitions/icon";
 export { default as inputTheme } from "./theme/definitions/input";
 export { default as inputMenuTheme } from "./theme/definitions/input-menu";
