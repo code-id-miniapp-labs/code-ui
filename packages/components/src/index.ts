@@ -31,6 +31,7 @@ export * from "@code-id-labs/switch";
 export * from "@code-id-labs/tabs";
 export * from "@code-id-labs/tabs-item";
 export * from "@code-id-labs/toast";
+export * from "@code-id-labs/tour";
 export * from "@code-id-labs/context";
 export * from "@code-id-labs/miniapp";
 export * from "@code-id-labs/core";

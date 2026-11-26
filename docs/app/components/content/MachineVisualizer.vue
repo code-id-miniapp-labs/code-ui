@@ -68,7 +68,10 @@ function initRunner() {
       states: previewStates
     }
 
-    const instance = new MiniappMachine(previewMachine as any, { ...initialProps })
+    const instance = new MiniappMachine(previewMachine as any, {
+      ...(g.previewProps ?? {}),
+      ...initialProps
+    })
     runner = instance
     unsubscribe = instance.subscribe((service) => {
       const nextState = String(service.state.get())
@@ -111,7 +114,7 @@ function toggleProp(key: string, value: boolean) {
 
   if (runner) {
     try {
-      runner.updateProps(nextProps)
+      runner.updateProps({ ...(graph.value?.previewProps ?? {}), ...nextProps })
       const after = String(runner.service.state.get())
       currentStateId.value = after
       if (after !== prev) {

@@ -47,6 +47,7 @@
     "cui-tabs-item": "runtime/tabs-item/index",
     "cui-textarea": "runtime/textarea/index",
     "cui-toast": "runtime/toast/index",
+    "cui-tour": "runtime/tour/index",
     "cui-divider": "runtime/divider/index"
   }
 }

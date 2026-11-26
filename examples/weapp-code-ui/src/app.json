@@ -37,7 +37,8 @@
     "pages/banner/index",
     "pages/action-sheet/index",
     "pages/popover/index",
-    "pages/presence/index"
+    "pages/presence/index",
+    "pages/tour/index"
   ],
   "usingComponents": {
     "demo-header": "/components/demo-header/index"
