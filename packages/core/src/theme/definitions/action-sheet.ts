@@ -5,9 +5,9 @@ export default function actionSheetTheme(_options: ThemeOptions = {}) {
     slots: {
       root: "fixed inset-0 z-action-sheet flex items-end justify-center overflow-hidden overscroll-contain box-border",
       backdrop:
-        "cui-action-sheet-backdrop-enter fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+        "cui-action-sheet-backdrop-enter fixed inset-0 bg-black/40 transition-opacity duration-300 will-change-[opacity]",
       content:
-        "cui-action-sheet-content-enter relative z-10 flex flex-col w-full max-h-[85vh] bg-elevated rounded-t-lg shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden translate-y-0",
+        "cui-action-sheet-content-enter relative z-10 flex flex-col w-full max-h-[85vh] bg-elevated rounded-t-lg shadow-2xl transition-transform duration-300 ease-out will-change-transform box-border overflow-hidden translate-y-0",
       header:
         "relative flex flex-col items-center justify-center px-6 py-4 bg-default text-center border-b border-muted shrink-0 w-full box-border",
       title:

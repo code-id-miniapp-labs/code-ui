@@ -84,8 +84,9 @@ export default function modalTheme(_options: ThemeOptions = {}) {
       },
       transition: {
         true: {
-          overlay: "transition-opacity duration-300 ease-out",
-          content: "transition-all duration-300 ease-out",
+          overlay: "transition-opacity duration-300 ease-out will-change-[opacity]",
+          content:
+            "transition-[transform,opacity] duration-300 ease-out will-change-transform",
         },
         false: {
           overlay: "transition-none",

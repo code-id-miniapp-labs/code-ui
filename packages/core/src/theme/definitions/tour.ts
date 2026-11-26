@@ -33,8 +33,8 @@ export default function tourTheme(options: ThemeOptions = {}) {
         "flex items-center justify-between gap-2.5 px-4 py-3 border-t border-muted shrink-0 box-border w-full",
       progressText: "text-xs font-medium text-muted tabular-nums shrink-0",
       progress: "flex items-center gap-1.5 shrink-0",
-      progressDot: "w-1.5 h-1.5 rounded-full bg-accented transition-all duration-200",
-      progressDotActive: "w-4 h-1.5 rounded-full transition-all duration-200",
+      progressDot: "w-1.5 h-1.5 rounded-full bg-accented transition-[width,background-color] duration-200",
+      progressDotActive: "w-4 h-1.5 rounded-full transition-[width,background-color] duration-200",
       actions: "flex items-center justify-end gap-2 ml-auto shrink-0",
     },
     variants: {
@@ -119,9 +119,9 @@ export default function tourTheme(options: ThemeOptions = {}) {
       transition: {
         true: {
           backdrop: "transition-opacity duration-200 ease-out",
-          spotlight: "transition-all duration-200 ease-out",
-          positioner: "transition-all duration-200 ease-out",
-          content: "transition-all duration-200 ease-out",
+          spotlight: "transition-[top,left,width,height,opacity] duration-200 ease-out",
+          positioner: "transition-[transform,opacity] duration-200 ease-out will-change-transform",
+          content: "transition-[transform,opacity] duration-200 ease-out will-change-transform",
         },
         false: {
           backdrop: "transition-none",

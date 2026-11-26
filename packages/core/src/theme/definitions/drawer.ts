@@ -6,7 +6,7 @@ export default function drawerTheme(_options: ThemeOptions = {}) {
       root: "fixed inset-0 z-drawer flex overflow-hidden overscroll-contain box-border",
       backdrop: "fixed inset-0 bg-black/40 transition-opacity duration-300",
       content:
-        "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden",
+        "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out will-change-transform box-border overflow-hidden",
       container: "flex flex-col min-w-0 min-h-0 overflow-hidden",
       grabber:
         "flex items-center justify-center cursor-grab active:cursor-grabbing shrink-0 box-border",

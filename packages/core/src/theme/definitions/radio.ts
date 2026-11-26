@@ -21,7 +21,7 @@ export default function radioTheme(options: ThemeOptions = {}) {
       variant: {
         outline: {},
         card: {
-          root: "p-3 rounded-xl border border-default bg-default shadow-xs transition-all w-full",
+          root: "p-3 rounded-xl border border-default bg-default shadow-xs transition-colors w-full",
         },
       },
       color: Object.assign(
