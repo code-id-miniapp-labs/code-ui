@@ -236,16 +236,6 @@ import type {
   ToastUI,
   ToastVariant,
 } from "@code-id-labs/toast";
-import type {
-  TourCloseProps,
-  TourColor,
-  TourOpenChangeDetails,
-  TourSize,
-  TourStatusChangeDetails,
-  TourStepChangeDetails,
-  TourStepDetails,
-  TourUI,
-} from "@code-id-labs/tour";
 import type { ThemeColor } from "@code-id-labs/core";
 
 export interface CuiCommonElementProps {
@@ -1349,50 +1339,5 @@ export interface CuiHighlightElementProps extends CuiCommonElementProps {
   rounded?: boolean;
   markStyle?: string;
   userSelect?: boolean;
-}
-
-export interface CuiTourElementProps extends CuiCommonElementProps {
-  ui?: TourUI;
-  steps?: TourStepDetails[];
-  stepId?: string | null;
-  defaultStepId?: string | null;
-  open?: boolean | null;
-  defaultOpen?: boolean;
-  closeOnInteractOutside?: boolean;
-  preventInteraction?: boolean;
-  spotlightOffset?: number;
-  spotlightRadius?: number | null;
-  sideOffset?: number;
-  collisionPadding?: number;
-  avoidCollisions?: boolean;
-  maxWidth?: number;
-  autoScroll?: boolean;
-  duration?: number;
-  transition?: boolean;
-  color?: TourColor;
-  size?: TourSize;
-  portal?: boolean;
-  close?: boolean | TourCloseProps | null;
-  closeIcon?: string;
-  showProgress?: boolean;
-  progressVariant?: "dots" | "text";
-  prevLabel?: string;
-  nextLabel?: string;
-  doneLabel?: string;
-  skipLabel?: string;
-  onStepChange?: (
-    event: WechatMiniprogram.CustomEvent<TourStepChangeDetails>,
-  ) => void;
-  onStatusChange?: (
-    event: WechatMiniprogram.CustomEvent<TourStatusChangeDetails>,
-  ) => void;
-  onOpenChange?: (
-    event: WechatMiniprogram.CustomEvent<TourOpenChangeDetails>,
-  ) => void;
-  onOpen?: (event: WechatMiniprogram.CustomEvent) => void;
-  onClose?: (event: WechatMiniprogram.CustomEvent) => void;
-  onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
-  onBackdropTap?: (event: WechatMiniprogram.CustomEvent) => void;
-  onCloseTriggerTap?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 

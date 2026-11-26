@@ -157,10 +157,6 @@ export default defineConfig({
         import.meta.dirname,
         "packages/machines/toast/src",
       ),
-      "@code-id-labs/tour": resolve(
-        import.meta.dirname,
-        "packages/machines/tour/src",
-      ),
     },
   },
   test: {

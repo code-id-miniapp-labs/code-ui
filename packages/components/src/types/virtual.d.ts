@@ -255,12 +255,6 @@ declare module "virtual:cui/theme/toast" {
   export default theme;
 }
 
-declare module "virtual:cui/theme/tour" {
-  import type { default as tourTheme } from "@code-id-labs/core/src/theme/definitions/tour";
-  const theme: ReturnType<typeof tourTheme>;
-  export default theme;
-}
-
 declare module "virtual:cui/theme/*" {
   const theme: any;
   export default theme;

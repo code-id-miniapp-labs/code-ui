@@ -1,7 +1,0 @@
-{
-  "component": true,
-  "virtualHost": true,
-  "usingComponents": {
-    "c-button": "../button/index"
-  }
-}

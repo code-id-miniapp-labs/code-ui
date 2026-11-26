@@ -101,16 +101,6 @@ export const COMPONENT_SLOTS_MANIFEST: Record<string, readonly string[]> = {
   "tabs-item": ["default", "leading", "label", "trailing"],
   textarea: ["default", "leading", "trailing", "loadingIcon"],
   toast: ["title", "description", "icon", "close", "actions"],
-  tour: [
-    "default",
-    "header",
-    "title",
-    "description",
-    "close",
-    "footer",
-    "progress",
-    "actions",
-  ],
 };
 
 export interface TransformWxmlSlotsOptions {

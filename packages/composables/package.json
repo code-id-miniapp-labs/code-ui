@@ -39,7 +39,6 @@
     "typescript": "^5.5.4",
     "@code-id-labs/miniapp": "workspace:*",
     "@code-id-labs/core": "workspace:*",
-    "@code-id-labs/tour": "workspace:*",
     "@code-id-labs/utils": "workspace:*"
   }
 }

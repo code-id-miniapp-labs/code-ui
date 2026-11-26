@@ -280,12 +280,6 @@
       "require": "./dist/runtime/toast/index.js"
     },
     "./toast/*": "./dist/runtime/toast/*",
-    "./tour": {
-      "types": "./dist/runtime/tour/index.d.ts",
-      "import": "./dist/runtime/tour/index.js",
-      "require": "./dist/runtime/tour/index.js"
-    },
-    "./tour/*": "./dist/runtime/tour/*",
     "./computed": {
       "types": "./dist/computed.d.ts",
       "import": "./dist/computed.js",
@@ -367,7 +361,6 @@
     "@code-id-labs/tabs-item": "workspace:*",
     "@code-id-labs/textarea": "workspace:*",
     "@code-id-labs/toast": "workspace:*",
-    "@code-id-labs/tour": "workspace:*",
     "@code-id-labs/utils": "workspace:*",
     "@weapp-tailwindcss/escape": "^0.0.2"
   },
