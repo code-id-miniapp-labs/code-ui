@@ -1,5 +1,13 @@
 # @code-id-labs/modal
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [710e4f9]
+- Updated dependencies [5210f42]
+  - @code-id-labs/core@0.1.0
+
 ## 0.0.3
 
 ### Patch Changes
