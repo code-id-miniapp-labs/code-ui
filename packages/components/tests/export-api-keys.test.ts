@@ -80,7 +80,7 @@ describe("@code-id-labs/components exportApiKeys configuration", () => {
       }
     }
 
-    expect(machineComponents.length).toBe(34);
+    expect(machineComponents.length).toBe(35);
   });
 
   it("exposes only whitelisted keys at runtime via Behavior.export()", () => {
