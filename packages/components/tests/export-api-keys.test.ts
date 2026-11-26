@@ -28,9 +28,7 @@ const FORBIDDEN_INTERNAL_KEYS = new Set([
 ]);
 
 function extractBehaviorOptionKeys(source: string): string[] | null {
-  const match = source.match(
-    /exportApiKeys\s*:\s*\[([\s\S]*?)\]/,
-  );
+  const match = source.match(/exportApiKeys\s*:\s*\[([\s\S]*?)\]/);
   if (!match) return null;
   const body = match[1] ?? "";
   return Array.from(body.matchAll(/["']([^"']+)["']/g), (m) => m[1] as string);
@@ -57,16 +55,12 @@ describe("@code-id-labs/components exportApiKeys configuration", () => {
       if (!source.includes("createMachineBehavior(")) continue;
       machineComponents.push(dir);
 
-      expect(
-        source,
-        `${dir}/index.ts should enable exportApi: true`,
-      ).toMatch(/exportApi\s*:\s*true/);
+      expect(source, `${dir}/index.ts should enable exportApi: true`).toMatch(
+        /exportApi\s*:\s*true/,
+      );
 
       const keys = extractBehaviorOptionKeys(source);
-      expect(
-        keys,
-        `${dir}/index.ts must define exportApiKeys`,
-      ).not.toBeNull();
+      expect(keys, `${dir}/index.ts must define exportApiKeys`).not.toBeNull();
       expect(
         keys?.length ?? 0,
         `${dir}/index.ts exportApiKeys must be non-empty`,
@@ -80,7 +74,7 @@ describe("@code-id-labs/components exportApiKeys configuration", () => {
       }
     }
 
-    expect(machineComponents.length).toBe(34);
+    expect(machineComponents.length).toBe(35);
   });
 
   it("exposes only whitelisted keys at runtime via Behavior.export()", () => {
