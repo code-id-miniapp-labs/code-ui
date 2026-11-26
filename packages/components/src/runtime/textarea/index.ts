@@ -19,6 +19,7 @@ const textareaBehavior = createMachineBehavior({
   machine: textareaMachine,
   connect: connectTextarea,
   key: "textarea",
+  omitDataKeys: ["inputProps", "hiddenInputProps"],
   plugins: [withFormField()],
   exportApi: true,
   exportApiKeys: [

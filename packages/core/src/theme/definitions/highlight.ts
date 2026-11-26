@@ -10,7 +10,7 @@ export default function highlightTheme(options: ThemeOptions = {}) {
   return defineTheme({
     slots: {
       root: "inline font-sans text-default leading-relaxed",
-      text: "block",
+      text: "inline",
       mark: "inline font-medium px-1 py-0.5 transition-colors",
     },
     variants: {

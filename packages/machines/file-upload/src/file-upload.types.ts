@@ -173,6 +173,7 @@ export interface FileUploadRefs {
   formField?: BoundFormField | undefined;
   chooseDone?: (() => void) | undefined;
   resolvingPaths: Set<string>;
+  actionSheetTimer?: ReturnType<typeof setTimeout> | undefined;
   disposed: boolean;
 }
 

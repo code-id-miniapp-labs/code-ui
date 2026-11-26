@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/avatar";
 import { tv } from "../../utils/variants";
@@ -15,7 +15,7 @@ setupAvatarGroupRelations(relations, "child");
 
 Component(
   createComponentOptions({
-    behaviors: [cuiAvatarItemBehavior, computedBehavior],
+    behaviors: [cuiAvatarItemBehavior, staticComputedBehavior],
     relations,
     slots: {
       default: false,

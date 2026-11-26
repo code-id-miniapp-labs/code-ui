@@ -27,6 +27,7 @@ const inputMenuBehavior = createMachineBehavior({
   machine: inputMenuMachine,
   connect: connectInputMenu,
   key: "inputMenu",
+  omitDataKeys: ["contentProps", "hiddenInputProps"],
   syncProps: ["rules", "validateOn"],
   plugins: [withFormField(), withInputMenu()],
   exportApi: true,
@@ -328,7 +329,7 @@ Component(
       },
 
       resolvedDropdownItems() {
-        if (!this.data.hasItems) return [];
+        if (!this.data.inputMenu?.visible || !this.data.hasItems) return [];
         const apiItems = this.data.inputMenu?.items ?? [];
         const rawItems = this.data.items;
         const descKey = this.data.descriptionKey || "description";

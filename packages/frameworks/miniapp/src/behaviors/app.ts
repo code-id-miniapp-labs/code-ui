@@ -415,6 +415,27 @@ function pendingKeyFor(owner?: AppOwnerInstance | null): string {
   return (owner && getPageIdOf(owner)) || ACTIVE_KEY;
 }
 
+const MAX_PENDING_PER_KEY = 20;
+const MAX_PENDING_KEYS = 32;
+
+function enqueuePending(key: string, op: PendingOp): void {
+  let queue = pending.get(key);
+  if (!queue) {
+    if (pending.size >= MAX_PENDING_KEYS) {
+      const oldestKey = pending.keys().next().value;
+      if (oldestKey !== undefined) {
+        pending.delete(oldestKey);
+      }
+    }
+    queue = [];
+    pending.set(key, queue);
+  }
+  if (queue.length >= MAX_PENDING_PER_KEY) {
+    queue.shift();
+  }
+  queue.push(op);
+}
+
 function withHost(
   owner: AppOwnerInstance | null | undefined,
   op: PendingOp,
@@ -425,9 +446,7 @@ function withHost(
     return;
   }
   const key = pendingKeyFor(owner);
-  const queue = pending.get(key);
-  if (queue) queue.push(op);
-  else pending.set(key, [op]);
+  enqueuePending(key, op);
 }
 
 function flushPending(host: HostRecord): void {
@@ -540,6 +559,12 @@ export function unregisterAppHost(instance: AppOwnerInstance): void {
   hostByInstance.delete(instance);
   const index = hosts.indexOf(record);
   if (index !== -1) hosts.splice(index, 1);
+  if (!hosts.some((h) => h.pageId === record.pageId)) {
+    pending.delete(record.pageId);
+  }
+  if (hosts.length === 0) {
+    pending.delete(ACTIVE_KEY);
+  }
   record.insets.clear();
   record.scales.clear();
   if (instance.__cuiAppChildren) {
@@ -997,6 +1022,7 @@ export function withAppBannerInset(
   };
 
   const measureBanner = (instance: AppOwnerInstance, retry = 0) => {
+    if (instance.__cuiBannerDetached) return;
     const canQuery =
       typeof instance?.createSelectorQuery === "function" || isMiniApp();
     if (!canQuery) return;
@@ -1006,6 +1032,7 @@ export function withAppBannerInset(
       instance as unknown as WechatMiniprogram.Component.TrivialInstance,
     )
       .then((res) => {
+        if (instance.__cuiBannerDetached) return;
         const props = instance.data;
         const state = (
           instance.__codeUiMachine as MachineWithSubscribeLike | undefined
@@ -1031,7 +1058,9 @@ export function withAppBannerInset(
             instance.__cuiMeasureRetryTimer = setTimeout(
               () => {
                 instance.__cuiMeasureRetryTimer = null;
-                measureBanner(instance, retry + 1);
+                if (!instance.__cuiBannerDetached) {
+                  measureBanner(instance, retry + 1);
+                }
               },
               30 * (retry + 1),
             );
@@ -1056,19 +1085,23 @@ export function withAppBannerInset(
         }
       })
       .catch(() => {
+        if (instance.__cuiBannerDetached) return;
         if (retry < 3) {
           if (instance.__cuiMeasureRetryTimer) {
             clearTimeout(instance.__cuiMeasureRetryTimer);
           }
           instance.__cuiMeasureRetryTimer = setTimeout(() => {
             instance.__cuiMeasureRetryTimer = null;
-            measureBanner(instance, retry + 1);
+            if (!instance.__cuiBannerDetached) {
+              measureBanner(instance, retry + 1);
+            }
           }, 40);
         }
       });
   };
 
   const scheduleMeasure = (instance: AppOwnerInstance) => {
+    if (instance.__cuiBannerDetached) return;
     if (instance.__cuiMeasureRetryTimer) {
       clearTimeout(instance.__cuiMeasureRetryTimer);
       instance.__cuiMeasureRetryTimer = null;
@@ -1080,6 +1113,10 @@ export function withAppBannerInset(
     instance.__cuiBannerMeasureQueued = true;
     nextTick(() => {
       instance.__cuiBannerMeasureQueued = false;
+      if (instance.__cuiBannerDetached) {
+        instance.__cuiBannerMeasureNeedsRerun = false;
+        return;
+      }
       measureBanner(instance, 0);
       if (instance.__cuiBannerMeasureNeedsRerun) {
         instance.__cuiBannerMeasureNeedsRerun = false;
@@ -1110,6 +1147,7 @@ export function withAppBannerInset(
     },
     onAttached(instance) {
       const owner = instance as AppOwnerInstance;
+      owner.__cuiBannerDetached = false;
       owner.__cuiBannerInsetId = `${options.idPrefix ?? "banner"}:${++bannerCounter}`;
       owner.__cuiRegisteredBannerSize = 0;
       owner.__cuiRegisteredBannerEdge = undefined;
@@ -1164,6 +1202,7 @@ export function withAppBannerInset(
     },
     onDetached(instance) {
       const owner = instance as AppOwnerInstance;
+      owner.__cuiBannerDetached = true;
       owner.__cuiBannerUnsub?.();
       owner.__cuiBannerUnsub = undefined;
       owner.__cuiBannerMeasureQueued = false;
@@ -1299,6 +1338,24 @@ function attachPageAppRef(instance: AppOwnerInstance): void {
   }
 }
 
+function detachPageAppRef(instance: AppOwnerInstance): void {
+  if (typeof getCurrentPages !== "function") return;
+  try {
+    const pages = getCurrentPages() as unknown as Array<
+      AppOwnerInstance | undefined
+    >;
+    if (!pages) return;
+    for (let i = pages.length - 1; i >= 0; i--) {
+      const page = pages[i];
+      if (page && page.__cuiApp === instance) {
+        page.__cuiApp = undefined;
+      }
+    }
+  } catch {
+    /* ignore page lookup errors outside runtime */
+  }
+}
+
 export function createAppHostBehavior(options: AppHostBehaviorOptions) {
   const { detectBars, extractTopBarHeight, extractBottomBarHeight } = options;
 
@@ -1319,6 +1376,7 @@ export function createAppHostBehavior(options: AppHostBehaviorOptions) {
         this.__cuiAppAttached = false;
         this.__cuiUnsubPageLifecycleHost?.();
         this.__cuiUnsubPageLifecycleHost = undefined;
+        detachPageAppRef(this);
         unregisterAppHost(this);
       },
 

@@ -1,6 +1,7 @@
 import type { MachineSchema, Service } from "@code-id-labs/core";
 import type { ConnectFn, MiniappMachine } from "@code-id-labs/miniapp";
 import { diffSnapshot, warn } from "@code-id-labs/utils";
+import { registerInstanceHook } from "./_internal/page-hooks";
 
 /**
  * Universal MiniProgram instance type supporting both Page and Component contexts.
@@ -376,6 +377,7 @@ export function useComponentRef<
         const listeners = new Set<() => void>();
         comp[LISTENER_SET_KEY] = listeners;
         const origOnSnapshot = comp.__codeUiOnSnapshot;
+        comp.__codeUiOrigOnSnapshot = origOnSnapshot;
         comp.__codeUiOnSnapshot = (snap: any) => {
           origOnSnapshot?.(snap);
           listeners.forEach((fn) => fn());
@@ -383,7 +385,13 @@ export function useComponentRef<
       }
       comp[LISTENER_SET_KEY].add(update);
       unsubscribeMachine = () => {
-        comp[LISTENER_SET_KEY]?.delete(update);
+        const set = comp[LISTENER_SET_KEY] as Set<() => void> | undefined;
+        set?.delete(update);
+        if (set && set.size === 0) {
+          comp.__codeUiOnSnapshot = comp.__codeUiOrigOnSnapshot;
+          comp.__codeUiOrigOnSnapshot = undefined;
+          comp[LISTENER_SET_KEY] = undefined;
+        }
       };
     }
 
@@ -394,11 +402,11 @@ export function useComponentRef<
   // Attempt initial binding immediately
   bindChild();
 
+  const cleanupHooks: Array<() => void> = [];
+
   // If child was not found yet (e.g. called in onLoad or attached before child mounted),
   // schedule nextTick and hook into Page.onReady / Component.ready
   if (!activeChild && typeof target === "string" && instance) {
-    const pageOrComp = instance as any;
-
     if (typeof wx !== "undefined" && typeof wx.nextTick === "function") {
       wx.nextTick(bindChild);
     } else {
@@ -406,38 +414,30 @@ export function useComponentRef<
     }
 
     for (const hook of ["onReady", "ready"] as const) {
-      if (typeof pageOrComp[hook] === "function") {
-        const origHook = pageOrComp[hook];
-        pageOrComp[hook] = function (this: any, ...args: any[]) {
-          bindChild();
-          return origHook.apply(this, args);
-        };
-      }
+      cleanupHooks.push(registerInstanceHook(instance, hook, bindChild));
     }
   }
 
   const stop = () => {
     if (isDisposed) return;
     isDisposed = true;
+    for (const unhook of cleanupHooks) {
+      unhook();
+    }
+    cleanupHooks.length = 0;
     if (unsubscribeMachine) {
       unsubscribeMachine();
       unsubscribeMachine = undefined;
     }
+    activeChild = null;
     pendingDelta = {};
     isBatchScheduled = false;
   };
 
   // Auto-cleanup on parent unmount (Page.onUnload & Component.detached)
   if (instance) {
-    const pageOrComp = instance as any;
     for (const hook of ["onUnload", "detached"] as const) {
-      if (typeof pageOrComp[hook] === "function") {
-        const origHook = pageOrComp[hook];
-        pageOrComp[hook] = function (this: any, ...args: any[]) {
-          stop();
-          return origHook.apply(this, args);
-        };
-      }
+      cleanupHooks.push(registerInstanceHook(instance, hook, stop));
     }
   }
 

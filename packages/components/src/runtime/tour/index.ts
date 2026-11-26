@@ -39,6 +39,8 @@ const tourBehavior = createMachineBehavior({
   machine: tourMachine,
   connect: connectTour,
   key: "tour",
+  deferred: true,
+  shouldStart: (props) => Boolean(props.open || props.defaultOpen),
   exportApi: true,
   exportApiKeys: [
     "open",

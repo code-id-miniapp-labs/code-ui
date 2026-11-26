@@ -21,6 +21,11 @@ function isEventProp(key: string): boolean {
   );
 }
 
+export interface MachinePropGetter {
+  <T = any>(key: string): T;
+  clearCache?: () => void;
+}
+
 /**
  * Wraps the component instance so the FSM can call `prop('onTap')(payload)`
  * or `prop('onChange')(payload)` without knowing about Weixin's `triggerEvent`.
@@ -28,12 +33,12 @@ function isEventProp(key: string): boolean {
 export function createMachinePropGetter(
   instance: WechatMiniprogram.Component.TrivialInstance | any,
   userProps: UserPropsGetter,
-) {
+): MachinePropGetter {
   const handlerCache = new Map<string, Function>();
   const getProps =
     typeof userProps === "function" ? userProps : () => userProps;
 
-  return function prop<T = any>(key: string): T {
+  const prop = function prop<T = any>(key: string): T {
     const props = getProps();
 
     if (isEventProp(key)) {
@@ -93,5 +98,11 @@ export function createMachinePropGetter(
     }
 
     return props[key];
+  } as MachinePropGetter;
+
+  prop.clearCache = () => {
+    handlerCache.clear();
   };
+
+  return prop;
 }

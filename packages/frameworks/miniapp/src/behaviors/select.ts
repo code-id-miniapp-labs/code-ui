@@ -276,6 +276,17 @@ export function withSelect(): MachinePlugin {
     onReady(instance) {
       handleSelectReady(instance as SelectInstance, { select: true });
     },
+    onDetached(instance) {
+      const parent = instance as SelectInstance;
+      if (parent.__codeUiSelectChildren) {
+        for (const child of parent.__codeUiSelectChildren) {
+          if (child.__codeUiPendingSelect === parent) {
+            child.__codeUiPendingSelect = undefined;
+          }
+        }
+        parent.__codeUiSelectChildren = undefined;
+      }
+    },
   };
 }
 
@@ -293,6 +304,15 @@ export function withSelectItem(): MachinePlugin {
     },
     onReady(instance) {
       handleSelectReady(instance as SelectItemInstance, { selectItem: true });
+    },
+    onDetached(instance) {
+      const item = instance as SelectItemInstance;
+      const parent = item.__codeUiPendingSelect;
+      if (parent?.__codeUiSelectChildren) {
+        const idx = parent.__codeUiSelectChildren.indexOf(item);
+        if (idx !== -1) parent.__codeUiSelectChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingSelect = undefined;
     },
   };
 }

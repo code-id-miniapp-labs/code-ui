@@ -7,6 +7,7 @@ import {
   type ResolvedThemeMode,
   type ThemeRegistry,
 } from "@code-id-labs/miniapp/behaviors/theme";
+import { registerInstanceHook } from "./_internal/page-hooks";
 
 export type {
   AppColorMode,
@@ -74,6 +75,7 @@ export function useColorMode(
   }
 
   let unsubscribe: (() => void) | undefined;
+  const cleanupHooks: Array<() => void> = [];
 
   if (onChange || (target && key && typeof target.setData === "function")) {
     unsubscribe = subscribeAppTheme((state) => {
@@ -97,9 +99,19 @@ export function useColorMode(
   };
 
   const stop = () => {
+    for (const unhook of cleanupHooks) {
+      unhook();
+    }
+    cleanupHooks.length = 0;
     unsubscribe?.();
     unsubscribe = undefined;
   };
+
+  if (target && typeof target === "object") {
+    for (const hook of ["onUnload", "detached"] as const) {
+      cleanupHooks.push(registerInstanceHook(target, hook, stop));
+    }
+  }
 
   return {
     get mode() {

@@ -263,6 +263,17 @@ export function withAccordion(): MachinePlugin {
     onReady(instance) {
       handleAccordionReady(instance as AccordionInstance, { accordion: true });
     },
+    onDetached(instance) {
+      const parent = instance as AccordionInstance;
+      if (parent.__codeUiAccordionChildren) {
+        for (const child of parent.__codeUiAccordionChildren) {
+          if (child.__codeUiPendingAccordion === parent) {
+            child.__codeUiPendingAccordion = undefined;
+          }
+        }
+        parent.__codeUiAccordionChildren = undefined;
+      }
+    },
   };
 }
 
@@ -279,6 +290,15 @@ export function withAccordionItem(): MachinePlugin {
       handleAccordionReady(instance as AccordionItemInstance, {
         accordionItem: true,
       });
+    },
+    onDetached(instance) {
+      const item = instance as AccordionItemInstance;
+      const parent = item.__codeUiPendingAccordion;
+      if (parent?.__codeUiAccordionChildren) {
+        const idx = parent.__codeUiAccordionChildren.indexOf(item);
+        if (idx !== -1) parent.__codeUiAccordionChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingAccordion = undefined;
     },
   };
 }

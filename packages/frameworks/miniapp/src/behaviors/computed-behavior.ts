@@ -374,7 +374,10 @@ function getSlotDefaults(self: any): Record<string, boolean> | undefined {
 
 function ensureComputedBehavior(behaviors: readonly any[] | undefined): any[] {
   const list = behaviors ? [...behaviors] : [];
-  if (!list.includes(computedBehavior)) {
+  if (
+    !list.includes(computedBehavior) &&
+    !list.includes(staticComputedBehavior)
+  ) {
     list.push(computedBehavior);
   }
   return list;
@@ -1050,7 +1053,7 @@ export function setupComputed(
             const cloned = cloneValue(val);
             cache[key] = cloned;
             if (self.data && typeof self.data === "object") {
-              self.data[key] = cloneValue(val);
+              self.data[key] = cloned;
             }
             if (changedCount < nextKeys.length && subUpdates) {
               if (!updates) updates = {};
@@ -1064,9 +1067,10 @@ export function setupComputed(
         }
 
         if (!isEqual(prev, val)) {
-          cache[key] = cloneValue(val);
+          const cloned = cloneValue(val);
+          cache[key] = cloned;
           if (self.data && typeof self.data === "object") {
-            self.data[key] = cloneValue(val);
+            self.data[key] = cloned;
           }
           if (!updates) updates = {};
           updates[key] = val;
@@ -1520,6 +1524,213 @@ export const computedBehavior =
             this[_COMPUTED_PAGE_UNSUB]?.();
             this[_COMPUTED_PAGE_UNSUB] = undefined;
             this[_COMPUTED_DISPOSE]?.();
+          },
+        },
+      })
+    : ({} as any);
+
+/**
+ * Lightweight zero-Proxy / zero-signal behavior for Tier-1 presentational
+ * components (e.g. `icon`, `badge`, `card`, `chip`, `divider`, `highlight`,
+ * `skeleton`, `avatar`) whose `computed` getters read only `this.data.*` in
+ * declaration order.
+ *
+ * Eliminates per-instance `Proxy`, `Map`/`Set`, `alien-signals`, `effectScope`,
+ * `setData` patching, and `page-lifecycle` registrations — using a single
+ * class-level WeChat `observers` binding and direct `attached` evaluation.
+ */
+export const staticComputedBehavior =
+  typeof Behavior !== "undefined"
+    ? Behavior({
+        definitionFilter(defFields: any) {
+          const computedDefs: ComputedDefs | undefined = defFields.computed;
+          if (!computedDefs || typeof computedDefs !== "object") return;
+
+          const computedKeys = Object.keys(computedDefs);
+          if (computedKeys.length === 0) return;
+
+          const computedKeySet = new Set(computedKeys);
+          const entries: Array<[string, (...args: any[]) => any]> = [];
+          for (const key of computedKeys) {
+            const parsed = parseComputedDef(computedDefs[key]);
+            entries.push([key, parsed.get]);
+          }
+
+          defFields.methods = defFields.methods || {};
+          defFields.methods[_COMPUTED_DEFS] = () => computedDefs;
+          if (defFields[_SLOTS_DEFAULTS]) {
+            const slotDefaults = defFields[_SLOTS_DEFAULTS];
+            defFields.methods[_SLOTS_DEFAULTS] = () => slotDefaults;
+          }
+
+          const recompute = (instance: any, allowSubPaths: boolean) => {
+            if (!instance || !instance.data) return;
+            const slotDefaults = getSlotDefaults(instance);
+            if (slotDefaults) {
+              normalizeComponentSlots(instance, slotDefaults);
+            }
+
+            let updates: Record<string, any> | null = null;
+            let restoreList: Array<[string, any]> | null = null;
+            for (let i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              if (!entry) continue;
+              const [key, getter] = entry;
+              const nextVal = getter.call(instance);
+              const prevVal = instance.data[key];
+
+              if (
+                allowSubPaths &&
+                isPlainObject(prevVal) &&
+                isPlainObject(nextVal)
+              ) {
+                const nextKeys = Object.keys(nextVal);
+                const prevKeys = Object.keys(prevVal);
+                if (
+                  nextKeys.length >= 2 &&
+                  nextKeys.length === prevKeys.length &&
+                  prevKeys.every((pk) => hasOwn(nextVal, pk))
+                ) {
+                  let changedCount = 0;
+                  let subUpdates: Record<string, unknown> | null = null;
+                  for (let j = 0; j < nextKeys.length; j++) {
+                    const sk = nextKeys[j];
+                    if (sk === undefined) continue;
+                    if (!isEqual(prevVal[sk], nextVal[sk])) {
+                      changedCount++;
+                      if (!subUpdates) subUpdates = {};
+                      subUpdates[`${key}.${sk}`] = nextVal[sk];
+                    }
+                  }
+                  if (changedCount === 0) continue;
+                  if (!restoreList) restoreList = [];
+                  restoreList.push([key, prevVal]);
+                  instance.data[key] = nextVal;
+                  if (!updates) updates = {};
+                  if (changedCount < nextKeys.length && subUpdates) {
+                    Object.assign(updates, subUpdates);
+                  } else {
+                    updates[key] = nextVal;
+                  }
+                  continue;
+                }
+              }
+
+              if (!isEqual(prevVal, nextVal)) {
+                if (!restoreList) restoreList = [];
+                restoreList.push([key, prevVal]);
+                instance.data[key] = nextVal;
+                if (!updates) updates = {};
+                updates[key] = nextVal;
+              }
+            }
+
+            if (updates && typeof instance.setData === "function") {
+              // Restore previous references before calling native setData so
+              // WeChat's internal diff never sees `this.data[k] === updates[k]`
+              // and skips syncing the update to the render layer.
+              if (restoreList) {
+                for (let i = 0; i < restoreList.length; i++) {
+                  const pair = restoreList[i];
+                  if (pair) instance.data[pair[0]] = pair[1];
+                }
+              }
+              instance.setData(updates);
+            }
+          };
+
+          defFields.methods[_COMPUTED_FLUSH] = function (this: any) {
+            const wasMounted = Boolean(this.__cui_staticMounted__);
+            this.__cui_staticMounted__ = true;
+            recompute(this, wasMounted);
+          };
+
+          defFields.methods[_COMPUTED_SYNC_PROP] = function (this: any) {
+            if (!this.__cui_staticMounted__) return;
+            recompute(this, true);
+          };
+
+          const properties = defFields.properties;
+          const hasDeclaredProperties = Boolean(
+            properties &&
+              typeof properties === "object" &&
+              Object.keys(properties).length > 0,
+          );
+
+          if (!defFields[_COMPUTED_PRE_EVALUATED] && !hasDeclaredProperties) {
+            defFields.data = defFields.data || {};
+            Object.assign(
+              defFields.data,
+              evaluateInitialComputed(
+                computedDefs,
+                defFields.data,
+                defFields.properties,
+              ),
+            );
+          }
+
+          // Collect all observed property + non-computed data keys into a
+          // single batched WeChat observer (excluding `slots` when already
+          // handled by `createComponentOptions`'s `slots.**` observer).
+          const hasSlotsObserver = Boolean(defFields[_SLOTS_DEFAULTS]);
+          const obsKeys: string[] = [];
+          const seenObs = new Set<string>();
+
+          if (properties && typeof properties === "object") {
+            for (const propKey of Object.keys(properties)) {
+              if (computedKeySet.has(propKey)) continue;
+              if (hasSlotsObserver && propKey === "slots") continue;
+              const obsKey = isDeepObservableProp(properties[propKey])
+                ? `${propKey}.**`
+                : propKey;
+              if (!seenObs.has(obsKey)) {
+                seenObs.add(obsKey);
+                obsKeys.push(obsKey);
+              }
+            }
+          }
+
+          if (defFields.data && typeof defFields.data === "object") {
+            for (const dataKey of Object.keys(defFields.data)) {
+              if (computedKeySet.has(dataKey)) continue;
+              if (hasSlotsObserver && dataKey === "slots") continue;
+              if (
+                properties &&
+                typeof properties === "object" &&
+                hasOwn(properties, dataKey)
+              ) {
+                continue;
+              }
+              if (!seenObs.has(dataKey)) {
+                seenObs.add(dataKey);
+                obsKeys.push(dataKey);
+              }
+            }
+          }
+
+          if (obsKeys.length > 0) {
+            defFields.observers = defFields.observers || {};
+            const combinedKey = obsKeys.join(", ");
+            const existingObs = defFields.observers[combinedKey];
+            defFields.observers[combinedKey] = function (
+              this: any,
+              ...args: any[]
+            ) {
+              if (this.__cui_staticMounted__) {
+                recompute(this, true);
+              }
+              return existingObs?.apply(this, args);
+            };
+          }
+        },
+
+        lifetimes: {
+          attached(this: any) {
+            this[_COMPUTED_FLUSH]?.();
+          },
+
+          detached(this: any) {
+            this.__cui_staticMounted__ = false;
           },
         },
       })

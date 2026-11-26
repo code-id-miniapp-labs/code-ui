@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import themeConfig from "virtual:cui/theme/card";
 import { tv } from "../../utils/variants";
@@ -7,7 +7,7 @@ const cardTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
-    behaviors: [computedBehavior],
+    behaviors: [staticComputedBehavior],
 
     slots: {
       default: false,

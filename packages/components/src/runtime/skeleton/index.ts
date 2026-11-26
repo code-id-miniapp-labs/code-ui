@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
 import themeConfig from "virtual:cui/theme/skeleton";
@@ -12,7 +12,7 @@ Component(
       className: { type: String, value: "" },
       variant: { type: String, value: "pulse" },
     },
-    behaviors: [computedBehavior],
+    behaviors: [staticComputedBehavior],
     slots: {
       default: false,
     },

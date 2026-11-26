@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { highlightWords } from "./utils";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
@@ -8,7 +8,7 @@ const highlightTheme = tv(themeConfig);
 
 Component(
   createComponentOptions({
-    behaviors: [computedBehavior],
+    behaviors: [staticComputedBehavior],
 
     properties: {
       text: {

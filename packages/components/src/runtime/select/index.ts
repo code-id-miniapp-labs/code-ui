@@ -28,6 +28,7 @@ const selectBehavior = createMachineBehavior({
   machine: selectMachine,
   connect: connectSelect,
   key: "select",
+  omitDataKeys: ["contentProps", "hiddenInputProps"],
   syncProps: ["rules", "validateOn"],
   plugins: [withFormField(), withSelect()],
   exportApi: true,
@@ -276,7 +277,7 @@ Component(
           | undefined;
         return {
           content: classes?.content ?? "",
-          ...(ui?.popover ?? {}),
+          ...ui?.popover,
         };
       },
 
@@ -289,7 +290,7 @@ Component(
       },
 
       resolvedDropdownItems() {
-        if (!this.data.hasItems) return [];
+        if (!this.data.select?.visible || !this.data.hasItems) return [];
         const apiItems = this.data.select?.items ?? [];
         const rawItems = this.data.items;
         const descKey = this.data.descriptionKey || "description";
@@ -323,6 +324,7 @@ Component(
       },
 
       resolvedPickerColumns() {
+        if (!this.data.select?.visible) return [];
         return this.data.select?.pickerColumns ?? [];
       },
 

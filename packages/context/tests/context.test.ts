@@ -2,7 +2,9 @@ import { describe, it, expect, vi } from "vitest";
 import {
   createInjectionKey,
   provide,
+  unprovide,
   inject,
+  hasInjection,
   onProvide,
   resolveContextRequest,
   CONTEXT_REQUEST_EVENT,
@@ -91,5 +93,44 @@ describe("@code-id-labs/context - cui-context-request handshake", () => {
 
     expect(received.length).toBe(1);
     expect(received[0]).toBe("late-form-bus");
+  });
+
+  it("releases provider, owner, and page-fallback entries on unprovide()", () => {
+    const ScopeKey = createInjectionKey<string>("unprovide-test");
+    const form = { ...createMockComponent(), getPageId: () => "page-unprovide-1" };
+    const sibling = { ...createMockComponent(), getPageId: () => "page-unprovide-1" };
+
+    provide(form, ScopeKey, "form-value");
+    expect(hasInjection(sibling, ScopeKey)).toBe(true);
+    expect(inject(sibling, ScopeKey)).toBe("form-value");
+
+    unprovide(form, ScopeKey, { value: "form-value", pruneKey: true });
+    expect(hasInjection(sibling, ScopeKey)).toBe(false);
+    expect(inject(sibling, ScopeKey)).toBeUndefined();
+  });
+
+  it("prefers the live Page object from getCurrentPages() over synthetic fallback scopes", () => {
+    const PageKey = createInjectionKey<string>("page-scope-key");
+    const livePage = { getPageId: () => "live-page-42" };
+    const origGetCurrentPages = (globalThis as any).getCurrentPages;
+    (globalThis as any).getCurrentPages = () => [livePage];
+
+    try {
+      const provider = { ...createMockComponent(), getPageId: () => "live-page-42" };
+      const consumer = { ...createMockComponent(), getPageId: () => "live-page-42" };
+      provide(provider, PageKey, "page-bound");
+      expect(inject(consumer, PageKey)).toBe("page-bound");
+
+      // Once page unloads (no longer returned by getCurrentPages), a new detached consumer cannot see it
+      (globalThis as any).getCurrentPages = () => [];
+      const afterUnload = { ...createMockComponent(), getPageId: () => "live-page-42" };
+      expect(inject(afterUnload, PageKey)).toBeUndefined();
+    } finally {
+      if (origGetCurrentPages === undefined) {
+        delete (globalThis as any).getCurrentPages;
+      } else {
+        (globalThis as any).getCurrentPages = origGetCurrentPages;
+      }
+    }
   });
 });

@@ -558,7 +558,7 @@ export function tv(config: any): any {
     : { ...defaultVariants };
 
   const baseDeclaredKeys = Object.keys(baseVariants);
-  const cache = createLruCache<string, TVOutput>();
+  const cache = createLruCache<string, TVOutput>(128);
 
   type OverrideClassEntry = ClassValue | ((prev: string) => string);
 

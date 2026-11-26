@@ -18,6 +18,7 @@ const pinInputBehavior = createMachineBehavior({
   machine: pinInputMachine,
   connect: connectPinInput,
   key: "pinInput",
+  omitDataKeys: ["hiddenInputProps"],
   plugins: [withFormField()],
   exportApi: true,
   exportApiKeys: [

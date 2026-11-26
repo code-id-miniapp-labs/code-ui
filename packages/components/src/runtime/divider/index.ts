@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { useComponentIcons } from "../../utils/component-icons";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
@@ -59,7 +59,7 @@ Component(
         value: "",
       },
     },
-    behaviors: [computedBehavior],
+    behaviors: [staticComputedBehavior],
     computed: {
       icons() {
         return useComponentIcons({

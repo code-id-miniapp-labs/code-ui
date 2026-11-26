@@ -24,6 +24,8 @@ const modalBehavior = createMachineBehavior({
   machine: modalMachine,
   connect: connectModal,
   key: "modal",
+  deferred: true,
+  shouldStart: (props) => Boolean(props.open || props.defaultOpen),
   exportApi: true,
   exportApiKeys: ["open", "visible", "setOpen", "openModal", "closeModal", "toggle"],
 });

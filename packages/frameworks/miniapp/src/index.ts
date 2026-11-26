@@ -191,6 +191,7 @@ export { bindable } from "./bindable";
 export { batch } from "./batch";
 export {
   computedBehavior,
+  staticComputedBehavior,
   createComponentOptions,
   createPageOptions,
   setupComputed,

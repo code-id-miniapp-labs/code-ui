@@ -259,6 +259,17 @@ export function withStepper(): MachinePlugin {
     onReady(instance) {
       handleStepperReady(instance as StepperInstance, { stepper: true });
     },
+    onDetached(instance) {
+      const parent = instance as StepperInstance;
+      if (parent.__codeUiStepperChildren) {
+        for (const child of parent.__codeUiStepperChildren) {
+          if (child.__codeUiPendingStepper === parent) {
+            child.__codeUiPendingStepper = undefined;
+          }
+        }
+        parent.__codeUiStepperChildren = undefined;
+      }
+    },
   };
 }
 
@@ -278,6 +289,15 @@ export function withStepperItem(): MachinePlugin {
       handleStepperReady(instance as StepperItemInstance, {
         stepperItem: true,
       });
+    },
+    onDetached(instance) {
+      const item = instance as StepperItemInstance;
+      const parent = item.__codeUiPendingStepper;
+      if (parent?.__codeUiStepperChildren) {
+        const idx = parent.__codeUiStepperChildren.indexOf(item);
+        if (idx !== -1) parent.__codeUiStepperChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingStepper = undefined;
     },
   };
 }
