@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/compiler",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "private": true,
   "description": "WXML compiler and compile-time active slot analyzer for @code-ui",
   "files": [

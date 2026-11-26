@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/switch",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "Switch state machine for code-ui",
   "files": [

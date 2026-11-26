@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/progress",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "Progress state machine for code-ui (linear and circular)",
   "files": [

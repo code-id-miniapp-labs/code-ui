@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/tour",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Guided product tour and spotlight walkthrough state machine for code-ui",
   "files": [

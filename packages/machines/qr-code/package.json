@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/qr-code",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "QR Code state machine for code-ui",
   "files": [

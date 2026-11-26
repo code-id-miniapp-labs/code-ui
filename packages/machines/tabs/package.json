@@ -1,6 +1,6 @@
 {
   "name": "@code-id-labs/tabs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "Tabs state machine for code-ui",
   "files": [
