@@ -47,17 +47,20 @@ const registry = new Map<symbol, WeakMap<object, unknown>>();
 const directProviders = new Map<symbol, WeakSet<object>>();
 const slotParents = new WeakMap<object, object>();
 const pageFallbacks = new Map<string, object>();
+const pageFallbackRefs = new Map<object, { id: string; keys: Set<symbol> }>();
+const MAX_PAGE_FALLBACKS = 64;
 const provideListeners = new Map<
   symbol,
   Set<{ component: MiniAppComponent; callback: (value: any) => void }>
 >();
 
 function getStore<T>(key: InjectionKey<T>): WeakMap<object, T> {
-  if (!registry.has(key)) {
-    registry.set(key, new WeakMap());
+  let store = registry.get(key);
+  if (!store) {
+    store = new WeakMap();
+    registry.set(key, store);
   }
-
-  return registry.get(key) as WeakMap<object, T>;
+  return store as WeakMap<object, T>;
 }
 
 function getDirectSet(key: symbol): WeakSet<object> {
@@ -67,6 +70,25 @@ function getDirectSet(key: symbol): WeakSet<object> {
     directProviders.set(key, set);
   }
   return set;
+}
+
+function deleteFromPageFallback(pageScope: object, key: symbol): void {
+  const meta = pageFallbackRefs.get(pageScope);
+  if (!meta) return;
+  meta.keys.delete(key);
+  if (meta.keys.size === 0) {
+    pageFallbackRefs.delete(pageScope);
+    if (pageFallbacks.get(meta.id) === pageScope) {
+      pageFallbacks.delete(meta.id);
+    }
+  }
+}
+
+function trackPageFallback(pageScope: object, key: symbol): void {
+  const meta = pageFallbackRefs.get(pageScope);
+  if (meta) {
+    meta.keys.add(key);
+  }
 }
 
 function unwrapInstance(instance: any): object | null {
@@ -138,21 +160,53 @@ function requestSlotContext<T>(
   return undefined;
 }
 
-function resolvePageScope(component: any): object | null {
+function resolvePageScope(
+  component: any,
+  createFallback = false,
+): object | null {
   try {
     const pid = component?.getPageId?.() ?? component?.__wxWebviewId__;
-    if (pid != null && pid !== "") {
-      const k = String(pid);
-      let h = pageFallbacks.get(k);
-      if (!h) {
-        h = Object.create(null) as object;
-        pageFallbacks.set(k, h);
-      }
-      return h;
-    }
     const pages =
       typeof getCurrentPages === "function" ? getCurrentPages() : null;
-    return pages && pages.length > 0 ? (pages[pages.length - 1] as object) : null;
+
+    // Prefer the real MiniProgram Page object as WeakMap key so it is
+    // automatically GC'd when the page unloads (no strong Map retention).
+    const hasPid = pid !== null && pid !== undefined && pid !== "";
+    if (pages && pages.length > 0) {
+      if (hasPid) {
+        const pidStr = String(pid);
+        for (let i = pages.length - 1; i >= 0; i--) {
+          const p = pages[i] as any;
+          const pId = p?.getPageId?.() ?? p?.__wxWebviewId__;
+          if (pId !== null && pId !== undefined && String(pId) === pidStr) {
+            return p as object;
+          }
+        }
+      } else {
+        return pages[pages.length - 1] as object;
+      }
+    }
+
+    if (hasPid) {
+      const k = String(pid);
+      let h = pageFallbacks.get(k);
+      if (!h && createFallback) {
+        if (pageFallbacks.size >= MAX_PAGE_FALLBACKS) {
+          const oldestKey = pageFallbacks.keys().next().value;
+          if (oldestKey !== undefined) {
+            const oldestObj = pageFallbacks.get(oldestKey);
+            pageFallbacks.delete(oldestKey);
+            if (oldestObj) pageFallbackRefs.delete(oldestObj);
+          }
+        }
+        h = Object.create(null) as object;
+        pageFallbacks.set(k, h);
+        pageFallbackRefs.set(h, { id: k, keys: new Set() });
+      }
+      return h ?? null;
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -176,7 +230,7 @@ function resolveNextOwner(current: any): object | null {
 
 function findProvider<T>(
   component: MiniAppComponent,
-  store: WeakMap<object, T>,
+  store: WeakMap<object, T> | undefined,
   key?: InjectionKey<T>,
 ): object | undefined {
   const target = unwrapInstance(component);
@@ -184,10 +238,12 @@ function findProvider<T>(
 
   if (key !== undefined && !slotParents.has(target)) {
     const discovered = requestSlotContext(component, key);
-    if (discovered !== undefined && store.has(discovered)) {
+    if (discovered !== undefined && store?.has(discovered)) {
       return discovered;
     }
   }
+
+  if (!store) return undefined;
 
   if (slotParents.has(target)) {
     let slotCur: object | undefined = slotParents.get(target);
@@ -212,7 +268,7 @@ function findProvider<T>(
     current = next;
   }
 
-  const pageScope = resolvePageScope(component);
+  const pageScope = resolvePageScope(component, false);
   if (pageScope !== null && store.has(pageScope)) {
     return pageScope;
   }
@@ -244,9 +300,10 @@ export function provide<T>(
     store.set(owner, value);
   }
 
-  const pageScope = resolvePageScope(target);
+  const pageScope = resolvePageScope(target, true);
   if (pageScope !== null && !direct.has(pageScope)) {
     store.set(pageScope, value);
+    trackPageFallback(pageScope, key);
   }
 
   const listeners = provideListeners.get(key);
@@ -261,6 +318,76 @@ export function provide<T>(
       }
     }
   }
+}
+
+export interface UnprovideOptions {
+  /** Expected value guard so removing one provider does not clobber a newer provider on owner/pageScope */
+  value?: unknown;
+  /** Remove the key's registry buckets entirely when no listeners remain (for dynamic scoped keys) */
+  pruneKey?: boolean | undefined;
+}
+
+/**
+ * Releases a context value previously registered with `provide()` and cleans up
+ * any synthetic page-fallback scope entries to avoid cross-page retention.
+ */
+export function unprovide<T>(
+  component: MiniAppComponent,
+  key: InjectionKey<T>,
+  options?: UnprovideOptions,
+): void {
+  const store = registry.get(key);
+  const direct = directProviders.get(key);
+  const target = unwrapInstance(component) ?? component;
+
+  if (store) {
+    const prevValue =
+      options && "value" in options ? options.value : store.get(target);
+    const hasExpected = prevValue !== undefined;
+
+    if (!hasExpected || store.get(target) === prevValue) {
+      store.delete(target);
+      direct?.delete(target);
+    }
+
+    const owner = resolveNextOwner(target);
+    if (
+      owner !== null &&
+      !direct?.has(owner) &&
+      (!hasExpected || store.get(owner) === prevValue)
+    ) {
+      store.delete(owner);
+    }
+
+    const pageScope = resolvePageScope(target, false);
+    if (
+      pageScope !== null &&
+      !direct?.has(pageScope) &&
+      (!hasExpected || store.get(pageScope) === prevValue)
+    ) {
+      store.delete(pageScope);
+      deleteFromPageFallback(pageScope, key);
+    }
+  }
+
+  if (options?.pruneKey) {
+    const listeners = provideListeners.get(key);
+    if (!listeners || listeners.size === 0) {
+      provideListeners.delete(key);
+      registry.delete(key);
+      directProviders.delete(key);
+    }
+  }
+}
+
+/**
+ * Explicitly removes a synthetic page-fallback entry for a given page ID.
+ */
+export function clearPageScope(pageId: string): void {
+  const obj = pageFallbacks.get(pageId);
+  if (!obj) return;
+  pageFallbacks.delete(pageId);
+  pageFallbackRefs.delete(obj);
 }
 
 /**
@@ -280,10 +407,10 @@ export function inject<T>(
   key: InjectionKey<T>,
   defaultValue?: T,
 ): T | undefined {
-  const store = getStore(key);
+  const store = registry.get(key) as WeakMap<object, T> | undefined;
   const provider = findProvider(component, store, key);
 
-  if (provider === undefined) return defaultValue;
+  if (provider === undefined || !store) return defaultValue;
 
   return store.get(provider);
 }
@@ -313,6 +440,9 @@ export function onProvide<T>(
 
   return () => {
     set?.delete(entry);
+    if (set && set.size === 0) {
+      provideListeners.delete(key);
+    }
   };
 }
 
@@ -329,5 +459,6 @@ export function hasInjection<T>(
   component: MiniAppComponent,
   key: InjectionKey<T>,
 ): boolean {
-  return findProvider(component, getStore(key), key) !== undefined;
+  const store = registry.get(key) as WeakMap<object, T> | undefined;
+  return findProvider(component, store, key) !== undefined;
 }

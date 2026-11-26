@@ -3,6 +3,7 @@ import {
   effect,
   effectScope,
   endBatch,
+  getActiveSub,
   setActiveSub,
   signal,
   startBatch,
@@ -32,7 +33,6 @@ import type {
   ActionsOrFn,
   Bindable,
   BindableContext,
-  BindableParams,
   BindableRefs,
   ChooseFn,
   ComputedFn,
@@ -144,6 +144,7 @@ export class MiniappMachine<T extends MachineSchema> {
   private readonly resolvedProps: () => Dict;
   /** Per-key computed signals to prevent cross-prop reactive invalidations. */
   private readonly propCache = new Map<PropertyKey, () => unknown>();
+  private clearPropHandlerCache?: (() => void) | undefined;
 
   private contextRefs: Array<{ get: () => unknown }> = [];
   private readonly computedCache = new Map<PropertyKey, () => unknown>();
@@ -201,14 +202,38 @@ export class MiniappMachine<T extends MachineSchema> {
       }),
     );
 
-    const stateParams: BindableParams<T["state"]> = {
-      defaultValue: resolveStateValue(
-        machine,
-        machine.initialState({ prop: this.prop }),
-      ),
-      onChange: (next, prev) => this.onStateChange(next, prev),
+    const stateSignal = signal<T["state"]>(
+      resolveStateValue(machine, machine.initialState({ prop: this.prop })),
+    );
+    const initialStateVal = stateSignal();
+    this.state = {
+      initial: initialStateVal,
+      ref: { get: () => stateSignal() },
+      get: () => stateSignal(),
+      set: (nextValue: T["state"] | ((prev: T["state"]) => T["state"])) => {
+        const prevSub = setActiveSub(undefined);
+        let prev: T["state"];
+        let next: T["state"];
+        let changed = false;
+        try {
+          prev = stateSignal();
+          next = isFunction(nextValue)
+            ? (nextValue as (p: T["state"]) => T["state"])(prev)
+            : (nextValue as T["state"]);
+          stateSignal(next);
+          changed = !Object.is(next, prev);
+        } finally {
+          setActiveSub(prevSub);
+        }
+        if (changed) {
+          this.onStateChange(next, prev);
+        }
+      },
+      invoke: (nextValue: T["state"], prevValue: T["state"]) => {
+        this.onStateChange(nextValue, prevValue);
+      },
+      hash: (value: T["state"]) => String(value),
     };
-    this.state = bindable<T["state"]>(() => stateParams);
     this.stateView = this.createStateView();
 
     this.computedParams = {
@@ -384,10 +409,25 @@ export class MiniappMachine<T extends MachineSchema> {
       this.cleanups.clear();
       this.computedCache.clear();
       this.propCache.clear();
+      this.clearPropHandlerCache?.();
       this.paramsCache = null;
       this.serviceCache = null;
     }
 
+    this.event = EMPTY_EVENT as T["event"];
+    this.previousEvent = EMPTY_EVENT as T["event"];
+    if (this.rawProps && typeof this.rawProps === "object") {
+      if ("component" in this.rawProps) {
+        this.rawProps = { ...this.rawProps, component: undefined };
+      }
+    }
+    if (this.scope && typeof this.scope === "object") {
+      try {
+        (this.scope as Dict).component = undefined;
+      } catch {
+        // ignore if scope is frozen
+      }
+    }
     this.subscriptions.clear();
     this.status = MachineStatus.Stopped;
     if (process.env.NODE_ENV !== "production") this.debug("stopped");
@@ -443,7 +483,8 @@ export class MiniappMachine<T extends MachineSchema> {
       transition.target ?? current,
       source,
     );
-    if (process.env.NODE_ENV !== "production") this.debug("transition", transition);
+    if (process.env.NODE_ENV !== "production")
+      this.debug("transition", transition);
 
     if (target !== current) {
       this.transition = transition;
@@ -515,8 +556,6 @@ export class MiniappMachine<T extends MachineSchema> {
   private setEvent(event: T["event"]) {
     this.previousEvent = this.event;
     this.event = event;
-    this.paramsCache = null;
-    this.serviceCache = null;
   }
 
   private action = (keys: ActionsOrFn<T> | undefined) => {
@@ -671,16 +710,21 @@ export class MiniappMachine<T extends MachineSchema> {
    * read a specific prop key.
    */
   private createPropFn(): PropFn<T> {
-    const propGetter = createMachinePropGetter(
-      this.scope.component,
-      () => this.resolvedProps(),
+    const propGetter = createMachinePropGetter(this.scope.component, () =>
+      this.resolvedProps(),
     );
+    this.clearPropHandlerCache = propGetter.clearCache;
     return ((key: PropertyKey) => {
       let getter = this.propCache.get(key);
-      if (!getter) {
-        getter = alienComputed(() => propGetter(key as string));
-        this.propCache.set(key, getter);
+      if (getter) return getter();
+      // Only allocate a per-key alienComputed when read inside a reactive
+      // tracking scope (computed / watch / effect). Reads inside actions,
+      // guards, initialState, or refs bypass propCache completely.
+      if (!getActiveSub()) {
+        return propGetter(key as string);
       }
+      getter = alienComputed(() => propGetter(key as string));
+      this.propCache.set(key, getter);
       return getter();
     }) as PropFn<T>;
   }

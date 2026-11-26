@@ -59,4 +59,30 @@ describe("useColorMode Composable", () => {
     colorMode.setMode("dark");
     expect(setData).not.toHaveBeenCalled();
   });
+
+  it("auto-unsubscribes on target.onUnload and avoids nested wrapper chains", () => {
+    const setData = vi.fn();
+    const origOnUnload = vi.fn();
+    const page: Record<string, any> = { setData, onUnload: origOnUnload };
+
+    const first = useColorMode({ target: page, key: "theme" });
+    const wrappedOnce = page.onUnload;
+    const second = useColorMode({ target: page, key: "theme2" });
+    // Single shared dispatcher wraps onUnload at most once
+    expect(page.onUnload).toBe(wrappedOnce);
+
+    const reg = (globalThis as any).__CODE_UI_THEME_REGISTRY__;
+    expect(reg.listeners.size).toBe(2);
+
+    first.stop();
+    expect(reg.listeners.size).toBe(1);
+
+    page.onUnload();
+    expect(origOnUnload).toHaveBeenCalledTimes(1);
+    expect(reg.listeners.size).toBe(0);
+
+    setData.mockClear();
+    second.setMode("dark");
+    expect(setData).not.toHaveBeenCalled();
+  });
 });

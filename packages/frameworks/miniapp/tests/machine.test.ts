@@ -794,7 +794,7 @@ describe("MiniappMachine › performance", () => {
     m.stop();
   });
 
-  it("reuses params/service objects until the event changes", async () => {
+  it("reuses params/service objects across events via live eventView proxy", async () => {
     const m = new MiniappMachine(
       createMachine({
         initialState: () => "idle",
@@ -810,9 +810,10 @@ describe("MiniappMachine › performance", () => {
 
     m.send({ type: "PING" });
     await flush();
-    expect(m.getParams()).not.toBe(p1);
+    expect(m.getParams()).toBe(p1);
     expect(m.getParams().event.type).toBe("PING");
-    expect(m.service).not.toBe(s1);
+    expect(m.service).toBe(s1);
+    expect(m.service.event.type).toBe("PING");
     m.stop();
   });
 

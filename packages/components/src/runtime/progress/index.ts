@@ -20,6 +20,7 @@ const progressBehavior = createMachineBehavior({
   machine: progressMachine,
   connect: connectProgress,
   key: "progress",
+  omitDataKeys: ["trackProps", "rangeProps", "circleProps"],
   exportApi: true,
   exportApiKeys: [
     "value",

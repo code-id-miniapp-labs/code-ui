@@ -1,5 +1,7 @@
 export {
   provide,
+  unprovide,
+  clearPageScope,
   inject,
   onProvide,
   hasInjection,
@@ -11,4 +13,5 @@ export type {
   InjectionKey,
   InferInjection,
   ContextRequestDetail,
+  UnprovideOptions,
 } from "./context";

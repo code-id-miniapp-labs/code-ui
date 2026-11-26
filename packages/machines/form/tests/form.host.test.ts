@@ -340,4 +340,25 @@ describe("reactive form host", () => {
     expect(form.api().values).toEqual({});
     form.machine.stop();
   });
+
+  it("unprovides FormHostContext and scoped keys when formMachine stops", () => {
+    const owner = component();
+    const formComp: MiniAppComponent = {
+      id: "signup-form",
+      selectOwnerComponent: () => owner as any,
+      triggerEvent: vi.fn(),
+    };
+    const child = component(owner);
+
+    const form = createForm({ component: formComp, name: "signup" });
+    expect(injectFormHost(child)).toBe(form.host);
+    expect(injectFormHost(child, "signup")).toBe(form.host);
+    expect(injectFormHost(child, "signup-form")).toBe(form.host);
+
+    form.machine.stop();
+
+    expect(injectFormHost(child)).toBeUndefined();
+    expect(injectFormHost(child, "signup")).toBeUndefined();
+    expect(injectFormHost(child, "signup-form")).toBeUndefined();
+  });
 });

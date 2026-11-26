@@ -1,6 +1,6 @@
 import { createMachine } from "@code-id-labs/core";
 import { isEmpty, isEqual, isPromise } from "@code-id-labs/utils";
-import { provideFormHost } from "./form.context";
+import { provideFormHost, unprovideFormHost } from "./form.context";
 import * as dom from "./form.dom";
 import { defaultFormProps } from "./form.props";
 import { evaluateRules, shouldValidateOnTrigger } from "./form.eval";
@@ -1135,6 +1135,8 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
       fields: new Map<string, FormFieldRegistration>(),
       fieldRules: new Map<string, () => FormRule[]>(),
       validationTokens: new Map<string, number>(),
+      providedComponent: undefined,
+      providedFormId: undefined,
     };
   },
 
@@ -1286,15 +1288,40 @@ export const formMachine: FormMachine = createMachine<FormSchema>({
       provideHost: (params) => {
         const component = params.prop("component");
         if (component) {
-          const formId =
+          const explicitFormId =
             params.prop("name") ||
             component.id ||
             params.prop("id") ||
-            params.scope.id;
-          provideFormHost(component, params.refs.get("hostContext"), formId);
+            undefined;
+          const prevComponent = params.refs.get("providedComponent");
+          const prevFormId = params.refs.get("providedFormId");
+          if (prevComponent) {
+            unprovideFormHost(
+              prevComponent,
+              params.refs.get("hostContext"),
+              prevFormId,
+            );
+          }
+          params.refs.set("providedComponent", component);
+          params.refs.set("providedFormId", explicitFormId);
+          provideFormHost(
+            component,
+            params.refs.get("hostContext"),
+            explicitFormId,
+          );
         }
       },
       cleanupHost: ({ refs }) => {
+        const providedComponent = refs.get("providedComponent");
+        if (providedComponent) {
+          unprovideFormHost(
+            providedComponent,
+            refs.get("hostContext"),
+            refs.get("providedFormId"),
+          );
+          refs.set("providedComponent", undefined);
+          refs.set("providedFormId", undefined);
+        }
         refs.get("fields").clear();
         refs.get("fieldRules").clear();
         refs.get("validationTokens").clear();

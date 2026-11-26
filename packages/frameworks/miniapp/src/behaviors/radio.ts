@@ -209,6 +209,17 @@ export function withRadioGroup(): MachinePlugin {
     onReady(instance) {
       handleRadioReady(instance as RadioGroupInstance, { radioGroup: true });
     },
+    onDetached(instance) {
+      const group = instance as RadioGroupInstance;
+      if (group.__codeUiRadioChildren) {
+        for (const child of group.__codeUiRadioChildren) {
+          if (child.__codeUiPendingRadioGroup === group) {
+            child.__codeUiPendingRadioGroup = undefined;
+          }
+        }
+        group.__codeUiRadioChildren = undefined;
+      }
+    },
   };
 }
 
@@ -226,6 +237,15 @@ export function withRadioItem(): MachinePlugin {
     },
     onReady(instance) {
       handleRadioReady(instance as RadioItemInstance, { radioItem: true });
+    },
+    onDetached(instance) {
+      const item = instance as RadioItemInstance;
+      const group = item.__codeUiPendingRadioGroup;
+      if (group?.__codeUiRadioChildren) {
+        const idx = group.__codeUiRadioChildren.indexOf(item);
+        if (idx !== -1) group.__codeUiRadioChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingRadioGroup = undefined;
     },
   };
 }

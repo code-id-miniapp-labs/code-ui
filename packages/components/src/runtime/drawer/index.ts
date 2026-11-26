@@ -26,6 +26,8 @@ const drawerBehavior = createMachineBehavior({
   machine: drawerMachine,
   connect: connectDrawer,
   key: "drawer",
+  deferred: true,
+  shouldStart: (props) => Boolean(props.open || props.defaultOpen),
   omitDataKeys: ["closeTriggerProps"],
   exportApi: true,
   exportApiKeys: ["open", "visible", "setOpen", "openDrawer", "closeDrawer"],

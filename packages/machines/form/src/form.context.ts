@@ -3,6 +3,7 @@ import {
   inject,
   onProvide,
   provide,
+  unprovide,
   resolveContextRequest,
   CONTEXT_REQUEST_EVENT,
 } from "@code-id-labs/context";
@@ -21,6 +22,7 @@ export type { FormHostContext } from "./form.types";
 
 export const FormHostKey = createInjectionKey<FormHostContext>("cui:form-host");
 const scopedFormHostKeys = new Map<string, InjectionKey<FormHostContext>>();
+const scopedFormHostCounts = new Map<string, number>();
 
 export function getFormHostKey(formId?: string): InjectionKey<FormHostContext> {
   const normalized = formId?.trim();
@@ -33,18 +35,57 @@ export function getFormHostKey(formId?: string): InjectionKey<FormHostContext> {
   return key;
 }
 
+function collectScopedFormIds(
+  component: MiniAppComponent,
+  formId?: string,
+): Set<string> {
+  const ids = new Set<string>();
+  if (formId?.trim()) ids.add(formId.trim());
+  if (typeof component.id === "string" && component.id.trim()) {
+    ids.add(component.id.trim());
+  }
+  return ids;
+}
+
 export function provideFormHost(
   component: MiniAppComponent,
   host: FormHostContext,
   formId?: string,
 ): FormHostContext {
   provide(component, FormHostKey, host);
-  const ids = new Set<string>();
-  if (formId?.trim()) ids.add(formId.trim());
-  if (typeof component.id === "string" && component.id.trim())
-    ids.add(component.id.trim());
-  for (const id of ids) provide(component, getFormHostKey(id), host);
+  const ids = collectScopedFormIds(component, formId);
+  for (const id of ids) {
+    scopedFormHostCounts.set(id, (scopedFormHostCounts.get(id) ?? 0) + 1);
+    provide(component, getFormHostKey(id), host);
+  }
   return host;
+}
+
+export function unprovideFormHost(
+  component: MiniAppComponent | undefined,
+  host?: FormHostContext,
+  formId?: string,
+): void {
+  if (!component) return;
+  unprovide(component, FormHostKey, host !== undefined ? { value: host } : undefined);
+  const ids = collectScopedFormIds(component, formId);
+  for (const id of ids) {
+    const key = scopedFormHostKeys.get(id);
+    if (!key) continue;
+    const nextCount = (scopedFormHostCounts.get(id) ?? 1) - 1;
+    const pruneKey = nextCount <= 0;
+    if (pruneKey) {
+      scopedFormHostCounts.delete(id);
+      scopedFormHostKeys.delete(id);
+    } else {
+      scopedFormHostCounts.set(id, nextCount);
+    }
+    unprovide(
+      component,
+      key,
+      host !== undefined ? { value: host, pruneKey } : { pruneKey },
+    );
+  }
 }
 
 export function injectFormHost(
@@ -97,6 +138,7 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
   let registeredName = "";
   let unregister: (() => void) | undefined;
   let stopWatchProvide: (() => void) | undefined;
+  let stopRegistration: (() => void) | undefined;
   let disposed = false;
 
   const getFieldKey = () => {
@@ -113,6 +155,48 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
     registeredName = "";
     untracked(() => cleanup?.());
   };
+  const ensureRegistration = (host: FormHostContext | undefined) => {
+    if (!host) {
+      if (stopRegistration) {
+        stopRegistration();
+        stopRegistration = undefined;
+      }
+      activeHost = undefined;
+      detach();
+      return;
+    }
+    if (!stopRegistration) {
+      stopRegistration = effect(() => {
+        const currentHost = hostSignal();
+        const name = getFieldKey();
+        untracked(() => {
+          if (activeHost === currentHost && registeredName === name) return;
+          detach();
+          activeHost = currentHost;
+          if (!currentHost || !name) return;
+          registeredName = name;
+          unregister = currentHost.register({
+            name,
+            id: options.id,
+            rootId: options.rootId,
+            getValue: options.getValue,
+            setValue: options.setValue,
+            resetValue: options.resetValue,
+            focus: options.focus,
+            getRules: options.getRules,
+            getValidateOn: options.getValidateOn,
+            isDisabled: options.isDisabled,
+            component: options.component,
+            onValidationChange: options.onValidationChange,
+          });
+        });
+      });
+    }
+  };
+  const setHost = (next: FormHostContext | undefined) => {
+    hostSignal(next);
+    ensureRegistration(next);
+  };
   const stopDiscovery = effect(() => {
     const host = options.getHost ? options.getHost() : options.host;
     const key = getFormHostKey(options.getFormId?.());
@@ -120,40 +204,15 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
       stopWatchProvide?.();
       stopWatchProvide = undefined;
       if (host !== undefined) {
-        hostSignal(host ?? undefined);
+        setHost(host ?? undefined);
       } else if (options.component) {
-        hostSignal(inject(options.component, key));
+        setHost(inject(options.component, key));
         stopWatchProvide = onProvide(options.component, key, (next) => {
-          if (!disposed) untracked(() => hostSignal(next));
+          if (!disposed) untracked(() => setHost(next));
         });
       } else {
-        hostSignal(undefined);
+        setHost(undefined);
       }
-    });
-  });
-  const stopRegistration = effect(() => {
-    const host = hostSignal();
-    const name = getFieldKey();
-    untracked(() => {
-      if (activeHost === host && registeredName === name) return;
-      detach();
-      activeHost = host;
-      if (!host || !name) return;
-      registeredName = name;
-      unregister = host.register({
-        name,
-        id: options.id,
-        rootId: options.rootId,
-        getValue: options.getValue,
-        setValue: options.setValue,
-        resetValue: options.resetValue,
-        focus: options.focus,
-        getRules: options.getRules,
-        getValidateOn: options.getValidateOn,
-        isDisabled: options.isDisabled,
-        component: options.component,
-        onValidationChange: options.onValidationChange,
-      });
     });
   });
 
@@ -179,7 +238,8 @@ export function bindFormField(options: BindFormFieldOptions): BoundFormField {
       if (disposed) return;
       disposed = true;
       stopDiscovery();
-      stopRegistration();
+      stopRegistration?.();
+      stopRegistration = undefined;
       untracked(() => stopWatchProvide?.());
       stopWatchProvide = undefined;
       detach();

@@ -53,10 +53,17 @@ export interface CreateMachineBehaviorOptions<
    */
   exportApiKeys?: Array<keyof Data | (string & {})>;
   /**
-   * Delay `machine.start()` until the first `send()` call.
+   * Delay `machine.start()` and `connectToComponent()` until the first interaction
+   * (`send()`, `getApi()`, exported method call) or until `shouldStart` returns `true`.
    * @default false
    */
   deferred?: boolean;
+  /**
+   * Predicate evaluated when `deferred: true` on `attached` and prop updates.
+   * When omitted, any prop update wakes a deferred machine; when provided, only
+   * wakes it once `shouldStart(props)` returns `true` (e.g. `open || defaultOpen`).
+   */
+  shouldStart?: ((props: Record<string, any>) => boolean) | undefined;
   /**
    * Top-level snapshot keys returned by `connect()` to omit from `setData`
    * payloads (they remain accessible on `__codeUiApi`).
@@ -116,6 +123,7 @@ export function createMachineBehavior<
     exportApi = false,
     exportApiKeys,
     deferred = false,
+    shouldStart,
     omitDataKeys,
     plugins = [],
   } = options;
@@ -123,6 +131,21 @@ export function createMachineBehavior<
     omitDataKeys && omitDataKeys.length > 0
       ? { omitKeys: omitDataKeys }
       : undefined;
+
+  const ensureStarted = (instance: any) => {
+    if (!instance?.__codeUiDeferred || !instance.__codeUiMachine) return;
+    instance.__codeUiDeferred = false;
+    instance.__codeUiMachine.start();
+    if (connect) {
+      instance.__codeUiDispose = connectToComponent(
+        instance.__codeUiMachine,
+        instance,
+        connect,
+        key,
+        connectOptions,
+      );
+    }
+  };
 
   let discoveredProps: string[] = [];
   try {
@@ -153,6 +176,14 @@ export function createMachineBehavior<
   syncProps.forEach((propKey) => {
     observers[propKey as string] = function (this: any, val: any) {
       if (!this.__codeUiMachine) return;
+      if (this.__codeUiDeferred) {
+        if (
+          !shouldStart ||
+          shouldStart({ ...this.data, [propKey as string]: val })
+        ) {
+          ensureStarted(this);
+        }
+      }
       this.__codeUiMachine.updateProps({ [propKey as string]: val });
       for (const plugin of plugins) {
         plugin.onPropChanged?.(this, propKey as string, val);
@@ -196,13 +227,16 @@ export function createMachineBehavior<
 
         const machine = new MiniappMachine(machineDef, initialProps);
         this.__codeUiMachine = machine;
-        this.__codeUiDeferred = deferred;
+        const startDeferred =
+          deferred && !(shouldStart?.(initialProps) ?? false);
+        this.__codeUiDeferred = startDeferred;
+        this.__codeUiEnsureStarted = () => ensureStarted(this);
 
         for (const plugin of plugins) {
           plugin.onMachineStarted?.(this, machine);
         }
 
-        if (!deferred) {
+        if (!startDeferred) {
           machine.start();
           if (connect) {
             this.__codeUiDispose = connectToComponent(
@@ -220,7 +254,9 @@ export function createMachineBehavior<
         for (const plugin of plugins) {
           plugin.onReady?.(this);
         }
-        this.__codeUiMachine?.send({ type: "READY" });
+        if (!this.__codeUiDeferred) {
+          this.__codeUiMachine?.send({ type: "READY" });
+        }
       },
 
       detached(this: any) {
@@ -232,24 +268,17 @@ export function createMachineBehavior<
         this.__codeUiMachine?.stop();
         this.__codeUiMachine = null;
         this.__codeUiDispose = null;
+        this.__codeUiApi = null;
+        this.__codeUiOnSnapshot = undefined;
+        this.__codeUiOrigOnSnapshot = undefined;
+        this.__codeUiSnapshotListeners = undefined;
+        this.__codeUiEnsureStarted = undefined;
       },
     },
 
     methods: {
       send(this: any, event: T["event"]) {
-        if (this.__codeUiDeferred && this.__codeUiMachine) {
-          this.__codeUiDeferred = false;
-          this.__codeUiMachine.start();
-          if (connect) {
-            this.__codeUiDispose = connectToComponent(
-              this.__codeUiMachine,
-              this,
-              connect,
-              key,
-              connectOptions,
-            );
-          }
-        }
+        ensureStarted(this);
         this.__codeUiMachine?.send(event);
       },
       getMachine(this: any): MiniappMachine<T> | null {
@@ -267,6 +296,14 @@ export function createMachineBehavior<
         (connect && this.__codeUiMachine
           ? connect(this.__codeUiMachine.service)
           : undefined);
+      const wrapApiMethod =
+        (propName: string) =>
+        (...args: any[]) => {
+          ensureStarted(this);
+          const live = getApi();
+          const fn = live && (live as any)[propName];
+          return typeof fn === "function" ? fn.apply(live, args) : undefined;
+        };
 
       const initialApi = getApi() ?? {};
       const hasWhitelist = Array.isArray(exportApiKeys);
@@ -280,21 +317,28 @@ export function createMachineBehavior<
           if (typeof this[allowedKey] === "function") {
             exported[allowedKey] = this[allowedKey].bind(this);
           } else if (allowedKey === "send") {
-            exported.send = (event: T["event"]) =>
+            exported.send = (event: T["event"]) => {
+              ensureStarted(this);
               this.__codeUiMachine?.send(event);
+            };
           } else if (allowedKey === "service") {
             exported.service = this.__codeUiMachine?.service;
           } else if (allowedKey in initialApi) {
             const val = initialApi[allowedKey];
             exported[allowedKey] =
-              typeof val === "function" ? val.bind(initialApi) : val;
+              typeof val === "function" ? wrapApiMethod(allowedKey) : val;
           }
         }
       } else {
-        Object.assign(exported, initialApi, {
-          send: (event: T["event"]) => this.__codeUiMachine?.send(event),
-          service: this.__codeUiMachine?.service,
-        });
+        for (const k of Object.keys(initialApi)) {
+          const val = initialApi[k];
+          exported[k] = typeof val === "function" ? wrapApiMethod(k) : val;
+        }
+        exported.send = (event: T["event"]) => {
+          ensureStarted(this);
+          this.__codeUiMachine?.send(event);
+        };
+        exported.service = this.__codeUiMachine?.service;
       }
 
       // Preserve internal instance lookup for useComponentRef and Context without
@@ -311,7 +355,13 @@ export function createMachineBehavior<
             return this[prop].bind(this);
           }
           if (prop === "send") {
-            return exported.send ?? ((event: T["event"]) => this.__codeUiMachine?.send(event));
+            return (
+              exported.send ??
+              ((event: T["event"]) => {
+                ensureStarted(this);
+                this.__codeUiMachine?.send(event);
+              })
+            );
           }
           if (prop === "service") {
             return this.__codeUiMachine?.service;
@@ -319,7 +369,7 @@ export function createMachineBehavior<
           const liveApi = getApi();
           if (liveApi && prop in liveApi) {
             const val = (liveApi as any)[prop];
-            return typeof val === "function" ? val.bind(liveApi) : val;
+            return typeof val === "function" ? wrapApiMethod(prop) : val;
           }
           return undefined;
         };
@@ -343,7 +393,9 @@ export function createMachineBehavior<
             const liveApi = getApi();
             if (liveApi && prop in liveApi) {
               const val = (liveApi as any)[prop];
-              return typeof val === "function" ? val.bind(liveApi) : val;
+              return typeof val === "function" && typeof prop === "string"
+                ? wrapApiMethod(prop)
+                : val;
             }
             return Reflect.get(target, prop, receiver);
           },

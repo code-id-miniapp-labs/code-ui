@@ -89,30 +89,32 @@ export function syncTabsChildren(group: TabsInstance): void {
   });
 
   const groupId = resolveInstanceId(group, "cui-tabs");
-
+  const visuals = getTabsVisuals(group);
+  const declarativeIndexMap = new Map<TabsItemInstance, number>();
   for (let i = 0; i < declarativeChildren.length; i++) {
     const child = declarativeChildren[i];
-    if (!child) continue;
-    child.__codeUiPendingTabs = group;
-    child.__codeUiTabsIndex = i;
-    child.__codeUiTabsId = groupId;
-    child.__codeUiMachine?.updateProps({
-      tabsId: groupId,
-      groupContext,
-      groupIndex: i,
-    });
+    if (child) declarativeIndexMap.set(child, i);
   }
 
-  const visuals = getTabsVisuals(group);
   for (const child of allChildren) {
     if (!child) continue;
     child.__codeUiPendingTabs = group;
     child.__codeUiTabsId = groupId;
     patchInheritedData<TabsVisualData>(child, visuals);
-    child.__codeUiMachine?.updateProps({
-      tabsId: groupId,
-      groupContext,
-    });
+    const declIdx = declarativeIndexMap.get(child);
+    if (declIdx !== undefined) {
+      child.__codeUiTabsIndex = declIdx;
+      child.__codeUiMachine?.updateProps({
+        tabsId: groupId,
+        groupContext,
+        groupIndex: declIdx,
+      });
+    } else {
+      child.__codeUiMachine?.updateProps({
+        tabsId: groupId,
+        groupContext,
+      });
+    }
   }
 }
 
@@ -268,6 +270,17 @@ export function withTabs(): MachinePlugin {
     onReady(instance) {
       handleTabsReady(instance as TabsInstance, { tabs: true });
     },
+    onDetached(instance) {
+      const parent = instance as TabsInstance;
+      if (parent.__codeUiTabsChildren) {
+        for (const child of parent.__codeUiTabsChildren) {
+          if (child.__codeUiPendingTabs === parent) {
+            child.__codeUiPendingTabs = undefined;
+          }
+        }
+        parent.__codeUiTabsChildren = undefined;
+      }
+    },
   };
 }
 
@@ -285,6 +298,15 @@ export function withTabsItem(): MachinePlugin {
     },
     onReady(instance) {
       handleTabsReady(instance as TabsItemInstance, { tabsItem: true });
+    },
+    onDetached(instance) {
+      const item = instance as TabsItemInstance;
+      const parent = item.__codeUiPendingTabs;
+      if (parent?.__codeUiTabsChildren) {
+        const idx = parent.__codeUiTabsChildren.indexOf(item);
+        if (idx !== -1) parent.__codeUiTabsChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingTabs = undefined;
     },
   };
 }

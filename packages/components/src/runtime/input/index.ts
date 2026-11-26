@@ -23,6 +23,7 @@ const inputBehavior = createMachineBehavior({
   machine: inputMachine,
   connect: connectInput,
   key: "input",
+  omitDataKeys: ["hiddenInputProps"],
   plugins: [withFormField()],
   exportApi: true,
   exportApiKeys: ["value", "setValue", "clearValue", "resetValue", "focus", "blur"],

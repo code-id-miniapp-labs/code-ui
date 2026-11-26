@@ -193,6 +193,7 @@ export const fileUploadMachine: FileUploadMachine =
       formField: undefined,
       chooseDone: undefined,
       resolvingPaths: new Set<string>(),
+      actionSheetTimer: undefined,
       disposed: false,
     }),
 
@@ -526,7 +527,7 @@ export const fileUploadMachine: FileUploadMachine =
           );
         },
 
-        pickWeChatFiles: ({ prop, context, send }) => {
+        pickWeChatFiles: ({ prop, context, send, refs }) => {
           const wxApi = getWx();
           if (!wxApi) {
             send({ type: "CHOOSE_COMPLETE" });
@@ -640,7 +641,11 @@ export const fileUploadMachine: FileUploadMachine =
                 success: (res: { tapIndex?: number }) => {
                   // Delay slightly on iOS so UIKit finishes dismissing ActionSheet
                   // before presenting media/document picker.
-                  setTimeout(() => {
+                  const prevTimer = refs.get("actionSheetTimer");
+                  if (prevTimer !== undefined) clearTimeout(prevTimer);
+                  const timer = setTimeout(() => {
+                    refs.set("actionSheetTimer", undefined);
+                    if (refs.get("disposed")) return;
                     if (res.tapIndex === 2) {
                       runChooseMessageFile();
                     } else if (res.tapIndex === 1) {
@@ -649,6 +654,7 @@ export const fileUploadMachine: FileUploadMachine =
                       runChooseMedia(["album"]);
                     }
                   }, 150);
+                  refs.set("actionSheetTimer", timer);
                 },
                 fail: () => {
                   send({ type: "CHOOSE_COMPLETE" });
@@ -661,9 +667,14 @@ export const fileUploadMachine: FileUploadMachine =
               wxApi.showActionSheet({
                 itemList: ["Choose from Album", "Take Photo / Video"],
                 success: (res: { tapIndex?: number }) => {
-                  setTimeout(() => {
+                  const prevTimer = refs.get("actionSheetTimer");
+                  if (prevTimer !== undefined) clearTimeout(prevTimer);
+                  const timer = setTimeout(() => {
+                    refs.set("actionSheetTimer", undefined);
+                    if (refs.get("disposed")) return;
                     runChooseMedia(res.tapIndex === 1 ? ["camera"] : ["album"]);
                   }, 150);
+                  refs.set("actionSheetTimer", timer);
                 },
                 fail: () => {
                   send({ type: "CHOOSE_COMPLETE" });
@@ -1081,6 +1092,12 @@ export const fileUploadMachine: FileUploadMachine =
 
         markDisposed: ({ refs }) => {
           refs.set("disposed", true);
+          const timer = refs.get("actionSheetTimer");
+          if (timer !== undefined) {
+            clearTimeout(timer);
+            refs.set("actionSheetTimer", undefined);
+          }
+          refs.get("resolvingPaths").clear();
         },
 
         setUploading: ({ state, event }) => {

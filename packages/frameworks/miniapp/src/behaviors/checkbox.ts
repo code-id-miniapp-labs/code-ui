@@ -210,6 +210,17 @@ export function withCheckboxGroup(): MachinePlugin {
         checkboxGroup: true,
       });
     },
+    onDetached(instance) {
+      const group = instance as CheckboxGroupInstance;
+      if (group.__codeUiCheckboxChildren) {
+        for (const child of group.__codeUiCheckboxChildren) {
+          if (child.__codeUiPendingCheckboxGroup === group) {
+            child.__codeUiPendingCheckboxGroup = undefined;
+          }
+        }
+        group.__codeUiCheckboxChildren = undefined;
+      }
+    },
   };
 }
 
@@ -229,6 +240,15 @@ export function withCheckboxItem(): MachinePlugin {
       handleCheckboxReady(instance as CheckboxItemInstance, {
         checkboxItem: true,
       });
+    },
+    onDetached(instance) {
+      const item = instance as CheckboxItemInstance;
+      const group = item.__codeUiPendingCheckboxGroup;
+      if (group?.__codeUiCheckboxChildren) {
+        const idx = group.__codeUiCheckboxChildren.indexOf(item);
+        if (idx !== -1) group.__codeUiCheckboxChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingCheckboxGroup = undefined;
     },
   };
 }

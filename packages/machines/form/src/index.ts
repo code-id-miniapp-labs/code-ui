@@ -3,6 +3,7 @@ export {
   FormHostKey,
   getFormHostKey,
   provideFormHost,
+  unprovideFormHost,
   injectFormHost,
   bindFormField,
   setupFormFieldSync,

@@ -280,6 +280,17 @@ export function withInputMenu(): MachinePlugin {
     onReady(instance) {
       handleInputMenuReady(instance as InputMenuInstance, { inputMenu: true });
     },
+    onDetached(instance) {
+      const parent = instance as InputMenuInstance;
+      if (parent.__codeUiInputMenuChildren) {
+        for (const child of parent.__codeUiInputMenuChildren) {
+          if (child.__codeUiPendingInputMenu === parent) {
+            child.__codeUiPendingInputMenu = undefined;
+          }
+        }
+        parent.__codeUiInputMenuChildren = undefined;
+      }
+    },
   };
 }
 
@@ -303,6 +314,15 @@ export function withInputMenuItem(): MachinePlugin {
       handleInputMenuReady(instance as InputMenuItemInstance, {
         inputMenuItem: true,
       });
+    },
+    onDetached(instance) {
+      const item = instance as InputMenuItemInstance;
+      const parent = item.__codeUiPendingInputMenu;
+      if (parent?.__codeUiInputMenuChildren) {
+        const idx = parent.__codeUiInputMenuChildren.indexOf(item);
+        if (idx !== -1) parent.__codeUiInputMenuChildren.splice(idx, 1);
+      }
+      item.__codeUiPendingInputMenu = undefined;
     },
   };
 }

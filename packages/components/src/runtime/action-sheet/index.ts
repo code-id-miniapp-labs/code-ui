@@ -43,6 +43,8 @@ const actionSheetBehavior = createMachineBehavior({
   machine: actionSheetMachine,
   connect: connectActionSheet,
   key: "actionSheet",
+  deferred: true,
+  shouldStart: (props) => Boolean(props.open || props.defaultOpen),
   exportApi: true,
   exportApiKeys: [
     "open",

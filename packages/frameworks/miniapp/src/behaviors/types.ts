@@ -340,6 +340,7 @@ export type AppOwnerInstance = CodeUiComponentInstance<AppOwnerData> & {
   __cuiBannerHeight?: number | undefined;
   __cuiLastKnownHeight?: number | undefined;
   __cuiMeasureRetryTimer?: ReturnType<typeof setTimeout> | null | undefined;
+  __cuiBannerDetached?: boolean | undefined;
   __cuiBannerMeasureQueued?: boolean | undefined;
   __cuiBannerMeasureNeedsRerun?: boolean | undefined;
   __cuiBannerUnsub?: (() => void) | undefined;

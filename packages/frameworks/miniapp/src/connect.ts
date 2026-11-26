@@ -108,6 +108,7 @@ export function connectToPage<
       ? new Set(options.omitKeys)
       : undefined;
   let isMounted = false;
+  let disposed = false;
   let prevSnapshot: Record<string, any> | undefined;
   let pendingDelta: Record<string, any> = {};
   let isBatchScheduled = false;
@@ -115,6 +116,10 @@ export function connectToPage<
   function flushSetData() {
     isBatchScheduled = false;
     (instance as any).__cuiPendingFlush = false;
+    if (disposed) {
+      pendingDelta = {};
+      return;
+    }
     if (Object.keys(pendingDelta).length > 0 && instance && instance.setData) {
       const payload = pendingDelta;
       pendingDelta = {};
@@ -125,6 +130,7 @@ export function connectToPage<
   }
 
   const update = () => {
+    if (disposed) return;
     const snapshot = connect(machine.service, normalizeProps);
     (instance as any).__codeUiApi = snapshot;
     (instance as any).__codeUiOnSnapshot?.(snapshot);
@@ -159,8 +165,11 @@ export function connectToPage<
   const dispose = effect(update);
 
   return () => {
+    if (disposed) return;
+    disposed = true;
     dispose();
     pendingDelta = {};
+    prevSnapshot = undefined;
     isBatchScheduled = false;
     (instance as any).__cuiPendingFlush = false;
   };

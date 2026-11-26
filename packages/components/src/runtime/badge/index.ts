@@ -1,4 +1,4 @@
-import { computedBehavior, createComponentOptions } from "../_shared/base";
+import { staticComputedBehavior, createComponentOptions } from "../_shared/base";
 import { resolveSlots } from "../../utils/ui";
 import { tv } from "../../utils/variants";
 import themeConfig from "virtual:cui/theme/badge";
@@ -20,7 +20,7 @@ Component(
       variant: { type: String, value: "solid" },
       label: { type: String, value: "" },
     },
-    behaviors: [computedBehavior],
+    behaviors: [staticComputedBehavior],
     computed: {
       classes() {
         const ui = this.data.ui;

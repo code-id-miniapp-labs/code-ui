@@ -320,6 +320,8 @@ export interface FormRefs {
   fields: Map<string, FormFieldRegistration>;
   fieldRules: Map<string, () => FormRule[]>;
   validationTokens: Map<string, number>;
+  providedComponent?: MiniAppComponent | undefined;
+  providedFormId?: string | undefined;
 }
 
 export interface FormSchema extends MachineSchema {
