@@ -1,0 +1,79 @@
+<view class="min-h-screen bg-muted text-default pb-12">
+  <demo-header title="Highlight" badge="Data Display" subtitle="Spotlight single or multiple matching substrings inline with Code UI colors, variants, and search controls." />
+  <view class="px-4 flex flex-col gap-4">
+    <!-- 1. Interactive Live Search -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Live Search Highlight</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Type a keyword to highlight matches in real time.
+        </text>
+      </view>
+      <c-input value="{{ searchQuery }}" placeholder="Type to highlight (e.g. payment, daily)..." leading-icon="i-lucide-search" clearable="{{ true }}" bind:change="onSearchInput" bind:clear="onSearchClear" />
+      <view class="flex flex-wrap gap-3 pt-1">
+        <c-switch checked="{{ ignoreCase }}" size="sm" label="ignoreCase" bind:change="onIgnoreCaseChange" />
+        <c-switch checked="{{ matchAll }}" size="sm" label="matchAll" bind:change="onMatchAllChange" />
+        <c-switch checked="{{ exactMatch }}" size="sm" label="exactMatch" bind:change="onExactMatchChange" />
+      </view>
+      <view class="flex flex-col gap-2 pt-1">
+        <view wx:for="{{ searchItems }}" wx:key="id" class="p-3 rounded-xl bg-muted border border-muted flex flex-col gap-1">
+          <c-highlight text="{{ item.title }}" query="{{ searchQuery }}" ignore-case="{{ ignoreCase }}" match-all="{{ matchAll }}" exact-match="{{ exactMatch }}" color="primary" variant="soft" class-name="text-sm font-semibold text-highlighted" />
+          <c-highlight text="{{ item.desc }}" query="{{ searchQuery }}" ignore-case="{{ ignoreCase }}" match-all="{{ matchAll }}" exact-match="{{ exactMatch }}" color="warning" variant="soft" size="xs" class-name="text-muted" />
+        </view>
+      </view>
+    </view>
+    <!-- 2. Multiple Queries -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-2.5">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Multiple Queries</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Pass an array of strings to highlight several terms at once.
+        </text>
+      </view>
+      <c-highlight text="With the Highlight component, you can spotlight, emphasize, and call out important keywords inline across multiple lines." query="{{ multiQueries }}" color="warning" variant="subtle" size="sm" />
+    </view>
+    <!-- 3. Variants -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Variants</text>
+        <text class="block text-xs text-muted mt-0.5">
+          soft (default), solid, subtle, outline, and text.
+        </text>
+      </view>
+      <view class="flex flex-col gap-2">
+        <c-highlight text="Soft variant highlights matched text subtly." query="Soft variant" variant="soft" size="sm" />
+        <c-highlight text="Solid variant creates high-contrast marks." query="Solid variant" variant="solid" size="sm" />
+        <c-highlight text="Subtle variant pairs soft fill with an inset ring." query="Subtle variant" variant="subtle" size="sm" />
+        <c-highlight text="Outline variant frames matched keywords cleanly." query="Outline variant" variant="outline" size="sm" />
+        <c-highlight text="Text variant emphasizes matches without a box." query="Text variant" variant="text" size="sm" />
+      </view>
+    </view>
+    <!-- 4. Semantic Colors -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-2.5">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Colors</text>
+        <text class="block text-xs text-muted mt-0.5">Full semantic palette plus neutral.</text>
+      </view>
+      <view class="flex flex-col gap-2">
+        <c-highlight text="Primary color spotlight for brand emphasis." query="Primary" color="primary" size="sm" />
+        <c-highlight text="Success color spotlight for completed states." query="Success" color="success" size="sm" />
+        <c-highlight text="Warning color spotlight for attention callouts." query="Warning" color="warning" size="sm" />
+        <c-highlight text="Danger color spotlight for critical notices." query="Danger" color="danger" size="sm" />
+        <c-highlight text="Info color spotlight for helpful tips." query="Info" color="info" size="sm" />
+        <c-highlight text="Neutral color spotlight for subtle emphasis." query="Neutral" color="neutral" size="sm" />
+      </view>
+    </view>
+    <!-- 5. Custom Slot & Heading -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-2.5">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">Custom Styling & Headings</text>
+        <text class="block text-xs text-muted mt-0.5">
+          Inherits heading typography and supports per-slot ui overrides.
+        </text>
+      </view>
+      <view class="text-lg font-bold text-highlighted">
+        <c-highlight text="Build fast MiniProgram apps with Code UI." query="Code UI" color="primary" variant="soft" ui="{{ { mark: 'rounded-full px-2 font-bold' } }}" />
+      </view>
+    </view>
+  </view>
+</view>

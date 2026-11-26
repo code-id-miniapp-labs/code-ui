@@ -136,6 +136,12 @@
       "require": "./dist/runtime/form-field/index.js"
     },
     "./form-field/*": "./dist/runtime/form-field/*",
+    "./highlight": {
+      "types": "./dist/runtime/highlight/index.d.ts",
+      "import": "./dist/runtime/highlight/index.js",
+      "require": "./dist/runtime/highlight/index.js"
+    },
+    "./highlight/*": "./dist/runtime/highlight/*",
     "./icon": {
       "types": "./dist/runtime/icon/index.d.ts",
       "import": "./dist/runtime/icon/index.js",

@@ -53,7 +53,54 @@
         </c-input-menu-item>
       </c-input-menu>
     </view>
-    <!-- 5. Variants, Sizes & FormField -->
+    <!-- 5. Search Highlight Composition (Zero Transitive Dependency) -->
+    <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
+      <view>
+        <text class="block text-sm font-semibold text-highlighted">
+          Search Highlight (c-highlight Slot)
+        </text>
+        <text class="block text-xs text-muted mt-0.5">
+          Compose c-highlight inside c-input-menu-item slots to highlight matches while keeping c-input-menu tree-shakeable.
+        </text>
+      </view>
+      <c-input-menu
+        value="{{ highlightValue }}"
+        search-term="{{ highlightSearchTerm }}"
+        placeholder="Search bank or method (e.g. BNI, Debit)..."
+        clearable="{{ true }}"
+        leading-icon="i-lucide-search"
+        bind:change="onHighlightChange"
+        bind:searchTermChange="onHighlightSearchChange"
+      >
+        <c-input-menu-item
+          wx:for="{{ highlightItems }}"
+          wx:key="value"
+          value="{{ item.value }}"
+          label="{{ item.label }}"
+          description="{{ item.description }}"
+        >
+          <view class="flex flex-col min-w-0">
+            <c-highlight
+              text="{{ item.label }}"
+              query="{{ highlightSearchTerm }}"
+              color="primary"
+              variant="soft"
+              size="sm"
+              class-name="text-highlighted font-medium"
+            />
+            <c-highlight
+              text="{{ item.description }}"
+              query="{{ highlightSearchTerm }}"
+              color="warning"
+              variant="text"
+              size="xs"
+              class-name="text-muted"
+            />
+          </view>
+        </c-input-menu-item>
+      </c-input-menu>
+    </view>
+    <!-- 6. Variants, Sizes & FormField -->
     <view class="bg-default border border-default rounded-2xl p-4 flex flex-col gap-3">
       <view>
         <text class="block text-sm font-semibold text-highlighted">

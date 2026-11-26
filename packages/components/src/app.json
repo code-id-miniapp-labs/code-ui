@@ -22,6 +22,7 @@
     "cui-popover": "runtime/popover/index",
     "cui-form": "runtime/form/index",
     "cui-form-field": "runtime/form-field/index",
+    "cui-highlight": "runtime/highlight/index",
     "cui-icon": "runtime/icon/index",
     "cui-input": "runtime/input/index",
     "cui-input-menu": "runtime/input-menu/index",

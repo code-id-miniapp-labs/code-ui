@@ -1306,3 +1306,38 @@ export interface CuiPresenceElementProps extends CuiCommonElementProps {
   onExitComplete?: (event: WechatMiniprogram.CustomEvent) => void;
 }
 
+export type HighlightColor =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "success"
+  | "warning"
+  | "info"
+  | "neutral"
+  | (string & {});
+
+export type HighlightVariant = "soft" | "solid" | "subtle" | "outline" | "text";
+
+export type HighlightSize = "xs" | "sm" | "md" | "lg" | "xl" | "";
+
+export interface HighlightUI {
+  root?: string;
+  text?: string;
+  mark?: string;
+}
+
+export interface CuiHighlightElementProps extends CuiCommonElementProps {
+  ui?: HighlightUI;
+  text?: string;
+  query?: string | string[];
+  ignoreCase?: boolean;
+  matchAll?: boolean;
+  exactMatch?: boolean;
+  color?: HighlightColor;
+  variant?: HighlightVariant;
+  size?: HighlightSize;
+  rounded?: boolean;
+  markStyle?: string;
+  userSelect?: boolean;
+}
+

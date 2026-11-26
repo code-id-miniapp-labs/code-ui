@@ -24,6 +24,7 @@
     "pages/use-component-ref/index",
     "pages/textarea/index",
     "pages/icon/index",
+    "pages/highlight/index",
     "pages/badge/index",
     "pages/divider/index",
     "pages/skeleton/index",

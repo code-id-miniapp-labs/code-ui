@@ -17,6 +17,7 @@ export { default as fileUpload } from "./file-upload";
 export { default as popover } from "./popover";
 export { default as form } from "./form";
 export { default as formField } from "./form-field";
+export { default as highlight } from "./highlight";
 export { default as icon } from "./icon";
 export { default as input } from "./input";
 export { default as inputMenu } from "./input-menu";
