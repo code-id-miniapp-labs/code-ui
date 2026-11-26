@@ -12,13 +12,13 @@ export default function progressTheme(options: ThemeOptions = {}) {
       root: "relative select-none",
       header: "flex items-center justify-between mb-1.5 w-full",
       track: "overflow-hidden rounded-full bg-accented transition-colors",
-      range: "rounded-full transition-all duration-300 ease-out",
+      range: "rounded-full transition-[width,height] duration-300 ease-out",
       label: "font-medium text-highlighted",
       valueText:
         "font-medium text-muted tabular-nums leading-none text-center",
       view: "relative inline-flex items-center justify-center",
       circle:
-        "overflow-visible block box-border rounded-full transition-all duration-300 ease-out",
+        "overflow-visible block box-border rounded-full transition-[transform,opacity] duration-300 ease-out",
       circleTrack: "text-accented stroke-current",
       circleRange:
         "transition-[stroke-dashoffset] duration-300 ease-out stroke-current",

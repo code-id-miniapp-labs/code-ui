@@ -8,7 +8,7 @@ export default function popoverTheme(_options: ThemeOptions = {}) {
       backdrop: "fixed inset-0 z-40 bg-transparent",
       positioner: "z-popover box-border",
       content:
-        "relative w-full rounded-md bg-default text-default shadow-lg ring-1 ring-default box-border transition-all duration-150 ease-out",
+        "relative w-full rounded-md bg-default text-default shadow-lg ring-1 ring-default box-border transition-[transform,opacity] duration-150 ease-out will-change-transform",
       body: "relative w-full overflow-hidden rounded-[inherit] bg-inherit",
       arrow:
         "absolute w-2.5 h-2.5 bg-default border-default pointer-events-none",

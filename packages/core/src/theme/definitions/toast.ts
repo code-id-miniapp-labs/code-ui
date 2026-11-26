@@ -9,7 +9,7 @@ export default function toastTheme(options: ThemeOptions = {}) {
 
   return defineTheme({
     slots: {
-      root: "transition-all duration-300 pointer-events-auto box-border data-[state=dismissing]:opacity-0 data-[state=dismissing]:scale-95",
+      root: "transition-[transform,opacity] duration-300 will-change-transform pointer-events-auto box-border data-[state=dismissing]:opacity-0 data-[state=dismissing]:scale-95",
       tint: "absolute inset-0 pointer-events-none z-0",
       wrapper: "min-w-0 flex flex-col relative z-1",
       title: "text-sm font-semibold",

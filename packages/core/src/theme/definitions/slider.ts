@@ -16,7 +16,7 @@ export default function sliderTheme(options: ThemeOptions = {}) {
       valueText: "text-muted font-medium tabular-nums",
       control: "relative flex items-center cursor-pointer",
       track: "relative bg-accented rounded-full grow overflow-hidden",
-      range: "absolute rounded-full transition-all duration-75",
+      range: "absolute rounded-full",
       thumb:
         "absolute rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center justify-center transition-[transform,shadow] duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       markerGroup: "absolute inset-0 pointer-events-none",
