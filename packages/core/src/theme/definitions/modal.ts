@@ -67,7 +67,7 @@ export default function modalTheme(_options: ThemeOptions = {}) {
         false: {
           root: "overflow-hidden",
           container: "h-full pointer-events-none",
-          body: "flex-1 min-h-0 overflow-y-auto overscroll-contain",
+          body: "flex-1 min-h-0 overscroll-contain",
         },
       },
       closable: {
@@ -84,9 +84,8 @@ export default function modalTheme(_options: ThemeOptions = {}) {
       },
       transition: {
         true: {
-          overlay: "transition-opacity duration-300 ease-out will-change-[opacity]",
-          content:
-            "transition-[transform,opacity] duration-300 ease-out will-change-transform",
+          overlay: "transition-opacity duration-300 ease-out",
+          content: "transition-[transform,opacity] duration-300 ease-out",
         },
         false: {
           overlay: "transition-none",

@@ -19,7 +19,7 @@
           <c-button wx:elif="{{resolvedClose}}" icon="{{resolvedClose.icon || ''}}" leading-icon="{{resolvedClose.leadingIcon || ''}}" trailing-icon="{{resolvedClose.trailingIcon || ''}}" label="{{resolvedClose.label || ''}}" loading="{{resolvedClose.loading || false}}" loading-icon="{{resolvedClose.loadingIcon || 'loading'}}" color="{{resolvedClose.color}}" variant="{{resolvedClose.variant}}" size="{{resolvedClose.size}}" disabled="{{resolvedClose.disabled || false}}" ui="{{resolvedClose.ui}}" className="{{resolvedClose.className}}" aria-label="Close" catch:tap="handleCloseTap" />
         </view>
       </view>
-      <scroll-view scroll-y scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{true}}" bounces="{{false}}" show-scrollbar="{{false}}">
+      <scroll-view scroll-y="{{scrollY}}" scroll-x="{{false}}" class="{{ classes.body }}" enhanced="{{enhanced}}" bounces="{{bounces}}" show-scrollbar="{{showScrollbar}}">
         <slot />
       </scroll-view>
       <view wx:if="{{slots.footer}}" class="{{ classes.footer }}" catchtouchmove="{{gesture.preventTouchMove}}">

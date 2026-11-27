@@ -32,7 +32,7 @@ export default function selectTheme(options: ThemeOptions = {}) {
       pickerBackdrop:
         "fixed inset-0 bg-black/40 transition-opacity duration-250",
       pickerContent:
-        "relative z-10 flex flex-col w-full bg-default rounded-t-md shadow-2xl transition-transform duration-250 ease-out will-change-transform box-border overflow-hidden pb-[env(safe-area-inset-bottom)]",
+        "relative z-10 flex flex-col w-full bg-default rounded-t-md shadow-2xl transition-transform duration-250 ease-out box-border overflow-hidden pb-[env(safe-area-inset-bottom)]",
       pickerHeader:
         "flex items-center justify-between px-4 py-3 border-b border-muted shrink-0 box-border w-full",
       pickerCancel:

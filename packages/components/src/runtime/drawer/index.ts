@@ -106,6 +106,22 @@ Component(
         type: Boolean,
         value: true,
       },
+      scrollY: {
+        type: Boolean,
+        value: true,
+      },
+      enhanced: {
+        type: Boolean,
+        value: true,
+      },
+      bounces: {
+        type: Boolean,
+        value: false,
+      },
+      showScrollbar: {
+        type: Boolean,
+        value: false,
+      },
       ui: {
         type: Object,
         value: {},
