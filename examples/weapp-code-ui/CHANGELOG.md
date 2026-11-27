@@ -1,5 +1,15 @@
 # weapp-vite-template
 
+## 1.0.35
+
+### Patch Changes
+
+- Updated dependencies [e90e768]
+- Updated dependencies [e90e768]
+  - @code-id-labs/components@1.7.0
+  - @code-id-labs/plugin-vite@1.7.0
+  - @code-id-labs/composables@1.7.0
+
 ## 1.0.34
 
 ### Patch Changes
