@@ -120,8 +120,8 @@ export default function tourTheme(options: ThemeOptions = {}) {
         true: {
           backdrop: "transition-opacity duration-200 ease-out",
           spotlight: "transition-[top,left,width,height,opacity] duration-200 ease-out",
-          positioner: "transition-[transform,opacity] duration-200 ease-out will-change-transform",
-          content: "transition-[transform,opacity] duration-200 ease-out will-change-transform",
+          positioner: "transition-[transform,opacity] duration-200 ease-out",
+          content: "transition-[transform,opacity] duration-200 ease-out",
         },
         false: {
           backdrop: "transition-none",

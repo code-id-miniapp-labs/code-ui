@@ -6,7 +6,7 @@ export default function drawerTheme(_options: ThemeOptions = {}) {
       root: "fixed inset-0 z-drawer flex overflow-hidden overscroll-contain box-border",
       backdrop: "fixed inset-0 bg-black/40 transition-opacity duration-300",
       content:
-        "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out will-change-transform box-border overflow-hidden",
+        "relative z-10 flex bg-default shadow-2xl transition-transform duration-300 ease-out box-border overflow-hidden",
       container: "flex flex-col min-w-0 min-h-0 overflow-hidden",
       grabber:
         "flex items-center justify-center cursor-grab active:cursor-grabbing shrink-0 box-border",
@@ -18,7 +18,7 @@ export default function drawerTheme(_options: ThemeOptions = {}) {
         "inline-flex items-center justify-center w-8 h-8 rounded-full text-dimmed hover:text-default hover:bg-elevated transition-colors shrink-0",
       closeButton: "p-0 w-full h-full rounded-full text-inherit",
       closeIcon: "w-4 h-4",
-      body: "min-h-0 w-full box-border overflow-y-auto px-4 pt-3 pb-6 text-sm text-toned overscroll-contain",
+      body: "min-h-0 w-full box-border px-4 pt-3 pb-6 text-sm text-toned overscroll-contain",
       footer:
         "flex items-center justify-end gap-2 px-4 py-3 border-t border-muted shrink-0 box-border w-full pb-[calc(var(--spacing)_*_3_+_env(safe-area-inset-bottom))]",
     },
